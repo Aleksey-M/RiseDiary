@@ -42,9 +42,9 @@ namespace RiseDiary.Domain.Model
 
     public class Cogitation
     {
-        public int CognitationId { get; set; }
+        public int CogitationId { get; set; }
         public int RecordId { get; set; }
-        public DateTime CognitationDate { get; set; }
+        public DateTime CogitationDate { get; set; }
         public string Text { get; set; }
     }
 }

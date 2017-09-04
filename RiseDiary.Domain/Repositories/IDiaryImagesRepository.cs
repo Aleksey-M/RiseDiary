@@ -4,13 +4,13 @@ using RiseDiary.Domain.Model;
 
 namespace RiseDiary.Domain.Repositories
 {
-    public interface IDiaryImagesStorage
+    public interface IDiaryImagesRepository
     {
         Task<int> AddImage(DiaryImage image, byte[] imageData);
         Task DeleteImage(int imageId);
-        Task<DiaryImage> GetImage(int imageId);
-        Task<byte[]> GetImageData(int imageId);
-        Task<List<DiaryImage>> GetImages(int skip, int count);
+        Task<DiaryImage> FetchImageById(int imageId);
+        Task<byte[]> FetchImageDataById(int imageId);
+        Task<List<DiaryImage>> FetchImageSet(int skip = 0, int count = 10);
         Task<int> GetImagesCount();
         Task UpdateImageName(int imageId, string imageNewName);
     }

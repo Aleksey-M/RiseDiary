@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RiseDiary.Domain.Model;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -24,6 +25,18 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         {
             _dbFileNames.ForEach(fn => File.Delete(fn));
             _dbFileNames.Clear();
+        }
+
+        public static DiaryRecord GetTestRecord()
+        {
+            return new DiaryRecord
+            {
+                RecordDate = DateTime.Now,
+                RecordCreateDate = DateTime.Now,
+                RecordModifyDate = DateTime.Now,
+                RecordName = @"/-*/--!@#$+_)*&(^*^$#?>?<ЪъЇЇіячсіопдоавйцу",
+                RecordText = @";'][[p][p]}{}{Pрпорпырорпорёёёё"
+            };
         }
     }
 }

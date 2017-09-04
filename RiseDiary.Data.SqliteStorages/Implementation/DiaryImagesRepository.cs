@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Data.SqliteStorages
 {
-    public class DiaryImagesStorage : IDiaryImagesStorage
+    public class DiaryImagesRepository : IDiaryImagesRepository
     {
         private readonly IDataBaseManager _manager;
-        public DiaryImagesStorage(IDataBaseManager dbManager)
+        public DiaryImagesRepository(IDataBaseManager dbManager)
         {
             _manager = dbManager;
         }
@@ -56,7 +56,7 @@ namespace RiseDiary.Data.SqliteStorages
                 await connection.ExecuteAsync("UPDATE Images SET ImageName = @imageNewName WHERE ImageId = @imageId", new { imageId, imageNewName });
             }
         }
-        public async Task<DiaryImage> GetImage(int imageId)
+        public async Task<DiaryImage> FetchImageById(int imageId)
         {
             using (var connection = await _manager.GetConnection())
             {
@@ -70,14 +70,14 @@ namespace RiseDiary.Data.SqliteStorages
                 return (await connection.QueryAsync<int>("SELECT COUNT(*) FROM Images")).First();
             }
         }
-        public async Task<List<DiaryImage>> GetImages(int skip, int count)
+        public async Task<List<DiaryImage>> FetchImageSet(int skip, int count)
         {
             using (var connection = await _manager.GetConnection())
             {
                 return (await connection.QueryAsync<DiaryImage>("SELECT ImageId, ImageName, CreateDate FROM Images ORDER BY CreateDate DESC LIMIT @skip, @count", new { skip, count })).ToList();
             }
         }
-        public async Task<byte[]> GetImageData(int imageId)
+        public async Task<byte[]> FetchImageDataById(int imageId)
         {
             using (var connection = await _manager.GetConnection())
             {

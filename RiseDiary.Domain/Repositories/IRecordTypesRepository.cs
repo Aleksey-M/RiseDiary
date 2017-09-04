@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Domain.Repositories
 {
-    public interface IRecordTypesStorage
+    public interface IRecordTypesRepository
     {
         Task<int> AddRecordType(int areaId, string recordTypeName);
         Task DeleteRecordType(int recordTypeId);
-        Task<DiaryRecordType> GetRecordType(int recordTypeId);
-        Task<List<DiaryRecordType>> GetRecordTypes(int? areaId);
+        Task<DiaryRecordType> FetchRecordTypeById(int recordTypeId);
+        Task<List<DiaryRecordType>> FetchRecordTypesOfArea(int? areaId);
         Task<int> GetRecordTypesCount(int? areaId);
-        Task<List<DiaryRecordTypeJoined>> GetRecordTypesJoined();
+        Task<List<DiaryRecordTypeJoined>> FetchRecordTypesWithAreas();
         Task<int> UpdateRecordType(DiaryRecordType recordType);
     }
 }

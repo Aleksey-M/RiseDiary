@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Data.SqliteStorages
 {
-    public class RecordTypesStorage : IRecordTypesStorage
+    public class RecordTypesRepository : IRecordTypesRepository
     {
         private readonly IDataBaseManager _manager;
-        public RecordTypesStorage(IDataBaseManager dbManager)
+        public RecordTypesRepository(IDataBaseManager dbManager)
         {
             _manager = dbManager;
         }
@@ -46,14 +46,14 @@ namespace RiseDiary.Data.SqliteStorages
                 await connection.ExecuteAsync(@"DELETE FROM RecordTypes WHERE RecordTypeId=@recordTypeId;", new { recordTypeId });
             }
         }
-        public async Task<DiaryRecordType> GetRecordType(int recordTypeId)
+        public async Task<DiaryRecordType> FetchRecordTypeById(int recordTypeId)
         {
             using (var connection = await _manager.GetConnection())
             {
                 return (await connection.QueryAsync<DiaryRecordType>(@"SELECT * FROM RecordTypes WHERE RecordTypeId = @recordTypeId", new { recordTypeId })).FirstOrDefault();
             }
         } 
-        public async Task<List<DiaryRecordType>> GetRecordTypes(int? areaId)
+        public async Task<List<DiaryRecordType>> FetchRecordTypesOfArea(int? areaId)
         {
             using (var connection = await _manager.GetConnection())
             {
@@ -64,7 +64,7 @@ namespace RiseDiary.Data.SqliteStorages
                 return (await connection.QueryAsync<DiaryRecordType>(@"SELECT * FROM RecordTypes")).ToList();
             }
         }
-        public async Task<List<DiaryRecordTypeJoined>> GetRecordTypesJoined()
+        public async Task<List<DiaryRecordTypeJoined>> FetchRecordTypesWithAreas()
         {
             using (var connection = await _manager.GetConnection())
             {

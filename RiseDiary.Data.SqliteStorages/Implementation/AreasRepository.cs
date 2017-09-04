@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Data.SqliteStorages
 {
-    public class AreasStorage : IAreasStorage
+    public class AreasRepository : IAreasRepository
     {
         private readonly IDataBaseManager _manager;
-        public AreasStorage(IDataBaseManager dbManager)
+        public AreasRepository(IDataBaseManager dbManager)
         {
             _manager = dbManager;
         }
@@ -54,14 +54,14 @@ namespace RiseDiary.Data.SqliteStorages
                 return area.AreaId;
             }
         }
-        public async Task<DiaryArea> GetArea(int areaId)
+        public async Task<DiaryArea> FetchAreaById(int areaId)
         {
             using (var connection = await _manager.GetConnection())
             {
                 return (await connection.QueryAsync<DiaryArea>(@"SELECT * FROM Areas WHERE AreaId = @areaId", new { areaId })).FirstOrDefault();
             }
         }
-        public async Task<List<DiaryArea>> GetAreas()
+        public async Task<List<DiaryArea>> FetchAllAreas()
         {
             using (var connection = await _manager.GetConnection())
             {
