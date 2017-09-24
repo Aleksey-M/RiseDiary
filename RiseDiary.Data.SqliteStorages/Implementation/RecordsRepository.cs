@@ -5,6 +5,7 @@ using RiseDiary.Domain.Repositories;
 using System;
 using Dapper;
 using System.Linq;
+using System.Text;
 
 namespace RiseDiary.Data.SqliteStorages
 {   
@@ -20,6 +21,9 @@ namespace RiseDiary.Data.SqliteStorages
         {
             using (var connection = await _manager.GetConnection())
             {
+                await connection.ExecuteAsync(@"DELETE FROM Cogitations WHERE RecordId = @id;", new { id });
+                await connection.ExecuteAsync(@"DELETE FROM TypesOfRecord WHERE RecordId = @id;", new { id });
+                await connection.ExecuteAsync(@"DELETE FROM ImagesOfRecord WHERE RecordId = @id;", new { id });
                 await connection.ExecuteAsync(@"DELETE FROM Records WHERE RecordId = @id;", new { id });
             }
         }
@@ -33,33 +37,131 @@ namespace RiseDiary.Data.SqliteStorages
             }
         }
 
-        public Task<DiaryRecord> GetRecordByCogitation(int cogitationId)
+        public async Task<DiaryRecord> GetRecordByCogitation(int cogitationId)
         {
-            throw new System.NotImplementedException();
-        }
-
-        public Task<List<DiaryRecord>> FetchRecordsListFiltered(RecordsFilter filter)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public async Task<List<DiaryRecord>> FetchRecordsByMonth(uint year, int? month = null)
-        {
-            throw new NotImplementedException();
             using (var connection = await _manager.GetConnection())
             {
-
+                int? recId = (await connection.QueryAsync<int>("SELECT RecordId FROM Cogitations WHERE CogitationId = @cogitationId", new { cogitationId })).FirstOrDefault();
+                if (recId != null)
+                {
+                    return (await connection.QueryAsync<DiaryRecord>("SELECT * FROM Records WHERE RecordId = @recId", new { recId = (int)recId })).FirstOrDefault();
+                }
+                else return null;
             }
         }
 
-        public Task<int> GetFilteredRecordsCount(RecordsFilter filter)
+        private string GenerateWhereSqlPart(RecordsFilter filter)
         {
-            throw new System.NotImplementedException();
+            if (RecordsFilter.IsEmpty(filter)) return "";
+
+            var whereClause = new StringBuilder(string.IsNullOrWhiteSpace(filter.RecordNameFilter) ? " WHERE 1" : $" WHERE RecordName LIKE \"%{filter.RecordNameFilter}%\"");
+
+            if(filter.RecordDateFrom != null)
+            {
+                whereClause.Append(" AND RecordDate >= \"").Append(filter.RecordDateFrom?.ToString("o")).Append("\"");
+            }
+            if (filter.RecordDateTo != null)
+            {
+                whereClause.Append(" AND RecordDate <= \"").Append(filter.RecordDateTo?.ToString("o")).Append("\"");
+            }
+            return whereClause.ToString();
         }
 
-        public Task<int> GetMonthRecordsCount(uint year, int? month = null)
+        private string GenerateInSqlPart(IEnumerable<int> Ids)
         {
-            throw new System.NotImplementedException();
+            var sb = new StringBuilder("(").Append(Ids.First().ToString());
+            for(int i = 1; i < Ids.Count(); i++)
+            {
+                sb.Append(", ").Append(Ids.ElementAt(i).ToString());
+            }
+            sb.Append(")");
+            return sb.ToString();
+        }
+
+        public async Task<List<DiaryRecord>> FetchRecordsListFiltered(RecordsFilter filter)
+        {
+            using (var connection = await _manager.GetConnection())
+            {
+                IEnumerable<DiaryRecord> list;
+                string wherePart = GenerateWhereSqlPart(filter);
+                if (filter.IsEmptyTypeFilter)
+                {
+                    list = await connection.QueryAsync<DiaryRecord>("SELECT * FROM Records " + wherePart);                    
+                }
+                else
+                {
+                    string sql = new StringBuilder(
+                        "SELECT DISTINCT R.RecordId, R.RecordDate, R.RecordCreateDate, R.RecordModifyDate, R.RecordName, R.RecordText ")
+                        .Append("FROM Records AS R ")
+                        .Append("INNER JOIN TypesOfRecord AS T ")
+                        .Append("ON R.RecordId = T.RecordId ")
+                        .Append(wherePart)
+                        .Append(" AND T.TypeId IN ")
+                        .Append(GenerateInSqlPart(filter.RecordTypeIds))
+                        .ToString();
+                    list = await connection.QueryAsync<DiaryRecord>(sql);
+                }
+                return list.Skip(filter.PageNo * filter.PageSize).Take(filter.PageSize).ToList();
+            }
+        }
+
+        public async Task<int> GetFilteredRecordsCount(RecordsFilter filter)
+        {
+            using (var connection = await _manager.GetConnection())
+            {
+                string wherePart = GenerateWhereSqlPart(filter);
+                if (filter.IsEmptyTypeFilter)
+                {
+                    return await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Records " + wherePart);
+                }
+                else
+                {
+                    string sql = new StringBuilder(
+                        "SELECT COUNT(DISTINCT R.RecordId) ")
+                        .Append("FROM Records AS R ")
+                        .Append("INNER JOIN TypesOfRecord AS T ")
+                        .Append("ON R.RecordId = T.RecordId ")
+                        .Append(wherePart)
+                        .Append(" AND T.TypeId IN ")
+                        .Append(GenerateInSqlPart(filter.RecordTypeIds))
+                        .ToString();
+                    return await connection.ExecuteScalarAsync<int>(sql);
+                }
+            }
+        }
+
+        public async Task<List<DiaryRecord>> FetchRecordsByMonth(int year, int? month = null)
+        {            
+            using (var connection = await _manager.GetConnection())
+            {                
+                List<DiaryRecord> list;
+                if (month == null)
+                {
+                    list = (await connection.QueryAsync<DiaryRecord>(@"SELECT * FROM Records WHERE strftime('%Y', RecordDate) = @y", new { y = year.ToString()})).ToList();
+                }
+                else
+                {
+                    list = (await connection.QueryAsync<DiaryRecord>(@"SELECT * FROM Records WHERE strftime('%Y', RecordDate) = @y AND strftime('%m', RecordDate) = @m", new { y = year.ToString(), m = ((int)month).ToString("00") })).ToList();                    
+                }
+                return list;
+            }
+        }
+
+        public async Task<int> GetMonthRecordsCount(int year, int? month = null)
+        {
+            using (var connection = await _manager.GetConnection())
+            {
+                int recCount;
+                if (month == null)
+                {
+                    recCount = (await connection.ExecuteScalarAsync<int>(@"SELECT COUNT(*) FROM Records WHERE strftime('%Y', RecordDate) = @y", new { y = year.ToString() }));
+                }
+                else
+                {
+                    recCount = (await connection.ExecuteScalarAsync<int>(@"SELECT COUNT(*) FROM Records WHERE strftime('%Y', RecordDate) = @y AND strftime('%m', RecordDate) = @m", new { y = year.ToString(), m = ((int)month).ToString("00") }));
+                }
+                return recCount;
+            }
         }
 
         public async Task<int> AddRecord(DiaryRecord record)
@@ -67,9 +169,9 @@ namespace RiseDiary.Data.SqliteStorages
             if (record == null) throw new ArgumentNullException(nameof(record));
             using(var connection = await _manager.GetConnection())
             {
-                return (await connection.QueryAsync<int>(
+                return (await connection.ExecuteScalarAsync<int>(
                     @"INSERT INTO Records ( RecordDate, RecordCreateDate, RecordModifyDate, RecordName, RecordText ) VALUES ( @RecordDate, @RecordCreateDate, @RecordModifyDate, @RecordName, @RecordText ); SELECT last_insert_rowid()",
-                    record)).First();
+                    record));
             }
         }
 

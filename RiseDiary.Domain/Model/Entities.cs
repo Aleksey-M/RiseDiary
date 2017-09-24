@@ -33,7 +33,8 @@ namespace RiseDiary.Domain.Model
     public class DiaryRecord
     {
         public int RecordId { get; set; }
-        public DateTime RecordDate { get; set; }
+        private DateTime _recordDate;
+        public DateTime RecordDate { get => _recordDate; set => _recordDate = value.Date; }
         public DateTime RecordCreateDate { get; set; }
         public DateTime RecordModifyDate { get; set; }
         public string RecordName { get; set; }

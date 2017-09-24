@@ -60,7 +60,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         {
             var mngr = TestsHelper.GetClearBase();
             var typesStor = new RecordTypesRepository(mngr);
-            
+
             var recType = await typesStor.FetchRecordTypeById(110);
 
             Assert.IsNull(recType);
@@ -200,6 +200,47 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
             Assert.AreEqual(2, joinedList.Where(jr => jr.AreaName == "1").Count());
             Assert.AreEqual(3, joinedList.Where(jr => jr.AreaName == "2").Count());
             Assert.AreEqual(1, joinedList.Where(jr => jr.AreaName == null).Count());
+        }
+
+        [Test]
+        public async Task FetchRecordTypesIds_WithoutAreaId_ShouldReturnAllRecordTypes()
+        {
+            var mngr = TestsHelper.GetClearBase();
+            var areaStor = new AreasRepository(mngr);
+            var typesStor = new RecordTypesRepository(mngr);
+
+            await typesStor.AddRecordType(await areaStor.AddArea("1"), "type 1");
+            await typesStor.AddRecordType(await areaStor.AddArea("2"), "type 2");
+            await typesStor.AddRecordType(await areaStor.AddArea("3"), "type 3");
+            int recTypesCount = await typesStor.GetRecordTypesCount(null);
+
+            var lst = await typesStor.FetchRecordTypesIds(null);
+            Assert.IsNotNull(lst);
+            Assert.AreEqual(3, lst.Count);
+        }
+
+        [Test]
+        public async Task FetchRecordTypesIds_WithAreaId_ShouldReturnFilteredLists()
+        {
+            var mngr = TestsHelper.GetClearBase();
+            var areaStor = new AreasRepository(mngr);
+            var typesStor = new RecordTypesRepository(mngr);
+
+            int aId1 = await areaStor.AddArea("1");
+            int aId2 = await areaStor.AddArea("2");
+            await typesStor.AddRecordType(aId1, "type 1-1");
+            await typesStor.AddRecordType(aId1, "type 1-2");
+            await typesStor.AddRecordType(aId2, "type 2-1");
+            await typesStor.AddRecordType(aId2, "type 2-2");
+            await typesStor.AddRecordType(aId2, "type 2-3");
+
+            var lst = await typesStor.FetchRecordTypesIds(aId1);
+            Assert.IsNotNull(lst);
+            Assert.AreEqual(2, lst.Count);
+            var lst2 = await typesStor.FetchRecordTypesIds(aId2);
+            Assert.IsNotNull(lst2);
+            Assert.AreEqual(3, lst2.Count);
+            Assert.True(lst.TrueForAll(i => !lst2.Contains(i)));
         }
     }
 }

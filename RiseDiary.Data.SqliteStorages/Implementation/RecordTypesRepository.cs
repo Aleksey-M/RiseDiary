@@ -64,6 +64,17 @@ namespace RiseDiary.Data.SqliteStorages
                 return (await connection.QueryAsync<DiaryRecordType>(@"SELECT * FROM RecordTypes")).ToList();
             }
         }
+        public async Task<List<int>> FetchRecordTypesIds(int? areaId)
+        {
+            using (var connection = await _manager.GetConnection())
+            {
+                if (areaId != null)
+                {
+                    return (await connection.QueryAsync<int>(@"SELECT RecordTypeId FROM RecordTypes WHERE AreaId = @areaId", new { areaId })).ToList();
+                }
+                return (await connection.QueryAsync<int>(@"SELECT RecordTypeId FROM RecordTypes")).ToList();
+            }
+        }
         public async Task<List<DiaryRecordTypeJoined>> FetchRecordTypesWithAreas()
         {
             using (var connection = await _manager.GetConnection())
