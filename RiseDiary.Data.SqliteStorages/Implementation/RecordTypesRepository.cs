@@ -4,6 +4,7 @@ using RiseDiary.Domain.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Data.SqliteStorages
@@ -96,17 +97,32 @@ namespace RiseDiary.Data.SqliteStorages
 
         public async Task AddTypeForRecord(int recordId, int typeId)
         {
-            throw new NotImplementedException();
+            using (var connection = await _manager.GetConnection())
+            {
+                await connection.ExecuteAsync("INSERT INTO TypesOfRecord VALUES (@typeId, @recordId)", new { recordId, typeId});
+            }
         }
 
         public async Task RemoveTypeForRecord(int recordId, int typeId)
         {
-            throw new NotImplementedException();
+            using (var connection = await _manager.GetConnection())
+            {
+                await connection.ExecuteAsync("DELETE FROM TypesOfRecord WHERE TypeId = @typeId AND RecordId = @recordId", new { recordId, typeId });
+            }
         }
 
         public async Task<List<DiaryRecordType>> FetchTypesForRecord(int recordId)
         {
-            throw new NotImplementedException();
+            using (var connection = await _manager.GetConnection())
+            {
+                var sql = new StringBuilder(
+                    "SELECT R.RecordTypeId, R.AreaId, R.RecordTypeName FROM RecordTypes AS R")
+                    .Append("INNER JOIN TypesOfRecord AS TR")
+                    .Append("ON R.RecordTypeId = TR.TypeId")
+                    .Append("WHERE TR.RecordId = @recordId")
+                    .ToString();
+                return (await connection.QueryAsync<DiaryRecordType>(sql, new { recordId })).ToList();               
+            }
         }
     }
 }
