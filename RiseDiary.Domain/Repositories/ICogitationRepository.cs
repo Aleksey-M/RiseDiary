@@ -11,5 +11,6 @@ namespace RiseDiary.Domain.Repositories
         Task<List<Cogitation>> FetchAllCogitationsOfRecord(int recordId);
         Task<int> UpdateCogitation(Cogitation cogitation);
         Task DeleteCogitation(int cogitationId);
+        Task<int> GetCogitationsCount(int recordId);
     }
 }

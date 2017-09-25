@@ -14,5 +14,9 @@ namespace RiseDiary.Domain.Repositories
         Task<int> GetRecordTypesCount(int? areaId);
         Task<List<DiaryRecordTypeJoined>> FetchRecordTypesWithAreas();
         Task<int> UpdateRecordType(DiaryRecordType recordType);
+
+        Task AddTypeForRecord(int recordId, int typeId);
+        Task RemoveTypeForRecord(int recordId, int typeId);
+        Task<List<DiaryRecordType>> FetchTypesForRecord(int recordId);
     }
 }

@@ -4,6 +4,7 @@ using RiseDiary.Domain.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Data.SqliteStorages
@@ -82,6 +83,44 @@ namespace RiseDiary.Data.SqliteStorages
             using (var connection = await _manager.GetConnection())
             {
                 return (await connection.QueryAsync<byte[]>("SELECT Data FROM Images WHERE ImageId = @imageId", new { imageId })).FirstOrDefault();
+            }
+        }
+
+        public async Task AddImageForRecord(int recordId, int imageId)
+        {
+            using (var connection = await _manager.GetConnection())
+            {
+                await connection.ExecuteAsync($"INSERT INTO ImagesOfRecord VALUES (@imageId, @recordId)", new { imageId, recordId});
+            }
+        }
+
+        public async Task RemoveImageForRecord(int recordId, int imageId)
+        {
+            using (var connection = await _manager.GetConnection())
+            {
+                await connection.ExecuteAsync($"DELETE FROM ImagesOfRecord WHERE ImageId = @imageId AND RecordId = @recordId", new { imageId, recordId });
+            }
+        }
+
+        public async Task<List<DiaryImage>> FetchImagesForRecord(int recordId)
+        {
+            using (var connection = await _manager.GetConnection())
+            {
+                var sql = new StringBuilder(
+                    "SELECT Img.ImageId, Img.ImageName, Img.CreateDate FROM Images AS Img")
+                    .Append("INNER JOIN ImagesOfRecord AS IR")
+                    .Append("ON Img.ImageId = IR.ImageId")
+                    .Append("WHERE IR.RecordId = @recordId")
+                    .ToString();
+                return (await connection.QueryAsync<DiaryImage>(sql, new { recordId })).ToList();
+            }
+        }
+
+        public async Task<int> GetLinkedRecordsCount(int imageId)
+        {
+            using (var connection = await _manager.GetConnection())
+            {
+                return await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM ImagesOfRecord WHERE ImageId = @imageId", new { imageId });
             }
         }
     }

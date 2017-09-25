@@ -7,27 +7,32 @@ namespace RiseDiary.Data.SqliteStorages
 {
     public class CogitationRepository : ICogitationRepository
     {
-        public Task DeleteCogitation(int cogitationId)
+        public async Task DeleteCogitation(int cogitationId)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<Cogitation> FetchCogitationById(int cogitationId)
+        public async Task<Cogitation> FetchCogitationById(int cogitationId)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<List<Cogitation>> FetchAllCogitationsOfRecord(int recordId)
+        public async Task<List<Cogitation>> FetchAllCogitationsOfRecord(int recordId)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<int> AddCogitation(Cogitation cogitation)
+        public async Task<int> AddCogitation(Cogitation cogitation)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<int> UpdateCogitation(Cogitation cogitation)
+        public async Task<int> UpdateCogitation(Cogitation cogitation)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public async Task<int> GetCogitationsCount(int recordId)
         {
             throw new System.NotImplementedException();
         }

@@ -13,5 +13,10 @@ namespace RiseDiary.Domain.Repositories
         Task<List<DiaryImage>> FetchImageSet(int skip = 0, int count = 10);
         Task<int> GetImagesCount();
         Task UpdateImageName(int imageId, string imageNewName);
+
+        Task AddImageForRecord(int recordId, int imageId);
+        Task RemoveImageForRecord(int recordId, int imageId);
+        Task<List<DiaryImage>> FetchImagesForRecord(int recordId);
+        Task<int> GetLinkedRecordsCount(int imageId);
     }
 }

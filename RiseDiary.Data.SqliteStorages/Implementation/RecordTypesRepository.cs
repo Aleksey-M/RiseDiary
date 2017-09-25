@@ -93,5 +93,20 @@ namespace RiseDiary.Data.SqliteStorages
                 return (await connection.QueryAsync<int>(@"SELECT COUNT(*) FROM RecordTypes")).First();
             }
         }
+
+        public async Task AddTypeForRecord(int recordId, int typeId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task RemoveTypeForRecord(int recordId, int typeId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<DiaryRecordType>> FetchTypesForRecord(int recordId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
