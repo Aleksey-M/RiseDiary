@@ -1,12 +1,15 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("RiseDiary.Data.SqliteStorages.IntegratedTests")]
 
 namespace RiseDiary.Data.SqliteStorages
 {
     public class DataBaseManager : IDataBaseManager
     {
-        public DataBaseManager(string pathToDbFile, string dbFileName = "Diary.db")
+        internal DataBaseManager(string pathToDbFile, string dbFileName = "Diary.db")
         {
             DbFilePath = pathToDbFile;
             DbFileName = dbFileName;

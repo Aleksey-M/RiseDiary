@@ -12,7 +12,7 @@ namespace RiseDiary.Data.SqliteStorages
     public class RecordTypesRepository : IRecordTypesRepository
     {
         private readonly IDataBaseManager _manager;
-        public RecordTypesRepository(IDataBaseManager dbManager)
+        internal RecordTypesRepository(IDataBaseManager dbManager)
         {
             _manager = dbManager;
         }

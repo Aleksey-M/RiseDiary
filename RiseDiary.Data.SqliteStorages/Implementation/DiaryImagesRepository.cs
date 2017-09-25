@@ -12,7 +12,7 @@ namespace RiseDiary.Data.SqliteStorages
     public class DiaryImagesRepository : IDiaryImagesRepository
     {
         private readonly IDataBaseManager _manager;
-        public DiaryImagesRepository(IDataBaseManager dbManager)
+        internal DiaryImagesRepository(IDataBaseManager dbManager)
         {
             _manager = dbManager;
         }

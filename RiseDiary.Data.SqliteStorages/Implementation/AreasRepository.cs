@@ -7,11 +7,11 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Data.SqliteStorages
-{
+{    
     public class AreasRepository : IAreasRepository
     {
         private readonly IDataBaseManager _manager;
-        public AreasRepository(IDataBaseManager dbManager)
+        internal AreasRepository(IDataBaseManager dbManager)
         {
             _manager = dbManager;
         }
