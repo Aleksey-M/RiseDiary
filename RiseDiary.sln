@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RiseDiary.Data.SqliteStorag
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RiseDiary.Data.SqliteStorages.IntegratedTests", "RiseDiary.Data.SqliteStorages.IntegratedTests\RiseDiary.Data.SqliteStorages.IntegratedTests.csproj", "{A621D012-6A99-46A5-A56C-100A39AED839}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiseDiary.UI", "RiseDiary.UI\RiseDiary.UI.csproj", "{761297ED-2660-4171-8187-10CCF8D363BD}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiseDiary.WebUI", "RiseDiary.WebUI\RiseDiary.WebUI.csproj", "{3F79A6CF-CDCF-4BC9-B01E-F981F525E2E7}"
 EndProject
 Global
@@ -31,10 +29,6 @@ Global
 		{A621D012-6A99-46A5-A56C-100A39AED839}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A621D012-6A99-46A5-A56C-100A39AED839}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A621D012-6A99-46A5-A56C-100A39AED839}.Release|Any CPU.Build.0 = Release|Any CPU
-		{761297ED-2660-4171-8187-10CCF8D363BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{761297ED-2660-4171-8187-10CCF8D363BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{761297ED-2660-4171-8187-10CCF8D363BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{761297ED-2660-4171-8187-10CCF8D363BD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3F79A6CF-CDCF-4BC9-B01E-F981F525E2E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3F79A6CF-CDCF-4BC9-B01E-F981F525E2E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F79A6CF-CDCF-4BC9-B01E-F981F525E2E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
