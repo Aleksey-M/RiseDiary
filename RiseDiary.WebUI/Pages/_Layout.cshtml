@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - RiseDiary.WebUI</title>
+    <title>@ViewData["Title"] - RiseDiary</title>
 
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
@@ -17,32 +17,23 @@
     </environment>
 </head>
 <body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a asp-page="/Index" class="navbar-brand">RiseDiary.WebUI</a>
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li><a asp-page="/Index">Home</a></li>
-                    <li><a asp-page="/About">About</a></li>
-                    <li><a asp-page="/Contact">Contact</a></li>
-                </ul>
-            </div>
+    <div class="container alert-info" style="margin-bottom:10px">
+        <h3 class="col-sm-10">Дневник: <span style="font-size:smaller">@ViewData["TitlePart"]</span></h3>
+    </div>
+    <nav class="container">
+        <div class="btn-group btn-group-justified">
+            <a asp-page="AreasPage" class="btn btn-info">Области интересов</a>
+            <a class="btn btn-info">Рисунки</a>
+            <a class="btn btn-info">Поиск</a>
+            <a class="btn btn-info">Записи</a>
+            <a class="btn btn-info">Календарь</a>
         </div>
     </nav>
+    
     <div class="container body-content">
-        @RenderBody()
         <hr />
-        <footer>
-            <p>&copy; 2017 - RiseDiary.WebUI</p>
-        </footer>
+        @RenderBody()
+        <hr />        
     </div>
 
     <environment include="Development">

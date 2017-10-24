@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RiseDiary.Data.SqliteStorag
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RiseDiary.Data.SqliteStorages.IntegratedTests", "RiseDiary.Data.SqliteStorages.IntegratedTests\RiseDiary.Data.SqliteStorages.IntegratedTests.csproj", "{A621D012-6A99-46A5-A56C-100A39AED839}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiseDiary.WebUI", "RiseDiary.WebUI\RiseDiary.WebUI.csproj", "{3F79A6CF-CDCF-4BC9-B01E-F981F525E2E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RiseDiary.WebUI", "RiseDiary.WebUI\RiseDiary.WebUI.csproj", "{3F79A6CF-CDCF-4BC9-B01E-F981F525E2E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
