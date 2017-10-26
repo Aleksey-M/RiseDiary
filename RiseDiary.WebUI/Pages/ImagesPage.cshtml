@@ -1,0 +1,84 @@
+﻿@page
+@model RiseDiary.WebUI.Pages.ImagesPageModel
+@{
+    ViewData["Title"] = "Картинки и рисунки";
+    ViewData["TitlePart"] = "Рисунки, добавляемые к записям";
+}
+@if (!Model.ModelState.IsValid)
+{
+    <div class="row col-lg-4 col-lg-offset-4" style="color:red; background-color:khaki; margin-bottom:5px;">
+        <p>
+            Ошибка валидации:
+            @Html.ValidationSummary()
+        </p>
+    </div>
+}
+<div class="row">
+    <div class="col-md-5">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th colspan="4">Добавленные изображения</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="4">
+                        <form asp-page-handler="AddNewImage" method="post" enctype="multipart/form-data">
+                            <div class="form-inline">
+                                <label class="btn btn-default form-control">
+                                    Выбрать файл <input type="file" accept="image/*" id="newImage" name="newImage" style="display: none" />
+                                </label>
+                                <input type="text" placeholder="Название нового изображения" id="newImageName" name="newImageName" class="form-control" style="width:52%" />
+                                <input type="submit" value="Добавить" class="btn btn-sm btn-success form-control" />
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+                @foreach (var img in Model.DiaryImages)
+                {
+                    <tr>
+                        <td width="20%">@img.CreateDate</td>
+                        <td>
+                            <form asp-page-handler="UpdateImageName" method="post">
+                                <div class="form-inline">
+                                    <input type="hidden" name="imageId" value="@img.ImageId" />
+                                    <input type="text" name="imageName" value="@img.ImageName" class="form-control" style="width:81%" />
+                                    <button type="submit" class="btn btn-default form-control">
+                                        <span class="glyphicon glyphicon-floppy-disk"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </td>
+                        <td>
+                            <form asp-page-handler="DeleteImage" method="post">
+                                <input type="hidden" name="imageId" value="@img.ImageId" />
+                                <button type="submit" class="btn btn-default form-control">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                </button>
+                            </form>
+                        </td>
+                        <td>
+                            <form asp-page-handler="ImageView" method="post">
+                                <input type="hidden" name="imageId" value="@img.ImageId" />
+                                <button type="submit" class="btn btn-default form-control">
+                                    <span class="glyphicon glyphicon-eye-open"></span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-7">
+        <img src="data:image;base64,@Model.CurrentImage" class="img-thumbnail" alt="Изображение" />
+    </div>
+</div>
+
+<div class="row">
+
+</div>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
