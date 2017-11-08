@@ -4,7 +4,13 @@
     ViewData["Title"] = "RecordsView";
 }
 
-<h2>RecordsView</h2>
+<a asp-page="RecordEdit" class="btn btn-success">Создать запись</a>
+
+@foreach(var rec in Model.Records)
+{
+    
+
+}
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

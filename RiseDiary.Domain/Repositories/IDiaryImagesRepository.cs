@@ -4,6 +4,12 @@ using RiseDiary.Domain.Model;
 
 namespace RiseDiary.Domain.Repositories
 {
+    public class DiaryImageEqualityComparerById : IEqualityComparer<DiaryImage>
+    {
+        public bool Equals(DiaryImage x, DiaryImage y) => x.ImageId == y.ImageId;
+        public int GetHashCode(DiaryImage obj) => obj.ImageId.GetHashCode();
+    }
+
     public interface IDiaryImagesRepository
     {
         Task<int> AddImage(DiaryImage image, byte[] imageData);

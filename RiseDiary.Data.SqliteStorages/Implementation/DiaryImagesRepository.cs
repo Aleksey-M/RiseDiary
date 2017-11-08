@@ -107,10 +107,10 @@ namespace RiseDiary.Data.SqliteStorages
             using (var connection = await _manager.GetConnection())
             {
                 var sql = new StringBuilder(
-                    "SELECT Img.ImageId, Img.ImageName, Img.CreateDate FROM Images AS Img")
-                    .Append("INNER JOIN ImagesOfRecord AS IR")
-                    .Append("ON Img.ImageId = IR.ImageId")
-                    .Append("WHERE IR.RecordId = @recordId")
+                    "SELECT Img.ImageId, Img.ImageName, Img.CreateDate FROM Images AS Img ")
+                    .Append("INNER JOIN ImagesOfRecord AS IR ")
+                    .Append("ON Img.ImageId = IR.ImageId ")
+                    .Append("WHERE IR.RecordId = @recordId ")
                     .ToString();
                 return (await connection.QueryAsync<DiaryImage>(sql, new { recordId })).ToList();
             }

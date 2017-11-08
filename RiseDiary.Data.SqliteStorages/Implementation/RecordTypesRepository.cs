@@ -3,6 +3,7 @@ using RiseDiary.Domain.Model;
 using RiseDiary.Domain.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -53,12 +54,12 @@ namespace RiseDiary.Data.SqliteStorages
             {
                 return (await connection.QueryAsync<DiaryRecordType>(@"SELECT * FROM RecordTypes WHERE RecordTypeId = @recordTypeId", new { recordTypeId })).FirstOrDefault();
             }
-        } 
+        }
         public async Task<List<DiaryRecordType>> FetchRecordTypesOfArea(int? areaId)
         {
             using (var connection = await _manager.GetConnection())
             {
-                if(areaId != null)
+                if (areaId != null)
                 {
                     return (await connection.QueryAsync<DiaryRecordType>(@"SELECT * FROM RecordTypes WHERE AreaId=@areaId", new { areaId })).ToList();
                 }
@@ -87,7 +88,7 @@ namespace RiseDiary.Data.SqliteStorages
         {
             using (var connection = await _manager.GetConnection())
             {
-                if(areaId != null)
+                if (areaId != null)
                 {
                     return (await connection.QueryAsync<int>(@"SELECT COUNT(*) FROM RecordTypes WHERE AreaId=@areaId", new { areaId })).First();
                 }
@@ -99,7 +100,7 @@ namespace RiseDiary.Data.SqliteStorages
         {
             using (var connection = await _manager.GetConnection())
             {
-                await connection.ExecuteAsync("INSERT INTO TypesOfRecord VALUES (@typeId, @recordId)", new { recordId, typeId});
+                await connection.ExecuteAsync("INSERT INTO TypesOfRecord VALUES (@typeId, @recordId)", new { recordId, typeId });
             }
         }
 
@@ -117,11 +118,18 @@ namespace RiseDiary.Data.SqliteStorages
             {
                 var sql = new StringBuilder(
                     "SELECT R.RecordTypeId, R.AreaId, R.RecordTypeName FROM RecordTypes AS R")
-                    .Append("INNER JOIN TypesOfRecord AS TR")
-                    .Append("ON R.RecordTypeId = TR.TypeId")
-                    .Append("WHERE TR.RecordId = @recordId")
+                    .Append(" INNER JOIN TypesOfRecord AS TR")
+                    .Append(" ON R.RecordTypeId = TR.TypeId")
+                    .Append(" WHERE TR.RecordId = @recordId")
                     .ToString();
-                return (await connection.QueryAsync<DiaryRecordType>(sql, new { recordId })).ToList();               
+                try
+                {
+                    return (await connection.QueryAsync<DiaryRecordType>(sql, new { recordId })).ToList();
+                }
+                catch (Exception exc)
+                {
+                    throw new Exception($"SQL ERROR {exc.Message} SQL:{sql}");
+                }
             }
         }
     }

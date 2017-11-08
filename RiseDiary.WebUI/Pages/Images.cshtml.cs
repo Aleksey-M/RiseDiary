@@ -76,7 +76,15 @@ namespace RiseDiary.WebUI.Pages
 
         public async Task OnPostDeleteImageAsync(int imageId)
         {
-            await _repoFactory.DiaryImagesRepository.DeleteImage(imageId);
+            int recCount = await _repoFactory.DiaryImagesRepository.GetLinkedRecordsCount(imageId);
+            if (recCount > 0)
+            {
+                ModelState.AddModelError("Image", $"Изображение не может быть удалено, потому что добавлено к записям ({recCount})");
+            }
+            else
+            {
+                await _repoFactory.DiaryImagesRepository.DeleteImage(imageId);
+            }
             await UpdatePageState();
         }
 

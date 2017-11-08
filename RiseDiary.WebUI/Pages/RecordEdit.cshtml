@@ -1,0 +1,148 @@
+﻿@page
+@model RiseDiary.WebUI.Pages.RecordEditModel
+@{
+    ViewData["Title"] = "Редактирование записи";
+    ViewData["TitlePart"] = "Редактирование записи";
+}
+
+<form asp-page-handler="SaveRecord" method="post">
+    <input type="hidden" name="recordId" id="recordId" value="@Model.RecordId" />
+    <table class="table table-striped">
+        <tr>
+            <td style="vertical-align:middle; width:15%"><b class="">Дата:</b></td>
+            <td style="width:20%">
+                <input type="text" name="recordDate" id="recordDate" class="form-control" style="width:50%" value="@Model.RecordDate.Value.ToString("yyyy.MM.dd")" />
+            </td>
+            <td style="vertical-align:middle">
+                @if (Model.RecordCreateDate != null)
+            {
+                    <b>Дата создания: <i>@Model.RecordCreateDate.Value.ToString("yyyy.MM.dd HH:mm:ss")</i></b>
+                }
+            </td>
+            <td style="vertical-align:middle">
+                @if (Model.RecordModifyDate != null)
+            {
+                    <b>Дата редактирования: <i>@Model.RecordModifyDate.Value.ToString("yyyy.MM.dd HH:mm:ss")</i></b>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align:middle"><b>Название записи:</b></td>
+            <td colspan="3"><input type="text" class="form-control" id="recordName" name="recordName" value="@Model.RecordName" /></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <textarea id="recordText" name="recordText" rows="20" class="form-control" style="font-size:larger">@Model.RecordText</textarea>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <b>Темы записи:</b>
+            </td>
+            <td colspan="2">
+                <div class="form">
+                    @foreach (var theme in Model.Themes)
+                    {
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input type="checkbox" name="themeId" value="@theme.RecordTypeId" class="custom-control-input"
+                                       @if (Model.RecordThemesIds.Contains(theme.RecordTypeId)) { @: checked="checked"
+                                                                                                           } />
+                                @theme.AreaName&nbsp;-&nbsp;@theme.RecordTypeName
+                            </label>
+                        </div>
+                    }
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button type="submit" class="btn btn-success form-control">Сохранить запись</button>
+            </td>
+        </tr>
+    </table>
+</form>
+
+@if (Model.RecordId != null)
+{
+    <table id="images" class="table table-striped">
+        <thead>
+            <tr>
+                <td>
+                    <h3>Прикрепленные изображения</h3>
+                </td>
+            </tr>
+        </thead>
+        <tr>
+            <td>
+                <form asp-page-handler="AddImage">
+                    <input type="hidden" name="recordId" value="@Model.RecordId" />
+                    <input type="hidden" name="imageId" id="addImageId" value="0" />
+                    <div class="form-inline">
+                        <select name="imageId" class="form-control" onchange="document.getElementById('addImageId').value = this.value;">
+                            <option selected="selected" value="0">Выберите название картинки</option>
+                            @foreach (var img in Model.NotAddedImages)
+                            {
+                                <option value="@img.ImageId">@img.CreateDate.ToString("G")&nbsp;:&nbsp;@img.ImageName</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn btn-default form-control">Добавить изображение</button>
+                    </div>
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <table>
+                    <tbody>
+                        <tr>
+                            @foreach (var img in Model.AddedImages)
+                            {
+                                <td>
+                                    <div class="form-inline">                   
+                                            <form asp-page-handler="DeleteImage">
+                                                <input type="hidden" name="imageId" value="@img.ImageId"/>
+                                                <input type="hidden" name="recordId" value="@Model.RecordId" />
+                                                <div style="background-color:#f7ff8f; margin:3px; padding:3px; border-radius:5px;">
+                                                    &nbsp;
+                                                   <label style="font-size:larger">@img.ImageName</label>    
+                                                    &nbsp;
+                                                    <button type="submit" class="btn btn-default">
+                                                        <span class="glyphicon glyphicon-remove-circle" style="font-size:1.5em;"></span>
+                                                    </button>                                                    
+                                                </div>
+                                            </form>
+                                    </div>
+                                </td>
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <form asp-page-handler="DeleteRecord" method="post">
+        <table class="table">
+            <tr>
+                <td>
+                    <input type="hidden" name="recordId" value="@Model.RecordId" />
+                    <button type="submit" class="btn btn-danger form-control" style="width:155px"
+                            onclick="if (confirm('Удалить запись?')) { return true; } else { return false }">
+                        Удалить запись
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </form>
+}
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script type="text/javascript">
+        $(function () {
+            $("#recordDate").datepicker();
+        });
+    </script>
+}

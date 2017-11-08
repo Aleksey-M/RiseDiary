@@ -25,13 +25,15 @@
                 <tr>
                     <td colspan="4">
                         <form asp-page-handler="AddNewImage" method="post" enctype="multipart/form-data">
-                            <div class="form-inline">
-                                <label class="btn btn-default form-control">
-                                    Выбрать файл <input type="file" accept="image/*" id="newImage" name="newImage" style="display: none" />
-                                </label>
-                                <input type="text" placeholder="Название нового изображения" id="newImageName" name="newImageName" class="form-control" style="width:52%" />
-                                <input type="submit" value="Добавить" class="btn btn-sm btn-success form-control" />
-                            </div>
+                            <table class="table">
+                                <tr>
+                                    <td colspan="2"><input type="file" accept="image/*" id="newImage" name="newImage" class="form-control-file" /></td>
+                                </tr>
+                                <tr>
+                                    <td style="width:80%"><input type="text" placeholder="Название нового изображения" id="newImageName" name="newImageName" class="form-control" /></td>
+                                    <td><input type="submit" value="Добавить" class="btn btn-sm btn-success form-control" /></td>
+                                </tr>
+                            </table>
                         </form>
                     </td>
                 </tr>
