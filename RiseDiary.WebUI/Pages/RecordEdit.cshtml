@@ -47,7 +47,7 @@
                             <label class="form-check-label">
                                 <input type="checkbox" name="themeId" value="@theme.RecordTypeId" class="custom-control-input"
                                        @if (Model.RecordThemesIds.Contains(theme.RecordTypeId)) { @: checked="checked"
-                                                                                                           } />
+                                                                                                                                                  } />
                                 @theme.AreaName&nbsp;-&nbsp;@theme.RecordTypeName
                             </label>
                         </div>
@@ -99,19 +99,19 @@
                             @foreach (var img in Model.AddedImages)
                             {
                                 <td>
-                                    <div class="form-inline">                   
-                                            <form asp-page-handler="DeleteImage">
-                                                <input type="hidden" name="imageId" value="@img.ImageId"/>
-                                                <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                                <div style="background-color:#f7ff8f; margin:3px; padding:3px; border-radius:5px;">
-                                                    &nbsp;
-                                                   <label style="font-size:larger">@img.ImageName</label>    
-                                                    &nbsp;
-                                                    <button type="submit" class="btn btn-default">
-                                                        <span class="glyphicon glyphicon-remove-circle" style="font-size:1.5em;"></span>
-                                                    </button>                                                    
-                                                </div>
-                                            </form>
+                                    <div class="form-inline">
+                                        <form asp-page-handler="DeleteImage">
+                                            <input type="hidden" name="imageId" value="@img.ImageId" />
+                                            <input type="hidden" name="recordId" value="@Model.RecordId" />
+                                            <div style="background-color:#f7ff8f; margin:3px; padding:3px; border-radius:5px;">
+                                                &nbsp;
+                                                <label style="font-size:larger">@img.ImageName</label>
+                                                &nbsp;
+                                                <button type="submit" class="btn btn-default">
+                                                    <span class="glyphicon glyphicon-remove-circle" style="font-size:1.5em;"></span>
+                                                </button>
+                                            </div>
+                                        </form>
                                     </div>
                                 </td>
                             }

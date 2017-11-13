@@ -21,9 +21,7 @@ namespace RiseDiary.WebUI.Pages
         public IEnumerable<DiaryRecord> Records { get; set; }
         public RecordsFilter Filters { get; set; } = RecordsFilter.Empty;
         public int RecordsCount { get; set; }
-        public int PagesCount { get; set; } = 1;
-
-        //public Dictionary<string, int> SelectedThemes { get; set; }
+        public int PagesCount { get; set; } = 1;      
 
         private async Task UpdatePageState()
         {

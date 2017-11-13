@@ -5,8 +5,6 @@
     ViewData["TitlePart"] = "Поиск записей";
 }
 
-<a asp-page="RecordEdit" class="btn btn-success">Создать запись</a>
-
 <table class="table table-striped">
     <thead>
         <tr>
@@ -15,36 +13,36 @@
             <th style="vertical-align: middle;">Текст записи</th>
             <th style="vertical-align: middle;">Дата создания</th>
             <th style="vertical-align: middle;">Дата изменения</th>
-            <th colspan="2" style="text-align:center">                
-                    <input type="hidden" name="currentPageNo" id="currentPageNo" value="@Model.Filters.PageNo" />
-                    <ul class="pagination pagination-sm" style="margin:0px;">
-                        <li class="page-item">
-                            <a href="#" id="prevPage">&nbsp;&lt;&nbsp;</a>
-                        </li>
-                        <li class="page-item active">
-                            <input type="hidden" id="currentPage" value="@Model.Filters.PageNo" />
-                            <span>@(Model.Filters.PageNo + 1) / @(Math.Ceiling((float)Model.RecordsCount / Model.Filters.PageSize))</span>
-                        </li>
-                        <li class="page-item">
-                            <a href="#" id="nextPage">&nbsp;&gt;&nbsp;</a>
-                        </li>
-                    </ul>                
+            <th colspan="2" style="text-align:center">
+                <input type="hidden" name="currentPageNo" id="currentPageNo" value="@Model.Filters.PageNo" />
+                <ul class="pagination pagination-sm" style="margin:0px;">
+                    <li class="page-item">
+                        <a href="#" id="prevPage">&nbsp;&lt;&nbsp;</a>
+                    </li>
+                    <li class="page-item active">
+                        <input type="hidden" id="currentPage" value="@Model.Filters.PageNo" />
+                        <span>@(Model.Filters.PageNo + 1) / @(Math.Ceiling((float)Model.RecordsCount / Model.Filters.PageSize))</span>
+                    </li>
+                    <li class="page-item">
+                        <a href="#" id="nextPage">&nbsp;&gt;&nbsp;</a>
+                    </li>
+                </ul>
             </th>
         </tr>
         <tr>
             <th style="width:110px;padding:2px;">
-                <input type="text" class="form-control" style="margin:0px;" placeholder="От" id="filterFromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? string.Empty)"/>
-                <input type="text" class="form-control" placeholder="До" id="filterToDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? string.Empty)"/>
+                <input type="text" class="form-control" style="margin:0px;" placeholder="От" id="filterFromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? string.Empty)" />
+                <input type="text" class="form-control" placeholder="До" id="filterToDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? string.Empty)" />
             </th>
             <th style="width:210px;padding:2px;">
-                <input type="text" class="form-control" placeholder="Фильтр по названию" id="filterName" value="@Model.Filters.RecordNameFilter"/>
+                <input type="text" class="form-control" placeholder="Фильтр по названию" id="filterName" value="@Model.Filters.RecordNameFilter" />
             </th>
             <th colspan="4" style="background-color:#dffeff">
                 <i>To Do: добавить фильтр по темам</i>
 
-            </th>        
-            <th>                                  
-                    <a class="btn btn-default" id="btnSearch">Поиск</a>                            
+            </th>
+            <th>
+                <a class="btn btn-default" id="btnSearch">Поиск</a>
             </th>
         </tr>
     </thead>
@@ -73,15 +71,15 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script type="text/javascript">
         $(function () {
-            $("#filterFromDate").datepicker({ dateFormat: 'yy.mm.dd' });            
+            $("#filterFromDate").datepicker({ dateFormat: 'yy.mm.dd' });
             $("#filterToDate").datepicker({ dateFormat: 'yy.mm.dd' });
 
-            $("#btnSearch").on('click', function () {   
+            $("#btnSearch").on('click', function () {
                 window.location.replace(
                     'RecordsView?handler=Search' +
                     '&fromDate=' + encodeURIComponent($("#filterFromDate").val()) +
                     '&toDate=' + encodeURIComponent($("#filterToDate").val()) +
-                    '&searchName=' + encodeURIComponent($("#filterName").val()));                
+                    '&searchName=' + encodeURIComponent($("#filterName").val()));
             });
             $("#prevPage").on('click', function () {
                 window.location.replace(
