@@ -86,7 +86,7 @@ namespace RiseDiary.Data.SqliteStorages
                 string wherePart = GenerateWhereSqlPart(filter);
                 if (filter.IsEmptyTypeFilter)
                 {
-                    list = await connection.QueryAsync<DiaryRecord>("SELECT * FROM Records " + wherePart);                    
+                    list = await connection.QueryAsync<DiaryRecord>("SELECT * FROM Records " + wherePart + " ORDER BY RecordDate DESC");                    
                 }
                 else
                 {
@@ -98,6 +98,7 @@ namespace RiseDiary.Data.SqliteStorages
                         .Append(wherePart)
                         .Append(" AND T.TypeId IN ")
                         .Append(GenerateInSqlPart(filter.RecordTypeIds))
+                        .Append(" ORDER BY RecordDate DESC")
                         .ToString();
                     list = await connection.QueryAsync<DiaryRecord>(sql);
                 }

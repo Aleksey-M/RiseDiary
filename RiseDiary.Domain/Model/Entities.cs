@@ -39,6 +39,15 @@ namespace RiseDiary.Domain.Model
         public DateTime RecordModifyDate { get; set; }
         public string RecordName { get; set; }
         public string RecordText { get; set; }
+
+        public string RecordNameDisplay => string.IsNullOrWhiteSpace(RecordName) ? "[ПУСТО]" : RecordName;
+        public string RecordTextShort {
+            get
+            {
+                if (string.IsNullOrEmpty(RecordText)) return "[ПУСТО]";
+                return RecordText.Length < 35 ? RecordText : RecordText.Substring(0, 35)+"[...]";
+            }
+        }
     }
 
     public class Cogitation

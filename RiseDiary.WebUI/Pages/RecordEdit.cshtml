@@ -15,13 +15,13 @@
             </td>
             <td style="vertical-align:middle">
                 @if (Model.RecordCreateDate != null)
-            {
+                {
                     <b>Дата создания: <i>@Model.RecordCreateDate.Value.ToString("yyyy.MM.dd HH:mm:ss")</i></b>
                 }
             </td>
             <td style="vertical-align:middle">
                 @if (Model.RecordModifyDate != null)
-            {
+                {
                     <b>Дата редактирования: <i>@Model.RecordModifyDate.Value.ToString("yyyy.MM.dd HH:mm:ss")</i></b>
                 }
             </td>
@@ -142,7 +142,7 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script type="text/javascript">
         $(function () {
-            $("#recordDate").datepicker();
+            $("#recordDate").datepicker({ dateFormat: 'yy.mm.dd' });
         });
     </script>
 }

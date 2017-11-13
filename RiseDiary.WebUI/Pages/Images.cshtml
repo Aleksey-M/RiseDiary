@@ -55,7 +55,8 @@
                         <td>
                             <form asp-page-handler="DeleteImage" method="post">
                                 <input type="hidden" name="imageId" value="@img.ImageId" />
-                                <button type="submit" class="btn btn-default form-control">
+                                <button type="submit" class="btn btn-default form-control" 
+                                        onclick="if (confirm('Удалить изображение?')) { return true; } else { return false }">
                                     <span class="glyphicon glyphicon-remove"></span>
                                 </button>
                             </form>

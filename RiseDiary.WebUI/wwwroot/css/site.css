@@ -11,3 +11,7 @@ body {
 .table-borderless > thead > tr > th {
     border: none;
 }
+
+th {
+    vertical-align: middle;
+}
