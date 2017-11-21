@@ -1,0 +1,90 @@
+﻿@page
+@model RiseDiary.WebUI.Pages.RecordViewModel
+@{
+    ViewData["Title"] = "Просмотр записи";
+    ViewData["TitlePart"] = Model.Record.RecordDate.ToString("yyyy.MM.dd") + " (" + Model.Record.RecordName + ")";
+}
+
+<input type="hidden" name="recordId" id="recordId" value="@Model.RecordId" />
+<table class="table table-striped">
+    <tr>
+        <td style="vertical-align:middle; width:15%"><b>Дата:</b></td>
+        <td style="width:20%">
+            <b><i>@Model.Record.RecordDate.ToString("yyyy.MM.dd")</i></b>            
+        </td>
+        <td style="vertical-align:middle">           
+                <b>Дата создания: <i>@Model.Record.RecordCreateDate.ToString("yyyy.MM.dd HH:mm:ss")</i></b>            
+        </td>
+        <td style="vertical-align:middle">
+            <b>Дата редактирования: <i>@Model.Record.RecordModifyDate.ToString("yyyy.MM.dd HH:mm:ss")</i></b>            
+        </td>
+    </tr>
+    <tr>
+        <td><b>Темы:</b></td>
+        <td colspan="3">
+            @if (Model.RecordThemes.Count > 0)
+            {
+                foreach (string themeName in Model.RecordThemes)
+                {
+                <p>@themeName</p>
+                }
+            }
+            else
+            {
+                <i>[НЕТ]</i>
+            }
+        </td>
+    </tr>
+    <tr>
+        <td style="vertical-align:middle"><b>Название записи:</b></td>
+        <td colspan="3"><b><i>@Model.Record.RecordNameDisplay</i></b></td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <textarea id="recordText" readonly="readonly" name="recordText" rows="20" class="form-control" style="font-size:larger; background-color:aliceblue">@Model.Record.RecordText</textarea>                        
+        </td>
+    </tr>
+    @foreach (var keyVal in Model.RecordImages)
+    {
+    <tr>
+        <td>@keyVal.Key</td>
+        <td colspan="3"><img src="data:image;base64,@keyVal.Value" class="img-thumbnail" alt="Изображение" /></td>
+    </tr>
+    }
+    <tr>
+        <td colspan="4"><b>Мысли по поводу записи:</b></td>
+    </tr>
+    @foreach(var cog in Model.Cogitations)
+    {
+        <tr>
+            <td colspan="4">
+                <p><b>@cog.CogitationDate.ToString("yyyy.MM.dd HH:mm:ss")</b></p>
+                <textarea id="recordText" readonly="readonly" rows="7" class="form-control" style="font-size:larger; background-color:aliceblue">@cog.Text</textarea>
+                <br />
+                <form asp-page-handler="DeleteCogitation" method="post">
+                    <input type="hidden" name="cogitationId" value="@cog.CogitationId" />
+                    <input type="hidden" name="recordId" value="@cog.RecordId" />
+                    <button type="submit" class="btn btn-danger"
+                            onclick="if (confirm('Удалить?')) { return true; } else { return false }">
+                        Удалить
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+    <tr>
+        <td colspan="4">            
+            <form asp-page-handler="AddCogitation" method="post">
+                <input type="hidden" name="recordId" value="@Model.RecordId" />                
+                <textarea id="recordText" name="cogText" rows="7" class="form-control" style="font-size:larger;"></textarea>
+                <br />
+                <button type="submit" class="btn btn-success">Добавить</button>
+            </form>
+        </td>
+    </tr>
+</table>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

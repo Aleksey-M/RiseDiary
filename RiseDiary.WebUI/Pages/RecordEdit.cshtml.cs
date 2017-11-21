@@ -14,8 +14,8 @@ namespace RiseDiary.WebUI.Pages
     public class RecordEditModel : PageModel
     {
         private readonly IRepositoriesFactory _repoFactory;
-        private readonly ILogger<ImagesPageModel> _logger;
-        public RecordEditModel(IRepositoriesFactory factory, ILogger<ImagesPageModel> logger)
+        private readonly ILogger<RecordEditModel> _logger;
+        public RecordEditModel(IRepositoriesFactory factory, ILogger<RecordEditModel> logger)
         {
             _repoFactory = factory;
             _logger = logger;

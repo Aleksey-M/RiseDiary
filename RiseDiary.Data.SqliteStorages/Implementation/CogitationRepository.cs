@@ -26,7 +26,7 @@ namespace RiseDiary.Data.SqliteStorages
         {
             using (var connection = await _manager.GetConnection())
             {
-                return (await connection.QueryAsync<Cogitation>("SELECT * FROM Cogitations WHERE CogitationId = @cogitationId", new { cogitationId })).FirstOrDefault();
+                return (await connection.QueryAsync<Cogitation>("SELECT CogitationId, RecordId, CogitationDate, Cogitation AS [Text] FROM Cogitations WHERE CogitationId = @cogitationId", new { cogitationId })).FirstOrDefault();
             }
         }
 
@@ -34,7 +34,7 @@ namespace RiseDiary.Data.SqliteStorages
         {
             using (var connection = await _manager.GetConnection())
             {
-                return (await connection.QueryAsync<Cogitation>("SELECT * FROM Cogitations WHERE RecordId = @recordId", new { recordId })).ToList();
+                return (await connection.QueryAsync<Cogitation>("SELECT CogitationId, RecordId, CogitationDate, Cogitation AS [Text] FROM Cogitations WHERE RecordId = @recordId", new { recordId })).ToList();
             }
         }
 

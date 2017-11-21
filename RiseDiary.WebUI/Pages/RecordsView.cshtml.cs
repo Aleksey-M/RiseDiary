@@ -11,8 +11,8 @@ namespace RiseDiary.WebUI.Pages
     public class RecordsViewModel : PageModel
     {
         private readonly IRepositoriesFactory _repoFactory;
-        private readonly ILogger<ImagesPageModel> _logger;
-        public RecordsViewModel(IRepositoriesFactory factory, ILogger<ImagesPageModel> logger)
+        private readonly ILogger<RecordsViewModel> _logger;
+        public RecordsViewModel(IRepositoriesFactory factory, ILogger<RecordsViewModel> logger)
         {
             _repoFactory = factory;
             _logger = logger;
