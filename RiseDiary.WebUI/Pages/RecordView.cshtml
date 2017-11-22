@@ -52,11 +52,14 @@
     </tr>
     }
     <tr>
+        <td colspan="4"><a asp-page="RecordEdit" asp-route-recordId="@Model.RecordId" class="btn btn-default">Редактировать запись</a></td>
+    </tr>
+    <tr style="background-color:lightgrey">
         <td colspan="4"><b>Мысли по поводу записи:</b></td>
     </tr>
     @foreach(var cog in Model.Cogitations)
     {
-        <tr>
+        <tr style="background-color:lightgrey">
             <td colspan="4">
                 <p><b>@cog.CogitationDate.ToString("yyyy.MM.dd HH:mm:ss")</b></p>
                 <textarea id="recordText" readonly="readonly" rows="7" class="form-control" style="font-size:larger; background-color:aliceblue">@cog.Text</textarea>
@@ -72,7 +75,7 @@
             </td>
         </tr>
     }
-    <tr>
+    <tr style="background-color:lightgrey">
         <td colspan="4">            
             <form asp-page-handler="AddCogitation" method="post">
                 <input type="hidden" name="recordId" value="@Model.RecordId" />                
