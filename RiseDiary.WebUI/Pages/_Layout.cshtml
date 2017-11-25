@@ -24,6 +24,8 @@
               asp-fallback-href="~/lib/jquery-ui/themes/base/jquery-ui.css" 
               asp-fallback-test-class="ui-button"  asp-fallback-test-property="display" asp-fallback-test-value="inline-block" />        
     </environment>
+
+    <link href="~/lib/sumoselect/sumoselect.css" rel="stylesheet" />
     
 </head>
 <body>
@@ -44,7 +46,7 @@
     </nav>
     
     <div class="container body-content">
-        <hr />
+        <hr style="margin-top:5px;margin-bottom:5px;" />
         @RenderBody()
         <hr />        
     </div>
@@ -80,6 +82,8 @@
                 crossorigin="anonymous">
         </script>
     </environment>    
+
+    <script src="~/lib/sumoselect/jquery.sumoselect.js"></script>
 
     @RenderSection("Scripts", required: false)
 </body>

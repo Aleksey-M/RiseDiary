@@ -15,3 +15,7 @@ body {
 th {
     vertical-align: middle;
 }
+
+.SumoSelect{
+    width:500px;
+}

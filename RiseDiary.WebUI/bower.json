@@ -3,9 +3,14 @@
   "private": true,
   "dependencies": {
     "bootstrap": "3.3.7",
-    "jquery": "2.2.0",
-    "jquery-validation": "1.14.0",
+    "jquery": "3.2.1",
+    "jquery-validation": "1.17.0",
     "jquery-validation-unobtrusive": "3.2.6",
-    "jquery-ui": "1.12.1"
+    "jquery-ui": "1.12.1",
+    "sumoselect": "v3.0.2"
+  },
+  "resolutions": {
+    "jquery-validation": "1.17.0",
+    "jquery": "3.2.1"
   }
 }

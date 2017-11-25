@@ -5,15 +5,15 @@
     ViewData["TitlePart"] = "Поиск записей";
 }
 
-<table class="table table-striped">
+<table class="table table-striped" style="table-layout:fixed">
     <thead>
         <tr>
-            <th style="vertical-align: middle;">Дата</th>
-            <th style="vertical-align: middle;">Название</th>
-            <th style="vertical-align: middle;">Текст записи</th>
+            <th style="vertical-align: middle;width:10%">Дата</th>
+            <th style="vertical-align: middle;width:20%">Название</th>
+            <th style="vertical-align: middle;width:30%">Текст записи</th>
             <th style="vertical-align: middle;">Дата создания</th>
             <th style="vertical-align: middle;">Дата изменения</th>
-            <th colspan="2" style="text-align:center">
+            <th colspan="2" style="text-align:center;width:12%">
                 <input type="hidden" name="currentPageNo" id="currentPageNo" value="@Model.Filters.PageNo" />
                 <ul class="pagination pagination-sm" style="margin:0px;">
                     <li class="page-item">
@@ -30,18 +30,35 @@
             </th>
         </tr>
         <tr>
-            <th style="width:110px;padding:2px;">
+            <th style="padding:2px;">
                 <input type="text" class="form-control" style="margin:0px;" placeholder="От" id="filterFromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? string.Empty)" />
                 <input type="text" class="form-control" placeholder="До" id="filterToDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? string.Empty)" />
             </th>
-            <th style="width:210px;padding:2px;">
+            <th style="padding:2px;vertical-align: middle;">
                 <input type="text" class="form-control" placeholder="Фильтр по названию" id="filterName" value="@Model.Filters.RecordNameFilter" />
             </th>
-            <th colspan="4" style="background-color:#dffeff">
-                <i>To Do: добавить фильтр по темам</i>
-
+            <th colspan="3" style="background-color:#dffeff;vertical-align: middle;">
+                
+                    <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="form-control multiselect" style="width:560px">
+                        @foreach (var area in Model.AllAreas)
+                        {
+                            <optgroup label="@area.AreaName">
+                                @foreach (var theme in Model.AllTypes.Where(t => t.AreaId == area.AreaId))
+                                {
+                                    @if (Model.SelectedThemes.Contains(theme.RecordTypeId))
+                                    {
+                                        <option selected="selected" value="@theme.RecordTypeId">@theme.RecordTypeName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@theme.RecordTypeId">@theme.RecordTypeName</option>
+                                    }
+                                }
+                            </optgroup>
+                        }                        
+                    </select>                
             </th>
-            <th>
+            <th colspan="2" style="vertical-align: middle;text-align:center">
                 <a class="btn btn-default" id="btnSearch">Поиск</a>
             </th>
         </tr>
@@ -55,8 +72,8 @@
                 <td>@rec.RecordTextShort</td>
                 <td>@rec.RecordCreateDate.ToString("G")</td>
                 <td>@rec.RecordModifyDate.ToString("G")</td>
-                <td><a asp-page="RecordEdit" asp-route-recordId="@rec.RecordId">Редактировать</a></td>
-                <td><a asp-page="RecordView" asp-route-recordId="@rec.RecordId">Просмотр</a></td>
+                <td><a asp-page="RecordEdit" asp-route-recordId="@rec.RecordId">Edit</a></td>
+                <td><a asp-page="RecordView" asp-route-recordId="@rec.RecordId">View</a></td>
             </tr>
         }
     </tbody>
@@ -70,6 +87,15 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script type="text/javascript">
+
+        function getThemesUri(themes) {            
+            let res = "";
+            for (let i= 0; i < themes.length; i++){
+                res = res + "&themes=" + themes[i];
+            }
+            return res;
+        }
+
         $(function () {
             $("#filterFromDate").datepicker({ dateFormat: 'yy.mm.dd' });
             $("#filterToDate").datepicker({ dateFormat: 'yy.mm.dd' });
@@ -79,6 +105,7 @@
                     'RecordsView?handler=Search' +
                     '&fromDate=' + encodeURIComponent($("#filterFromDate").val()) +
                     '&toDate=' + encodeURIComponent($("#filterToDate").val()) +
+                     getThemesUri($('.multiselect').val()) +
                     '&searchName=' + encodeURIComponent($("#filterName").val()));
             });
             $("#prevPage").on('click', function () {
@@ -86,6 +113,7 @@
                     'RecordsView?handler=PrevPage' +
                     '&fromDate=' + encodeURIComponent($("#filterFromDate").val()) +
                     '&toDate=' + encodeURIComponent($("#filterToDate").val()) +
+                     getThemesUri($('.multiselect').val()) +
                     '&searchName=' + encodeURIComponent($("#filterName").val()) +
                     '&pageNo=' + encodeURIComponent($("#currentPage").val()));
             });
@@ -94,9 +122,14 @@
                     'RecordsView?handler=NextPage' +
                     '&fromDate=' + encodeURIComponent($("#filterFromDate").val()) +
                     '&toDate=' + encodeURIComponent($("#filterToDate").val()) +
+                     getThemesUri($('.multiselect').val()) +
                     '&searchName=' + encodeURIComponent($("#filterName").val()) +
                     '&pageNo=' + encodeURIComponent($("#currentPage").val()));
             });
+
+            $('.multiselect').SumoSelect({ csvDispCount: 7 });
+            $('.SumoSelect').width('500px');
         });
+        
     </script>
 }
