@@ -19,3 +19,9 @@ th {
 .SumoSelect{
     width:500px;
 }
+
+.display-text {
+    border: 1px solid #66FF00;
+    background-color: #99FF66;
+    border-radius: 3px;
+}
