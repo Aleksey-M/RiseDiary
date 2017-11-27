@@ -1,9 +1,63 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Настройка";
+    ViewData["TitlePart"] = "Настройка на работу с дневником";
 }
 
-<div>
-    <h2>Дневник</h2>
+<div class="row">
+    <div class="col-sm-10 col-sm-offset-1">
+        <h2>Дневник</h2>
+        <p>
+            Для плодотворной и качественной работы с дневником необходимо быть в особом настроении.
+        </p>
+        <p>
+            Необходимо очистить ум от второстепенных мыслей, успокоиться и расслабиться.
+        </p>
+        <p>
+            Поможет сделать это следующая практика: Нужно ни о чем не думая сосредоточиться на своем дыхании 60 секунд.
+        </p>        
+            <div style="text-align:center">
+                <div id="counter" style="font-size:7em; font-family:Calibri; color:blueviolet">60</div>
+                <br />
+                <button class="btn btn-lg btn-primary" id="btnStart" onclick="start(this);">Старт</button>
+            </div>        
+    </div>
 </div>
+
+@section Scripts { 
+    <script type="text/javascript">
+        let _counter = 60;
+        let _label = null;
+        let intervalId = null;
+
+        function start(btn) {
+            if (intervalId === null) {
+                _counter = 60;
+                btn.innerText = 'Стоп';
+                intervalId = setInterval(function () { 
+                    _counter--;
+                    if (_counter < 0) {                        
+                        clearInterval(intervalId);
+                        intervalId = null;
+                        btn.innerText = 'Старт';
+                        _label.innerText = '60';
+                    }
+                    else {
+                        _label.innerText = _counter;
+                    }
+                }, 1000);
+            } 
+            else {
+                clearInterval(intervalId);
+                intervalId = null;
+                btn.innerText = 'Старт';
+                _label.innerText = '60';
+            }
+        }
+
+        $(function () {
+            _label = document.getElementById('counter');                       
+        });
+    </script>
+}

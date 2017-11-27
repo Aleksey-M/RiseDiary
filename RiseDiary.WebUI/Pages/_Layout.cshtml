@@ -30,7 +30,7 @@
 </head>
 <body>
     <div class="container alert-info" style="margin-bottom:10px">
-        <h3 class="col-sm-10">Дневник: <span style="font-size:smaller">@ViewData["TitlePart"]</span></h3>
+        <h3 class="col-sm-10"> <a asp-page="Index">Дневник:</a> <span style="font-size:smaller">@ViewData["TitlePart"]</span></h3>
     </div>
     <nav class="container">
         <div class="btn-group btn-group-justified">
@@ -38,10 +38,8 @@
             <a asp-page="Images" class="btn btn-info">Рисунки</a>
             <a asp-page="RecordEdit" class="btn btn-info">Создать запись</a>
             <a asp-page="RecordsView" class="btn btn-info">Поиск</a>
-            <!--
-            <a class="btn btn-info">Записи</a>
-            <a class="btn btn-info">Календарь</a>
-                -->
+            <a asp-page="Retrospect" class="btn btn-info">Ретроспектива</a>
+            <a asp-page="Calendar" class="btn btn-info">Календарь</a>               
         </div>
     </nav>
     

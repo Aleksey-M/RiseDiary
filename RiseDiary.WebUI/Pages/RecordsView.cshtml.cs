@@ -42,8 +42,7 @@ namespace RiseDiary.WebUI.Pages
         }
 
         public async Task OnGetSearchAsync(DateTime? fromDate,  DateTime? toDate, int[] themes, string searchName)
-        {
-            _logger.LogInformation(themes?.Length.ToString() ?? "Empty");
+        {            
             Filters = new RecordsFilter { RecordDateFrom = fromDate, RecordDateTo = toDate, RecordNameFilter = searchName?.Trim() };
             if(themes != null && themes.Length > 0)
             {
