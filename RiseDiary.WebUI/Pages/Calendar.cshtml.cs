@@ -30,8 +30,7 @@ namespace RiseDiary.WebUI.Pages
             if (Filters.RecordDateFrom == null)
             {
                 Filters.RecordDateFrom = new DateTime(DateTime.Now.Year, 01, 01);
-                Filters.RecordDateTo = new DateTime(DateTime.Now.Year, 12, 31);
-                _logger.LogWarning("Default Year");
+                Filters.RecordDateTo = new DateTime(DateTime.Now.Year, 12, 31);                
             }
             AllAreas = await _repoFactory.AreasRepository.FetchAllAreas();
             AllTypes = await _repoFactory.RecordTypesRepository.FetchRecordTypesWithAreas();
@@ -44,8 +43,7 @@ namespace RiseDiary.WebUI.Pages
         }
 
         public async Task OnGetFilterAsync(int? year, int[] themes)
-        {
-            _logger.LogWarning($"Year = {year}");
+        {           
             Filters.AddRecordTypeId(themes);
             SelectedThemes = themes;
             if(year != null)
