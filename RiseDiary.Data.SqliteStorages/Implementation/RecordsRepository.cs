@@ -191,5 +191,14 @@ namespace RiseDiary.Data.SqliteStorages
                 return record.RecordId;
             }
         }
+
+        public async Task<List<int>> FetchYearsList()
+        {
+            using (var connection = await _manager.GetConnection())
+            {
+                return (await connection.QueryAsync<int>(
+                    @"SELECT DISTINCT strftime('%Y', RecordDate) as Year FROM Records ORDER BY Year DESC")).ToList();
+            }
+        }
     }
 }

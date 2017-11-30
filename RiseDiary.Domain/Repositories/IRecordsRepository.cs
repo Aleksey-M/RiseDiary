@@ -82,5 +82,6 @@ namespace RiseDiary.Domain.Repositories
         Task<List<DiaryRecord>> FetchRecordsByMonth(int year, int? month = null);
         Task<int> GetMonthRecordsCount(int year, int? month=null);
         Task<DiaryRecord> GetRecordByCogitation(int cogitationId);
+        Task<List<int>> FetchYearsList();
     }
 }

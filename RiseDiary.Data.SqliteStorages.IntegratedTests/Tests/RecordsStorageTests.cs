@@ -732,5 +732,32 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
             Assert.AreEqual(matchesInRange, count);
         }
 
+        [Test]
+        public async Task FetchYearsList_With7Records_ShouldReturnUniqueYears()
+        {
+            var recStor = new RecordsRepository(GetClearBase());
+            var recs = new List<DiaryRecord>
+            {
+                new DiaryRecord { RecordDate = DateTime.Parse("2016-10-31 00:00:00") },
+                new DiaryRecord { RecordDate = DateTime.Parse("2016-10-31 00:00:00") },
+                new DiaryRecord { RecordDate = DateTime.Parse("2015-10-31 00:00:00") },
+                new DiaryRecord { RecordDate = DateTime.Parse("2014-10-31 00:00:00") },
+                new DiaryRecord { RecordDate = DateTime.Parse("2015-10-31 00:00:00") },
+                new DiaryRecord { RecordDate = DateTime.Parse("2015-10-31 00:00:00") },
+                new DiaryRecord { RecordDate = DateTime.Parse("2016-10-31 00:00:00") }
+            };
+            foreach(var rec in recs)
+            {
+                await recStor.AddRecord(rec);
+            }
+
+            List<int> result = await recStor.FetchYearsList();
+
+            Assert.NotNull(result);
+            Assert.AreEqual(3, result.Count());
+            Assert.Contains(2016, result);
+            Assert.Contains(2015, result);
+            Assert.Contains(2014, result);
+        }
     }
 }
