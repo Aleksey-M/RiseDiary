@@ -7,7 +7,7 @@
 
 <div class="row">
     <div class="col-sm-4 col-sm-offset-3">
-        <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="form-control multiselect" style="width:380px">
+        <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="form-control multiselect" style="width:380px; height:30px;">
             @foreach (var area in Model.AllAreas)
             {
                 <optgroup label="@area.AreaName">

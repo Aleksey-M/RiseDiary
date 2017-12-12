@@ -50,7 +50,8 @@ namespace RiseDiary.WebUI.Pages
                     RecordThemesIds = (await _repoFactory.RecordTypesRepository.FetchTypesForRecord(rec.RecordId)).Select(rt => rt.RecordTypeId);
 
                     AddedImages = await _repoFactory.DiaryImagesRepository.FetchImagesForRecord(rec.RecordId);
-                    NotAddedImages = (await _repoFactory.DiaryImagesRepository.FetchImageSet()).Except(AddedImages, new DiaryImageEqualityComparerById());
+                    int imagesCount = await _repoFactory.DiaryImagesRepository.GetImagesCount();
+                    NotAddedImages = (await _repoFactory.DiaryImagesRepository.FetchImageSet(0, imagesCount)).Except(AddedImages, new DiaryImageEqualityComparerById());
                 }
             }
         }

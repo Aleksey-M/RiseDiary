@@ -38,7 +38,7 @@
                 <input type="text" class="form-control" placeholder="Фильтр по названию" id="filterName" value="@Model.Filters.RecordNameFilter" />
             </th>
             <th colspan="3" style="vertical-align: middle;">
-                <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="form-control themes-select" style="width:560px">
+                <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="form-control themes-select" style="width:560px; height:30px;">
                     @foreach (var area in Model.AllAreas)
                     {
                         <optgroup label="@area.AreaName">

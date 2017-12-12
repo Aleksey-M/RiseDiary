@@ -28,6 +28,7 @@ namespace RiseDiary.WebUI
             fName = string.IsNullOrWhiteSpace(fName) ? "DefaultName" : fName;
             var path = Configuration.GetValue<string>("DataBaseFilePath");
             path = string.IsNullOrWhiteSpace(path) ? Environment.CurrentDirectory : path;
+            DailyBackups.BackupFile(path, fName);
             services.AddScoped<IRepositoriesFactory, RepositoriesFactory>(sp => new RepositoriesFactory(path, fName));
         }
 
