@@ -81,7 +81,10 @@ namespace RiseDiary.Data.SqliteStorages
         {
             using (var connection = await _manager.GetConnection())
             {
-                return (await connection.QueryAsync<DiaryRecordTypeJoined>(@"SELECT * FROM RecordTypes AS rt LEFT OUTER JOIN Areas AS ar ON rt.AreaId=ar.AreaId")).ToList();
+                return (await connection.QueryAsync<DiaryRecordTypeJoined>(@"SELECT * FROM RecordTypes AS rt LEFT OUTER JOIN Areas AS ar ON rt.AreaId=ar.AreaId"))
+                    .OrderBy(t=>t.AreaName)
+                    .ThenBy(t=>t.RecordTypeName)
+                    .ToList();
             }
         }
         public async Task<int> GetRecordTypesCount(int? areaId)
