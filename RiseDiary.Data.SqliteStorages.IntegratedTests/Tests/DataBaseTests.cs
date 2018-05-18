@@ -6,7 +6,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
 {
     [TestFixture]
     public class DataBaseTests : CleanUpTestFixtureBase
-    {        
+    {        /*
         [Test]
         public async Task GetConnection_ShouldCreateDbFile()
         {
@@ -22,6 +22,15 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
             Assert.IsNotNull(conn);
             Assert.IsTrue(File.Exists(fileNameFull));
             Assert.Pass(fileNameFull);
+        }
+        */
+        [Test]
+        public void GetConnection_ShouldCreateDbFile_ByDbContext()
+        {
+            var (context, fileName) = TestHelper.GetClearBaseAndFileName();
+
+            Assert.IsNotNull(context);
+            Assert.IsTrue(File.Exists(fileName));            
         }
     }
 }

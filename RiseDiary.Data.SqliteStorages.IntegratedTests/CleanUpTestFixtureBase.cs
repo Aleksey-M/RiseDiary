@@ -1,4 +1,9 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using NUnit.Framework;
+using RiseDiary.WebUI.Data;
+using System;
+using System.IO;
 
 namespace RiseDiary.Data.SqliteStorages.IntegratedTests
 {
@@ -7,7 +12,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [OneTimeTearDown]
         public void CleanUp()
         {
-            TestsHelper.RemoveTmpDbFiles();
+            TestHelper.RemoveTmpDbFiles();
         }
     }
 }

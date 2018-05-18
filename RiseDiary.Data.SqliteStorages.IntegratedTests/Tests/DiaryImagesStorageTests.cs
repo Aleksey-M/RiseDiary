@@ -1,10 +1,12 @@
 ﻿using NUnit.Framework;
-using RiseDiary.Domain.Model;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
+using RiseDiary.Data.SqliteStorages.IntegratedTests.DbContextAdapter;
+using RiseDiary.Data.SqliteStorages.IntegratedTests;
+using System.Linq;
+using RiseDiary.Data.SqliteStorages.IntegratedTests.TestDomain;
 
-namespace RiseDiary.Data.SqliteStorages.IntegratedTests
+namespace RiseDiary.SqliteStorages.IntegratedTests
 {
     [TestFixture]
     class DiaryImagesStorageTests : CleanUpTestFixtureBase
@@ -18,8 +20,8 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task AddImage_ShouldNotThrowException()
         {
-            var manager = TestsHelper.GetClearBase();
-            var imageStor = new DiaryImagesRepository(manager);
+            var manager = TestHelper.GetClearBase();
+            var imageStor = new DiaryImagesRepository(TestHelper.GetClearBase());
 
             int id = await imageStor.AddImage(GetTestImage(), new byte[1024*1024*25]); //new byte[] { 1, 2, 3, 4, 5 }
 
@@ -29,7 +31,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task GetImage_WithNotExistingId_ShouldReturnNull()
         {
-            var manager = TestsHelper.GetClearBase();
+            var manager = TestHelper.GetClearBase();
             var imageStor = new DiaryImagesRepository(manager);
 
             var img = await imageStor.FetchImageById(101);
@@ -40,7 +42,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task GetImage_ShouldReturnImage()
         {
-            var manager = TestsHelper.GetClearBase();
+            var manager = TestHelper.GetClearBase();
             var imageStor = new DiaryImagesRepository(manager);
             var img = GetTestImage();
 
@@ -55,7 +57,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task GetImageData_ShouldReturnImageData()
         {
-            var manager = TestsHelper.GetClearBase();
+            var manager = TestHelper.GetClearBase();
             var imageStor = new DiaryImagesRepository(manager);
             var img = GetTestImage();
 
@@ -71,7 +73,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task GetImagesCount_ShouldReturnZero()
         {
-            var manager = TestsHelper.GetClearBase();
+            var manager = TestHelper.GetClearBase();
             var imageStor = new DiaryImagesRepository(manager);
 
             int count = await imageStor.GetImagesCount();
@@ -82,7 +84,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task GetImagesCount_ShouldReturnThree()
         {
-            var manager = TestsHelper.GetClearBase();
+            var manager = TestHelper.GetClearBase();
             var imageStor = new DiaryImagesRepository(manager);
             for(int i = 0; i<3; i++)
             {
@@ -97,7 +99,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task DeleteImage_ShouldDeleteOneImage()
         {
-            var manager = TestsHelper.GetClearBase();
+            var manager = TestHelper.GetClearBase();
             var imageStor = new DiaryImagesRepository(manager);
             var ids = Enumerable.Range(0, 3).Select(async i => await imageStor.AddImage(GetTestImage(), new byte[1024 * 1024 * 10])).ToArray();
 
@@ -111,7 +113,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task UpdateImageName_ShouldUpdateImageName()
         {
-            var manager = TestsHelper.GetClearBase();
+            var manager = TestHelper.GetClearBase();
             var imageStor = new DiaryImagesRepository(manager);
             int id = await imageStor.AddImage(GetTestImage(), new byte[1024 * 1024]);
             string newName = Guid.NewGuid().ToString();
@@ -126,7 +128,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task GetImages_ShouldReturn3LastImages()
         {
-            var manager = TestsHelper.GetClearBase();
+            var manager = TestHelper.GetClearBase();
             var imageStor = new DiaryImagesRepository(manager);
             var ids = Enumerable.Range(0, 10).Select(async i => await imageStor.AddImage(GetTestImage(), new byte[1024 * 1024 * 10])).ToArray();
 

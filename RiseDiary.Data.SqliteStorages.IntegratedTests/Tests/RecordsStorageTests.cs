@@ -1,13 +1,15 @@
 ﻿using NUnit.Framework;
-using RiseDiary.Domain.Model;
-using RiseDiary.Domain.Repositories;
+using RiseDiary.Data.SqliteStorages.IntegratedTests;
+using RiseDiary.Data.SqliteStorages.IntegratedTests.DbContextAdapter;
+using RiseDiary.Data.SqliteStorages.IntegratedTests.TestDomain;
+using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static RiseDiary.Data.SqliteStorages.IntegratedTests.TestsHelper;
+using static RiseDiary.Data.SqliteStorages.IntegratedTests.TestHelper;
 
-namespace RiseDiary.Data.SqliteStorages.IntegratedTests
+namespace RiseDiary.SqliteStorages.IntegratedTests
 {
     [TestFixture]
     class RecordsStorageTests : CleanUpTestFixtureBase
@@ -66,7 +68,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
                 RecordCreateDate = DateTime.Now.AddDays(-5),
                 RecordModifyDate = DateTime.Now.AddDays(-3),
                 RecordDate = DateTime.Now.AddDays(-4),
-                RecordName = "!@#$&))*/-/-*/яяъъъыыіііїїїїххїїїйїхїцйхц",
+                RecordName = "!@#$&))* /-/-* /яяъъъыыіііїїїїххїїїйїхїцйхц",
                 RecordText = "Инфраструктура ASP.NET MVC 5 представляет собой последнюю версию веб-платформы ASP.NET от Microsoft. Она предлагает высокопродуктивную модель программирования, которая способствует построению более чистой кодовой архитектуры, обеспечивает разработку через тестирование и поддерживает повсеместную расширяемость в комбинации со всеми преимуществами ASP.NET. У инфраструктуры ASP.NET MVC есть множество преимуществ, по сравнению с классической платформой веб-разработки ASP.NET Web Forms. Компоненты ASИнфраструктура ASP.NET MVC 5 представляет собой последнюю версию веб-платформы ASP.NET от Microsoft. Она предлагает высокопродуктивную модель программирования, которая способствует построению более чистой кодовой архитектуры, обеспечивает разработку через тестирование и поддерживает повсеместную расширяемость в комбинации со всеми преимуществами ASP.NET. У инфраструктуры ASP.NET MVC есть множество преимуществ, по сравнению с классической платформой веб-разработки ASP.NET Web Forms. Компоненты ASИнфраструктура ASP.NET MVC 5 представляет собой последнюю версию веб-платформы ASP.NET от Microsoft. Она предлагает высокопродуктивную модель программирования, которая способствует построению более чистой кодовой архитектуры, обеспечивает разработку через тестирование и поддерживает повсеместную расширяемость в комбинации со всеми преимуществами ASP.NET. У инфраструктуры ASP.NET MVC есть множество преимуществ, по сравнению с классической платформой веб-разработки ASP.NET Web Forms. Компоненты ASИнфраструктура ASP.NET MVC 5 представляет собой последнюю версию веб-платформы ASP.NET от Microsoft. Она предлагает высокопродуктивную модель программирования, которая способствует построению более чистой кодовой архитектуры, обеспечивает разработку через тестирование и поддерживает повсеместную расширяемость в комбинации со всеми преимуществами ASP.NET. У инфраструктуры ASP.NET MVC есть множество преимуществ, по сравнению с классической платформой веб-разработки ASP.NET Web Forms. Компоненты AS"
             };
 
@@ -151,13 +153,13 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task GetRecordByCogitation_ShouldReturnRecord()
         {
-            var testData = GetBaseWith3RecordsAndOneCogitation();
-            var recRep = new RecordsRepository(testData.dbManager);
+            var (context, recId, cogId) = GetBaseWith3RecordsAndOneCogitation();
+            var recRep = new RecordsRepository(context);
 
-            var rec = await recRep.GetRecordByCogitation(testData.cogId);
+            var rec = await recRep.GetRecordByCogitation(cogId);
 
             Assert.NotNull(rec);
-            Assert.AreEqual(testData.recId, rec.RecordId);
+            Assert.AreEqual(recId, rec.RecordId);
         }
 
         private class DiaryRecordNameAndIdComparer : IEqualityComparer<DiaryRecord>
@@ -171,7 +173,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         public async Task FetchRecordsListFiltered_WithEmptyFilterCriterias_ShouldReturnAllPageRecords()
         {
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesList(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
 
             var pageList = await recRepos.FetchRecordsListFiltered(RecordsFilter.Empty);
 
@@ -183,7 +185,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         public async Task GetFilteredRecordsCount_WithEmptyFilterCriterias_ShouldReturnAllRecordsCount()
         {
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesList(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
 
             int recCount = await recRepos.GetFilteredRecordsCount(RecordsFilter.Empty);
 
@@ -194,7 +196,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         public async Task FetchRecordsListFiltered_WithWhiteSpaceInNameFilter_ShouldReturnAllPageRecords()
         {
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesList(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
             var filterWithWhiteSpace = new RecordsFilter { RecordNameFilter = "       " };
             var filterWithNull = new RecordsFilter { RecordNameFilter = null };
             var filterWithRmRf = new RecordsFilter { RecordNameFilter = "\r\r\n\r\n  \r  \n\n " };
@@ -215,7 +217,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         public async Task GetFilteredRecordsCount_WithWhiteSpaceInNameFilter_ShouldReturnAllRecordsCount()
         {
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesList(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
             var filterWithWhiteSpace = new RecordsFilter { RecordNameFilter = "       " };
             var filterWithNull = new RecordsFilter { RecordNameFilter = null };
             var filterWithRmRf = new RecordsFilter { RecordNameFilter = "\r\r\n\r\n  \r  \n\n " };
@@ -243,7 +245,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
                 "іїхїхїхїх'їїхїхаїіхмава",
                 "fgsgsfgs",
                 "56",
-                "*/*SearchТекстІї*01/*",
+                "* /*SearchТекстІї*01/*",
                 "врлпываорпыра",
                 "_searchТекстІї*011АРРОПРОлрффлвыа",
                 "РЛРОРЛолврфылваоф",
@@ -256,7 +258,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
                 "ывп  ыапыап   папы ап ыап ыа",
                 ".юб.б.юбс.б" };
             var testData = GetBaseWith20Records(namesList, GetDatesList(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
             var filters = new RecordsFilter { RecordNameFilter = searchName };
 
             var resPage = await recRepos.FetchRecordsListFiltered(filters);
@@ -279,7 +281,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
                 "іїхїхїхїх'їїхїхаїіхмава",
                 "fgsgsfgs",
                 "56",
-                "*/*SearchТекстІї*01/*",
+                "* /*SearchТекстІї*01/*",
                 "врлпываорпыра",
                 "_searchТекстІї*011АРРОПРОлрффлвыа",
                 "РЛРОРЛолврфылваоф",
@@ -292,7 +294,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
                 "ывп  ыапыап   папы ап ыап ыа",
                 ".юб.б.юбс.б" };
             var testData = GetBaseWith20Records(namesList, GetDatesList(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
             var filters = new RecordsFilter { RecordNameFilter = searchName };
 
             int matchesFound = await recRepos.GetFilteredRecordsCount(filters);
@@ -304,7 +306,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         public async Task FetchRecordsListFiltered_ByDate_ForBeforeLastWeek_ShouldReturn13Records()
         {
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesList(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
             var dateTo = DateTime.Now.AddDays(-8);
             var filters = new RecordsFilter { RecordDateTo = dateTo };
 
@@ -317,7 +319,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         public async Task GetFilteredRecordsCount_ByDate_ForBeforeLastWeek_ShouldReturn13()
         {
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesList(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
             var dateTo = DateTime.Now.AddDays(-7);
             int testCount = 20 - 6; /* 20 days except last week (Today date is not added)*/
             var filters = new RecordsFilter { RecordDateTo = dateTo };
@@ -331,7 +333,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         public async Task FetchRecordsListFiltered_ByDate_ForLastWeek_ShouldReturn6Records()
         {
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesList(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
             var dateFrom = DateTime.Now.AddDays(-7);
             var filters = new RecordsFilter { RecordDateFrom = dateFrom };
 
@@ -344,7 +346,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         public async Task GetFilteredRecordsCount_ByDate_ForLastWeek_ShouldReturn7()
         {
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesList(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
             var dateFrom = DateTime.Now.AddDays(-6);
             int testCount = 6; /* all records for last week, except today*/
             var filters = new RecordsFilter { RecordDateFrom = dateFrom };
@@ -358,7 +360,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         public async Task FetchRecordsListFiltered_ByDate_ForConcreteDate_ShouldReturnWeekAgoRecords()
         {
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
             var concreteDate = DateTime.Now.AddDays(-7);
             var filters = new RecordsFilter { RecordDateFrom = concreteDate, RecordDateTo = concreteDate };
 
@@ -372,7 +374,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         public async Task GetFilteredRecordsCount_ByDate_ForConcreteDate_ShouldReturn2()
         {
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
             var concreteDate = DateTime.Now.AddDays(-7);
             int testCount = 2;
             var filters = new RecordsFilter { RecordDateFrom = concreteDate, RecordDateTo = concreteDate };
@@ -397,7 +399,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
                 "іїхїхїхїх'їїхїхаїіхмава",
                 "fgsgsfgs",
                 "56",
-                "*/*SearchТекстІї*01/*",//<--
+                "* /*SearchТекстІї*01/*",//<--
                 "врлпываорпыра",
                 "_searchТекстІї*011АРРОПРОлрффлвыа", //<--
                 "РЛРОРЛолврфылваоф",
@@ -410,11 +412,13 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
                 "ывп  ыапыап   папы ап ыап ыа",
                 ".юб.б.юбс.б" };
             var testData = GetBaseWith20Records(namesList, GetDatesList(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
-            var filters = new RecordsFilter {
+            var recRepos = new RecordsRepository(testData.context);
+            var filters = new RecordsFilter
+            {
                 RecordNameFilter = searchName,
                 RecordDateFrom = dateFrom,
-                RecordDateTo = dateTo };
+                RecordDateTo = dateTo
+            };
 
             var resList = await recRepos.FetchRecordsListFiltered(filters);
 
@@ -440,7 +444,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
                 "іїхїхїхїх'їїхїхаїіхмава",
                 "fgsgsfgs",
                 "56",
-                "*/*SearchТекстІї*01/*",//<--
+                "* /*SearchТекстІї*01/*",//<--
                 "врлпываорпыра",
                 "_searchТекстІї*011АРРОПРОлрффлвыа", //<--
                 "РЛРОРЛолврфылваоф",
@@ -453,7 +457,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
                 "ывп  ыапыап   папы ап ыап ыа",
                 ".юб.б.юбс.б" };
             var testData = GetBaseWith20Records(namesList, GetDatesList(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
             var filters = new RecordsFilter
             {
                 RecordNameFilter = searchName,
@@ -470,7 +474,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         public async Task FetchRecordsListFiltered_WithNotExistingTypeId_ShouldReturnEmptyList()
         {
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
             var filter = new RecordsFilter();
             filter.AddRecordTypeId(11);
 
@@ -483,7 +487,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         public async Task GetFilteredRecordsCount_WithNotExistingTypeId_ShouldReturn0()
         {
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recRepos = new RecordsRepository(testData.context);
             var filter = new RecordsFilter();
             filter.AddRecordTypeId(11);
 
@@ -491,74 +495,76 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
 
             Assert.Zero(count);
         }
-
-        [Test]        
+                
+        [Test]
         public async Task FetchRecordsListFiltered_ForExistingTypeFilter_ShouldReturnAllMatches()
         {
-            var recTypes = Enumerable.Range(0, 20).Select(i => new int[0]).ToArray();
-            int typeId1 = 10;
-            int typeId2 = 22;
-            recTypes[3] = new int[] { typeId1 };
-            recTypes[5] = new int[] { typeId1, typeId2 };
-            recTypes[11] = new int[] { typeId1 };
-            recTypes[12] = new int[] { typeId1 };
-            recTypes[13] = new int[] { typeId1 };
-            recTypes[17] = new int[] { typeId2};
-            recTypes[19] = new int[] { typeId1 };
-
-            var recNames = GetNumberList(20);
-            var testData = GetBaseWith20RecordsAndRecordTypes(recNames, GetDatesList(20), recTypes);
-            var recRepos = new RecordsRepository(testData.dbManager);
+            var recTypes = new Dictionary<string, List<string>>() {
+                { "03", new List<string>() { "10" } },
+                { "05", new List<string>() { "10", "20" } },
+                { "11", new List<string>() { "10" } },
+                { "12", new List<string>() { "10" } },
+                { "13", new List<string>() { "10" } },
+                { "17", new List<string>() { "20" } },
+                { "19", new List<string>() { "10" } }
+            };
+            var (context, addedRecords, addedThemes) = GetContextWith30ThemesAnd20Records(GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            int typeId1 = context.Themes.First(t=>int.Parse(t.ThemeName) == 10).Id;
+            int typeId2 = context.Themes.First(t => int.Parse(t.ThemeName) == 20).Id;                            
+            BindRecordsWithThemes(context, recTypes);
+            var recRepos = new RecordsRepository(context);
             var filter = new RecordsFilter();
 
             filter.AddRecordTypeId(typeId1);
             var result = await recRepos.FetchRecordsListFiltered(filter);
 
             Assert.IsNotEmpty(result);
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(3)));
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(5)));
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(11)));
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(12)));
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(19)));
+            Assert.IsTrue(HasRecordWithIntName(result, 3));
+            Assert.IsTrue(HasRecordWithIntName(result, 5));
+            Assert.IsTrue(HasRecordWithIntName(result, 11));
+            Assert.IsTrue(HasRecordWithIntName(result, 12));
+            Assert.IsTrue(HasRecordWithIntName(result, 19));
 
             filter.AddRecordTypeId(typeId2);
             filter.RemoveRecordTypeId(typeId1);
             result = await recRepos.FetchRecordsListFiltered(filter);
 
             Assert.IsNotEmpty(result);
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(5)));
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(17)));
+            Assert.IsTrue(HasRecordWithIntName(result, 5));
+            Assert.IsTrue(HasRecordWithIntName(result, 17));
 
             filter.AddRecordTypeId(typeId1);
             result = await recRepos.FetchRecordsListFiltered(filter);
 
             Assert.IsNotEmpty(result);
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(3)));
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(5)));
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(11)));
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(12)));
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(17)));
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(19)));
+            Assert.IsTrue(HasRecordWithIntName(result, 3));
+            Assert.IsTrue(HasRecordWithIntName(result, 5));
+            Assert.IsTrue(HasRecordWithIntName(result, 11));
+            Assert.IsTrue(HasRecordWithIntName(result, 12));
+            Assert.IsTrue(HasRecordWithIntName(result, 19));
+            Assert.IsTrue(HasRecordWithIntName(result, 17));
         }
 
         [Test]
         public async Task GetFilteredRecordsCount_ForExistingTypeFilter_ShouldReturnAllMatchesCount()
         {
-            var recTypes = Enumerable.Range(0, 20).Select(i => new int[0]).ToArray();
-            int typeId1 = 10;
-            int typeId2 = 22;
-            recTypes[3] = new int[] { typeId1 };
-            recTypes[5] = new int[] { typeId1, typeId2 };
-            recTypes[11] = new int[] { typeId1 };
-            recTypes[12] = new int[] { typeId1 };
-            recTypes[17] = new int[] { typeId2 };
-            recTypes[19] = new int[] { typeId1 };
+            var recTypes = new Dictionary<string, List<string>>() {
+                { "03", new List<string>() { "10" } },
+                { "05", new List<string>() { "10", "20" } },
+                { "11", new List<string>() { "10" } },
+                { "12", new List<string>() { "10" } },
+                { "17", new List<string>() { "20" } },
+                { "19", new List<string>() { "10" } }
+            };
+            var (context, addedRecords, addedThemes) = GetContextWith30ThemesAnd20Records(GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            int typeId1 = context.Themes.First(t => int.Parse(t.ThemeName) == 10).Id;
+            int typeId2 = context.Themes.First(t => int.Parse(t.ThemeName) == 20).Id;
+            BindRecordsWithThemes(context, recTypes);
+            var recRepos = new RecordsRepository(context);
+            var filter = new RecordsFilter();
             int matchesCount1 = 5;
             int matchesCount2 = 2;
             int matchesCountAll = 6;
-            var testData = GetBaseWith20RecordsAndRecordTypes(GetNumberList(20), GetDatesList(20), recTypes);
-            var recRepos = new RecordsRepository(testData.dbManager);
-            var filter = new RecordsFilter();
 
             filter.AddRecordTypeId(typeId1);
             int count = await recRepos.GetFilteredRecordsCount(filter);
@@ -580,22 +586,22 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task FetchRecordsListFiltered_ForDateAndType()
         {
-            var recTypes = Enumerable.Range(0, 20).Select(i => new int[0]).ToArray();
-            int typeId1 = 10;
-            int typeId2 = 22;
-            recTypes[4] = new int[] { typeId1 };
-            recTypes[5] = new int[] { typeId1, typeId2 };
-            recTypes[7] = new int[] { typeId1 };
-            recTypes[9] = new int[] { typeId1 };
-            recTypes[10] = new int[] { typeId1 };
-            recTypes[17] = new int[] { typeId2 };
-            recTypes[19] = new int[] { typeId1 };
-
-            var recNames = GetNumberList(20);
-            var testData = GetBaseWith20RecordsAndRecordTypes(recNames, GetDatesList(20), recTypes);
+            var recTypes = new Dictionary<string, List<string>>() {
+                { "04", new List<string>() { "10" } },
+                { "05", new List<string>() { "10", "20" } },
+                { "07", new List<string>() { "10" } },
+                { "09", new List<string>() { "10" } },
+                { "10", new List<string>() { "10" } },
+                { "17", new List<string>() { "20" } },
+                { "19", new List<string>() { "10" } }
+            };
+            var (context, addedRecords, addedThemes) = GetContextWith30ThemesAnd20Records(GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            int typeId1 = context.Themes.First(t => int.Parse(t.ThemeName) == 10).Id;
+            int typeId2 = context.Themes.First(t => int.Parse(t.ThemeName) == 20).Id;
+            BindRecordsWithThemes(context, recTypes);
+            var recRepos = new RecordsRepository(context);
             var dateFrom = DateTime.Now.AddDays(-10).Date;
             var dateTo = DateTime.Now.AddDays(-5).Date;
-            var recRepos = new RecordsRepository(testData.dbManager);
             var filter = new RecordsFilter { RecordDateFrom = dateFrom, RecordDateTo = dateTo };
             filter.AddRecordTypeId(typeId1);
 
@@ -603,134 +609,141 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
 
             Assert.IsNotEmpty(result);
             Assert.True(result.TrueForAll(rec => rec.RecordDate >= dateFrom && rec.RecordDate <= dateTo), "Dates of records is not correct");
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(5)));
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(7)));
-            Assert.IsTrue(result.Any(rec => rec.RecordName == recNames.ElementAt(9)));
+            Assert.IsTrue(HasRecordWithIntName(result, 5));
+            Assert.IsTrue(HasRecordWithIntName(result, 7));
+            Assert.IsTrue(HasRecordWithIntName(result, 9));
+
+            filter.AddRecordTypeId(typeId2);
+            filter.RemoveRecordTypeId(typeId1);
+
+            result = await recRepos.FetchRecordsListFiltered(filter);
+
+            Assert.IsTrue(HasRecordWithIntName(result, 5));
         }
 
         [Test]
         public async Task GetFilteredRecordsCount_ForDateAndType()
         {
-            var recTypes = Enumerable.Range(0, 20).Select(i => new int[0]).ToArray();
-            int typeId1 = 10;
-            int typeId2 = 22;
-            recTypes[4] = new int[] { typeId1 };
-            recTypes[5] = new int[] { typeId1, typeId2 };
-            recTypes[7] = new int[] { typeId1 };
-            recTypes[8] = new int[] { typeId2 };
-            recTypes[10] = new int[] { typeId1 };
-            recTypes[11] = new int[] { typeId1 };
-            recTypes[19] = new int[] { typeId1 };
-            int matches = 3;
-
-            var recNames = GetNumberList(20);
-            var testData = GetBaseWith20RecordsAndRecordTypes(recNames, GetDatesList(20), recTypes);
+            var recTypes = new Dictionary<string, List<string>>() {
+                { "04", new List<string>() { "10" } },
+                { "05", new List<string>() { "10", "20" } },
+                { "07", new List<string>() { "10" } },
+                { "08", new List<string>() { "20" } },
+                { "10", new List<string>() { "10" } },
+                { "11", new List<string>() { "10" } },
+                { "19", new List<string>() { "10" } }
+            };
+            var (context, addedRecords, addedThemes) = GetContextWith30ThemesAnd20Records(GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            int typeId1 = context.Themes.First(t => int.Parse(t.ThemeName) == 10).Id;
+            int typeId2 = context.Themes.First(t => int.Parse(t.ThemeName) == 20).Id;
+            BindRecordsWithThemes(context, recTypes);
+            var recRepos = new RecordsRepository(context);
             var dateFrom = DateTime.Now.AddDays(-10).Date;
             var dateTo = DateTime.Now.AddDays(-5).Date;
-            var recRepos = new RecordsRepository(testData.dbManager);
             var filter = new RecordsFilter { RecordDateFrom = dateFrom, RecordDateTo = dateTo };
             filter.AddRecordTypeId(typeId1);
+            int expectedMatches = 3;
 
             int count = await recRepos.GetFilteredRecordsCount(filter);
 
-            Assert.AreEqual(matches, count);
+            Assert.AreEqual(expectedMatches, count);
         }
 
-        [Test]        
-        public async Task FetchRecordsListFiltered_ForNameAndType()
-        {
-            var recTypes = Enumerable.Range(0, 20).Select(i => new int[0]).ToArray();
-            int typeId1 = 10;
-            int typeId2 = 22;
-            recTypes[4] = new int[] { typeId1 };
-            recTypes[7] = new int[] { typeId1, typeId2 };
-            recTypes[8] = new int[] { typeId2 };
-            recTypes[10] = new int[] { typeId1 };
-            recTypes[11] = new int[] { typeId2 };
-            recTypes[17] = new int[] { typeId2 };
-            recTypes[19] = new int[] { typeId1 };
-            string searchName = "SearchТекстІї*01";
-            
-            var namesList = new[] {
-                "ghorgh",
-                "893472983 SearchТекстІї*01",
-                "_)+_)+_)JK",
-                "kjgh  afkgj lsfg g sjg",
-                "прлапрыл",
-                "іїхїхїхїх'їїхїхаїіхмава",
-                "fgsgsfgs",
-                "56SearchТекстІї*01",
-                "*/*SearchТекстІї*01/*",//<--
-                "врлпываорпыра",
-                "_searchТекстІї*011АРРОПРОлрффлвыа", //<--
-                "РЛРОРЛолврфылваоф SearchТекстІї*01",
-                "жлажфлывлаДЛДЛО",
-                "321321230",
-                ",0,0,0,4уыы",
-                "название",
-                "фвафыа",
-                "№%№SearchТекстІї*01%№!::!;%№:%; ",
-                "ывп  ыапыап   папы ап ыап ыа",
-                ".юб.б.юбс.б" };
-            var testData = GetBaseWith20RecordsAndRecordTypes(namesList, GetDatesList(20), recTypes);
-            var recRepos = new RecordsRepository(testData.dbManager);
-            var filter = new RecordsFilter { RecordNameFilter = searchName };
-            filter.AddRecordTypeId(typeId1);
+        //[Test]
+        //public async Task FetchRecordsListFiltered_ForNameAndType()
+        //{
+        //    var recTypes = Enumerable.Range(0, 20).Select(i => new int[0]).ToArray();
+        //    int typeId1 = 10;
+        //    int typeId2 = 22;
+        //    recTypes[4] = new int[] { typeId1 };
+        //    recTypes[7] = new int[] { typeId1, typeId2 };
+        //    recTypes[8] = new int[] { typeId2 };
+        //    recTypes[10] = new int[] { typeId1 };
+        //    recTypes[11] = new int[] { typeId2 };
+        //    recTypes[17] = new int[] { typeId2 };
+        //    recTypes[19] = new int[] { typeId1 };
+        //    string searchName = "SearchТекстІї*01";
 
-            var result = await recRepos.FetchRecordsListFiltered(filter);
+        //    var namesList = new[] {
+        //        "ghorgh",
+        //        "893472983 SearchТекстІї*01",
+        //        "_)+_)+_)JK",
+        //        "kjgh  afkgj lsfg g sjg",
+        //        "прлапрыл",
+        //        "іїхїхїхїх'їїхїхаїіхмава",
+        //        "fgsgsfgs",
+        //        "56SearchТекстІї*01",
+        //        "* /*SearchТекстІї*01/*",//<--
+        //        "врлпываорпыра",
+        //        "_searchТекстІї*011АРРОПРОлрффлвыа", //<--
+        //        "РЛРОРЛолврфылваоф SearchТекстІї*01",
+        //        "жлажфлывлаДЛДЛО",
+        //        "321321230",
+        //        ",0,0,0,4уыы",
+        //        "название",
+        //        "фвафыа",
+        //        "№%№SearchТекстІї*01%№!::!;%№:%; ",
+        //        "ывп  ыапыап   папы ап ыап ыа",
+        //        ".юб.б.юбс.б" };
+        //    var testData = GetBaseWith20RecordsAndRecordTypes(namesList, GetDatesList(20), recTypes);
+        //    var recRepos = new RecordsRepository(testData.context);
+        //    var filter = new RecordsFilter { RecordNameFilter = searchName };
+        //    filter.AddRecordTypeId(typeId1);
 
-            Assert.IsNotEmpty(result);
-            Assert.True(result[0].RecordName.IndexOf(searchName, StringComparison.CurrentCultureIgnoreCase) != -1);
-            Assert.True(result[1].RecordName.IndexOf(searchName, StringComparison.CurrentCultureIgnoreCase) != -1);
-        }
+        //    var result = await recRepos.FetchRecordsListFiltered(filter);
 
-        [Test]        
-        public async Task GetFilteredRecordsCount_ForNameAndType()
-        {
-            var recTypes = Enumerable.Range(0, 20).Select(i => new int[0]).ToArray();
-            int typeId1 = 10;
-            int typeId2 = 22;
-            recTypes[4] = new int[] { typeId1 };
-            recTypes[7] = new int[] { typeId1, typeId2 };
-            recTypes[8] = new int[] { typeId2 };
-            recTypes[10] = new int[] { typeId1 };
-            recTypes[11] = new int[] { typeId2 };
-            recTypes[17] = new int[] { typeId2 };
-            recTypes[19] = new int[] { typeId1 };
-            string searchName = "SearchТекстІї*01";
-            const int matchesInRange = 2;
-            var namesList = new[] {
-                "ghorgh",
-                "893472983 SearchТекстІї*01",
-                "_)+_)+_)JK",
-                "kjgh  afkgj lsfg g sjg",
-                "прлапрыл",
-                "іїхїхїхїх'їїхїхаїіхмава",
-                "fgsgsfgs",
-                "56SearchТекстІї*01",
-                "*/*SearchТекстІї*01/*",//<--
-                "врлпываорпыра",
-                "_searchТекстІї*011АРРОПРОлрффлвыа", //<--
-                "РЛРОРЛолврфылваоф SearchТекстІї*01",
-                "жлажфлывлаДЛДЛО",
-                "321321230",
-                ",0,0,0,4уыы",
-                "название",
-                "фвафыа",
-                "№%№SearchТекстІї*01%№!::!;%№:%; ",
-                "ывп  ыапыап   папы ап ыап ыа",
-                ".юб.б.юбс.б" };
-            var dateFrom = DateTime.Now.AddDays(-10).Date;
-            var dateTo = DateTime.Now.AddDays(-5).Date;
-            var testData = GetBaseWith20RecordsAndRecordTypes(namesList, GetDatesList(20), recTypes);
-            var recRepos = new RecordsRepository(testData.dbManager);
-            var filter = new RecordsFilter { RecordNameFilter = searchName };
-            filter.AddRecordTypeId(typeId1);
+        //    Assert.IsNotEmpty(result);
+        //    Assert.True(result[0].RecordName.IndexOf(searchName, StringComparison.CurrentCultureIgnoreCase) != -1);
+        //    Assert.True(result[1].RecordName.IndexOf(searchName, StringComparison.CurrentCultureIgnoreCase) != -1);
+        //}
 
-            int count = await recRepos.GetFilteredRecordsCount(filter);
+        //[Test]
+        //public async Task GetFilteredRecordsCount_ForNameAndType()
+        //{
+        //    var recTypes = Enumerable.Range(0, 20).Select(i => new int[0]).ToArray();
+        //    int typeId1 = 10;
+        //    int typeId2 = 22;
+        //    recTypes[4] = new int[] { typeId1 };
+        //    recTypes[7] = new int[] { typeId1, typeId2 };
+        //    recTypes[8] = new int[] { typeId2 };
+        //    recTypes[10] = new int[] { typeId1 };
+        //    recTypes[11] = new int[] { typeId2 };
+        //    recTypes[17] = new int[] { typeId2 };
+        //    recTypes[19] = new int[] { typeId1 };
+        //    string searchName = "SearchТекстІї*01";
+        //    const int matchesInRange = 2;
+        //    var namesList = new[] {
+        //        "ghorgh",
+        //        "893472983 SearchТекстІї*01",
+        //        "_)+_)+_)JK",
+        //        "kjgh  afkgj lsfg g sjg",
+        //        "прлапрыл",
+        //        "іїхїхїхїх'їїхїхаїіхмава",
+        //        "fgsgsfgs",
+        //        "56SearchТекстІї*01",
+        //        "* /*SearchТекстІї*01/*",//<--
+        //        "врлпываорпыра",
+        //        "_searchТекстІї*011АРРОПРОлрффлвыа", //<--
+        //        "РЛРОРЛолврфылваоф SearchТекстІї*01",
+        //        "жлажфлывлаДЛДЛО",
+        //        "321321230",
+        //        ",0,0,0,4уыы",
+        //        "название",
+        //        "фвафыа",
+        //        "№%№SearchТекстІї*01%№!::!;%№:%; ",
+        //        "ывп  ыапыап   папы ап ыап ыа",
+        //        ".юб.б.юбс.б" };
+        //    var dateFrom = DateTime.Now.AddDays(-10).Date;
+        //    var dateTo = DateTime.Now.AddDays(-5).Date;
+        //    var testData = GetBaseWith20RecordsAndRecordTypes(namesList, GetDatesList(20), recTypes);
+        //    var recRepos = new RecordsRepository(testData.context);
+        //    var filter = new RecordsFilter { RecordNameFilter = searchName };
+        //    filter.AddRecordTypeId(typeId1);
 
-            Assert.AreEqual(matchesInRange, count);
-        }
+        //    int count = await recRepos.GetFilteredRecordsCount(filter);
+
+        //    Assert.AreEqual(matchesInRange, count);
+        //}
 
         [Test]
         public async Task FetchYearsList_With7Records_ShouldReturnUniqueYears()
@@ -746,7 +759,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
                 new DiaryRecord { RecordDate = DateTime.Parse("2015-10-31 00:00:00") },
                 new DiaryRecord { RecordDate = DateTime.Parse("2016-10-31 00:00:00") }
             };
-            foreach(var rec in recs)
+            foreach (var rec in recs)
             {
                 await recStor.AddRecord(rec);
             }

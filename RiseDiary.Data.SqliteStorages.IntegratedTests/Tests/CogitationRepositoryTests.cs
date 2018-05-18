@@ -1,9 +1,11 @@
 ﻿using NUnit.Framework;
-using RiseDiary.Domain.Model;
+using RiseDiary.Data.SqliteStorages.IntegratedTests;
+using RiseDiary.Data.SqliteStorages.IntegratedTests.DbContextAdapter;
+using RiseDiary.Data.SqliteStorages.IntegratedTests.TestDomain;
 using System;
 using System.Threading.Tasks;
 
-namespace RiseDiary.Data.SqliteStorages.IntegratedTests.Tests
+namespace RiseDiary.SqliteStorages.IntegratedTests
 {
     [TestFixture]
     public class CogitationRepositoryTests : CleanUpTestFixtureBase
@@ -11,7 +13,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests.Tests
         [Test]
         public async Task AddCogitation_ShouldNotThrowException()
         {
-            var cogRepo = new CogitationRepository(TestsHelper.GetClearBase());
+            var cogRepo = new CogitationRepository(TestHelper.GetClearBase());
             var cogitation = new Cogitation { CogitationDate = DateTime.Now, RecordId = 101, Text = @"qrhpqfuшвгарщшйрпйшга  йщрайзца" };
 
             int id = await cogRepo.AddCogitation(cogitation);

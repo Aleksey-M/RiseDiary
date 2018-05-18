@@ -1,10 +1,10 @@
 ﻿using NUnit.Framework;
-using RiseDiary.Domain.Repositories;
+using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RiseDiary.Data.SqliteStorages.IntegratedTests.Tests
+namespace RiseDiary.SqliteStorages.IntegratedTests
 {
     [TestFixture]
     class RecordsFilterTests
@@ -39,9 +39,9 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests.Tests
             recFilter.AddRecordTypeId(105);
             recFilter.AddRecordTypeId(106);
 
-            Assert.AreEqual(2, recFilter.RecordTypeIds.Count);
-            Assert.IsTrue(recFilter.RecordTypeIds.Contains(105));
-            Assert.IsTrue(recFilter.RecordTypeIds.Contains(106));
+            Assert.AreEqual(2, recFilter.RecordThemeIds.Count);
+            Assert.IsTrue(recFilter.RecordThemeIds.Contains(105));
+            Assert.IsTrue(recFilter.RecordThemeIds.Contains(106));
         }
 
         [Test]
@@ -52,8 +52,8 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests.Tests
             recFilter.AddRecordTypeId(105);
             recFilter.AddRecordTypeId(105);// same id
 
-            Assert.AreEqual(1, recFilter.RecordTypeIds.Count);
-            Assert.AreEqual(105, recFilter.RecordTypeIds[0]);
+            Assert.AreEqual(1, recFilter.RecordThemeIds.Count);
+            Assert.AreEqual(105, recFilter.RecordThemeIds[0]);
         }
 
         [Test]
@@ -66,9 +66,9 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests.Tests
             recFilter.AddRecordTypeId(101);
             recFilter.AddRecordTypeId(recList);
 
-            Assert.AreEqual(recList.Count(), recFilter.RecordTypeIds.Count);
-            Assert.IsTrue(recFilter.RecordTypeIds.All(i => recList.Contains(i)));
-            Assert.IsTrue(recList.All(i => recFilter.RecordTypeIds.Contains(i)));
+            Assert.AreEqual(recList.Count(), recFilter.RecordThemeIds.Count);
+            Assert.IsTrue(recFilter.RecordThemeIds.All(i => recList.Contains(i)));
+            Assert.IsTrue(recList.All(i => recFilter.RecordThemeIds.Contains(i)));
         }
 
         [Test]
@@ -79,8 +79,8 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests.Tests
 
             recFilter.RemoveRecordTypeId(101);
 
-            Assert.AreEqual(1, recFilter.RecordTypeIds.Count);
-            Assert.AreEqual(105, recFilter.RecordTypeIds[0]);
+            Assert.AreEqual(1, recFilter.RecordThemeIds.Count);
+            Assert.AreEqual(105, recFilter.RecordThemeIds[0]);
         }
 
         [Test]
@@ -91,7 +91,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests.Tests
 
             recFilter.RemoveRecordTypeId(105);
 
-            Assert.AreEqual(0, recFilter.RecordTypeIds.Count);
+            Assert.AreEqual(0, recFilter.RecordThemeIds.Count);
         }
 
         [Test]
@@ -107,10 +107,10 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests.Tests
             recList.Add(111);
             recFilter.RemoveRecordTypeId(recList);
 
-            Assert.AreEqual(3, recFilter.RecordTypeIds.Count);
-            Assert.IsTrue(recFilter.RecordTypeIds.Contains(103));
-            Assert.IsTrue(recFilter.RecordTypeIds.Contains(99));
-            Assert.IsTrue(recFilter.RecordTypeIds.Contains(108));
+            Assert.AreEqual(3, recFilter.RecordThemeIds.Count);
+            Assert.IsTrue(recFilter.RecordThemeIds.Contains(103));
+            Assert.IsTrue(recFilter.RecordThemeIds.Contains(99));
+            Assert.IsTrue(recFilter.RecordThemeIds.Contains(108));
         }
 
         [Test]

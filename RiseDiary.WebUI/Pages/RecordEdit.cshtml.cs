@@ -7,7 +7,6 @@ using RiseDiary.Domain.Repositories;
 using Microsoft.Extensions.Logging;
 using RiseDiary.Domain.Model;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace RiseDiary.WebUI.Pages
 {

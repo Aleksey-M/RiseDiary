@@ -1,10 +1,12 @@
 ﻿using NUnit.Framework;
-using RiseDiary.Domain.Model;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using RiseDiary.Data.SqliteStorages.IntegratedTests.DbContextAdapter;
+using RiseDiary.Data.SqliteStorages.IntegratedTests;
+using RiseDiary.Data.SqliteStorages.IntegratedTests.TestDomain;
 
-namespace RiseDiary.Data.SqliteStorages.IntegratedTests
+namespace RiseDiary.SqliteStorages.IntegratedTests
 {
     [TestFixture]
     class AreasStorageTests : CleanUpTestFixtureBase
@@ -12,17 +14,17 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task AddArea_ShouldNotThrowException()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
             
             int newId = await areaStor.AddArea(@"New Area ""!@#$%^''""&*()_+,.<><>?//[]||\\апрорпывоаъъЇЇііі.єєєйй");
 
             Assert.AreEqual(1, newId);
         }
-
+        
         [Test]
         public async Task AddSeveralAreas_ShouldReturnDifferentIds()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
 
             int Id1 = await areaStor.AddArea("New Area 1");
             int Id2 = await areaStor.AddArea("New Area 2");
@@ -36,7 +38,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public void AddArea_WithNullParameter_ShouldThrowArgumentException()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
 
             int id;
             Assert.ThrowsAsync<ArgumentException>(async () => id = await areaStor.AddArea(null));
@@ -45,18 +47,18 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public void AddArea_WithEmptyParameter_ShouldThrowArgumentException()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
 
             int id;
             Assert.ThrowsAsync<ArgumentException>(async () => id = await areaStor.AddArea(""));
             Assert.ThrowsAsync<ArgumentException>(async () => id = await areaStor.AddArea(" "));
             Assert.ThrowsAsync<ArgumentException>(async () => id = await areaStor.AddArea("   "));            
         }
-
+        
         [Test]
         public async Task GetAreasCount_ShouldReturnZero()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
 
             int count = await areaStor.GetAreasCount();
 
@@ -66,7 +68,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task GetAreasCount_ShouldReturn3()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
 
             await areaStor.AddArea("New Area 1");
             await areaStor.AddArea("New Area 2");
@@ -79,7 +81,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task GetArea_WithNotExistingId_ShouldReturnNull()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
 
             var area = await areaStor.FetchAreaById(100);
 
@@ -89,7 +91,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task GetArea_ShouldReturnAreas()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
             var areasData = new Dictionary<string, int>
             {
                 { @"""_)(*&^%$#@!фівраХЇЇїіййєєє", await areaStor.AddArea(@"""_)(*&^%$#@!фівраХЇЇїіййєєє") },
@@ -106,7 +108,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task GetAreas_ShouldReturnEmptyList()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
 
             var list = await areaStor.FetchAllAreas();
 
@@ -117,7 +119,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task GetAreas_ShouldReturnListWith3Areas()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
             await areaStor.AddArea("New Area 1");
             await areaStor.AddArea("New Area 2");
             await areaStor.AddArea("New Area 3");
@@ -131,7 +133,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public void UpdateArea_WithNotExistingId_ShouldThrowArgumentException()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
             var area = new DiaryArea { AreaId = 7, AreaName = "not existing area" };
 
             int id;
@@ -141,7 +143,7 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task UpdateArea_ShouldUpdateAreaName()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
             int id = await areaStor.AddArea("New Area 1");
             var area = await areaStor.FetchAreaById(id);
 
@@ -156,16 +158,16 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
         [Test]
         public async Task CanDeleteArea_ShouldReturnTrue()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
             int id = await areaStor.AddArea("New Area 1");
 
             Assert.IsTrue(await areaStor.CanDeleteArea(id));
         }
-
+        
         [Test]
         public async Task CanDeleteArea_ShouldReturnFalse()
         {
-            var mngr = TestsHelper.GetClearBase();
+            var mngr = TestHelper.GetClearBase();
             var areaStor = new AreasRepository(mngr);
             var typesStor = new RecordTypesRepository(mngr);
             
@@ -174,18 +176,18 @@ namespace RiseDiary.Data.SqliteStorages.IntegratedTests
 
             Assert.IsFalse(await areaStor.CanDeleteArea(areaId));
         }
-
+        
         [Test]
         public async Task DeleteArea_WithNotExistingId_ShouldNotThrowException()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
             await areaStor.DeleteArea(150);
         }
 
         [Test]
         public async Task DeleteArea_ShouldDeleteArea()
         {
-            var areaStor = new AreasRepository(TestsHelper.GetClearBase());
+            var areaStor = new AreasRepository(TestHelper.GetClearBase());
             int id = await areaStor.AddArea("New Area 1");
 
             await areaStor.DeleteArea(id);
