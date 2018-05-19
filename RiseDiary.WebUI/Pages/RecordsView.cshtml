@@ -39,18 +39,18 @@
             </th>
             <th colspan="3" style="vertical-align: middle;">                
                     <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="multiselect" style="width:560px; height:30px;">
-                        @foreach (var area in Model.AllAreas)
+                        @foreach (var scope in Model.AllScopes)
                         {
-                            <optgroup label="@area.AreaName">
-                                @foreach (var theme in Model.AllTypes.Where(t => t.AreaId == area.AreaId))
+                            <optgroup label="@scope.ScopeName">
+                                @foreach (var theme in Model.AllThemes.Where(t => t.ScopeId == scope.Id))
                                 {
-                                    @if (Model.SelectedThemes.Contains(theme.RecordTypeId))
+                                    @if (Model.SelectedThemes.Contains(theme.Id))
                                     {
-                                        <option selected="selected" value="@theme.RecordTypeId">@theme.RecordTypeName</option>
+                                        <option selected="selected" value="@theme.Id">@theme.ThemeName</option>
                                     }
                                     else
                                     {
-                                        <option value="@theme.RecordTypeId">@theme.RecordTypeName</option>
+                                        <option value="@theme.Id">@theme.ThemeName</option>
                                     }
                                 }
                             </optgroup>
@@ -66,13 +66,13 @@
         @foreach (var rec in Model.Records)
         {
             <tr>
-                <td>@rec.RecordDate.ToString("yyyy.MM.dd")</td>
+                <td>@rec.Date.ToString("yyyy.MM.dd")</td>
                 <td>@rec.RecordNameDisplay</td>
                 <td>@rec.RecordTextShort</td>
-                <td>@rec.RecordCreateDate.ToString("G")</td>
-                <td>@rec.RecordModifyDate.ToString("G")</td>
-                <td><a asp-page="RecordEdit" asp-route-recordId="@rec.RecordId">Edit</a></td>
-                <td><a asp-page="RecordView" asp-route-recordId="@rec.RecordId">View</a></td>
+                <td>@rec.CreateDate.ToString("G")</td>
+                <td>@rec.ModifyDate.ToString("G")</td>
+                <td><a asp-page="RecordEdit" asp-route-recordId="@rec.Id">Edit</a></td>
+                <td><a asp-page="RecordView" asp-route-recordId="@rec.Id">View</a></td>
             </tr>
         }
     </tbody>

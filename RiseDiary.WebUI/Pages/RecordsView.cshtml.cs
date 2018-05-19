@@ -1,20 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using RiseDiary.Domain.Repositories;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
-using RiseDiary.Domain.Model;
 using System.Collections.Generic;
 using System;
+using RiseDiary.WebUI.Data;
+using RiseDiary.Model;
 
 namespace RiseDiary.WebUI.Pages
 {
     public class RecordsViewModel : PageModel
     {
-        private readonly IRepositoriesFactory _repoFactory;
+        private readonly DiaryDbContext _context;
         private readonly ILogger<RecordsViewModel> _logger;
-        public RecordsViewModel(IRepositoriesFactory factory, ILogger<RecordsViewModel> logger)
+        public RecordsViewModel(DiaryDbContext context, ILogger<RecordsViewModel> logger)
         {
-            _repoFactory = factory;
+            _context = context;
             _logger = logger;
         }
 
@@ -22,18 +22,18 @@ namespace RiseDiary.WebUI.Pages
         public RecordsFilter Filters { get; set; } = RecordsFilter.Empty;
         public int RecordsCount { get; set; }
         public int PagesCount { get; set; } = 1;
-        public List<DiaryArea> AllAreas { get; set; }
-        public List<DiaryRecordTypeJoined> AllTypes { get; set; }
+        public List<DiaryScope> AllScopes { get; set; }
+        public List<DiaryThemeJoined> AllThemes { get; set; }
         public int[] SelectedThemes { get; set; } = new int[0];
 
         private async Task UpdatePageState()
         {
-            RecordsCount = await _repoFactory.RecordsRepository.GetFilteredRecordsCount(Filters);
+            RecordsCount = await _context.GetFilteredRecordsCount(Filters);
             int pagesCount = Convert.ToInt32( Math.Ceiling((float)RecordsCount / Filters.PageSize));
             if (Filters.PageNo >= pagesCount) Filters.PageNo = pagesCount-1;
-            Records = await _repoFactory.RecordsRepository.FetchRecordsListFiltered(Filters);
-            AllAreas = await _repoFactory.AreasRepository.FetchAllAreas();
-            AllTypes = await _repoFactory.RecordTypesRepository.FetchRecordTypesWithAreas();
+            Records = await _context.FetchRecordsListFiltered(Filters);
+            AllScopes = await _context.FetchAllScopes();
+            AllThemes = await _context.FetchThemesWithScopes();
         }
 
         public async Task OnGetAsync()
@@ -46,7 +46,7 @@ namespace RiseDiary.WebUI.Pages
             Filters = new RecordsFilter { RecordDateFrom = fromDate, RecordDateTo = toDate, RecordNameFilter = searchName?.Trim() };
             if(themes != null && themes.Length > 0)
             {
-                Filters.AddRecordTypeId(themes);
+                Filters.AddThemeId(themes);
                 SelectedThemes = themes;
             }
             await UpdatePageState();
@@ -63,7 +63,7 @@ namespace RiseDiary.WebUI.Pages
             };
             if (themes != null && themes.Length > 0)
             {
-                Filters.AddRecordTypeId(themes);
+                Filters.AddThemeId(themes);
                 SelectedThemes = themes;
             }
             await UpdatePageState();
@@ -80,7 +80,7 @@ namespace RiseDiary.WebUI.Pages
             };
             if (themes != null && themes.Length > 0)
             {
-                Filters.AddRecordTypeId(themes);
+                Filters.AddThemeId(themes);
                 SelectedThemes = themes;
             }
             await UpdatePageState();

@@ -61,7 +61,7 @@ namespace RiseDiary.WebUI.Data
             filter.RecordThemeIds.Count == 0;
         public ReadOnlyCollection<int> RecordThemeIds { get; private set; } = new ReadOnlyCollection<int>(new List<int>());
 
-        public void AddRecordTypeId(int rtid)
+        public void AddThemeId(int rtid)
         {
             if (!RecordThemeIds.Contains(rtid))
             {
@@ -72,21 +72,21 @@ namespace RiseDiary.WebUI.Data
                 RecordThemeIds = new ReadOnlyCollection<int>(list);
             }
         }
-        public void AddRecordTypeId(IEnumerable<int> idsList)
+        public void AddThemeId(IEnumerable<int> idsList)
         {
             if (idsList.Any(i => !RecordThemeIds.Contains(i)))
             {
                 RecordThemeIds = new ReadOnlyCollection<int>(RecordThemeIds.Union(idsList).ToList());
             }
         }
-        public void RemoveRecordTypeId(int id)
+        public void RemoveThemeId(int id)
         {
             if (RecordThemeIds.Contains(id))
             {
                 RecordThemeIds = new ReadOnlyCollection<int>(RecordThemeIds.Where(i => i != id).ToList());
             }
         }
-        public void RemoveRecordTypeId(IEnumerable<int> idsList)
+        public void RemoveThemeId(IEnumerable<int> idsList)
         {
             var foundIds = RecordThemeIds.Intersect(idsList);
             if (foundIds.Count() > 0)

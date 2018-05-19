@@ -1,22 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using RiseDiary.Domain.Repositories;
 using Microsoft.Extensions.Logging;
-using RiseDiary.Domain.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using System;
+using RiseDiary.WebUI.Data;
+using RiseDiary.Model;
 
 namespace RiseDiary.WebUI.Pages
 {
     public class ImagesPageModel : PageModel
     {
-        private readonly IRepositoriesFactory _repoFactory;
+        private readonly DiaryDbContext _context;
         private readonly ILogger<ImagesPageModel> _logger;
-        public ImagesPageModel(IRepositoriesFactory factory, ILogger<ImagesPageModel> logger)
+        public ImagesPageModel(DiaryDbContext context, ILogger<ImagesPageModel> logger)
         {
-            _repoFactory = factory;
+            _context = context;
             _logger = logger;
         }
 
@@ -27,8 +27,8 @@ namespace RiseDiary.WebUI.Pages
 
         private async Task UpdatePageState()
         {
-            int imagesCount = await _repoFactory.DiaryImagesRepository.GetImagesCount();
-            _diaryImages = await _repoFactory.DiaryImagesRepository.FetchImageSet(0, imagesCount);
+            int imagesCount = await _context.GetImagesCount();
+            _diaryImages = await _context.FetchImageSet(0, imagesCount);
         }
 
         public async Task OnGetAsync()
@@ -53,37 +53,36 @@ namespace RiseDiary.WebUI.Pages
             {
                 imageData = binaryReader.ReadBytes((int)newImage.Length);
             }
-            var img = new DiaryImage { CreateDate = DateTime.Now, ImageName = newImageName };
-            await _repoFactory.DiaryImagesRepository.AddImage(img, imageData);
+            var img = new DiaryImage { CreateDate = DateTime.Now, Name = newImageName, Data = imageData };
+            await _context.AddImage(img);
 
             await UpdatePageState();
         }
 
         public async Task OnPostImageViewAsync(int imageId)
         {
-            var image = await _repoFactory.DiaryImagesRepository.FetchImageById(imageId);
+            var image = await _context.FetchImageById(imageId);
             if(image == null)
             {
                 ModelState.AddModelError("Image", $"Изображение с id={imageId} не найдено");
             }
             else
             {
-                var imgBytes = await _repoFactory.DiaryImagesRepository.FetchImageDataById(imageId);
-                _currentImageBase64 = Convert.ToBase64String(imgBytes);
+                _currentImageBase64 = Convert.ToBase64String(image.Data);
             }
             await UpdatePageState();
         }
 
         public async Task OnPostDeleteImageAsync(int imageId)
         {
-            int recCount = await _repoFactory.DiaryImagesRepository.GetLinkedRecordsCount(imageId);
+            int recCount = await _context.GetLinkedRecordsCount(imageId);
             if (recCount > 0)
             {
                 ModelState.AddModelError("Image", $"Изображение не может быть удалено, потому что добавлено к записям ({recCount})");
             }
             else
             {
-                await _repoFactory.DiaryImagesRepository.DeleteImage(imageId);
+                await _context.DeleteImage(imageId);
             }
             await UpdatePageState();
         }
@@ -96,7 +95,7 @@ namespace RiseDiary.WebUI.Pages
             }
             else
             {                
-                await _repoFactory.DiaryImagesRepository.UpdateImageName(imageId, imageName);
+                await _context.UpdateImageName(imageId, imageName);
             }
             await UpdatePageState();            
         }

@@ -476,7 +476,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var recRepos = new RecordsRepository(testData.context);
             var filter = new RecordsFilter();
-            filter.AddRecordTypeId(11);
+            filter.AddThemeId(11);
 
             var list = await recRepos.FetchRecordsListFiltered(filter);
 
@@ -489,7 +489,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             var testData = GetBaseWith20Records(GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var recRepos = new RecordsRepository(testData.context);
             var filter = new RecordsFilter();
-            filter.AddRecordTypeId(11);
+            filter.AddThemeId(11);
 
             int count = await recRepos.GetFilteredRecordsCount(filter);
 
@@ -515,7 +515,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             var recRepos = new RecordsRepository(context);
             var filter = new RecordsFilter();
 
-            filter.AddRecordTypeId(typeId1);
+            filter.AddThemeId(typeId1);
             var result = await recRepos.FetchRecordsListFiltered(filter);
 
             Assert.IsNotEmpty(result);
@@ -525,15 +525,15 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             Assert.IsTrue(HasRecordWithIntName(result, 12));
             Assert.IsTrue(HasRecordWithIntName(result, 19));
 
-            filter.AddRecordTypeId(typeId2);
-            filter.RemoveRecordTypeId(typeId1);
+            filter.AddThemeId(typeId2);
+            filter.RemoveThemeId(typeId1);
             result = await recRepos.FetchRecordsListFiltered(filter);
 
             Assert.IsNotEmpty(result);
             Assert.IsTrue(HasRecordWithIntName(result, 5));
             Assert.IsTrue(HasRecordWithIntName(result, 17));
 
-            filter.AddRecordTypeId(typeId1);
+            filter.AddThemeId(typeId1);
             result = await recRepos.FetchRecordsListFiltered(filter);
 
             Assert.IsNotEmpty(result);
@@ -566,18 +566,18 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             int matchesCount2 = 2;
             int matchesCountAll = 6;
 
-            filter.AddRecordTypeId(typeId1);
+            filter.AddThemeId(typeId1);
             int count = await recRepos.GetFilteredRecordsCount(filter);
 
             Assert.AreEqual(matchesCount1, count);
 
-            filter.AddRecordTypeId(typeId2);
-            filter.RemoveRecordTypeId(typeId1);
+            filter.AddThemeId(typeId2);
+            filter.RemoveThemeId(typeId1);
             count = await recRepos.GetFilteredRecordsCount(filter);
 
             Assert.AreEqual(matchesCount2, count);
 
-            filter.AddRecordTypeId(typeId1);
+            filter.AddThemeId(typeId1);
             count = await recRepos.GetFilteredRecordsCount(filter);
 
             Assert.AreEqual(matchesCountAll, count);
@@ -603,7 +603,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             var dateFrom = DateTime.Now.AddDays(-10).Date;
             var dateTo = DateTime.Now.AddDays(-5).Date;
             var filter = new RecordsFilter { RecordDateFrom = dateFrom, RecordDateTo = dateTo };
-            filter.AddRecordTypeId(typeId1);
+            filter.AddThemeId(typeId1);
 
             var result = await recRepos.FetchRecordsListFiltered(filter);
 
@@ -613,8 +613,8 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             Assert.IsTrue(HasRecordWithIntName(result, 7));
             Assert.IsTrue(HasRecordWithIntName(result, 9));
 
-            filter.AddRecordTypeId(typeId2);
-            filter.RemoveRecordTypeId(typeId1);
+            filter.AddThemeId(typeId2);
+            filter.RemoveThemeId(typeId1);
 
             result = await recRepos.FetchRecordsListFiltered(filter);
 
@@ -641,7 +641,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             var dateFrom = DateTime.Now.AddDays(-10).Date;
             var dateTo = DateTime.Now.AddDays(-5).Date;
             var filter = new RecordsFilter { RecordDateFrom = dateFrom, RecordDateTo = dateTo };
-            filter.AddRecordTypeId(typeId1);
+            filter.AddThemeId(typeId1);
             int expectedMatches = 3;
 
             int count = await recRepos.GetFilteredRecordsCount(filter);

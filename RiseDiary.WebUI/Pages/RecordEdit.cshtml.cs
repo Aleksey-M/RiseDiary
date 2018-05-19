@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using RiseDiary.Domain.Repositories;
 using Microsoft.Extensions.Logging;
-using RiseDiary.Domain.Model;
 using Microsoft.AspNetCore.Mvc;
+using RiseDiary.WebUI.Data;
+using RiseDiary.Model;
 
 namespace RiseDiary.WebUI.Pages
 {
     public class RecordEditModel : PageModel
     {
-        private readonly IRepositoriesFactory _repoFactory;
+        private readonly DiaryDbContext _context;
         private readonly ILogger<RecordEditModel> _logger;
-        public RecordEditModel(IRepositoriesFactory factory, ILogger<RecordEditModel> logger)
+        public RecordEditModel(DiaryDbContext context, ILogger<RecordEditModel> logger)
         {
-            _repoFactory = factory;
+            _context = context;
             _logger = logger;
         }
 
@@ -27,30 +27,30 @@ namespace RiseDiary.WebUI.Pages
         public string RecordName { get; set; }
         public string RecordText { get; set; }
         public IEnumerable<int> RecordThemesIds { get; set; }
-        public IEnumerable<DiaryRecordTypeJoined> Themes { get; set; }
+        public IEnumerable<DiaryThemeJoined> Themes { get; set; }
         public IEnumerable<DiaryImage> AddedImages { get; set; }
         public IEnumerable<DiaryImage> NotAddedImages { get; set; }
 
         private async Task UpdatePageState()
         {
-            Themes = await _repoFactory.RecordTypesRepository.FetchRecordTypesWithAreas();
+            Themes = await _context.FetchThemesWithScopes();
             RecordDate = DateTime.Now.Date;
             RecordThemesIds = new List<int>();
             if (RecordId != null)
             {
-                var rec = await _repoFactory.RecordsRepository.FetchRecordById(RecordId.Value);
+                var rec = await _context.FetchRecordById(RecordId.Value);
                 if (rec != null)
                 {
-                    RecordDate = rec.RecordDate;
-                    RecordCreateDate = rec.RecordCreateDate;
-                    RecordModifyDate = rec.RecordModifyDate;
-                    RecordName = rec.RecordName;
-                    RecordText = rec.RecordText;
-                    RecordThemesIds = (await _repoFactory.RecordTypesRepository.FetchTypesForRecord(rec.RecordId)).Select(rt => rt.RecordTypeId);
+                    RecordDate = rec.Date;
+                    RecordCreateDate = rec.CreateDate;
+                    RecordModifyDate = rec.ModifyDate;
+                    RecordName = rec.Name;
+                    RecordText = rec.Text;
+                    RecordThemesIds = (await _context.FetchRecordThemes(rec.Id)).Select(rt => rt.Id);
 
-                    AddedImages = await _repoFactory.DiaryImagesRepository.FetchImagesForRecord(rec.RecordId);
-                    int imagesCount = await _repoFactory.DiaryImagesRepository.GetImagesCount();
-                    NotAddedImages = (await _repoFactory.DiaryImagesRepository.FetchImageSet(0, imagesCount)).Except(AddedImages, new DiaryImageEqualityComparerById());
+                    AddedImages = await _context.FetchImagesForRecord(rec.Id);
+                    int imagesCount = await _context.GetImagesCount();
+                    NotAddedImages = (await _context.FetchImageSet(0, imagesCount)).Except(AddedImages, new DiaryImageEqualityComparerById());
                 }
             }
         }
@@ -67,40 +67,40 @@ namespace RiseDiary.WebUI.Pages
             {
                 var newRecord = new DiaryRecord
                 {
-                    RecordCreateDate = DateTime.Now,
-                    RecordModifyDate = DateTime.Now,
-                    RecordDate = recordDate,
-                    RecordName = recordName?.Trim() ?? string.Empty,
-                    RecordText = recordText?.Trim() ?? string.Empty
+                    CreateDate = DateTime.Now,
+                    ModifyDate = DateTime.Now,
+                    Date = recordDate,
+                    Name = recordName?.Trim() ?? string.Empty,
+                    Text = recordText?.Trim() ?? string.Empty
                 };
-                int newRecordId = await _repoFactory.RecordsRepository.AddRecord(newRecord);
+                int newRecordId = await _context.AddDiaryRecord(newRecord);
                 foreach (int tid in themeId)
                 {
-                    await _repoFactory.RecordTypesRepository.AddTypeForRecord(newRecordId, tid);
+                    await _context.AddRecordTheme(newRecordId, tid);
                 }
                 RecordId = newRecordId;
             }
             else
             {
-                var record = await _repoFactory.RecordsRepository.FetchRecordById(recordId.Value);
+                var record = await _context.FetchRecordById(recordId.Value);
                 if (record != null)
                 {
-                    record.RecordDate = recordDate;
-                    record.RecordModifyDate = DateTime.Now;
-                    record.RecordName = recordName?.Trim() ?? string.Empty;
-                    record.RecordText = recordText?.Trim() ?? string.Empty;
-                    await _repoFactory.RecordsRepository.UpdateRecord(record);
+                    record.Date = recordDate;
+                    record.ModifyDate = DateTime.Now;
+                    record.Name = recordName?.Trim() ?? string.Empty;
+                    record.Text = recordText?.Trim() ?? string.Empty;
+                    await _context.UpdateRecord(record);
 
-                    var recThemesIds = (await _repoFactory.RecordTypesRepository.FetchTypesForRecord(record.RecordId)).Select(rth => rth.RecordTypeId);
+                    var recThemesIds = (await _context.FetchRecordThemes(record.Id)).Select(rth => rth.Id);
                     foreach (int id in recThemesIds.Except(themeId))
                     {
-                        await _repoFactory.RecordTypesRepository.RemoveTypeForRecord(record.RecordId, id);
+                        await _context.RemoveRecordTheme(record.Id, id);
                     }
                     foreach (int id in themeId.Except(recThemesIds))
                     {
-                        await _repoFactory.RecordTypesRepository.AddTypeForRecord(record.RecordId, id);
+                        await _context.AddRecordTheme(record.Id, id);
                     }
-                    RecordId = record.RecordId;
+                    RecordId = record.Id;
                 }
             }
             await UpdatePageState();
@@ -108,7 +108,7 @@ namespace RiseDiary.WebUI.Pages
 
         public async Task<IActionResult> OnPostDeleteRecordAsync(int recordId)
         {
-            await _repoFactory.RecordsRepository.DeleteRecord(recordId);
+            await _context.DeleteRecord(recordId);
             return RedirectToPage("RecordsView");
         }
 
@@ -117,7 +117,7 @@ namespace RiseDiary.WebUI.Pages
             if(recordId != 0) RecordId = recordId;
             if (imageId != 0)
             {                
-                await _repoFactory.DiaryImagesRepository.AddImageForRecord(recordId, imageId);
+                await _context.AddImageForRecord(recordId, imageId);
             }
             await UpdatePageState();
         }
@@ -127,7 +127,7 @@ namespace RiseDiary.WebUI.Pages
             if (recordId != 0) RecordId = recordId;
             if (imageId != 0)
             {
-                await _repoFactory.DiaryImagesRepository.RemoveImageForRecord(recordId, imageId);
+                await _context.RemoveImageForRecord(recordId, imageId);
             }
             await UpdatePageState();
         }

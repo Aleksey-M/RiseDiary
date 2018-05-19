@@ -15,8 +15,4 @@
   <ItemGroup>
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\RiseDiary.Data.SqliteStorages\RiseDiary.Data.SqliteStorages.csproj" />
-    <ProjectReference Include="..\RiseDiary.Domain\RiseDiary.Domain.csproj" />
-  </ItemGroup>
 </Project>

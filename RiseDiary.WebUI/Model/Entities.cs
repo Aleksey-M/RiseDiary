@@ -46,6 +46,12 @@ namespace RiseDiary.Model
         public int RecordId { get; set; }
     }
 
+    public class DiaryImageEqualityComparerById : IEqualityComparer<DiaryImage>
+    {
+        public bool Equals(DiaryImage x, DiaryImage y) => x.Id == y.Id;
+        public int GetHashCode(DiaryImage obj) => obj.Id.GetHashCode();
+    }
+
     public class DiaryRecord
     {
         public int Id { get; set; }

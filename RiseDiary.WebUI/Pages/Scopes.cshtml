@@ -1,5 +1,5 @@
 ﻿@page
-@model AreasPageModel
+@model ScopePageModel
 @{
     ViewData["Title"] = "Области интересов и темы";
     ViewData["TitlePart"] = "Области интересов и относящиеся к ним темы, обдумывемые в записях";
@@ -24,15 +24,15 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var rt in Model.RecordTypes)
+                @foreach (var rt in Model.Themes)
                 {
                     <tr>
-                        <td style="width:25%">@rt.AreaName</td>
+                        <td style="width:25%">@rt.ScopeName</td>
                         <td>
                             <form asp-page-handler="UpdateThemeName" method="post">
                                 <div class="form-inline">
-                                    <input type="hidden" name="recordTypeId" value="@rt.RecordTypeId" class="form-control" />
-                                    <input type="text" name="recordTypeName" value="@rt.RecordTypeName" class="form-control" style="width:70%" />
+                                    <input type="hidden" name="themeId" value="@rt.Id" class="form-control" />
+                                    <input type="text" name="themeName" value="@rt.ThemeName" class="form-control" style="width:70%" />
                                     &nbsp;
                                     <input type="submit" class="btn btn-sm btn-warning form-control" value="Сохранить" />
                                 </div>
@@ -40,7 +40,7 @@
                         </td>
                         <td>
                             <form asp-page-handler="DeleteTheme" method="post">
-                                <input type="hidden" name="recordTypeId" value="@rt.RecordTypeId" class="form-control" />
+                                <input type="hidden" name="themeId" value="@rt.Id" class="form-control" />
                                 <input type="submit" class="btn btn-sm btn-danger form-control" value="Удалить" />
                             </form>
                         </td>
@@ -53,14 +53,14 @@
                         <br />
                         <form asp-page-handler="AddNewTheme" method="post">
                             <div class="form-inline">
-                                <select id="areaIdForTheme" name="areaIdForTheme" class="form-control" style="width:30%">
-                                    @foreach (var area in Model.Areas)
+                                <select id="scopeIdForTheme" name="scopeIdForTheme" class="form-control" style="width:30%">
+                                    @foreach (var scope in Model.Scopes)
                                     {
-                                        <option value="@area.AreaId">@area.AreaName</option>
+                                        <option value="@scope.Id">@scope.ScopeName</option>
                                     }
                                 </select>
                                 &nbsp;
-                                <input type="text" class="form-control" id="newRecordTypeName" name="newRecordTypeName" style="width:50%" placeholder="Название новой темы" />
+                                <input type="text" class="form-control" id="newThemeName" name="newThemeName" style="width:50%" placeholder="Название новой темы" />
                                 &nbsp;
                                 <input type="submit" class="form-control btn btn-success btn-sm" value="Добавить" style="width:100px;" />
                             </div>
@@ -79,22 +79,22 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var area in Model.Areas)
+                @foreach (var scope in Model.Scopes)
                 {
                     <tr>
                         <td>
-                            <form asp-page-handler="UpdateAreaName" method="post">
+                            <form asp-page-handler="UpdateScopeName" method="post">
                                 <div class="form-inline">
-                                    <input type="hidden" name="areaId" value="@area.AreaId" class="form-control" />
-                                    <input type="text" name="areaName" value="@area.AreaName" class="form-control" style="width:70%" />
+                                    <input type="hidden" name="scopeId" value="@scope.Id" class="form-control" />
+                                    <input type="text" name="scopeName" value="@scope.ScopeName" class="form-control" style="width:70%" />
                                     &nbsp;
                                     <input type="submit" class="btn btn-sm btn-warning form-control" value="Сохранить" />
                                 </div>
                             </form>
                         </td>
                         <td>
-                            <form asp-page-handler="DeleteArea" method="post">
-                                <input type="hidden" name="areaId" value="@area.AreaId" class="form-control" />
+                            <form asp-page-handler="DeleteScope" method="post">
+                                <input type="hidden" name="scopeId" value="@scope.Id" class="form-control" />
                                 <input type="submit" class="btn btn-sm btn-danger form-control" value="Удалить" />
                             </form>
                         </td>
@@ -105,9 +105,9 @@
                 <tr>
                     <td colspan="2">
                         <br />
-                        <form asp-page-handler="AddArea" method="post">
+                        <form asp-page-handler="AddScope" method="post">
                             <div class="form-inline">
-                                <input class="form-control" type="text" id="newAreaName" name="newAreaName" style="width:55%" placeholder="Название новой области" />
+                                <input class="form-control" type="text" id="newScopeName" name="newScopeName" style="width:55%" placeholder="Название новой области" />
                                 &nbsp;
                                 <input class="btn btn-sm btn-success form-control" type="submit" value="Добавить" />
                             </div>

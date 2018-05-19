@@ -36,8 +36,8 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         {
             var recFilter = RecordsFilter.Empty;
 
-            recFilter.AddRecordTypeId(105);
-            recFilter.AddRecordTypeId(106);
+            recFilter.AddThemeId(105);
+            recFilter.AddThemeId(106);
 
             Assert.AreEqual(2, recFilter.RecordThemeIds.Count);
             Assert.IsTrue(recFilter.RecordThemeIds.Contains(105));
@@ -49,8 +49,8 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         {
             var recFilter = RecordsFilter.Empty;
 
-            recFilter.AddRecordTypeId(105);
-            recFilter.AddRecordTypeId(105);// same id
+            recFilter.AddThemeId(105);
+            recFilter.AddThemeId(105);// same id
 
             Assert.AreEqual(1, recFilter.RecordThemeIds.Count);
             Assert.AreEqual(105, recFilter.RecordThemeIds[0]);
@@ -62,9 +62,9 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             var recFilter = RecordsFilter.Empty;
             var recList = new int[] { 101, 102, 103, 104, 105 };
 
-            recFilter.AddRecordTypeId(105);
-            recFilter.AddRecordTypeId(101);
-            recFilter.AddRecordTypeId(recList);
+            recFilter.AddThemeId(105);
+            recFilter.AddThemeId(101);
+            recFilter.AddThemeId(recList);
 
             Assert.AreEqual(recList.Count(), recFilter.RecordThemeIds.Count);
             Assert.IsTrue(recFilter.RecordThemeIds.All(i => recList.Contains(i)));
@@ -75,9 +75,9 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         public void Filter_RemoveNotExistingId_ShouldDoNothing()
         {
             var recFilter = RecordsFilter.Empty;
-            recFilter.AddRecordTypeId(105);
+            recFilter.AddThemeId(105);
 
-            recFilter.RemoveRecordTypeId(101);
+            recFilter.RemoveThemeId(101);
 
             Assert.AreEqual(1, recFilter.RecordThemeIds.Count);
             Assert.AreEqual(105, recFilter.RecordThemeIds[0]);
@@ -87,9 +87,9 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         public void Filter_RemoveId_ShouldRemoveId()
         {
             var recFilter = RecordsFilter.Empty;
-            recFilter.AddRecordTypeId(105);
+            recFilter.AddThemeId(105);
 
-            recFilter.RemoveRecordTypeId(105);
+            recFilter.RemoveThemeId(105);
 
             Assert.AreEqual(0, recFilter.RecordThemeIds.Count);
         }
@@ -99,13 +99,13 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         {
             var recFilter = RecordsFilter.Empty;
             var recList = new List<int> { 101, 102, 103, 104, 105 };
-            recFilter.AddRecordTypeId(recList);
-            recFilter.AddRecordTypeId(108);
-            recFilter.AddRecordTypeId(99);
+            recFilter.AddThemeId(recList);
+            recFilter.AddThemeId(108);
+            recFilter.AddThemeId(99);
 
             recList.Remove(103);
             recList.Add(111);
-            recFilter.RemoveRecordTypeId(recList);
+            recFilter.RemoveThemeId(recList);
 
             Assert.AreEqual(3, recFilter.RecordThemeIds.Count);
             Assert.IsTrue(recFilter.RecordThemeIds.Contains(103));
