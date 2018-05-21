@@ -430,18 +430,12 @@ namespace RiseDiary.WebUI.Data
                     result = result.Where(r => context.RecordThemes.Any(rt => rt.RecordId == r.Id && filter.RecordThemeIds.Contains(rt.ThemeId)));
                 }
             }
-            return result.OrderByDescending(r => r.Date).Skip(filter.PageNo * filter.PageSize).Take(filter.PageSize);
+            return result;
         }
 
-        public static Task<List<DiaryRecord>> FetchRecordsListFiltered(this DiaryDbContext context, RecordsFilter filter)
-        {
-            return _FetchRecordsListFiltered(context, filter).ToListAsync();
-        }
+        public static Task<List<DiaryRecord>> FetchRecordsListFiltered(this DiaryDbContext context, RecordsFilter filter) => _FetchRecordsListFiltered(context, filter).OrderByDescending(r => r.Date).Skip(filter.PageNo * filter.PageSize).Take(filter.PageSize).ToListAsync();
 
-        public static Task<int> GetFilteredRecordsCount(this DiaryDbContext context, RecordsFilter filter)
-        {
-            return _FetchRecordsListFiltered(context, filter).CountAsync();
-        }
+        public static Task<int> GetFilteredRecordsCount(this DiaryDbContext context, RecordsFilter filter) => _FetchRecordsListFiltered(context, filter).CountAsync();
 
         public static Task<List<DiaryRecord>> FetchRecordsByMonth(this DiaryDbContext context, int year, int? month = null)
         {

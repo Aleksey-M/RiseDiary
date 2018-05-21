@@ -1,15 +1,11 @@
-﻿using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using RiseDiary.Data.SqliteStorages.IntegratedTests.TestDomain;
-using RiseDiary.Domain;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace RiseDiary.Data.SqliteStorages.IntegratedTests
 {

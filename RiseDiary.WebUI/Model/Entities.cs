@@ -7,8 +7,6 @@ namespace RiseDiary.Model
     {
         public int Id { get; set; }
         public string ScopeName { get; set; }
-
-        public virtual ICollection<DiaryTheme> Themes { get; set; }
     }
 
     public class DiaryTheme
