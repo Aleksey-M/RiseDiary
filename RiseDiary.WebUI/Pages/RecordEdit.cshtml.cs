@@ -73,7 +73,7 @@ namespace RiseDiary.WebUI.Pages
                     Name = recordName?.Trim() ?? string.Empty,
                     Text = recordText?.Trim() ?? string.Empty
                 };
-                int newRecordId = await _context.AddDiaryRecord(newRecord);
+                int newRecordId = await _context.AddRecord(newRecord);
                 foreach (int tid in themeId)
                 {
                     await _context.AddRecordTheme(newRecordId, tid);

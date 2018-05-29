@@ -12,7 +12,7 @@ namespace RiseDiary.Model
     public class DiaryTheme
     {
         public int Id { get; set; }
-        public int DiaryScopeId { get; set; }
+        public int ScopeId { get; set; }
         public string ThemeName { get; set; }
     }
 

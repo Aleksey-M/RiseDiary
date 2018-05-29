@@ -15,6 +15,7 @@ namespace RiseDiary.WebUI.Data
         public DbSet<DiaryScope> Scopes { get; set; }
         public DbSet<DiaryTheme> Themes { get; set; }
         public DbSet<DiaryImage> Images { get; set; }
+
         public DbSet<DiaryRecord> Records { get; set; }
         public DbSet<Cogitation> Cogitations { get; set; }
 
@@ -110,7 +111,7 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task<bool> CanDeleteScope(this DiaryDbContext context, int scopeId)
         {
-            return !(await context.Themes.AnyAsync(th => th.DiaryScopeId == scopeId));             
+            return !(await context.Themes.AnyAsync(th => th.ScopeId == scopeId));             
         }
 
         public static async Task DeleteScope(this DiaryDbContext context, int scopeId)
@@ -155,7 +156,7 @@ namespace RiseDiary.WebUI.Data
             {
                 throw new ArgumentException($"Parameter {nameof(themeName)} should not be null or empty");
             }
-            var theme = new DiaryTheme { DiaryScopeId = scopeId, ThemeName = themeName };
+            var theme = new DiaryTheme { ScopeId = scopeId, ThemeName = themeName };
             context.Themes.Add(theme);
             await context.SaveChangesAsync();
             return theme.Id;
@@ -193,7 +194,7 @@ namespace RiseDiary.WebUI.Data
         {
             if(scopeId != null)
             {
-                return context.Themes.Where(t => t.DiaryScopeId == scopeId).ToListAsync();
+                return context.Themes.Where(t => t.ScopeId == scopeId).ToListAsync();
             }
             return context.Themes.ToListAsync();
         }
@@ -203,26 +204,29 @@ namespace RiseDiary.WebUI.Data
             if (scopeId != null)
             {
                 return context.Themes
-                    .Where(t => t.DiaryScopeId == scopeId)
+                    .Where(t => t.ScopeId == scopeId)
                     .Select(t => t.Id)
                     .ToListAsync();
             }
             return context.Themes.Select(t => t.Id).ToListAsync();
         }
 
-        public static async Task<List<DiaryThemeJoined>> FetchThemesWithScopes(this DiaryDbContext context)
+        public static Task<List<DiaryThemeJoined>> FetchThemesWithScopes(this DiaryDbContext context)
         {
-            var scopes = await context.Scopes.ToListAsync();
-            var res = await context.Themes
-                .Select(t => new DiaryThemeJoined {
+            return context.Scopes.Join(
+                context.Themes,
+                s => s.Id,
+                t => t.ScopeId,
+                (s, t) => new DiaryThemeJoined
+                {
                     Id = t.Id,
-                    ScopeId = t.DiaryScopeId,
-                    ThemeName = t.ThemeName})
+                    ScopeId = s.Id,
+                    ScopeName = s.ScopeName,
+                    ThemeName = t.ThemeName
+                })
                 .OrderBy(tj => tj.ScopeName)
                 .ThenBy(tj => tj.ThemeName)
                 .ToListAsync();
-            res.ForEach(tj => tj.ScopeName = scopes.FirstOrDefault(s => s.Id == tj.ScopeId)?.ScopeName ?? string.Empty);
-            return res;
         }
 
         public static Task<int> GetThemesCount(this DiaryDbContext context, int? scopeId)
@@ -230,7 +234,7 @@ namespace RiseDiary.WebUI.Data
             if (scopeId != null)
             {
                 return context.Themes
-                    .Where(t => t.DiaryScopeId == scopeId)
+                    .Where(t => t.ScopeId == scopeId)
                     .CountAsync();
             }
             return context.Themes.CountAsync();
@@ -364,6 +368,7 @@ namespace RiseDiary.WebUI.Data
         public static async Task<int> UpdateCogitation(this DiaryDbContext context, Cogitation cogitation)
         {
             var c = await context.Cogitations.FindAsync(cogitation.Id);
+            if (c == null) throw new ArgumentException($"Cogitation with id = {cogitation.Id} is not exists");
             if (c != null)
             {
                 c.Date = cogitation.Date;
@@ -379,12 +384,28 @@ namespace RiseDiary.WebUI.Data
             return context.Cogitations.Where(c => c.RecordId == recordId).CountAsync();
         }
         
-        public static async Task<int> AddDiaryRecord(this DiaryDbContext context, DiaryRecord record)
+        public static async Task<int> AddRecord(this DiaryDbContext context, DiaryRecord record)
         {
             if (record == null) throw new ArgumentNullException(nameof(record));
-            context.Records.Add(record);
+            DiaryRecord r;
+            if (record.Id != 0)
+            {
+                r = new DiaryRecord
+                {
+                    CreateDate = record.CreateDate,
+                    Date = record.Date,
+                    ModifyDate = record.ModifyDate,
+                    Name = record.Name,
+                    Text = record.Text
+                };
+            }
+            else
+            {
+                r = record;
+            }
+            context.Records.Add(r);
             await context.SaveChangesAsync();
-            return record.Id;
+            return r.Id;
         }
 
         public static async Task DeleteRecord(this DiaryDbContext context, int recordId)

@@ -17,29 +17,25 @@ namespace RiseDiary.WebUI
         }
 
         public IConfiguration Configuration { get; }
-
+        private string _dataBaseFileName;
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
 
-            var fName = Configuration.GetValue<string>("DataBaseFileName");
-            fName = string.IsNullOrWhiteSpace(fName) ? "DefaultName" : fName;
-            var path = Configuration.GetValue<string>("DataBaseFilePath");
-            path = string.IsNullOrWhiteSpace(path) ? Environment.CurrentDirectory : path;
+            _dataBaseFileName = Configuration.GetValue<string>("dbFile");
+            DailyBackups.BackupFile(_dataBaseFileName);
 
-            DailyBackups.BackupFile(path, fName);
-
-            services.AddDbContext<DiaryDbContext>(options => options.UseSqlite($"Data Source={Path.Combine(path, fName)};"));
+            services.AddDbContext<DiaryDbContext>(options => options.UseSqlite($"Data Source={_dataBaseFileName};"));
 
             var builder = new DbContextOptionsBuilder<DiaryDbContext>();
-            builder.UseSqlite($"Data Source={Path.Combine(path, fName)};");
+            builder.UseSqlite($"Data Source={_dataBaseFileName};");
             var context = new DiaryDbContext(builder.Options);
-            context.Database.EnsureCreated();
+            context.Database.Migrate();            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
         {
             if (env.IsDevelopment())
             {
@@ -59,6 +55,8 @@ namespace RiseDiary.WebUI
                     name: "default",
                     template: "{controller}/{action=Index}/{id?}");
             });
+
+            applicationLifetime.ApplicationStopped.Register(() => DailyBackups.BackupFile(_dataBaseFileName));
         }
     }
 }
