@@ -53,6 +53,8 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             loadedRec = await context.FetchRecordById(id);
 
             Assert.IsNull(loadedRec);
+
+            Assert.IsNotNull(context.Records.FirstOrDefault(r => r.Id == id && r.Deleted));
         }
 
         [Test]
@@ -494,9 +496,9 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         }
 
         [Test]
-        public async Task FetchRecordsListFiltered_ForExistingTypeFilter_ShouldReturnAllMatches()
+        public async Task FetchRecordsListFiltered_ForExistingThemeFilter_ShouldReturnAllMatches()
         {
-            var recTypes = new Dictionary<string, List<string>>() {
+            var recThemes = new Dictionary<string, List<string>>() {
                 { "03", new List<string>() { "10" } },
                 { "05", new List<string>() { "10", "20" } },
                 { "11", new List<string>() { "10" } },
@@ -507,12 +509,12 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             };
             var context = CreateContext();
             Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
-            int typeId1 = context.Themes.First(t => int.Parse(t.ThemeName) == 10).Id;
-            int typeId2 = context.Themes.First(t => int.Parse(t.ThemeName) == 20).Id;
-            BindRecordsWithThemes(context, recTypes);
+            int ThemeId1 = context.Themes.First(t => int.Parse(t.ThemeName) == 10).Id;
+            int ThemeId2 = context.Themes.First(t => int.Parse(t.ThemeName) == 20).Id;
+            BindRecordsWithThemes(context, recThemes);
             var filter = new RecordsFilter();
 
-            filter.AddThemeId(typeId1);
+            filter.AddThemeId(ThemeId1);
             var result = await context.FetchRecordsListFiltered(filter);
 
             Assert.IsNotEmpty(result);
@@ -522,30 +524,25 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             Assert.IsTrue(HasRecordWithIntName(result, 12));
             Assert.IsTrue(HasRecordWithIntName(result, 19));
 
-            filter.AddThemeId(typeId2);
-            filter.RemoveThemeId(typeId1);
+            filter.AddThemeId(ThemeId2);
+            filter.RemoveThemeId(ThemeId1);
             result = await context.FetchRecordsListFiltered(filter);
 
             Assert.IsNotEmpty(result);
             Assert.IsTrue(HasRecordWithIntName(result, 5));
             Assert.IsTrue(HasRecordWithIntName(result, 17));
 
-            filter.AddThemeId(typeId1);
+            filter.AddThemeId(ThemeId1);
             result = await context.FetchRecordsListFiltered(filter);
 
             Assert.IsNotEmpty(result);
-            Assert.IsTrue(HasRecordWithIntName(result, 3));
-            Assert.IsTrue(HasRecordWithIntName(result, 5));
-            Assert.IsTrue(HasRecordWithIntName(result, 11));
-            Assert.IsTrue(HasRecordWithIntName(result, 12));
-            Assert.IsTrue(HasRecordWithIntName(result, 19));
-            Assert.IsTrue(HasRecordWithIntName(result, 17));
+            Assert.IsTrue(HasRecordWithIntName(result, 5));            
         }
 
         [Test]
-        public async Task GetFilteredRecordsCount_ForExistingTypeFilter_ShouldReturnAllMatchesCount()
+        public async Task GetFilteredRecordsCount_ForExistingThemeFilter_ShouldReturnAllMatchesCount()
         {
-            var recTypes = new Dictionary<string, List<string>>() {
+            var recThemes = new Dictionary<string, List<string>>() {
                 { "03", new List<string>() { "10" } },
                 { "05", new List<string>() { "10", "20" } },
                 { "11", new List<string>() { "10" } },
@@ -555,35 +552,35 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             };
             var context = CreateContext();
             Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
-            int typeId1 = context.Themes.First(t => int.Parse(t.ThemeName) == 10).Id;
-            int typeId2 = context.Themes.First(t => int.Parse(t.ThemeName) == 20).Id;
-            BindRecordsWithThemes(context, recTypes);
+            int ThemeId1 = context.Themes.First(t => int.Parse(t.ThemeName) == 10).Id;
+            int ThemeId2 = context.Themes.First(t => int.Parse(t.ThemeName) == 20).Id;
+            BindRecordsWithThemes(context, recThemes);
             var filter = new RecordsFilter();
             int matchesCount1 = 5;
             int matchesCount2 = 2;
-            int matchesCountAll = 6;
+            int matchesCountAll = 1;
 
-            filter.AddThemeId(typeId1);
+            filter.AddThemeId(ThemeId1);
             int count = await context.GetFilteredRecordsCount(filter);
 
             Assert.AreEqual(matchesCount1, count);
 
-            filter.AddThemeId(typeId2);
-            filter.RemoveThemeId(typeId1);
+            filter.AddThemeId(ThemeId2);
+            filter.RemoveThemeId(ThemeId1);
             count = await context.GetFilteredRecordsCount(filter);
 
             Assert.AreEqual(matchesCount2, count);
 
-            filter.AddThemeId(typeId1);
+            filter.AddThemeId(ThemeId1);
             count = await context.GetFilteredRecordsCount(filter);
 
             Assert.AreEqual(matchesCountAll, count);
         }
 
         [Test]
-        public async Task FetchRecordsListFiltered_ForDateAndType()
+        public async Task FetchRecordsListFiltered_ForDateAndTheme()
         {
-            var recTypes = new Dictionary<string, List<string>>() {
+            var recThemes = new Dictionary<string, List<string>>() {
                 { "04", new List<string>() { "10" } },
                 { "05", new List<string>() { "10", "20" } },
                 { "07", new List<string>() { "10" } },
@@ -594,13 +591,13 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             };
             var context = CreateContext();
             Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
-            int typeId1 = context.Themes.First(t => int.Parse(t.ThemeName) == 10).Id;
-            int typeId2 = context.Themes.First(t => int.Parse(t.ThemeName) == 20).Id;
-            BindRecordsWithThemes(context, recTypes);
+            int ThemeId1 = context.Themes.First(t => int.Parse(t.ThemeName) == 10).Id;
+            int ThemeId2 = context.Themes.First(t => int.Parse(t.ThemeName) == 20).Id;
+            BindRecordsWithThemes(context, recThemes);
             var dateFrom = DateTime.Now.AddDays(-10).Date;
             var dateTo = DateTime.Now.AddDays(-5).Date;
             var filter = new RecordsFilter { RecordDateFrom = dateFrom, RecordDateTo = dateTo };
-            filter.AddThemeId(typeId1);
+            filter.AddThemeId(ThemeId1);
 
             var result = await context.FetchRecordsListFiltered(filter);
 
@@ -610,8 +607,8 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             Assert.IsTrue(HasRecordWithIntName(result, 7));
             Assert.IsTrue(HasRecordWithIntName(result, 9));
 
-            filter.AddThemeId(typeId2);
-            filter.RemoveThemeId(typeId1);
+            filter.AddThemeId(ThemeId2);
+            filter.RemoveThemeId(ThemeId1);
 
             result = await context.FetchRecordsListFiltered(filter);
 
@@ -619,9 +616,9 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         }
 
         [Test]
-        public async Task GetFilteredRecordsCount_ForDateAndType()
+        public async Task GetFilteredRecordsCount_ForDateAndTheme()
         {
-            var recTypes = new Dictionary<string, List<string>>() {
+            var recThemes = new Dictionary<string, List<string>>() {
                 { "04", new List<string>() { "10" } },
                 { "05", new List<string>() { "10", "20" } },
                 { "07", new List<string>() { "10" } },
@@ -632,13 +629,13 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             };
             var context = CreateContext();
             Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
-            int typeId1 = context.Themes.First(t => int.Parse(t.ThemeName) == 10).Id;
-            int typeId2 = context.Themes.First(t => int.Parse(t.ThemeName) == 20).Id;
-            BindRecordsWithThemes(context, recTypes);
+            int ThemeId1 = context.Themes.First(t => int.Parse(t.ThemeName) == 10).Id;
+            int ThemeId2 = context.Themes.First(t => int.Parse(t.ThemeName) == 20).Id;
+            BindRecordsWithThemes(context, recThemes);
             var dateFrom = DateTime.Now.AddDays(-10).Date;
             var dateTo = DateTime.Now.AddDays(-5).Date;
             var filter = new RecordsFilter { RecordDateFrom = dateFrom, RecordDateTo = dateTo };
-            filter.AddThemeId(typeId1);
+            filter.AddThemeId(ThemeId1);
             int expectedMatches = 3;
 
             int count = await context.GetFilteredRecordsCount(filter);
@@ -647,7 +644,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         }
 
         [Test]
-        public async Task FetchRecordsListFiltered_ForNameAndType()
+        public async Task FetchRecordsListFiltered_ForNameAndTheme()
         {           
             var namesList = new Dictionary<int, string> {
                 { 0, "ghorgh"},
@@ -700,7 +697,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         }
 
         [Test]
-        public async Task GetFilteredRecordsCount_ForNameAndType()
+        public async Task GetFilteredRecordsCount_ForNameAndTheme()
         {
             var namesList = new Dictionary<int, string> {
                 { 0, "ghorgh"},

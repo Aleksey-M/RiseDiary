@@ -2,19 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RiseDiary.WebUI.Data;
 
 namespace RiseDiary.WebUI.Migrations
 {
     [DbContext(typeof(DiaryDbContext))]
-    partial class DiaryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180529204517_AddedModelsProperty_Deleted")]
+    partial class AddedModelsProperty_Deleted
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.0-rtm-30799");
+                .HasAnnotation("ProductVersion", "2.1.0-rc1-32029");
 
             modelBuilder.Entity("RiseDiary.Model.Cogitation", b =>
                 {
@@ -80,8 +82,6 @@ namespace RiseDiary.WebUI.Migrations
 
                     b.Property<int>("ImageId");
 
-                    b.Property<bool>("Deleted");
-
                     b.HasKey("RecordId", "ImageId");
 
                     b.ToTable("RecordImages");
@@ -92,8 +92,6 @@ namespace RiseDiary.WebUI.Migrations
                     b.Property<int>("RecordId");
 
                     b.Property<int>("ThemeId");
-
-                    b.Property<bool>("Deleted");
 
                     b.HasKey("RecordId", "ThemeId");
 

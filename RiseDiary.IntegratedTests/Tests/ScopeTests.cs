@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using RiseDiary.WebUI.Data;
 using RiseDiary.Model;
+using System.Linq;
 
 namespace RiseDiary.SqliteStorages.IntegratedTests
 {
@@ -164,6 +165,18 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         }
 
         [Test]
+        public async Task CanDeleteScope_WithDeletedThemes_ShouldReturnTrue()
+        {
+            var context = CreateContext();
+            int ScopeId = await context.AddScope("New Scope 1");
+            int typeId = await context.AddTheme(ScopeId, "New type");
+
+            await context.DeleteTheme(typeId);
+
+            Assert.IsTrue(await context.CanDeleteScope(ScopeId));
+        }
+
+        [Test]
         public async Task CanDeleteScope_ShouldReturnFalse()
         {
             var context =  CreateContext();
@@ -191,6 +204,8 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             var Scope = await context.FetchScopeById(id);
 
             Assert.IsNull(Scope);
+
+            Assert.IsNotNull(context.Scopes.FirstOrDefault(s => s.Id == id && s.Deleted));
         }
     }
 }

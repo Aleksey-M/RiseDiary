@@ -74,6 +74,29 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             };
         }
 
+        protected static int Create_Record(DiaryDbContext context)
+        {
+            var rec = GetTestRecord();
+            context.Records.Add(rec);
+            context.SaveChanges();
+            return rec.Id;
+        }
+
+        protected static DiaryImage GetTestImage() => new DiaryImage
+        {
+            CreateDate = DateTime.Now,
+            Name = Guid.NewGuid().ToString(),
+            Data = new byte[1024 * 1024 * 25]
+        };
+
+        protected static int Create_Image(DiaryDbContext context)
+        {
+            var img = GetTestImage();
+            context.Images.Add(img);
+            context.SaveChanges();
+            return img.Id;
+        }
+
         protected static (int recId, int cogId) Create_3Records_1Cogitation(DiaryDbContext context)
         {
             int recId;

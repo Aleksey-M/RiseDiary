@@ -117,7 +117,7 @@ namespace RiseDiary.WebUI.Pages
             if(recordId != 0) RecordId = recordId;
             if (imageId != 0)
             {                
-                await _context.AddImageForRecord(recordId, imageId);
+                await _context.AddRecordImage(recordId, imageId);
             }
             await UpdatePageState();
         }
@@ -127,7 +127,7 @@ namespace RiseDiary.WebUI.Pages
             if (recordId != 0) RecordId = recordId;
             if (imageId != 0)
             {
-                await _context.RemoveImageForRecord(recordId, imageId);
+                await _context.RemoveRecordImage(recordId, imageId);
             }
             await UpdatePageState();
         }

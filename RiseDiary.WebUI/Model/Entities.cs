@@ -7,6 +7,7 @@ namespace RiseDiary.Model
     {
         public int Id { get; set; }
         public string ScopeName { get; set; }
+        public bool Deleted { get; set; }
     }
 
     public class DiaryTheme
@@ -14,12 +15,14 @@ namespace RiseDiary.Model
         public int Id { get; set; }
         public int ScopeId { get; set; }
         public string ThemeName { get; set; }
+        public bool Deleted { get; set; }
     }
 
     public class DiaryRecordTheme
     {
         public int ThemeId { get; set; }
         public int RecordId { get; set; }
+        public bool Deleted { get; set; }
     }
         
     public class DiaryThemeJoined
@@ -36,12 +39,14 @@ namespace RiseDiary.Model
         public string Name { get; set; }
         public DateTime CreateDate { get; set; }
         public byte[] Data { get; set; }
+        public bool Deleted { get; set; }
     }
 
     public class DiaryRecordImage
     {
         public int ImageId { get; set; }
         public int RecordId { get; set; }
+        public bool Deleted { get; set; }
     }
 
     public class DiaryImageEqualityComparerById : IEqualityComparer<DiaryImage>
@@ -59,6 +64,7 @@ namespace RiseDiary.Model
         public DateTime ModifyDate { get; set; }
         public string Name { get; set; }
         public string Text { get; set; }
+        public bool Deleted { get; set; }
 
         public string RecordNameDisplay => string.IsNullOrWhiteSpace(Name) ? "[ПУСТО]" : Name;
         public string RecordTextShort {
@@ -76,5 +82,6 @@ namespace RiseDiary.Model
         public int RecordId { get; set; }
         public DateTime Date { get; set; }
         public string Text { get; set; }
+        public bool Deleted { get; set; }
     }
 }

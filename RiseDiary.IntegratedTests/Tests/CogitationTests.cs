@@ -38,7 +38,8 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
 
             await context.DeleteCogitation(cogId);
 
-            Assert.Zero(context.Cogitations.Count());
+            Assert.Zero(context.Cogitations.Count(c=>!c.Deleted));
+            Assert.NotNull(context.Cogitations.FirstOrDefault(c => c.Id == cogId && c.Deleted));
         }
 
         [Test]

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
 using RiseDiary.WebUI.Data;
 using System.Collections.Generic;
 using System.Linq;
@@ -103,6 +104,8 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             await context.DeleteTheme(themeId);
             var theme = await context.FetchThemeById(themeId);
             Assert.IsNull(theme);
+
+            Assert.IsNotNull(context.Themes.FirstOrDefault(t => t.Id == themeId && t.Deleted));
         }
 
         [Test]
@@ -198,6 +201,55 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             Assert.IsNotNull(lst2);
             Assert.AreEqual(3, lst2.Count);
             Assert.True(lst.TrueForAll(i => !lst2.Contains(i)));
+        }
+
+        [Test]
+        public async Task BindRecord_RecordTheme_DeleteRecord_ShouldMarkAsDeleted()
+        {
+            var context = CreateContext();
+            int themeId = Create_Theme(context, "Theme Name");
+            int recId = Create_Record(context);
+            await context.AddRecordTheme(recId, themeId);
+
+            var bindRec = await context.RecordThemes.FirstOrDefaultAsync(br => br.RecordId == recId && br.ThemeId == themeId && !br.Deleted);
+            Assert.IsNotNull(bindRec);
+
+            await context.DeleteRecord(recId);
+
+            bindRec = await context.RecordThemes.FirstOrDefaultAsync(br => br.RecordId == recId && br.ThemeId == themeId && br.Deleted);
+            Assert.IsNotNull(bindRec);
+        }
+
+        [Test]
+        public async Task BindRecord_RecordTheme_DeleteTheme_ShouldMarkAsDeleted()
+        {
+            var context = CreateContext();
+            int themeId = Create_Theme(context, "Theme Name");
+            int recId = Create_Record(context);
+            await context.AddRecordTheme(recId, themeId);
+
+            var bindRec = await context.RecordThemes.FirstOrDefaultAsync(br => br.RecordId == recId && br.ThemeId == themeId && !br.Deleted);
+            Assert.IsNotNull(bindRec);
+
+            await context.DeleteTheme(themeId);
+
+            bindRec = await context.RecordThemes.FirstOrDefaultAsync(br => br.RecordId == recId && br.ThemeId == themeId && br.Deleted);
+            Assert.IsNotNull(bindRec);
+        }
+
+        [Test]
+        public async Task AddRecordTheme_AfterDeletingTheSame_ShouldUnmarkAsDeleted()
+        {
+            var context = CreateContext();
+            int themeId = Create_Theme(context, "Theme Name");
+            int recId = Create_Record(context);
+
+            await context.AddRecordTheme(recId, themeId);
+            await context.RemoveRecordTheme(recId, themeId);
+            await context.AddRecordTheme(recId, themeId);
+
+            int boundRecordCount = context.RecordThemes.Count(br => br.RecordId == recId && br.ThemeId == themeId);
+            Assert.AreEqual(1, boundRecordCount);
         }
     }
 }

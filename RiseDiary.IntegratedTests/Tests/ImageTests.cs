@@ -4,19 +4,13 @@ using System.Threading.Tasks;
 using System.Linq;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace RiseDiary.SqliteStorages.IntegratedTests
 {
     [TestFixture]
     class ImageTests : TestFixtureBase
     {
-        private DiaryImage GetTestImage() => new DiaryImage
-        {
-            CreateDate = DateTime.Now,
-            Name = Guid.NewGuid().ToString(),
-            Data = new byte[1024 * 1024 * 25]
-        };
-
         [Test]
         public async Task AddImage_ShouldNotThrowException()
         {
@@ -102,6 +96,9 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             Assert.IsNull(await context.FetchImageById(await ids[1]));
             Assert.IsNotNull(await context.FetchImageById(await ids[0]));
             Assert.IsNotNull(await context.FetchImageById(await ids[2]));
+
+            int id = await ids[1];
+            Assert.IsNotNull(context.Images.FirstOrDefault(i => i.Id == id && i.Deleted));
         }
 
         [Test]
@@ -128,6 +125,55 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
 
             Assert.IsNotNull(page);
             Assert.AreEqual(3, page.Count);
+        }
+
+        [Test]
+        public async Task BindRecord_RecordImage_DeleteImage_ShouldMarkAsDeleted()
+        {
+            var context = CreateContext();
+            int imageId = Create_Image(context);
+            int recId = Create_Record(context);
+            await context.AddRecordImage(recId, imageId);
+
+            var bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId && !br.Deleted);
+            Assert.IsNotNull(bindRec);
+
+            await context.DeleteImage(imageId);
+
+            bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId && br.Deleted);
+            Assert.IsNotNull(bindRec);
+        }
+
+        [Test]
+        public async Task BindRecord_RecordImage_DeleteRecord_ShouldMarkAsDeleted()
+        {
+            var context = CreateContext();
+            int imageId = Create_Image(context);
+            int recId = Create_Record(context);
+            await context.AddRecordImage(recId, imageId);
+
+            var bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId && !br.Deleted);
+            Assert.IsNotNull(bindRec);
+
+            await context.DeleteRecord(recId);
+
+            bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId && br.Deleted);
+            Assert.IsNotNull(bindRec);
+        }
+
+        [Test]
+        public async Task AddImageForRecord_AfterDeletingTheSame_ShouldUnmarkAsDeleted()
+        {
+            var context = CreateContext();
+            int imageId = Create_Image(context);
+            int recId = Create_Record(context);
+
+            await context.AddRecordImage(recId, imageId);
+            await context.RemoveRecordImage(recId, imageId);
+            await context.AddRecordImage(recId, imageId);
+
+            int boundRecordCount = context.RecordImages.Count(br => br.RecordId == recId && br.ImageId == imageId);
+            Assert.AreEqual(1, boundRecordCount);
         }
     }
 }
