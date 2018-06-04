@@ -1,11 +1,10 @@
-using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RiseDiary.WebUI.Data;
 using Microsoft.EntityFrameworkCore;
-using System.IO;
+using Microsoft.AspNetCore.Mvc;
 
 namespace RiseDiary.WebUI
 {
@@ -21,7 +20,7 @@ namespace RiseDiary.WebUI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             _dataBaseFileName = Configuration.GetValue<string>("dbFile");
             DailyBackups.BackupFile(_dataBaseFileName);
@@ -47,13 +46,7 @@ namespace RiseDiary.WebUI
             }
 
             app.UseStaticFiles();
-
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller}/{action=Index}/{id?}");
-            });
+            app.UseMvc();
 
             applicationLifetime.ApplicationStopped.Register(() => DailyBackups.BackupFile(_dataBaseFileName));
         }

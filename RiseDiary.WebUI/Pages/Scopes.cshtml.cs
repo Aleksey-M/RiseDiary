@@ -17,11 +17,8 @@ namespace RiseDiary.WebUI.Pages
             _logger = logger;            
         }
 
-        private IEnumerable<DiaryScope> _scopes = new List<DiaryScope>();
-        public IEnumerable<DiaryScope> Scopes { get => _scopes; }
-        private IEnumerable<DiaryThemeJoined> _recThemes = new List<DiaryThemeJoined>();
-        public IEnumerable<DiaryThemeJoined> Themes { get => _recThemes; }
-
+        public Dictionary<DiaryScope, IEnumerable<DiaryTheme>> ScopesAndThemes { get; private set; }
+        
         public async Task OnGetAsync()
         {
             await UpdatePageState();
@@ -29,8 +26,7 @@ namespace RiseDiary.WebUI.Pages
                
         private async Task UpdatePageState()
         {
-            _scopes = await _context.FetchAllScopes();
-            _recThemes = await _context.FetchThemesWithScopes();
+            ScopesAndThemes = await _context.FetchScopesWithThemes();            
         }
 
         public async Task OnPostAddScopeAsync(string newScopeName)
@@ -41,12 +37,12 @@ namespace RiseDiary.WebUI.Pages
             }
             else
             {
-                ModelState.AddModelError("Theme Name", "Название темы не введено");
+                ModelState.AddModelError("Scope Name", "Название области не введено");
             }
             await UpdatePageState();
         }
 
-        public async Task OnPostUpdateScopeNameAsync(int scopeId, string scopeName)
+        public async Task OnPostUpdateScopeAsync(int scopeId, string scopeName)
         {
             if (!string.IsNullOrWhiteSpace(scopeName))
             {
@@ -54,7 +50,7 @@ namespace RiseDiary.WebUI.Pages
             }
             else
             {
-                ModelState.AddModelError("Theme Name", "Название темы не введено");
+                ModelState.AddModelError("Scope Name", "Название области не введено");
             }
             await UpdatePageState();
         }
@@ -67,19 +63,19 @@ namespace RiseDiary.WebUI.Pages
             }
             else
             {
-                ModelState.AddModelError("Area", "Область не может быть удалена. Есть связанные темы");
+                ModelState.AddModelError("Scope", "Область не может быть удалена. Есть связанные темы");
             }
             await UpdatePageState();
         }
 
-        public async Task OnPostAddNewThemeAsync(int scopeIdForTheme, string newThemeName)
+        public async Task OnPostAddThemeAsync(int scopeId, string newThemeName)
         {
-            var area = await _context.FetchScopeById(scopeIdForTheme);
+            var area = await _context.FetchScopeById(scopeId);
             if (area != null)
             {
                 if (!string.IsNullOrWhiteSpace(newThemeName))
                 {
-                    await _context.AddTheme(scopeIdForTheme, newThemeName);
+                    await _context.AddTheme(scopeId, newThemeName);
                 }
                 else
                 {
@@ -88,7 +84,7 @@ namespace RiseDiary.WebUI.Pages
             }
             else
             {
-                ModelState.AddModelError("Theme Name", $"Область интересов с Id={scopeIdForTheme} не найдена");
+                ModelState.AddModelError("Theme Name", $"Область интересов с Id={scopeId} не найдена");
             }
             await UpdatePageState();
         }
@@ -99,11 +95,11 @@ namespace RiseDiary.WebUI.Pages
             await UpdatePageState();
         }
 
-        public async Task OnPostUpdateThemeNameAsync(int themeId, string themeName)
+        public async Task OnPostUpdateThemeAsync(int themeId, string newThemeName)
         {
-            if (!string.IsNullOrWhiteSpace(themeName))
+            if (!string.IsNullOrWhiteSpace(newThemeName))
             {
-                await _context.UpdateTheme(new DiaryTheme { Id = themeId, ThemeName = themeName });
+                await _context.UpdateTheme(new DiaryTheme { Id = themeId, ThemeName = newThemeName });
             }
             else
             {

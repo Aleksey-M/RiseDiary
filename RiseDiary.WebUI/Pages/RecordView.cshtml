@@ -54,28 +54,40 @@
     <tr>
         <td colspan="4"><a asp-page="RecordEdit" asp-route-recordId="@Model.RecordId" class="btn btn-default">Редактировать запись</a></td>
     </tr>
-    <tr style="background-color:lightgrey">
+    <tr style="background-color:#8484fa">
         <td colspan="4"><b>Мысли по поводу записи:</b></td>
     </tr>
     @foreach(var cog in Model.Cogitations)
     {
-        <tr style="background-color:lightgrey">
-            <td colspan="4">
+        <tr style="background-color:#bdbdfb">
+            <td colspan="4">                
                 <p><b>@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")</b></p>
-                <textarea id="recordText" readonly="readonly" rows="7" class="form-control" style="font-size:larger; background-color:aliceblue">@cog.Text</textarea>
-                <br />
-                <form asp-page-handler="DeleteCogitation" method="post">
+                <form asp-page-handler="SaveCogitation" method="post">
                     <input type="hidden" name="cogitationId" value="@cog.Id" />
                     <input type="hidden" name="recordId" value="@cog.RecordId" />
-                    <button type="submit" class="btn btn-danger"
-                            onclick="if (confirm('Удалить?')) { return true; } else { return false }">
-                        Удалить
-                    </button>
+                    <textarea id="recordText" name="recordText" rows="7" class="form-control" style="font-size:larger; background-color:aliceblue">@cog.Text</textarea>
+                    <br />
+                    <p style="float:left">
+                        <button type="submit" class="btn btn-success"
+                                onclick="if (confirm('Сохранить изменения?')) { return true; } else { return false }">
+                            Сохранить
+                        </button>
+                    </p>
                 </form>
-            </td>
+                <form asp-page-handler="DeleteCogitation" method="post">
+                    <p style="float:right">
+                        <input type="hidden" name="cogitationId" value="@cog.Id" />
+                        <input type="hidden" name="recordId" value="@cog.RecordId" />
+                        <button type="submit" class="btn btn-danger"
+                                onclick="if (confirm('Удалить?')) { return true; } else { return false }">
+                            Удалить
+                        </button>
+                    </p>
+                </form>        
+            </td>           
         </tr>
     }
-    <tr style="background-color:lightgrey">
+    <tr style="background-color:#8ec6fa">
         <td colspan="4">            
             <form asp-page-handler="AddCogitation" method="post">
                 <input type="hidden" name="recordId" value="@Model.RecordId" />                

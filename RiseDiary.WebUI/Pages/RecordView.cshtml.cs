@@ -29,8 +29,7 @@ namespace RiseDiary.WebUI.Pages
         private async Task UpdatePageState()
         {
             Record = await _context.FetchRecordById(RecordId);
-            var themes = await _context.FetchRecordThemes(Record.Id);
-            RecordThemes = themes.Select(t => t.ThemeName).ToList();
+            RecordThemes = await _context.FetchRecordThemesList(RecordId);
             RecordImages = new Dictionary<string, string>();
             byte[] imgBytes = null;
             foreach (var img in await _context.FetchImagesForRecord(Record.Id))
@@ -78,6 +77,19 @@ namespace RiseDiary.WebUI.Pages
                 await _context.DeleteCogitation(cogitationId);
             }
             if(recordId != 0)
+            {
+                RecordId = recordId;
+                await UpdatePageState();
+            }
+        }
+
+        public async Task OnPostSaveCogitationAsync(int recordId, int cogitationId, string recordText)
+        {
+            if(cogitationId != 0 && !string.IsNullOrWhiteSpace(recordText))
+            {
+                await _context.UpdateCogitationText(cogitationId, recordText);
+            }
+            if (recordId != 0)
             {
                 RecordId = recordId;
                 await UpdatePageState();

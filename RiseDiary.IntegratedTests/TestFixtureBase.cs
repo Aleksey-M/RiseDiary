@@ -38,7 +38,6 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             _dbFileNames.Add(dbFileFullName);
 
             IConfigurationRoot configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
             .Build();
 
             var builder = new DbContextOptionsBuilder<DiaryDbContext>();
