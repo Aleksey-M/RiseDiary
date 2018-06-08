@@ -23,7 +23,7 @@ namespace RiseDiary.WebUI
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             _dataBaseFileName = Configuration.GetValue<string>("dbFile");
-            DailyBackups.BackupFile(_dataBaseFileName);
+            SqliteFileBackup.BackupFile(_dataBaseFileName);
 
             services.AddDbContext<DiaryDbContext>(options => options.UseSqlite($"Data Source={_dataBaseFileName};"));
 
@@ -48,7 +48,7 @@ namespace RiseDiary.WebUI
             app.UseStaticFiles();
             app.UseMvc();
 
-            applicationLifetime.ApplicationStopped.Register(() => DailyBackups.BackupFile(_dataBaseFileName));
+            applicationLifetime.ApplicationStopped.Register(() => SqliteFileBackup.BackupFile(_dataBaseFileName));
         }
     }
 }

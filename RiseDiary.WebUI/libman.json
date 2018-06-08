@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "defaultDestination": "wwwroot/lib/",
+  "libraries": [
+    {
+      "library": "jquery-validate@1.17.0",
+      "destination": "wwwroot/lib/jquery-validate"
+    },
+    {
+      "library": "jquery-validation-unobtrusive@3.2.10",
+      "destination": "wwwroot/lib/jquery-validation-unobtrusive"
+    },
+    {
+      "library": "twitter-bootstrap@3.3.0",
+      "destination": "wwwroot/lib/bootstrap"
+    },
+    {
+      "library": "bootstrap-year-calendar@1.1.1",
+      "destination": "wwwroot/lib/bootstrap-year-calendar"
+    },
+    {
+      "library": "jquery@3.3.1",
+      "destination": "wwwroot/lib/jquery"
+    },
+    {
+      "library": "jqueryui@1.12.1",
+      "destination": "wwwroot/lib/jquery-ui"
+    },
+    {
+      "library": "jquery.sumoselect@3.0.2",
+      "destination": "wwwroot/lib/sumoselect"
+    }
+  ]
+}

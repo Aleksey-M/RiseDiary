@@ -84,4 +84,12 @@ namespace RiseDiary.Model
         public string Text { get; set; }
         public bool Deleted { get; set; }
     }
+
+    //public class AppSetting
+    //{
+    //    public int Id { get; set; }
+    //    public string Key { get; set; }
+    //    public string Value { get; set; }
+    //    public DateTime ModifiedDate { get; set; }
+    //}
 }

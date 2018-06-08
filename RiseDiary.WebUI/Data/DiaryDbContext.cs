@@ -22,6 +22,8 @@ namespace RiseDiary.WebUI.Data
         public DbSet<DiaryRecordTheme> RecordThemes { get; set; }
         public DbSet<DiaryRecordImage> RecordImages { get; set; }
 
+        //public DbSet<AppSetting> AppSettings { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<DiaryScope>().Property(s => s.Id).ValueGeneratedOnAdd();
@@ -555,6 +557,16 @@ namespace RiseDiary.WebUI.Data
                 .OrderBy(s => s.ScopeName)
                 .GroupJoin(context.Themes.Where(t => !t.Deleted), s => s.Id, t => t.ScopeId, (s, res) => new { s, res })
                 .ToDictionaryAsync(j => j.s, j => j.res);
+        }
+
+        public static async Task<string> GetAppSetting(this DiaryDbContext context, string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static async Task UpdateAppSetting(this DiaryDbContext context, string key, string value)
+        {
+            throw new NotImplementedException();
         }
     }
 }
