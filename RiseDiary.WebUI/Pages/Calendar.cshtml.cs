@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
-using RiseDiary.Domain.Model;
-using RiseDiary.Domain.Repositories;
+using RiseDiary.Model;
+using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,19 +10,19 @@ namespace RiseDiary.WebUI.Pages
 {
     public class CalendarModel : PageModel
     {
-        private readonly IRepositoriesFactory _repoFactory;
+        private readonly DiaryDbContext _context;
         private readonly ILogger<CalendarModel> _logger;
-        public CalendarModel(IRepositoriesFactory factory, ILogger<CalendarModel> logger)
+        public CalendarModel(DiaryDbContext context, ILogger<CalendarModel> logger)
         {
-            _repoFactory = factory;
+            _context = context;
             _logger = logger;
             Filters.PageSize = 1000;
         }
 
         public List<DiaryRecord> Records { get; set; }
         public RecordsFilter Filters { get; set; } = RecordsFilter.Empty;
-        public List<DiaryArea> AllAreas { get; set; }
-        public List<DiaryRecordTypeJoined> AllTypes { get; set; }
+        public List<DiaryScope> AllScopes { get; set; }
+        public List<DiaryThemeJoined> AllThemes { get; set; }
         public int[] SelectedThemes { get; set; } = new int[0];
 
         private async Task UpdatePageState()
@@ -32,9 +32,9 @@ namespace RiseDiary.WebUI.Pages
                 Filters.RecordDateFrom = new DateTime(DateTime.Now.Year, 01, 01);
                 Filters.RecordDateTo = new DateTime(DateTime.Now.Year, 12, 31);                
             }
-            AllAreas = await _repoFactory.AreasRepository.FetchAllAreas();
-            AllTypes = await _repoFactory.RecordTypesRepository.FetchRecordTypesWithAreas();
-            Records = await _repoFactory.RecordsRepository.FetchRecordsListFiltered(Filters);
+            AllScopes = await _context.FetchAllScopes();
+            AllThemes = await _context.FetchThemesWithScopes();
+            Records = await _context.FetchRecordsListFiltered(Filters);
         }
 
         public async Task OnGetAsync()
@@ -44,7 +44,7 @@ namespace RiseDiary.WebUI.Pages
 
         public async Task OnGetFilterAsync(int? year, int[] themes)
         {           
-            Filters.AddRecordTypeId(themes);
+            Filters.AddThemeId(themes);
             SelectedThemes = themes;
             if(year != null)
             {

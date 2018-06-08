@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
-using RiseDiary.Domain.Model;
-using RiseDiary.Domain.Repositories;
+using RiseDiary.Model;
+using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,11 +10,11 @@ namespace RiseDiary.WebUI.Pages
 {
     public class RetrospectModel : PageModel
     {
-        private readonly IRepositoriesFactory _repoFactory;
+        private readonly DiaryDbContext _context;
         private readonly ILogger<RetrospectModel> _logger;
-        public RetrospectModel(IRepositoriesFactory factory, ILogger<RetrospectModel> logger)
+        public RetrospectModel(DiaryDbContext context, ILogger<RetrospectModel> logger)
         {
-            _repoFactory = factory;
+            _context = context;
             _logger = logger;
         }
 
@@ -22,23 +22,23 @@ namespace RiseDiary.WebUI.Pages
         public RecordsFilter Filters { get; set; } = RecordsFilter.Empty;
         public int RecordsCount { get; set; }
         public int PagesCount { get; set; } = 1;
-        public List<DiaryArea> AllAreas { get; set; }
-        public List<DiaryRecordTypeJoined> AllTypes { get; set; }
+        public List<DiaryScope> AllScopes { get; set; }
+        public List<DiaryThemeJoined> AllThemes { get; set; }
         public int[] SelectedThemes { get; set; } = new int[0];
 
         private async Task UpdatePageState()
         {
             Filters.PageSize = 10;
-            RecordsCount = await _repoFactory.RecordsRepository.GetFilteredRecordsCount(Filters);
+            RecordsCount = await _context.GetFilteredRecordsCount(Filters);
             int pagesCount = Convert.ToInt32(Math.Ceiling((float)RecordsCount / Filters.PageSize));
             if (Filters.PageNo >= pagesCount) Filters.PageNo = pagesCount - 1;
             Records = new Dictionary<DiaryRecord, List<Cogitation>>();
-            foreach(var rec in await _repoFactory.RecordsRepository.FetchRecordsListFiltered(Filters))
+            foreach(var rec in await _context.FetchRecordsListFiltered(Filters))
             {
-                Records.Add(rec, await _repoFactory.CogitationRepository.FetchAllCogitationsOfRecord(rec.RecordId));
+                Records.Add(rec, await _context.FetchAllCogitationsOfRecord(rec.Id));
             }            
-            AllAreas = await _repoFactory.AreasRepository.FetchAllAreas();
-            AllTypes = await _repoFactory.RecordTypesRepository.FetchRecordTypesWithAreas();
+            AllScopes = await _context.FetchAllScopes();
+            AllThemes = await _context.FetchThemesWithScopes();
         }
 
         public async Task OnGetAsync()
@@ -51,7 +51,7 @@ namespace RiseDiary.WebUI.Pages
             Filters = new RecordsFilter { RecordDateFrom = fromDate, RecordDateTo = toDate, RecordNameFilter = searchName?.Trim() };
             if (themes != null && themes.Length > 0)
             {
-                Filters.AddRecordTypeId(themes);
+                Filters.AddThemeId(themes);
                 SelectedThemes = themes;
             }
             await UpdatePageState();
@@ -68,7 +68,7 @@ namespace RiseDiary.WebUI.Pages
             };
             if (themes != null && themes.Length > 0)
             {
-                Filters.AddRecordTypeId(themes);
+                Filters.AddThemeId(themes);
                 SelectedThemes = themes;
             }
             await UpdatePageState();
@@ -85,7 +85,7 @@ namespace RiseDiary.WebUI.Pages
             };
             if (themes != null && themes.Length > 0)
             {
-                Filters.AddRecordTypeId(themes);
+                Filters.AddThemeId(themes);
                 SelectedThemes = themes;
             }
             await UpdatePageState();

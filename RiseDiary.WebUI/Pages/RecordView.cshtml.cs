@@ -1,22 +1,22 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using RiseDiary.Domain.Repositories;
 using Microsoft.Extensions.Logging;
-using RiseDiary.Domain.Model;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using RiseDiary.WebUI.Data;
+using RiseDiary.Model;
 
 namespace RiseDiary.WebUI.Pages
 {
     public class RecordViewModel : PageModel
     {
-        private readonly IRepositoriesFactory _repoFactory;
+        private readonly DiaryDbContext _context;
         private readonly ILogger<RecordViewModel> _logger;
-        public RecordViewModel(IRepositoriesFactory factory, ILogger<RecordViewModel> logger)
+        public RecordViewModel(DiaryDbContext context, ILogger<RecordViewModel> logger)
         {
-            _repoFactory = factory;
+            _context = context;
             _logger = logger;
         }
 
@@ -28,17 +28,16 @@ namespace RiseDiary.WebUI.Pages
 
         private async Task UpdatePageState()
         {
-            Record = await _repoFactory.RecordsRepository.FetchRecordById(RecordId);
-            var themes = await _repoFactory.RecordTypesRepository.FetchTypesForRecord(Record.RecordId);
-            RecordThemes = themes.Select(t => t.RecordTypeName).ToList();
+            Record = await _context.FetchRecordById(RecordId);
+            RecordThemes = await _context.FetchRecordThemesList(RecordId);
             RecordImages = new Dictionary<string, string>();
             byte[] imgBytes = null;
-            foreach (var img in await _repoFactory.DiaryImagesRepository.FetchImagesForRecord(Record.RecordId))
+            foreach (var img in await _context.FetchImagesForRecord(Record.Id))
             {
-                imgBytes = await _repoFactory.DiaryImagesRepository.FetchImageDataById(img.ImageId);
-                RecordImages.Add(img.ImageName, Convert.ToBase64String(imgBytes));
+                imgBytes = await _context.FetchImageDataById(img.Id);
+                RecordImages.Add(img.Name, Convert.ToBase64String(imgBytes));
             }
-            Cogitations = (await _repoFactory.CogitationRepository.FetchAllCogitationsOfRecord(Record.RecordId)).OrderBy(c => c.CogitationDate).ToList();
+            Cogitations = (await _context.FetchAllCogitationsOfRecord(Record.Id)).OrderBy(c => c.Date).ToList();
         }
 
         public async Task<IActionResult> OnGetAsync(int? recordId)
@@ -57,9 +56,9 @@ namespace RiseDiary.WebUI.Pages
         {
             if (!string.IsNullOrWhiteSpace(cogText) && recordId != 0)
             {
-                await _repoFactory.CogitationRepository.AddCogitation(new Cogitation
+                await _context.AddCogitation(new Cogitation
                 {
-                    CogitationDate = DateTime.Now,
+                    Date = DateTime.Now,
                     RecordId = recordId,
                     Text = cogText
                 });                
@@ -75,9 +74,22 @@ namespace RiseDiary.WebUI.Pages
         {
             if(cogitationId != 0)
             {
-                await _repoFactory.CogitationRepository.DeleteCogitation(cogitationId);
+                await _context.DeleteCogitation(cogitationId);
             }
             if(recordId != 0)
+            {
+                RecordId = recordId;
+                await UpdatePageState();
+            }
+        }
+
+        public async Task OnPostSaveCogitationAsync(int recordId, int cogitationId, string recordText)
+        {
+            if(cogitationId != 0 && !string.IsNullOrWhiteSpace(recordText))
+            {
+                await _context.UpdateCogitationText(cogitationId, recordText);
+            }
+            if (recordId != 0)
             {
                 RecordId = recordId;
                 await UpdatePageState();

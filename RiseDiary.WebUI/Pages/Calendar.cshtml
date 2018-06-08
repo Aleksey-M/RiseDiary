@@ -8,18 +8,18 @@
 <div class="row">
     <div class="col-sm-4 col-sm-offset-3">
         <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="form-control multiselect" style="width:380px; height:30px;">
-            @foreach (var area in Model.AllAreas)
+            @foreach (var scope in Model.AllScopes)
             {
-                <optgroup label="@area.AreaName">
-                    @foreach (var theme in Model.AllTypes.Where(t => t.AreaId == area.AreaId))
+                <optgroup label="@scope.ScopeName">
+                    @foreach (var theme in Model.AllThemes.Where(t => t.ScopeId == scope.Id))
                     {
-                        @if (Model.SelectedThemes.Contains(theme.RecordTypeId))
+                        @if (Model.SelectedThemes.Contains(theme.Id))
                         {
-                            <option selected="selected" value="@theme.RecordTypeId">@theme.RecordTypeName</option>
+                            <option selected="selected" value="@theme.Id">@theme.ThemeName</option>
                         }
                         else
                         {
-                            <option value="@theme.RecordTypeId">@theme.RecordTypeName</option>
+                            <option value="@theme.Id">@theme.ThemeName</option>
                         }
                     }
                 </optgroup>
@@ -43,10 +43,10 @@
             {
                 <text>
             {
-                id: @Model.Records[i].RecordId,
-                name: "@Model.Records[i].RecordName",
-                startDate: new Date(@Model.Records[i].RecordDate.Year, @Model.Records[i].RecordDate.Month-1, @Model.Records[i].RecordDate.Day),
-                endDate: new Date(@Model.Records[i].RecordDate.Year, @Model.Records[i].RecordDate.Month-1, @Model.Records[i].RecordDate.Day)
+                id: @Model.Records[i].Id,
+                name: "@Model.Records[i].Name",
+                startDate: new Date(@Model.Records[i].Date.Year, @Model.Records[i].Date.Month-1, @Model.Records[i].Date.Day),
+                endDate: new Date(@Model.Records[i].Date.Year, @Model.Records[i].Date.Month-1, @Model.Records[i].Date.Day)
 
             }@(i != count - 1 ? "," : string.Empty)
                 </text>

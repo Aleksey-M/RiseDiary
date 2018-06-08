@@ -261,3 +261,7 @@ paket-files/
 __pycache__/
 *.pyc
 *.db
+
+OldProjects/
+db/
+RiseDiary.WebUI/wwwroot/lib/

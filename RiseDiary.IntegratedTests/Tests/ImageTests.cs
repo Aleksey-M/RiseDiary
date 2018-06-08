@@ -1,0 +1,179 @@
+﻿using NUnit.Framework;
+using System;
+using System.Threading.Tasks;
+using System.Linq;
+using RiseDiary.Model;
+using RiseDiary.WebUI.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace RiseDiary.SqliteStorages.IntegratedTests
+{
+    [TestFixture]
+    class ImageTests : TestFixtureBase
+    {
+        [Test]
+        public async Task AddImage_ShouldNotThrowException()
+        {
+            var context =  CreateContext();
+
+            int id = await context.AddImage(GetTestImage()); 
+
+            Assert.AreNotEqual(0, id);
+        }
+
+        [Test]
+        public async Task GetImage_WithNotExistingId_ShouldReturnNull()
+        {
+            var context =  CreateContext();
+
+            var img = await context.FetchImageById(101);
+
+            Assert.IsNull(img);
+        }
+
+        [Test]
+        public async Task GetImage_ShouldReturnImage()
+        {
+            var context =  CreateContext();
+            var img = GetTestImage();
+            img.Data = new byte[] { 1, 1, 1, 1 };
+
+            int id = await context.AddImage(img);
+            var imgSaved = await context.FetchImageById(id);
+
+            Assert.IsNotNull(imgSaved);
+            Assert.AreEqual(img.Name, imgSaved.Name);
+            Assert.AreEqual(img.CreateDate, imgSaved.CreateDate);
+        }
+
+        [Test]
+        public async Task GetImageData_ShouldReturnImageData()
+        {
+            var context =  CreateContext();
+            var img = GetTestImage();
+            img.Data = new byte[] { 1, 2, 3, 4 };
+
+            int id = await context.AddImage(img);
+            var imgDataSaved = await context.FetchImageDataById(id);
+
+            Assert.IsNotNull(imgDataSaved);
+            Assert.AreEqual(img.Data.Length, imgDataSaved.Length);
+            Assert.IsTrue(img.Data.Zip(imgDataSaved, (byte1, byte2) => byte1 == byte2).All(concat => concat));
+        }
+
+        [Test]
+        public async Task GetImagesCount_ShouldReturnZero()
+        {
+            var context =  CreateContext();
+
+            int count = await context.GetImagesCount();
+
+            Assert.AreEqual(0, count);
+        }
+
+        [Test]
+        public async Task GetImagesCount_ShouldReturnThree()
+        {
+            var context =  CreateContext();
+            for (int i = 0; i < 3; i++)
+            {
+                await context.AddImage(GetTestImage());
+            }
+
+            int count = await context.GetImagesCount();
+
+            Assert.AreEqual(3, count);
+        }
+
+        [Test]
+        public async Task DeleteImage_ShouldDeleteOneImage()
+        {
+            var context =  CreateContext();
+            var ids = Enumerable.Range(0, 3).Select(async i => await context.AddImage(GetTestImage())).ToArray();
+
+            await context.DeleteImage(await ids[1]);
+
+            Assert.IsNull(await context.FetchImageById(await ids[1]));
+            Assert.IsNotNull(await context.FetchImageById(await ids[0]));
+            Assert.IsNotNull(await context.FetchImageById(await ids[2]));
+
+            int id = await ids[1];
+            Assert.IsNotNull(context.Images.FirstOrDefault(i => i.Id == id && i.Deleted));
+        }
+
+        [Test]
+        public async Task UpdateImageName_ShouldUpdateImageName()
+        {
+            var context =  CreateContext();
+            int id = await context.AddImage(GetTestImage());
+            string newName = Guid.NewGuid().ToString();
+
+            await context.UpdateImageName(id, newName);
+            var imgSaved = await context.FetchImageById(id);
+
+            Assert.NotNull(imgSaved);
+            Assert.AreEqual(newName, imgSaved.Name);
+        }
+
+        [Test]
+        public async Task GetImages_ShouldReturn3LastImages()
+        {
+            var context =  CreateContext();
+            var ids = Enumerable.Range(0, 10).Select(async i => await context.AddImage(GetTestImage())).ToArray();
+
+            var page = await context.FetchImageSet(7, 5);
+
+            Assert.IsNotNull(page);
+            Assert.AreEqual(3, page.Count);
+        }
+
+        [Test]
+        public async Task BindRecord_RecordImage_DeleteImage_ShouldMarkAsDeleted()
+        {
+            var context = CreateContext();
+            int imageId = Create_Image(context);
+            int recId = Create_Record(context);
+            await context.AddRecordImage(recId, imageId);
+
+            var bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId && !br.Deleted);
+            Assert.IsNotNull(bindRec);
+
+            await context.DeleteImage(imageId);
+
+            bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId && br.Deleted);
+            Assert.IsNotNull(bindRec);
+        }
+
+        [Test]
+        public async Task BindRecord_RecordImage_DeleteRecord_ShouldMarkAsDeleted()
+        {
+            var context = CreateContext();
+            int imageId = Create_Image(context);
+            int recId = Create_Record(context);
+            await context.AddRecordImage(recId, imageId);
+
+            var bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId && !br.Deleted);
+            Assert.IsNotNull(bindRec);
+
+            await context.DeleteRecord(recId);
+
+            bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId && br.Deleted);
+            Assert.IsNotNull(bindRec);
+        }
+
+        [Test]
+        public async Task AddImageForRecord_AfterDeletingTheSame_ShouldUnmarkAsDeleted()
+        {
+            var context = CreateContext();
+            int imageId = Create_Image(context);
+            int recId = Create_Record(context);
+
+            await context.AddRecordImage(recId, imageId);
+            await context.RemoveRecordImage(recId, imageId);
+            await context.AddRecordImage(recId, imageId);
+
+            int boundRecordCount = context.RecordImages.Count(br => br.RecordId == recId && br.ImageId == imageId);
+            Assert.AreEqual(1, boundRecordCount);
+        }
+    }
+}

@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - RiseDiary</title>
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap/css/bootstrap.css" rel="stylesheet" />
+    <link href="~/lib/jquery-ui/jquery-ui.css" rel="stylesheet" />
+    <link href="~/lib/sumoselect/sumoselect.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-year-calendar/css/bootstrap-year-calendar.css" rel="stylesheet" />   
+</head>
+<body>
+    <div class="container alert-info" style="margin-bottom:10px">
+        <h3 class="col-sm-10"> <a asp-page="Index">Дневник:</a> <span style="font-size:smaller">@ViewData["TitlePart"]</span></h3>
+    </div>
+    <nav class="container">
+        <div class="btn-group btn-group-justified">
+            <a asp-page="Scopes" class="btn btn-info">Области интересов</a>
+            <a asp-page="Images" class="btn btn-info">Рисунки</a>
+            <a asp-page="RecordEdit" class="btn btn-info">Создать запись</a>
+            <a asp-page="RecordsView" class="btn btn-info">Поиск</a>
+            <a asp-page="Retrospect" class="btn btn-info">Ретроспектива</a>
+            <a asp-page="Calendar" class="btn btn-info">Календарь</a>
+        </div>
+    </nav>
+
+    <div class="container body-content">
+        <hr style="margin-top:5px;margin-bottom:5px;" />
+        @RenderBody()
+        <hr />
+    </div>
+    <script src="~/lib/jquery/jquery.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.js"></script>
+    <script src="~/lib/jquery-ui/jquery-ui.js"></script>
+    <script src="~/lib/sumoselect/jquery.sumoselect.js"></script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

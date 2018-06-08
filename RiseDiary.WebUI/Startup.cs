@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using RiseDiary.Domain.Repositories;
-using RiseDiary.Data.SqliteStorages;
+using RiseDiary.WebUI.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 namespace RiseDiary.WebUI
 {
@@ -19,26 +16,29 @@ namespace RiseDiary.WebUI
         }
 
         public IConfiguration Configuration { get; }
-
+        private string _dataBaseFileName;
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
-            var fName = Configuration.GetValue<string>("DataBaseFileName");
-            fName = string.IsNullOrWhiteSpace(fName) ? "DefaultName" : fName;
-            var path = Configuration.GetValue<string>("DataBaseFilePath");
-            path = string.IsNullOrWhiteSpace(path) ? Environment.CurrentDirectory : path;
-            DailyBackups.BackupFile(path, fName);
-            services.AddScoped<IRepositoriesFactory, RepositoriesFactory>(sp => new RepositoriesFactory(path, fName));
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            _dataBaseFileName = Configuration.GetValue<string>("dbFile");
+            SqliteFileBackup.BackupFile(_dataBaseFileName);
+
+            services.AddDbContext<DiaryDbContext>(options => options.UseSqlite($"Data Source={_dataBaseFileName};"));
+
+            var builder = new DbContextOptionsBuilder<DiaryDbContext>();
+            builder.UseSqlite($"Data Source={_dataBaseFileName};");
+            var context = new DiaryDbContext(builder.Options);
+            context.Database.Migrate();            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseBrowserLink();
             }
             else
             {
@@ -46,13 +46,9 @@ namespace RiseDiary.WebUI
             }
 
             app.UseStaticFiles();
+            app.UseMvc();
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller}/{action=Index}/{id?}");
-            });
+            applicationLifetime.ApplicationStopped.Register(() => SqliteFileBackup.BackupFile(_dataBaseFileName));
         }
     }
 }

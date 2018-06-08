@@ -45,10 +45,10 @@
                     {
                         <div class="form-check">
                             <label class="form-check-label">
-                                <input type="checkbox" name="themeId" value="@theme.RecordTypeId" class="custom-control-input"
-                                       @if (Model.RecordThemesIds.Contains(theme.RecordTypeId)) { @: checked="checked"
+                                <input type="checkbox" name="themeId" value="@theme.Id" class="custom-control-input"
+                                       @if (Model.RecordThemesIds.Contains(theme.Id)) { @: checked="checked"
                                                                                                                                                   } />
-                                @theme.AreaName&nbsp;-&nbsp;@theme.RecordTypeName
+                                @theme.ScopeName&nbsp;-&nbsp;@theme.ThemeName
                             </label>
                         </div>
                     }
@@ -59,7 +59,12 @@
             <td>
                 <button type="submit" class="btn btn-success form-control">Сохранить запись</button>
             </td>
-            <td colspan="2"><a asp-page="RecordView" asp-route-recordId="@Model.RecordId" class="btn btn-default">Открыть на просмотр</a></td>
+            <td colspan="2">
+                @if (Model.RecordId != null)
+                {
+                    <a asp-page="RecordView" asp-route-recordId="@Model.RecordId" class="btn btn-default">Открыть на просмотр</a>
+                }
+            </td>
         </tr>
     </table>
 </form>
@@ -84,7 +89,7 @@
                             <option selected="selected" value="0">Выберите название картинки</option>
                             @foreach (var img in Model.NotAddedImages)
                             {
-                                <option value="@img.ImageId">@img.CreateDate.ToString("G")&nbsp;:&nbsp;@img.ImageName</option>
+                                <option value="@img.Id">@img.CreateDate.ToString("G")&nbsp;:&nbsp;@img.Name</option>
                             }
                         </select>
                         <button type="submit" class="btn btn btn-default form-control">Добавить изображение</button>
@@ -102,11 +107,11 @@
                                 <td>
                                     <div class="form-inline">
                                         <form asp-page-handler="DeleteImage">
-                                            <input type="hidden" name="imageId" value="@img.ImageId" />
+                                            <input type="hidden" name="imageId" value="@img.Id" />
                                             <input type="hidden" name="recordId" value="@Model.RecordId" />
                                             <div style="background-color:#f7ff8f; margin:3px; padding:3px; border-radius:5px;">
                                                 &nbsp;
-                                                <label style="font-size:larger">@img.ImageName</label>
+                                                <label style="font-size:larger">@img.Name</label>
                                                 &nbsp;
                                                 <button type="submit" class="btn btn-default">
                                                     <span class="glyphicon glyphicon-remove-circle" style="font-size:1.5em;"></span>

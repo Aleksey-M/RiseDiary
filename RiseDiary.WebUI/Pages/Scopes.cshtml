@@ -1,0 +1,141 @@
+﻿@page
+@model ScopePageModel
+@{
+    ViewData["Title"] = "Области интересов и темы";
+    ViewData["TitlePart"] = "Области интересов и относящиеся к ним темы, которых касаются записи";
+}
+
+<div class="row">
+    <div class="container">
+        <div class="col-md-8 col-md-offset-2">
+
+            @if (!Model.ModelState.IsValid)
+            {
+                <div class="panel panel-danger">
+                    <div class="panel-heading">
+                        <div style="color:red;">
+                            <h4>Ошибка валидации:</h4>
+                            @Html.ValidationSummary()
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <form method="post">
+                        <div class="form form-horizontal">
+                            <div class="input-group">
+                                <input type="text" name="newScopeName" class="form-control" placeholder="Введите название новой области интересов" />
+                                <span class="input-group-btn">
+                                    <input type="submit" class="btn btn-success" value="Создать" asp-page-handler="AddScope" />
+                                </span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            @foreach (var sc in Model.ScopesAndThemes)
+            {
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <div class="view-form" id="view-scope-@sc.Key.Id">
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <h4 style="float:left">@sc.Key.ScopeName</h4>
+                                            &nbsp;
+                                            <button type="button" class="btn btn-link show-edit-form" data-edit-form-id="edit-scope-@sc.Key.Id" data-view-form-id="view-scope-@sc.Key.Id">
+                                                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="edit-form" style="visibility:collapse" id="edit-scope-@sc.Key.Id">
+                            <form method="post">
+                                <div class="form form-horizontal">
+                                    <div class="input-group">
+                                        <input type="hidden" name="scopeId" value="@sc.Key.Id"/>
+                                        <input type="text" name="scopeName" class="form-control" value="@sc.Key.ScopeName" />
+                                        <span class="input-group-btn">
+                                            <input type="submit" class="btn btn-danger" value="Удалить" asp-page-handler="DeleteScope" />
+                                            <input type="submit" class="btn btn-success" value="Обновить" asp-page-handler="UpdateScope" />
+                                        </span>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    @if (sc.Value.Count() > 0)
+                    {
+                        <div class="panel-body">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    @foreach (var th in sc.Value)
+                                    {
+                                        <tr class="view-form" id="view-theme-@th.Id">
+                                            <td>
+                                                <h5 style="float:left">@th.ThemeName</h5>
+                                                <button type="button" class="btn btn-default show-edit-form" style="float:right" data-edit-form-id="edit-theme-@th.Id" data-view-form-id="view-theme-@th.Id">
+                                                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="edit-form" id="edit-theme-@th.Id" style="visibility:collapse">
+                                            <td>
+                                                <form method="post">
+                                                    <div class="form form-horizontal">
+                                                        <input type="hidden" name="scopeId" value="@sc.Key.Id"/>
+                                                        <input type="hidden" name="themeId" value="@th.Id" />
+                                                        <div class="input-group">
+                                                            <input type="text" name="newThemeName" class="form-control" value=" @th.ThemeName" />
+                                                            <span class="input-group-btn">
+                                                                <input type="submit" class="btn btn-danger" value="Удалить" asp-page-handler="DeleteTheme" />
+                                                                <input type="submit" class="btn btn-primary" value="Обновить" asp-page-handler="UpdateTheme" />
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+                        </div>
+                    }
+                    <div class="panel-footer">
+                        <form method="post">
+                            <div class="form form-horizontal">                                
+                                <div class="input-group">
+                                    <input type="hidden" name="scopeId" value="@sc.Key.Id"/>
+                                    <input type="text" name="newThemeName" class="form-control" placeholder='Название новой темы для области "@sc.Key.ScopeName"' />
+                                    <span class="input-group-btn">
+                                        <input type="submit" class="btn btn-success" value="Создать" asp-page-handler="AddTheme" />
+                                    </span>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $(document).on('click', '.show-edit-form', function () {
+                let vid = '#' + $(this).data('view-form-id');
+                let eid = '#' + $(this).data('edit-form-id');
+                $(eid).removeAttr('style'); // у инлайновых стилей приоритет выше. JQuery show() не сработает
+                $(vid).hide();
+            });
+        });
+    </script>
+}

@@ -39,18 +39,18 @@
             </th>
             <th colspan="3" style="vertical-align: middle;">
                 <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="form-control themes-select" style="width:560px; height:30px;">
-                    @foreach (var area in Model.AllAreas)
+                    @foreach (var scope in Model.AllScopes)
                     {
-                        <optgroup label="@area.AreaName">
-                            @foreach (var theme in Model.AllTypes.Where(t => t.AreaId == area.AreaId))
+                        <optgroup label="@scope.ScopeName">
+                            @foreach (var theme in Model.AllThemes.Where(t => t.ScopeId == scope.Id))
                             {
-                                @if (Model.SelectedThemes.Contains(theme.RecordTypeId))
+                                @if (Model.SelectedThemes.Contains(theme.Id))
                                 {
-                                    <option selected="selected" value="@theme.RecordTypeId">@theme.RecordTypeName</option>
+                                    <option selected="selected" value="@theme.Id">@theme.ThemeName</option>
                                 }
                                 else
                                 {
-                                    <option value="@theme.RecordTypeId">@theme.RecordTypeName</option>
+                                    <option value="@theme.Id">@theme.ThemeName</option>
                                 }
                             }
                         </optgroup>
@@ -69,13 +69,13 @@
                 {
                     <div class="row" style="margin-bottom:20px;">
                         <div class="col-sm-10 col-sm-offset-1" style="border:1px solid #66FF00; background-color:#CCFFAA;border-radius:20px;margin-bottom:7px;padding:15px">
-                            <p><b><i><a asp-page="RecordEdit" asp-route-recordId="@recWithCogs.Key.RecordId">@recWithCogs.Key.RecordDate.ToString("yyyy.MM.dd")</a></i>&nbsp;&nbsp;&nbsp;@recWithCogs.Key.RecordName</b></p>
-                            <textarea style="border:none; width:100%; height:400px; background-color:#CCFFAA" readonly="readonly">@recWithCogs.Key.RecordText</textarea>
+                            <p><b><i><a asp-page="RecordEdit" asp-route-recordId="@recWithCogs.Key.Id">@recWithCogs.Key.Date.ToString("yyyy.MM.dd")</a></i>&nbsp;&nbsp;&nbsp;@recWithCogs.Key.Name</b></p>
+                            <textarea style="border:none; width:100%; height:400px; background-color:#CCFFAA" readonly="readonly">@recWithCogs.Key.Text</textarea>
                         </div>
                         @foreach (var cog in recWithCogs.Value)
                         {
                             <div class="col-sm-9 col-sm-offset-2" style="border:1px solid #33CCCC; background-color:#CCFFFF;border-radius:20px;margin-bottom:7px;padding:15px">
-                                <p><b><i><a asp-page="RecordView" asp-route-recordId="@recWithCogs.Key.RecordId">@cog.CogitationDate.ToString("yyyy.MM.dd HH:mm:ss")</a></i></b></p>
+                                <p><b><i><a asp-page="RecordView" asp-route-recordId="@recWithCogs.Key.Id">@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")</a></i></b></p>
                                 <textarea style="border:none; width:100%; height:200px; background-color:#CCFFFF" readonly="readonly">@cog.Text</textarea>
                             </div>
                         }
