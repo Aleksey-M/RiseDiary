@@ -1,0 +1,69 @@
+﻿@page
+@model RiseDiary.WebUI.Pages.Dates.SetupModel
+@{
+    ViewData["Title"] = "Настройки отображения дат";
+    ViewData["TitlePart"] = "Настройки отображения дат";
+}
+<table class="table table-striped">
+    <thead>
+        <tr style="background-color:#ffe0fc">
+            <td colspan="6">
+                <a href="~/Dates/index" class="btn-link">Ближайшие даты</a>
+                &nbsp;&nbsp;
+                <a href="~/Dates/fulllist" class="btn-link">Все даты года</a>
+                &nbsp;&nbsp;
+                <a href="~/Dates/calendar" class="btn-link">Даты на календаре</a>
+                &nbsp;&nbsp;
+            </td>
+        </tr>
+    </thead>
+</table>
+<form method="post">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            @if (Model.Message == null)
+            {
+                <h4>Выберите источник дат и периоды отображения</h4>
+            }
+            else
+            {
+                <h4>@Model.Message</h4>
+            }
+        </div>
+        <div class="panel-body">
+            <table>
+                <tbody>
+                    <tr>
+                        <td>Выберите сферу дат: </td>
+                        <td>
+                            <select class="form-control" style="margin-left:20px;" name="scopeId" id="scopeId">
+                                @foreach (var scope in Model.Scopes)
+                                {
+                                    @if (Model.SelectedScopeId == scope.Id)
+                                    {
+                                        <option value="@scope.Id" selected="selected">@scope.ScopeName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@scope.Id">@scope.ScopeName</option>
+                                    }
+
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Введите количество дней для отображения дат:</td>
+                        <td>
+                            <input type="number" name="displayRange" id="displayRange" class="form-control" value="@Model.DaysDisplayRange" style="margin-left:20px;margin-top:5px;" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-footer">
+            <input type="submit" class="btn btn-success" value="Сохранить" />
+        </div>
+    </div>
+</form>
+

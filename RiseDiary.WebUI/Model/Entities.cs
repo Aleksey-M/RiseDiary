@@ -85,11 +85,44 @@ namespace RiseDiary.Model
         public bool Deleted { get; set; }
     }
 
-    //public class AppSetting
-    //{
-    //    public int Id { get; set; }
-    //    public string Key { get; set; }
-    //    public string Value { get; set; }
-    //    public DateTime ModifiedDate { get; set; }
-    //}
+    public static class AppSettingsKeys
+    {
+        public static string DatesScopeId => "ImportantDaysScopeId";
+        public static string DatesDisplayRange => "ImportantDaysDisplayRange";
+    }
+
+    public class AppSetting
+    {
+        public string Key { get; set; }
+        public string Value { get; set; }
+        public DateTime ModifiedDate { get; set; }
+    }
+
+    public class DateItem
+    {
+        public DateItem(DateTime date)
+        {
+            Date = date;
+        }
+        public DateItem(int id, string theme, DateTime date, string name, string text)
+        {
+            Id = id;
+            Theme = theme;
+            Date = date;
+            Name = name;
+            Text = text;
+        }
+        public int Id { get; }
+        public string Theme { get; }
+        public DateTime Date { get; }
+        public string Name { get; }
+        public string Text { get; }
+
+        public DateTime ThisYearDate => new DateTime(DateTime.Now.Year, Date.Month, Date.Day);
+        public string DisplayDate => ThisYearDate.ToString("yyyy.MM.dd") + " " + ThisYearDate.DayOfWeek.ToString();
+        public bool IsWeekday => Name == null;
+        public bool IsToday => DateTime.Now.Date == ThisYearDate.Date;
+
+    }
+
 }

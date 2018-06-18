@@ -1,0 +1,112 @@
+﻿@page
+@model RiseDiary.WebUI.Pages.Dates.CalendarModel
+@{
+    ViewData["Title"] = "Даты на календаре";
+    ViewData["TitlePart"] = "Даты на календаре";
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr style="background-color:#ffe0fc">
+            <td colspan="6">
+                <a href="~/Dates/setup" class="btn-link">Настройки</a>
+                &nbsp;&nbsp;
+                <a href="~/Dates/index" class="btn-link">Ближайшие даты</a>
+                &nbsp;&nbsp;
+                <a href="~/Dates/fulllist" class="btn-link">Все даты года</a>
+                &nbsp;&nbsp;
+            </td>
+        </tr>
+    </thead>
+</table>
+
+    <div id="calendar"></div>
+
+    @section Scripts {
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+        <script type="text/javascript">
+
+        const dates = [
+            @for(int i=0, count = Model.Dates.Count(); i<count; i++)
+            {
+                <text>
+            {
+                id: @Model.Dates[i].Id,
+                name: "@Model.Dates[i].Theme: "+"@Model.Dates[i].Name",
+                startDate: new Date(@Model.Dates[i].ThisYearDate.Year, @Model.Dates[i].ThisYearDate.Month-1, @Model.Dates[i].ThisYearDate.Day),
+                endDate: new Date(@Model.Dates[i].ThisYearDate.Year, @Model.Dates[i].ThisYearDate.Month-1, @Model.Dates[i].ThisYearDate.Day)
+
+            }@(i != count - 1 ? "," : string.Empty)
+                </text>
+            }
+        ];
+        </script>
+
+        <script src="~/lib/bootstrap-year-calendar/js/bootstrap-year-calendar.js"></script>
+        <script type="text/javascript">
+
+        function getIdByStartDate(startDate) {
+            let _date = startDate.getTime();
+            for (let i = 0; i < dates.length; i++) {
+                if (dates[i].startDate.getTime() === _date) {
+                    return dates[i].id;
+                }
+            }
+            return null;
+        }
+
+        let currentYear = @DateTime.Now.Year;
+
+        $(function () {
+            $('#calendar').calendar({
+                style: 'background',
+                enableRangeSelection: true,
+                mouseOnDay: function (e) {
+                    if (e.events.length > 0) {
+                        var content = '';
+
+                        for (var i in e.events) {
+                            content += '<div class="event-tooltip-content">'
+                                + '<div class="event-name" style="color:' + e.events[i].color + '">' + e.events[i].name + '</div>'
+                                + '</div>';
+                        }
+
+                        $(e.element).popover({
+                            trigger: 'manual',
+                            container: 'body',
+                            html: true,
+                            content: content
+                        });
+
+                        $(e.element).popover('show');
+                    }
+                },
+                mouseOutDay: function (e) {
+                    if (e.events.length > 0) {
+                        $(e.element).popover('hide');
+                    }
+                },
+                selectRange: function (e) {
+                    let id = getIdByStartDate(e.startDate);
+                    if (id !== null) {
+                        window.location.replace('/RecordView?recordId=' + encodeURIComponent(id));
+                    }
+                },
+                startYear: @DateTime.Now.Year,
+                maxDate: new Date(@DateTime.Now.Year, 11, 31),
+                minDate: new Date(@DateTime.Now.Year, 0, 1),
+                renderEnd: function (e) {
+                    if (e.currentYear !== currentYear) {
+                        updateCalendar(e.currentYear, $('.multiselect').val());
+                    }
+                },
+                dataSource: dates
+            });
+
+            $("#btnSearch").on('click', function () {
+                updateCalendar($('#calendar').data('calendar').getYear(), $('.multiselect').val());
+            });
+        });
+        </script>
+    }

@@ -1,0 +1,74 @@
+﻿@page
+@model RiseDiary.WebUI.Pages.Dates.ListModel
+@{
+    ViewData["Title"] = "Все даты";
+    ViewData["TitlePart"] = "Все даты";
+
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr style="background-color:#ffe0fc">
+            <td colspan="6">
+                <a href="~/Dates/setup" class="btn-link">Настройки</a>
+                &nbsp;&nbsp;
+                <a href="~/Dates/index" class="btn-link">Ближайшие даты</a>
+                &nbsp;&nbsp;
+                <a href="~/Dates/calendar" class="btn-link">Даты на календаре</a>
+                &nbsp;&nbsp;
+            </td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var date in Model.Dates)
+        {
+            @if (date.IsToday)
+            {
+                <tr style="background-color:#fe9393">
+                    <td>
+                        @date.DisplayDate
+                    </td>
+                    <td>
+                        @date.Theme
+                    </td>
+                    <td>
+                        @date.Date.ToString("yyyy.MM.dd")
+                    </td>
+                    <td>
+                        @date.Name
+                    </td>
+                    <td>
+                        @date.Text
+                    </td>
+                    <td>
+                        <a href="~/RecordView?recordId=@date.Id">View</a>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td>
+                        @date.DisplayDate
+                    </td>
+                    <td>
+                        @date.Theme
+                    </td>
+                    <td>
+                        @date.Date.ToString("yyyy.MM.dd")
+                    </td>
+                    <td>
+                        @date.Name
+                    </td>
+                    <td>
+                        @date.Text
+                    </td>
+                    <td>
+                        <a href="~/RecordView?recordId=@date.Id">View</a>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+

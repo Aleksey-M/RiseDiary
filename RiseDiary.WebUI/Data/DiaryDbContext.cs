@@ -3,6 +3,7 @@ using RiseDiary.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,7 +23,7 @@ namespace RiseDiary.WebUI.Data
         public DbSet<DiaryRecordTheme> RecordThemes { get; set; }
         public DbSet<DiaryRecordImage> RecordImages { get; set; }
 
-        //public DbSet<AppSetting> AppSettings { get; set; }
+        public DbSet<AppSetting> AppSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,6 +32,7 @@ namespace RiseDiary.WebUI.Data
             modelBuilder.Entity<DiaryImage>().Property(i => i.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<DiaryRecord>().Property(r => r.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<Cogitation>().Property(c => c.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<AppSetting>().HasKey(s => s.Key);
 
             modelBuilder.Entity<DiaryRecordTheme>().HasKey(nameof(DiaryRecordTheme.RecordId), nameof(DiaryRecordTheme.ThemeId));
             modelBuilder.Entity<DiaryRecordImage>().HasKey(nameof(DiaryRecordImage.RecordId), nameof(DiaryRecordImage.ImageId));
@@ -561,12 +563,80 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task<string> GetAppSetting(this DiaryDbContext context, string key)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException(nameof(key));
+            return (await context.AppSettings.FirstOrDefaultAsync(s => s.Key == key))?.Value ?? string.Empty;
+        }
+
+        public static async Task<int?> GetAppSettingInt(this DiaryDbContext context, string key)
+        {
+            var str = await context.GetAppSetting(key);
+             var style = new NumberStyles();
+            var formatProv = CultureInfo.CurrentCulture.NumberFormat;
+            bool res = int.TryParse(str, style, formatProv, out int result);
+
+            return res ? new Nullable<int>(result) : null;
         }
 
         public static async Task UpdateAppSetting(this DiaryDbContext context, string key, string value)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException(nameof(key));
+            if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException(nameof(value));
+            var appSetting = await context.AppSettings.FirstOrDefaultAsync(s => s.Key == key);
+            if(appSetting == null)
+            {
+                context.AppSettings.Add(new AppSetting
+                {
+                    Key = key,
+                    Value = value,
+                    ModifiedDate = DateTime.Now
+                });
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+               if(appSetting.Value != value)
+                {
+                    appSetting.Value = value;
+                    appSetting.ModifiedDate = DateTime.Now;
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
+        public static Task<List<DateItem>> FetchDateItems(this DiaryDbContext context, int scopeId, DateTime today, int displayRange)
+        {
+            var from = today.AddDays(-displayRange);
+            var to = today.AddDays(displayRange);
+            return context.RecordThemes.Where(rt => !rt.Deleted)
+                .Join(context.Themes.Where(t => !t.Deleted && t.ScopeId == scopeId), rt => rt.ThemeId, t => t.Id, (rt, t) => new { t.ThemeName, rt.RecordId })
+                .Join(
+                    context.Records.Where(
+                        r => !r.Deleted && 
+                        r.Date >= new DateTime(r.Date.Year, from.Month, from.Day) && 
+                        r.Date <= new DateTime(r.Date.Year, to.Month, to.Day)), 
+                    t => t.RecordId, 
+                    r => r.Id, 
+                    (t, r) => new DateItem(r.Id, t.ThemeName, r.Date, r.Name, r.Text))
+                .OrderByDescending(i => i.ThisYearDate)
+                .ToListAsync();
+        }
+
+        public static Task<List<DateItem>> FetchAllDateItems(this DiaryDbContext context, int scopeId)
+        {
+            return context.RecordThemes.Where(rt => !rt.Deleted)
+                .Join(context.Themes.Where(t => !t.Deleted && t.ScopeId == scopeId), rt => rt.ThemeId, t => t.Id, (rt, t) => new { t.ThemeName, rt.RecordId })
+                .Join(context.Records.Where(r => !r.Deleted), t => t.RecordId, r => r.Id, (t, r) => new DateItem(r.Id, t.ThemeName, r.Date, r.Name, r.Text))
+                .OrderByDescending(i => i.ThisYearDate)
+                .ToListAsync();
+        }
+
+        public static Task<List<DiaryRecord>> SearchRecordsByText(this DiaryDbContext context, string searchText)
+        {
+            return context.Records                
+                .Where(r => !r.Deleted && ( r.Name.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1 ||
+                    r.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1))
+                    .OrderByDescending(r => r.Date)
+                    .ToListAsync();
         }
     }
 }

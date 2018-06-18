@@ -1,0 +1,78 @@
+﻿@page
+@model RiseDiary.WebUI.Pages.Analysis.IndexModel
+@{
+    ViewData["Title"] = "Поиск записей по фрагменту названия или текста";
+    ViewData["TitlePart"] = "Поиск записей по фрагменту названия или текста";
+
+}
+
+<table class="table">
+    <tbody>
+        <!--<tr style="background-color:#ffe0fc">
+        <th colspan="6">
+            <a href="#" class="btn-link">Настройки</a>
+            &nbsp;&nbsp;
+
+        </th>
+    </tr>
+        -->
+        <tr>
+            <td colspan="6">
+                <form method="get">
+                    <div class="form-horizontal row">
+                        <div class="form-inline col-md-6 col-md-offset-3">
+                            <input type="text" placeholder="Строка поиска" name="searchString" id="searchString" value="@Model.SearchString" class="form-control" style="width:80%" />
+                            &nbsp;&nbsp;
+                            <input type="submit" value="Поиск" class="btn btn-default" />
+                        </div>
+                    </div>
+                </form>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<table class="table table-striped" style="table-layout:fixed">
+    <thead>       
+        <tr>
+            <th style="vertical-align: middle;width:10%">Дата</th>
+            <th style="vertical-align: middle;width:20%">Название</th>
+            <th style="vertical-align: middle;width:30%">Текст записи</th>
+            <th style="vertical-align: middle;">Дата создания</th>
+            <th style="vertical-align: middle;">Дата изменения</th>
+            <th style="text-align:center;width:8%"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Records.Count == 0)
+        {
+            <tr>
+                <td colspan="6"><b>Соответствий нет</b></td>
+            </tr>
+        }
+        else
+        {
+            foreach (var rec in Model.Records)
+            {
+            <tr>
+                <td>@rec.Date.ToString("yyyy.MM.dd")</td>
+                <td>@rec.RecordNameDisplay</td>
+                <td>@rec.RecordTextShort</td>
+                <td>@rec.CreateDate.ToString("G")</td>
+                <td>@rec.ModifyDate.ToString("G")</td>
+                <td>
+                    <a href="~/RecordEdit?recordId=@rec.Id">Edit</a>
+                    &nbsp;&nbsp;
+                    <a href="~/RecordView?recordId=@rec.Id">View</a>
+                </td>
+            </tr>
+            }
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="6"><b><i>Записей отфильтровано : @Model.Records.Count </i></b></td>
+        </tr>
+    </tfoot>
+</table>
+
