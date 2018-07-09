@@ -28,9 +28,7 @@ namespace RiseDiary.WebUI.Pages
         public string RecordText { get; set; }
         public IEnumerable<int> RecordThemesIds { get; set; }
         public IEnumerable<DiaryThemeJoined> Themes { get; set; }
-        public IEnumerable<DiaryImage> AddedImages { get; set; }
-        public IEnumerable<DiaryImage> NotAddedImages { get; set; }
-
+        
         private async Task UpdatePageState()
         {
             Themes = await _context.FetchThemesWithScopes();
@@ -46,11 +44,7 @@ namespace RiseDiary.WebUI.Pages
                     RecordModifyDate = rec.ModifyDate;
                     RecordName = rec.Name;
                     RecordText = rec.Text;
-                    RecordThemesIds = (await _context.FetchRecordThemes(rec.Id)).Select(rt => rt.Id);
-
-                    AddedImages = await _context.FetchImagesForRecord(rec.Id);
-                    int imagesCount = await _context.GetImagesCount();
-                    NotAddedImages = (await _context.FetchImageSet(0, imagesCount)).Except(AddedImages, new DiaryImageEqualityComparerById());
+                    RecordThemesIds = (await _context.FetchRecordThemes(rec.Id)).Select(rt => rt.Id);                                        
                 }
             }
         }
@@ -109,27 +103,7 @@ namespace RiseDiary.WebUI.Pages
         public async Task<IActionResult> OnPostDeleteRecordAsync(int recordId)
         {
             await _context.DeleteRecord(recordId);
-            return RedirectToPage("RecordsView");
-        }
-
-        public async Task OnPostAddImageAsync(int recordId, int imageId)
-        {           
-            if(recordId != 0) RecordId = recordId;
-            if (imageId != 0)
-            {                
-                await _context.AddRecordImage(recordId, imageId);
-            }
-            await UpdatePageState();
-        }
-
-        public async Task OnPostDeleteImageAsync(int recordId, int imageId)
-        {
-            if (recordId != 0) RecordId = recordId;
-            if (imageId != 0)
-            {
-                await _context.RemoveRecordImage(recordId, imageId);
-            }
-            await UpdatePageState();
-        }
+            return Redirect("~/Records");
+        }        
     }
 }

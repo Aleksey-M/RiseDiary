@@ -19,6 +19,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             RemoveTmpDbFiles();
         }
 
+        protected const string FullImageName = @"D:\Projects\RiseDiary\RiseDiary.IntegratedTests\TestImage.jpg";
         private static List<string> _dbFileNames = new List<string>();
         protected static string DirNameFull => AppDomain.CurrentDomain.BaseDirectory;
 
@@ -85,8 +86,11 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         {
             CreateDate = DateTime.Now,
             Name = Guid.NewGuid().ToString(),
-            Data = new byte[1024 * 1024 * 25]
+            Thumbnail = File.ReadAllBytes(FullImageName)
         };
+
+        protected static string UniqueString => Guid.NewGuid().ToString();
+        protected static byte[] ImageBytes => File.ReadAllBytes(FullImageName);
 
         protected static int Create_Image(DiaryDbContext context)
         {

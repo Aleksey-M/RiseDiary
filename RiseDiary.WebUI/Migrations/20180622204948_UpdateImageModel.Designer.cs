@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RiseDiary.WebUI.Data;
 
 namespace RiseDiary.WebUI.Migrations
 {
     [DbContext(typeof(DiaryDbContext))]
-    partial class DiaryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180622204948_UpdateImageModel")]
+    partial class UpdateImageModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -63,7 +65,7 @@ namespace RiseDiary.WebUI.Migrations
 
                     b.Property<string>("Name");
 
-                    b.Property<int>("SizeByte");
+                    b.Property<int>("SizeBit");
 
                     b.Property<byte[]>("Thumbnail");
 
@@ -162,28 +164,6 @@ namespace RiseDiary.WebUI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Themes");
-                });
-
-            modelBuilder.Entity("RiseDiary.Model.TempImage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<byte[]>("Data");
-
-                    b.Property<int>("Height");
-
-                    b.Property<string>("Modification");
-
-                    b.Property<int>("SizeByte");
-
-                    b.Property<int>("SourceImageId");
-
-                    b.Property<int>("Width");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TempImages");
                 });
 #pragma warning restore 612, 618
         }

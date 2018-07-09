@@ -1,0 +1,36 @@
+﻿@page "{imageId?}"
+@model RiseDiary.WebUI.Pages.Images.UploadModel
+@{
+    ViewData["Title"] = "Загрузка файла";
+    ViewData["TitlePart"] = "Загрузка файла";
+}
+
+<div class="row">
+    <div class="col-sm-10 col-sm-offset-1">
+
+        @if (!Model.ModelState.IsValid)
+        {
+            <div class="panel panel-danger">
+                <div class="panel-heading">
+                    <div style="color:red;">
+                        <h4>Ошибка валидации:</h4>
+                        @Html.ValidationSummary()
+                    </div>
+                </div>
+            </div>
+        }
+
+        <form asp-page-handler="AddNewImage" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="targetRecordId" id="targetRecordId" value="@(Model.TargetRecordId ?? 0)" />
+            <table class="table">
+                <tr>
+                    <td colspan="2"><input type="file" accept="image/*" id="newImage" name="newImage" class="form-control-file" style="width:80%" /></td>
+                </tr>
+                <tr>
+                    <td style="width:80%"><input type="text" placeholder="Название нового изображения" id="newImageName" name="newImageName" class="form-control" /></td>
+                    <td><input type="submit" value="Добавить" class="btn btn-sm btn-success form-control" /></td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</div>

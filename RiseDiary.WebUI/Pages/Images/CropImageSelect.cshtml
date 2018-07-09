@@ -1,0 +1,66 @@
+﻿@page "{handler?}"
+@model RiseDiary.WebUI.Pages.Images.CropImageSelectModel
+@{
+    ViewData["Title"] = "CropImageSelect";
+}
+
+<div class="row">
+    <div class="col-sm-12">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <td>
+                        <b>Выберите требуемую область:</b>
+                    </td>
+                    <td>
+                        <form method="post" asp-page-handler="CropImage">
+                            <div class="form-inline" style="float:right;margin-right:10px;">
+                                <input type="hidden" name="imageId" value="@Model.ImageId" />
+                                <input type="hidden" name="recordId" value="@Model.RecordId" />
+                                <input type="hidden" name="selLeft" id="selLeft" value="0" />
+                                <input type="hidden" name="selTop" id="selTop" value="0" />
+                                <input type="hidden" name="selWidth" id="selWidth" value="0" />
+                                <input type="hidden" name="selHeight" id="selHeight" value="0" />
+                                <input type="hidden" name="coefficient" id="coefficient" value="@Model.Coefficient" />
+                                <input type="submit" class="btn btn-danger btn-sm" style="width:80px;" value="Обрезать" />
+                            </div>
+                        </form>
+                    </td>
+                    <td>
+                        <a asp-page="Edit" asp-route-imageId="@Model.ImageId" asp-route-recordId="@Model.RecordId" class="btn btn-info btn-sm" style="width:80px;">Отмена</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-sm-12">
+        <img src="data:image;base64,@Model.ScaledImageString" id="scaledImage" name="scaledImage" />
+    </div>    
+</div>
+
+
+@section Styles{
+    <link href="~/lib/jquery-jcrop/css/Jcrop.css" rel="stylesheet" />   
+}
+
+@section Scripts{
+    <script src="~/lib/jquery-jcrop/js/Jcrop.js"></script>
+
+    <script type="text/javascript">
+
+        function writeCoordsToForm(coord) {
+            $('#selLeft').val(coord.x);
+            $('#selTop').val(coord.y);
+            $('#selWidth').val(coord.w);
+            $('#selHeight').val(coord.h);
+        }
+
+        $(function () {
+            $('#scaledImage').Jcrop({
+                onChange: writeCoordsToForm,
+                onSelect: writeCoordsToForm
+            });
+        });
+        
+    </script>
+}

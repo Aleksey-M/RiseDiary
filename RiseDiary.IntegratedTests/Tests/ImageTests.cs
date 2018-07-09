@@ -16,7 +16,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         {
             var context =  CreateContext();
 
-            int id = await context.AddImage(GetTestImage()); 
+            int id = await context.AddImage(UniqueString, ImageBytes); 
 
             Assert.AreNotEqual(0, id);
         }
@@ -36,14 +36,13 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         {
             var context =  CreateContext();
             var img = GetTestImage();
-            img.Data = new byte[] { 1, 1, 1, 1 };
 
-            int id = await context.AddImage(img);
+            int id = await context.AddImage(img.Name, img.Thumbnail);
             var imgSaved = await context.FetchImageById(id);
 
             Assert.IsNotNull(imgSaved);
             Assert.AreEqual(img.Name, imgSaved.Name);
-            Assert.AreEqual(img.CreateDate, imgSaved.CreateDate);
+            Assert.AreEqual(img.CreateDate.Date, imgSaved.CreateDate.Date);
         }
 
         [Test]
@@ -51,14 +50,14 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         {
             var context =  CreateContext();
             var img = GetTestImage();
-            img.Data = new byte[] { 1, 2, 3, 4 };
+            var fullImage = img.Thumbnail;
 
-            int id = await context.AddImage(img);
-            var imgDataSaved = await context.FetchImageDataById(id);
+            int id = await context.AddImage(img.Name, img.Thumbnail);
+            var imgDataSaved = await context.FetchFullImageById(id);
 
             Assert.IsNotNull(imgDataSaved);
-            Assert.AreEqual(img.Data.Length, imgDataSaved.Length);
-            Assert.IsTrue(img.Data.Zip(imgDataSaved, (byte1, byte2) => byte1 == byte2).All(concat => concat));
+            Assert.AreEqual(fullImage.Length, imgDataSaved.Length);
+            Assert.IsTrue(fullImage.Zip(imgDataSaved, (byte1, byte2) => byte1 == byte2).All(concat => concat));
         }
 
         [Test]
@@ -77,7 +76,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             var context =  CreateContext();
             for (int i = 0; i < 3; i++)
             {
-                await context.AddImage(GetTestImage());
+                await context.AddImage(GetTestImage().Name, GetTestImage().Thumbnail);
             }
 
             int count = await context.GetImagesCount();
@@ -89,7 +88,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         public async Task DeleteImage_ShouldDeleteOneImage()
         {
             var context =  CreateContext();
-            var ids = Enumerable.Range(0, 3).Select(async i => await context.AddImage(GetTestImage())).ToArray();
+            var ids = Enumerable.Range(0, 3).Select(async i => await context.AddImage(UniqueString, ImageBytes)).ToArray();
 
             await context.DeleteImage(await ids[1]);
 
@@ -105,7 +104,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         public async Task UpdateImageName_ShouldUpdateImageName()
         {
             var context =  CreateContext();
-            int id = await context.AddImage(GetTestImage());
+            int id = await context.AddImage(UniqueString, ImageBytes);
             string newName = Guid.NewGuid().ToString();
 
             await context.UpdateImageName(id, newName);
@@ -119,7 +118,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         public async Task GetImages_ShouldReturn3LastImages()
         {
             var context =  CreateContext();
-            var ids = Enumerable.Range(0, 10).Select(async i => await context.AddImage(GetTestImage())).ToArray();
+            var ids = Enumerable.Range(0, 10).Select(async i => await context.AddImage(UniqueString, ImageBytes)).ToArray();
 
             var page = await context.FetchImageSet(7, 5);
 

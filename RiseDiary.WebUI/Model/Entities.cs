@@ -38,8 +38,32 @@ namespace RiseDiary.Model
         public int Id { get; set; }
         public string Name { get; set; }
         public DateTime CreateDate { get; set; }
-        public byte[] Data { get; set; }
+        public DateTime ModifyDate { get; set; }
+        public byte[] Thumbnail { get; set; }
+        public string Base64Thumbnail => Convert.ToBase64String(Thumbnail);
+        public string SizeKbString => Math.Round(SizeByte / 1024f, 2).ToString() + " Kb";
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public int SizeByte { get; set; }
         public bool Deleted { get; set; }
+    }
+
+    public class DiaryImageFull
+    {
+        public int Id { get; set; }
+        public byte[] Data { get; set; }
+    }
+
+    public class TempImage
+    {
+        public int Id { get; set; }
+        public int SourceImageId { get; set; }
+        public string Modification { get; set; }
+        public byte[] Data { get; set; }
+        public string SizeKbString => Math.Round(SizeByte / 1024f, 2).ToString() + " Kb";
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public int SizeByte { get; set; }
     }
 
     public class DiaryRecordImage

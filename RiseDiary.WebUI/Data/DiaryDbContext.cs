@@ -16,7 +16,7 @@ namespace RiseDiary.WebUI.Data
         public DbSet<DiaryScope> Scopes { get; set; }
         public DbSet<DiaryTheme> Themes { get; set; }
         public DbSet<DiaryImage> Images { get; set; }
-
+        public DbSet<DiaryImageFull> FullSizeImages { get; set; }
         public DbSet<DiaryRecord> Records { get; set; }
         public DbSet<Cogitation> Cogitations { get; set; }
 
@@ -24,6 +24,7 @@ namespace RiseDiary.WebUI.Data
         public DbSet<DiaryRecordImage> RecordImages { get; set; }
 
         public DbSet<AppSetting> AppSettings { get; set; }
+        public DbSet<TempImage> TempImages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -113,10 +114,7 @@ namespace RiseDiary.WebUI.Data
             return area.Id;
         }
 
-        public static async Task<bool> CanDeleteScope(this DiaryDbContext context, int scopeId)
-        {
-            return !(await context.Themes.AnyAsync(th => th.ScopeId == scopeId && !th.Deleted));             
-        }
+        public static async Task<bool> CanDeleteScope(this DiaryDbContext context, int scopeId) => !(await context.Themes.AnyAsync(th => th.ScopeId == scopeId && !th.Deleted));
 
         public static async Task DeleteScope(this DiaryDbContext context, int scopeId)
         {
@@ -143,20 +141,9 @@ namespace RiseDiary.WebUI.Data
             return targetScope.Id;
         }
 
-        public static Task<DiaryScope> FetchScopeById(this DiaryDbContext context, int scopeId)
-        {
-            return context.Scopes.FirstOrDefaultAsync(s=> s.Id == scopeId && !s.Deleted);
-        }
-
-        public static Task<List<DiaryScope>> FetchAllScopes(this DiaryDbContext context)
-        {
-            return context.Scopes.Where(s=>!s.Deleted).ToListAsync();
-        }
-
-        public static Task<int> GetScopesCount(this DiaryDbContext context)
-        {
-            return context.Scopes.CountAsync(s => !s.Deleted);
-        }
+        public static Task<DiaryScope> FetchScopeById(this DiaryDbContext context, int scopeId) => context.Scopes.FirstOrDefaultAsync(s => s.Id == scopeId && !s.Deleted);
+        public static Task<List<DiaryScope>> FetchAllScopes(this DiaryDbContext context) => context.Scopes.Where(s => !s.Deleted).ToListAsync();
+        public static Task<int> GetScopesCount(this DiaryDbContext context) => context.Scopes.CountAsync(s => !s.Deleted);
 
         public static async Task<int> AddTheme(this DiaryDbContext context, int scopeId, string themeName)
         {
@@ -192,30 +179,23 @@ namespace RiseDiary.WebUI.Data
             }
         }
 
-        public static Task<DiaryTheme> FetchThemeById(this DiaryDbContext context, int themeId)
-        {
-            return context.Themes.FirstOrDefaultAsync(t => t.Id == themeId && !t.Deleted);
-        }
+        public static Task<DiaryTheme> FetchThemeById(this DiaryDbContext context, int themeId) => context.Themes.FirstOrDefaultAsync(t => t.Id == themeId && !t.Deleted);
 
         public static Task<List<DiaryTheme>> FetchThemesOfScope(this DiaryDbContext context, int? scopeId)
         {
-            if(scopeId != null)
-            {
-                return context.Themes.Where(t => t.ScopeId == scopeId && !t.Deleted).ToListAsync();
-            }
-            return context.Themes.Where(t=>!t.Deleted).ToListAsync();
+            return scopeId != null
+                ? context.Themes.Where(t => t.ScopeId == scopeId && !t.Deleted).ToListAsync()
+                : context.Themes.Where(t=>!t.Deleted).ToListAsync();
         }
 
         public static Task<List<int>> FetchThemesIds(this DiaryDbContext context, int? scopeId)
         {
-            if (scopeId != null)
-            {
-                return context.Themes
+            return scopeId != null
+                ? context.Themes
                     .Where(t => t.ScopeId == scopeId && !t.Deleted)
                     .Select(t => t.Id)
-                    .ToListAsync();
-            }
-            return context.Themes.Where(t=>!t.Deleted).Select(t => t.Id).ToListAsync();
+                    .ToListAsync()
+                : context.Themes.Where(t=>!t.Deleted).Select(t => t.Id).ToListAsync();
         }
 
         public static Task<List<DiaryThemeJoined>> FetchThemesWithScopes(this DiaryDbContext context)
@@ -238,11 +218,9 @@ namespace RiseDiary.WebUI.Data
 
         public static Task<int> GetThemesCount(this DiaryDbContext context, int? scopeId)
         {
-            if (scopeId != null)
-            {
-                return context.Themes.CountAsync(t => t.ScopeId == scopeId && !t.Deleted);
-            }
-            return context.Themes.CountAsync(t => !t.Deleted);
+            return scopeId != null
+                ? context.Themes.CountAsync(t => t.ScopeId == scopeId && !t.Deleted)
+                : context.Themes.CountAsync(t => !t.Deleted);
         }
 
         public static async Task AddRecordTheme(this DiaryDbContext context, int recordId, int themeId)
@@ -290,17 +268,34 @@ namespace RiseDiary.WebUI.Data
                 .ToListAsync();
         }
 
-        public static async Task<int> AddImage(this DiaryDbContext context, DiaryImage image)
+        public static async Task<int> AddImage(this DiaryDbContext context, string imageName, byte[] fullSizeImageData)
         {
-            if (image == null)
+            if (imageName == null)
             {
-                throw new ArgumentNullException(nameof(image));
+                throw new ArgumentNullException(nameof(imageName));
             }
-            if (image.Data == null || image.Data.Length == 0)
+            if (fullSizeImageData == null || fullSizeImageData.Length == 0)
             {
-                throw new ArgumentException(nameof(image));
+                throw new ArgumentException(nameof(fullSizeImageData));
             }
+            var image = new DiaryImage
+            {
+                Name = imageName,
+                CreateDate = DateTime.Now,
+                ModifyDate = DateTime.Now,
+                SizeByte = fullSizeImageData.Length,
+                Thumbnail = ImageHelper.ScaleImage(fullSizeImageData)
+            };
+            (image.Width, image.Height) = ImageHelper.ImageSize(fullSizeImageData);
             context.Images.Add(image);
+            await context.SaveChangesAsync();
+
+            var fullImage = new DiaryImageFull
+            {
+                Data = fullSizeImageData,
+                Id = image.Id
+            };
+            context.FullSizeImages.Add(fullImage);
             await context.SaveChangesAsync();
             return image.Id;
         }
@@ -321,30 +316,33 @@ namespace RiseDiary.WebUI.Data
             if (img != null && !img.Deleted)
             {
                 img.Name = imageNewName;
+                img.ModifyDate = DateTime.Now;
                 await context.SaveChangesAsync();
             }
         }
-        public static Task<DiaryImage> FetchImageById(this DiaryDbContext context, int imageId)
-        {
-            return context.Images.FirstOrDefaultAsync(i => i.Id == imageId && !i.Deleted);
-        }
-        public static Task<int> GetImagesCount(this DiaryDbContext context)
-        {
-            return context.Images.CountAsync(i => !i.Deleted);
-        }
-        public static Task<List<DiaryImage>> FetchImageSet(this DiaryDbContext context, int skip, int count)
-        {
-            return context.Images.Where(i=>!i.Deleted).OrderByDescending(i => i.CreateDate).Skip(skip).Take(count).ToListAsync();
-        }
-        public static async Task<byte[]> FetchImageDataById(this DiaryDbContext context,int imageId)
+        public static async Task UpdateFullSizeImage(this DiaryDbContext context, int imageId, byte[] newImage)
         {
             var img = await context.Images.FindAsync(imageId);
             if (img != null && !img.Deleted)
             {
-                return img.Data;
+                img.Thumbnail = ImageHelper.ScaleImage(newImage);
+                img.ModifyDate = DateTime.Now;
+                img.SizeByte = newImage.Length;
+                (img.Width, img.Height) = ImageHelper.ImageSize(newImage);
+                var fullImg = await context.FullSizeImages.FindAsync(img.Id);
+                fullImg.Data = newImage;
+                await context.SaveChangesAsync();
             }
-            return null;
         }
+        public static Task<DiaryImage> FetchImageById(this DiaryDbContext context, int imageId) => context.Images.FirstOrDefaultAsync(i => i.Id == imageId && !i.Deleted);
+        public static async Task<byte[]> FetchFullImageById(this DiaryDbContext context, int imageId)
+        {
+            bool imageExists = await context.Images.FirstOrDefaultAsync(i => i.Id == imageId && !i.Deleted) != null;
+            return imageExists ? (await context.FullSizeImages.FirstOrDefaultAsync(i => i.Id == imageId))?.Data : null;
+        }
+        public static Task<int> GetImagesCount(this DiaryDbContext context) => context.Images.CountAsync(i => !i.Deleted);
+        public static Task<List<DiaryImage>> FetchImageSet(this DiaryDbContext context, int skip, int count) => context.Images.Where(i => !i.Deleted).OrderByDescending(i => i.CreateDate).Skip(skip).Take(count).ToListAsync();
+        public static Task<List<DiaryImage>> FetchAllImages(this DiaryDbContext context) => context.Images.Where(i => !i.Deleted).OrderByDescending(i => i.CreateDate).ToListAsync();
         public static async Task AddRecordImage(this DiaryDbContext context, int recordId, int imageId)
         {
             var recImg = await context.RecordImages.FirstOrDefaultAsync(ri => ri.RecordId == recordId && ri.ImageId == imageId);
@@ -376,10 +374,7 @@ namespace RiseDiary.WebUI.Data
             var imagesIds = await context.RecordImages.Where(ri => ri.RecordId == recordId && !ri.Deleted).Select(ri => ri.ImageId).ToListAsync();
             return await context.Images.Where(i => imagesIds.Contains(i.Id) && !i.Deleted).ToListAsync();
         }
-        public static Task<int> GetLinkedRecordsCount(this DiaryDbContext context, int imageId)
-        {
-            return context.RecordImages.CountAsync(ri => ri.ImageId == imageId && !ri.Deleted);
-        }
+        public static Task<int> GetLinkedRecordsCount(this DiaryDbContext context, int imageId) => context.RecordImages.CountAsync(ri => ri.ImageId == imageId && !ri.Deleted);
 
         public static async Task DeleteCogitation(this DiaryDbContext context, int cogitationId)
         {
@@ -391,15 +386,8 @@ namespace RiseDiary.WebUI.Data
             }
         }
 
-        public static Task<Cogitation> FetchCogitationById(this DiaryDbContext context, int cogitationId)
-        {
-            return context.Cogitations.FirstOrDefaultAsync(c=>c.Id == cogitationId && !c.Deleted);
-        }
-
-        public static Task<List<Cogitation>> FetchAllCogitationsOfRecord(this DiaryDbContext context, int recordId)
-        {
-            return context.Cogitations.Where(c => c.RecordId == recordId && !c.Deleted).ToListAsync();
-        }
+        public static Task<Cogitation> FetchCogitationById(this DiaryDbContext context, int cogitationId) => context.Cogitations.FirstOrDefaultAsync(c => c.Id == cogitationId && !c.Deleted);
+        public static Task<List<Cogitation>> FetchAllCogitationsOfRecord(this DiaryDbContext context, int recordId) => context.Cogitations.Where(c => c.RecordId == recordId && !c.Deleted).ToListAsync();
 
         public static async Task<int> AddCogitation(this DiaryDbContext context, Cogitation cogitation)
         {
@@ -420,30 +408,21 @@ namespace RiseDiary.WebUI.Data
             return c.Id;
         }
 
-        public static Task<int> GetCogitationsCount(this DiaryDbContext context, int recordId)
-        {
-            return context.Cogitations.CountAsync(c => c.RecordId == recordId && !c.Deleted);
-        }
-        
+        public static Task<int> GetCogitationsCount(this DiaryDbContext context, int recordId) => context.Cogitations.CountAsync(c => c.RecordId == recordId && !c.Deleted);
+
         public static async Task<int> AddRecord(this DiaryDbContext context, DiaryRecord record)
         {
             if (record == null) throw new ArgumentNullException(nameof(record));
-            DiaryRecord r;
-            if (record.Id != 0)
-            {
-                r = new DiaryRecord
+            DiaryRecord r = record.Id != 0
+                ? new DiaryRecord
                 {
                     CreateDate = record.CreateDate,
                     Date = record.Date,
                     ModifyDate = record.ModifyDate,
                     Name = record.Name,
                     Text = record.Text
-                };
-            }
-            else
-            {
-                r = record;
-            }
+                }
+                : record;
             context.Records.Add(r);
             await context.SaveChangesAsync();
             return r.Id;
@@ -462,10 +441,7 @@ namespace RiseDiary.WebUI.Data
             }
         }
 
-        public static Task<DiaryRecord> FetchRecordById(this DiaryDbContext context, int recordId)
-        {
-            return context.Records.FirstOrDefaultAsync(r => r.Id == recordId && !r.Deleted);
-        }
+        public static Task<DiaryRecord> FetchRecordById(this DiaryDbContext context, int recordId) => context.Records.FirstOrDefaultAsync(r => r.Id == recordId && !r.Deleted);
 
         public static async Task<DiaryRecord> GetRecordByCogitation(this DiaryDbContext context, int cogitationId)
         {
@@ -493,7 +469,7 @@ namespace RiseDiary.WebUI.Data
                 }
                 if (!filter.IsEmptyTypeFilter)
                 {
-                    result = result.Where(r => filter.RecordThemeIds.All(id => context.RecordThemes.Where(rt => rt.RecordId == r.Id && !rt.Deleted).Select(rt=>rt.ThemeId).Contains(id)));                   
+                    result = result.Where(r => filter.RecordThemeIds.All(id => context.RecordThemes.Where(rt => rt.RecordId == r.Id && !rt.Deleted).Select(rt => rt.ThemeId).Contains(id)));                                      
                 }
             }
             return result;
@@ -505,20 +481,16 @@ namespace RiseDiary.WebUI.Data
 
         public static Task<List<DiaryRecord>> FetchRecordsByMonth(this DiaryDbContext context, int year, int? month = null)
         {
-            if(month == null)
-            {
-                return context.Records.Where(r => r.Date.Year == year).ToListAsync();
-            }
-            return context.Records.Where(r => r.Date.Year == year && r.Date.Month == month).ToListAsync();
+            return month == null
+                ? context.Records.Where(r => r.Date.Year == year).ToListAsync()
+                : context.Records.Where(r => r.Date.Year == year && r.Date.Month == month).ToListAsync();
         }
 
         public static Task<int> GetMonthRecordsCount(this DiaryDbContext context, int year, int? month = null)
         {
-            if (month == null)
-            {
-                return context.Records.CountAsync(r => r.Date.Year == year && !r.Deleted);
-            }
-            return context.Records.CountAsync(r => r.Date.Year == year && r.Date.Month == month && !r.Deleted);
+            return month == null
+                ? context.Records.CountAsync(r => r.Date.Year == year && !r.Deleted)
+                : context.Records.CountAsync(r => r.Date.Year == year && r.Date.Month == month && !r.Deleted);
         }
 
         public static async Task<int> UpdateRecord(this DiaryDbContext context, DiaryRecord record)
@@ -537,10 +509,7 @@ namespace RiseDiary.WebUI.Data
             return destRec.Id;
         }
 
-        public static Task<List<int>> FetchYearsList(this DiaryDbContext context)
-        {
-            return context.Records.Where(r => !r.Deleted).Select(r => r.Date.Year).Distinct().ToListAsync();
-        }
+        public static Task<List<int>> FetchYearsList(this DiaryDbContext context) => context.Records.Where(r => !r.Deleted).Select(r => r.Date.Year).Distinct().ToListAsync();
 
         public static async Task<int> UpdateCogitationText(this DiaryDbContext context, int cogitationId, string text)
         {
@@ -637,6 +606,86 @@ namespace RiseDiary.WebUI.Data
                     r.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1))
                     .OrderByDescending(r => r.Date)
                     .ToListAsync();
+        }
+
+        public static async Task ClearDbFromDeletedRecords(this DiaryDbContext context)
+        {
+            var recImages = context.RecordImages.Where(ri => ri.Deleted);
+            context.RecordImages.RemoveRange(recImages);
+            await context.SaveChangesAsync();
+
+            var images = context.Images.Where(i => i.Deleted);
+            context.Images.RemoveRange(images);
+            await context.SaveChangesAsync();
+
+            var recThemes = context.RecordThemes.Where(rt => rt.Deleted);
+            context.RecordThemes.RemoveRange(recThemes);
+            await context.SaveChangesAsync();
+
+            var themes = context.Themes.Where(t => t.Deleted);
+            context.Themes.RemoveRange(themes);
+            await context.SaveChangesAsync();
+
+            var scopes = context.Scopes.Where(s => s.Deleted);
+            context.Scopes.RemoveRange(scopes);
+            await context.SaveChangesAsync();
+
+            var records = context.Records.Where(r => r.Deleted);
+            var cogitations = records.SelectMany(r => context.Cogitations.Where(c => c.RecordId == r.Id));
+            context.Cogitations.RemoveRange(cogitations);
+            context.Records.RemoveRange(records);
+            await context.SaveChangesAsync();
+        }
+
+        public static Task Vacuum(this DiaryDbContext context) => context.Database.ExecuteSqlCommandAsync("vacuum;");
+
+        public static Task<Dictionary<int, string>> FetchRecordsForImage(this DiaryDbContext context, int imageId)
+        {
+            return context.RecordImages.Where(ri => !ri.Deleted && ri.ImageId == imageId)
+                .Join(context.Records.Where(r => !r.Deleted), ri => ri.RecordId, r => r.Id, (ri, r) => new { r.Id, r.Name })
+                .ToDictionaryAsync(r => r.Id, r => r.Name);
+        }
+
+        public static Task<TempImage> FetchTempImage(this DiaryDbContext context, int imageId) => context.TempImages.FirstOrDefaultAsync(t => t.SourceImageId == imageId);
+
+        public static async Task AddUnsavedTempImage(this DiaryDbContext context, TempImage image)
+        {
+            var oldImages = context.TempImages.Where(t => t.SourceImageId == image.SourceImageId);
+            if(oldImages.Count() > 0)
+            {
+                context.TempImages.RemoveRange(oldImages);
+                await context.SaveChangesAsync();
+            }
+            context.TempImages.Add(image);
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task ApplyChangesFromTempImage(this DiaryDbContext context, TempImage tempImage)
+        {
+            var image = await context.Images.FindAsync(tempImage.SourceImageId) ?? throw new ArgumentException($"Image with Id ={tempImage.SourceImageId} is not found");
+            var fullImage = await context.FullSizeImages.FindAsync(tempImage.SourceImageId) ?? throw new ArgumentException($"Full image with Id ={tempImage.SourceImageId} is not found! Database is inconsist");
+
+            if (image.Deleted) throw new ArgumentException("Image is deleted. Can't update deleted image");
+
+            image.Thumbnail = ImageHelper.ScaleImage(tempImage.Data);
+            image.ModifyDate = DateTime.Now;
+            image.SizeByte = tempImage.Data.Length;
+            (image.Width, image.Height) = ImageHelper.ImageSize(tempImage.Data);
+
+            fullImage.Data = tempImage.Data;
+            context.TempImages.Remove(context.TempImages.Find(tempImage.Id));
+
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task DeleteTempImage(this DiaryDbContext context, int imageId)
+        {
+            var oldImages = context.TempImages.Where(t => t.SourceImageId == imageId);
+            if (oldImages.Count() > 0)
+            {
+                context.TempImages.RemoveRange(oldImages);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

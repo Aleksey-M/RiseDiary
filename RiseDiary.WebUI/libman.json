@@ -30,6 +30,10 @@
     {
       "library": "jquery.sumoselect@3.0.2",
       "destination": "wwwroot/lib/sumoselect"
+    },
+    {
+      "library": "jquery-jcrop@2.0.4",
+      "destination": "wwwroot/lib/jquery-jcrop"
     }
   ]
 }

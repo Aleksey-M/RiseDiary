@@ -23,19 +23,25 @@ namespace RiseDiary.WebUI.Pages
         public int RecordId { get; set; }
         public DiaryRecord  Record { get; set; }
         public List<string> RecordThemes { get; set; }
-        public Dictionary<string, string> RecordImages { get; set; }
+        public class RecordViewImage
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public string ImageBase64 { get; set; }
+        }
+        public List<RecordViewImage> RecordImages { get; set; }
         public List<Cogitation> Cogitations { get; set; }
 
         private async Task UpdatePageState()
         {
             Record = await _context.FetchRecordById(RecordId);
             RecordThemes = await _context.FetchRecordThemesList(RecordId);
-            RecordImages = new Dictionary<string, string>();
+            RecordImages = new List<RecordViewImage>();
             byte[] imgBytes = null;
             foreach (var img in await _context.FetchImagesForRecord(Record.Id))
             {
-                imgBytes = await _context.FetchImageDataById(img.Id);
-                RecordImages.Add(img.Name, Convert.ToBase64String(imgBytes));
+                imgBytes = await _context.FetchFullImageById(img.Id);
+                RecordImages.Add(new RecordViewImage { Id = img.Id, Name = img.Name, ImageBase64 = Convert.ToBase64String(imgBytes) });
             }
             Cogitations = (await _context.FetchAllCogitationsOfRecord(Record.Id)).OrderBy(c => c.Date).ToList();
         }
@@ -43,7 +49,7 @@ namespace RiseDiary.WebUI.Pages
         public async Task<IActionResult> OnGetAsync(int? recordId)
         {
             if (recordId == null || recordId.Value == 0)
-                return Redirect("/RecordEdit");
+                return Redirect("/Records/Edit");
             else
             {
                 RecordId = recordId.Value;
@@ -94,6 +100,26 @@ namespace RiseDiary.WebUI.Pages
                 RecordId = recordId;
                 await UpdatePageState();
             }
+        }
+
+        public async Task OnPostDeleteImageAsync(int recordId, int imageId)
+        {
+            if (recordId != 0) RecordId = recordId;
+            if (imageId != 0)
+            {
+                await _context.RemoveRecordImage(recordId, imageId);
+            }            
+            await UpdatePageState();
+        }
+
+        public async Task OnPostAddImageAsync(int recordId, int imageId)
+        {
+            if (recordId != 0) RecordId = recordId;
+            if (imageId != 0)
+            {
+                await _context.AddRecordImage(recordId, imageId);
+            }
+            await UpdatePageState();
         }
     }
 }

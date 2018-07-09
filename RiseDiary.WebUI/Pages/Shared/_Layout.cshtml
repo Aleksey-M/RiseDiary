@@ -8,7 +8,11 @@
     <link href="~/lib/bootstrap/css/bootstrap.css" rel="stylesheet" />
     <link href="~/lib/jquery-ui/jquery-ui.css" rel="stylesheet" />
     <link href="~/lib/sumoselect/sumoselect.css" rel="stylesheet" />
-    <link href="~/lib/bootstrap-year-calendar/css/bootstrap-year-calendar.css" rel="stylesheet" />   
+    <link href="~/lib/bootstrap-year-calendar/css/bootstrap-year-calendar.css" rel="stylesheet" />
+    <script src="~/lib/jquery/jquery.js"></script>
+    
+    @RenderSection("Styles", required: false)
+
 </head>
 <body>
     <div class="container alert-info" style="margin-bottom:10px">
@@ -16,14 +20,14 @@
     </div>
     <nav class="container">
         <div class="btn-group btn-group-justified">
-            <a href="~/Scopes" class="btn btn-info">Области интересов</a>
-            <a href="~/Images" class="btn btn-info">Рисунки</a>
-            <a href="~/RecordEdit" class="btn btn-info">Создать запись</a>
+            <a href="~/Scopes" class="btn btn-info">Темы</a>
+            <a href="~/Images" class="btn btn-info">Изображения</a>
             <a href="~/Dates" class="btn btn-info">Даты</a>
-            <a href="~/RecordsView" class="btn btn-info">Записи</a>
-            <a href="~/Analysis" class="btn btn-info">Анализ</a>
-            <a href="~/Retrospect" class="btn btn-info">Ретроспектива</a>
-            <a href="~/Calendar" class="btn btn-info">Календарь</a>
+            <a href="~/Records/Edit" class="btn btn-info">Создать запись</a>
+            <a href="~/Records" class="btn btn-info">Все записи</a>
+            <a href="~/Analysis/Search" class="btn btn-info">Поиск по тексту</a>
+            <a href="~/Analysis/Retrospect" class="btn btn-info">Ретроспектива</a>
+            <a href="~/Analysis/Calendar" class="btn btn-info">Календарь</a>
         </div>
     </nav>
 
@@ -32,7 +36,7 @@
         @RenderBody()
         <hr />
     </div>
-    <script src="~/lib/jquery/jquery.js"></script>
+
     <script src="~/lib/bootstrap/js/bootstrap.js"></script>
     <script src="~/lib/jquery-ui/jquery-ui.js"></script>
     <script src="~/lib/sumoselect/jquery.sumoselect.js"></script>
