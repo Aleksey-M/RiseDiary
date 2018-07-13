@@ -1,0 +1,63 @@
+﻿@page
+@model RiseDiary.WebUI.Pages.DbFile.IndexModel
+@{
+    ViewData["Title"] = "Файл базы данных";
+    ViewData["TitlePart"] = "Общая информация о базе";
+}
+
+@section Styles
+    {
+    <style>
+        #navigationPanel {
+            background-color: #d1fffe;
+            text-align: center;
+        }
+        table tbody tr td {
+            font-weight:bold;
+        }
+    </style>
+}
+
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <div class="panel panel-default">
+                <div class="form-horizontal" id="navigationPanel">
+                    <a href="/DbFile/ClearBase" class="btn btn-link">Очистка базы</a>
+                    &nbsp;|&nbsp;<a href="/DbFile/CompressBase" class="btn btn-link">Сжатие базы</a>
+                </div>
+            </div>
+            <table class="table table-striped">
+                <tbody>
+                    <tr>
+                        <td>Файл базы данных:</td>
+                        <td><i>@Model.DataBaseFileName</i></td>
+                    </tr>
+                    <tr>
+                        <td>Размер базы данных:</td>
+                        <td><i>@Model.DataBaseFileSize</i></td>
+                    </tr>
+                    <tr>
+                        <td>Миграция при старте:</td>
+                        <td><i>@(Model.MigrationOnStart ? "Да" : "Нет")</i></td>
+                    </tr>
+                    <tr>
+                        <td>Бекап базы при старте/завершении:</td>
+                        <td><i>@(Model.BackupOnStart ? "Да" : "Нет")</i></td>
+                    </tr>
+                    <tr>
+                        <td>Папка бекапов:</td>
+                        <td><i>@Model.DataBaseBackupPath</i></td>
+                    </tr>
+                    <tr>
+                        <td>Количество бекапов:</td>
+                        <td><i>@Model.DataBaseBackupsCount файла(ов)</i></td>
+                    </tr>
+                    <tr>
+                        <td>Общий размер бекапов:</td>
+                        <td><i>@Model.DataBaseBackupsSize</i></td>
+                    </tr>
+                </tbody>                
+            </table>
+        </div>
+    </div>
+

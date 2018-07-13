@@ -17,13 +17,14 @@
 <body>
     <div class="container alert-info" style="margin-bottom:10px">
         <h3 class="col-sm-10"> <a asp-page="Index">Дневник:</a> <span style="font-size:smaller">@ViewData["TitlePart"]</span></h3>
+        <a class="btn btn-info" href="~/Records/Edit" style="float:right;margin-top:10px;">Создать запись</a>
     </div>
     <nav class="container">
         <div class="btn-group btn-group-justified">
+            <a href="~/DbFile" class="btn btn-info">База</a>
             <a href="~/Scopes" class="btn btn-info">Темы</a>
             <a href="~/Images" class="btn btn-info">Изображения</a>
             <a href="~/Dates" class="btn btn-info">Даты</a>
-            <a href="~/Records/Edit" class="btn btn-info">Создать запись</a>
             <a href="~/Records" class="btn btn-info">Все записи</a>
             <a href="~/Analysis/Search" class="btn btn-info">Поиск по тексту</a>
             <a href="~/Analysis/Retrospect" class="btn btn-info">Ретроспектива</a>

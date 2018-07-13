@@ -209,7 +209,8 @@ namespace RiseDiary.WebUI.Data
                     Id = t.Id,
                     ScopeId = s.Id,
                     ScopeName = s.ScopeName,
-                    ThemeName = t.ThemeName
+                    ThemeName = t.ThemeName,
+                    Actual = t.Actual
                 })
                 .OrderBy(tj => tj.ScopeName)
                 .ThenBy(tj => tj.ThemeName)
@@ -599,13 +600,23 @@ namespace RiseDiary.WebUI.Data
                 .ToListAsync();
         }
 
-        public static Task<List<DiaryRecord>> SearchRecordsByText(this DiaryDbContext context, string searchText)
+        public static Task<List<DiaryRecord>> SearchRecordsByText(this DiaryDbContext context, string searchText, int skip, int count = 20)
         {
             return context.Records                
                 .Where(r => !r.Deleted && ( r.Name.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1 ||
                     r.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1))
                     .OrderByDescending(r => r.Date)
+                    .Skip(skip)
+                    .Take(count)
                     .ToListAsync();
+        }
+
+        public static Task<int> SearchRecordsByTextCount(this DiaryDbContext context, string searchText)
+        {
+            return context.Records
+                .Where(r => !r.Deleted && (r.Name.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1 ||
+                    r.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1))
+                   .CountAsync();
         }
 
         public static async Task ClearDbFromDeletedRecords(this DiaryDbContext context)
@@ -687,5 +698,38 @@ namespace RiseDiary.WebUI.Data
                 await context.SaveChangesAsync();
             }
         }
+
+        public static async Task ChangeThemeActuality(this DiaryDbContext context, int themeId, bool actual)
+        {
+            var theme = await context.Themes.FindAsync(themeId);
+            if(theme.Actual != actual)
+            {
+                theme.Actual = actual;
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public static Task<List<CalendarRecordItem>> FetchCalendarDates(this DiaryDbContext context, int year, int[] themes)
+        {
+            var res = context.Records.Where(r => 
+                !r.Deleted && 
+                r.Date >= new DateTime(year, 01, 01) && 
+                r.Date <= new DateTime(year, 12, 31));
+            if(themes != null && themes.Length > 0)
+            {
+                res = res.Where(r => themes.All(id => context.RecordThemes.Where(rt => rt.RecordId == r.Id && !rt.Deleted).Select(rt => rt.ThemeId).Contains(id)));
+            }
+            return res.Select(r=>new CalendarRecordItem { Id = r.Id, Date = r.Date, Name = r.Name }).ToListAsync();
+        }
+
+        public static Task<List<int>> FetchYearsListFiltered(this DiaryDbContext context, int[] themes)
+        {
+            themes = themes ?? new int[0];
+            return context.Records.Where(r => 
+                    !r.Deleted && 
+                    themes.All(id => context.RecordThemes.Where(rt => rt.RecordId == r.Id && !rt.Deleted).Select(rt => rt.ThemeId).Contains(id)))
+                .Select(r => r.Date.Year).Distinct().OrderBy(y => y).ToListAsync();           
+        }
+            
     }
 }

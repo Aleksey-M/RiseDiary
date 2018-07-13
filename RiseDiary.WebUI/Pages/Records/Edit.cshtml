@@ -9,6 +9,10 @@
     <input type="hidden" name="recordId" id="recordId" value="@Model.RecordId" />
     <table class="table table-striped">
         <tr>
+            <td style="vertical-align:middle"><b>Название записи:</b></td>
+            <td colspan="3"><input type="text" class="form-control" id="recordName" name="recordName" value="@Model.RecordName" /></td>
+        </tr>
+        <tr>
             <td style="vertical-align:middle; width:15%"><b>Дата:</b></td>
             <td style="width:20%">
                 <input type="text" name="recordDate" id="recordDate" class="form-control" style="width:50%" value="@Model.RecordDate.Value.ToString("yyyy.MM.dd")" />
@@ -27,10 +31,6 @@
             </td>
         </tr>
         <tr>
-            <td style="vertical-align:middle"><b>Название записи:</b></td>
-            <td colspan="3"><input type="text" class="form-control" id="recordName" name="recordName" value="@Model.RecordName" /></td>
-        </tr>
-        <tr>
             <td colspan="4">
                 <textarea id="recordText" name="recordText" rows="20" class="form-control" style="font-size:larger">@Model.RecordText</textarea>
             </td>
@@ -39,19 +39,33 @@
             <td>
                 <b>Темы записи:</b>
             </td>
-            <td colspan="2">
+            <td colspan="3">
                 <div class="form">
-                    @foreach (var theme in Model.Themes)
-                    {
-                        <div class="form-check">
-                            <label class="form-check-label">
-                                <input type="checkbox" name="themeId" value="@theme.Id" class="custom-control-input"
-                                       @if (Model.RecordThemesIds.Contains(theme.Id)) { @: checked="checked"
-                                                                                                                                                  } />
-                                @theme.ScopeName&nbsp;-&nbsp;@theme.ThemeName
-                            </label>
+                    <h4>
+                        Актуальные и выбранные темы
+                    </h4>
+                    <div class="form-check">
+                        @foreach (var theme in Model.ActualOrSelectedThemes)
+                        {
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" name="themeId" value="@theme.Id" @(Model.RecordThemesIds.Contains(theme.Id) ? "checked='checked'" : "")/>
+                            <label class="custom-control-label">@theme.ScopeName&nbsp;-&nbsp;@theme.ThemeName</label>
+                        </div>                            
+                        }
+                        @if (Model.NotActualThemes.Count() > 0)
+                        {
+                        <button type="button" class="btn btn-default btn-sm" id="showThemesBtn" onclick="showAllThemes()">Показать все темы</button> 
+                        <div id="notActualThemesBlock" style="display:none">
+                            @foreach (var theme in Model.NotActualThemes)
+                            {
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" name="themeId" value="@theme.Id" @(Model.RecordThemesIds.Contains(theme.Id) ? "checked='checked'" : "") />
+                                    <label class="custom-control-label">@theme.ScopeName&nbsp;-&nbsp;@theme.ThemeName</label>
+                                </div>
+                            }
                         </div>
-                    }
+                        }
+                    </div>                   
                 </div>
             </td>
         </tr>
@@ -59,7 +73,7 @@
             <td>
                 <button type="submit" class="btn btn-success form-control">Сохранить запись</button>
             </td>
-            <td colspan="2">
+            <td colspan="3">
                 @if (Model.RecordId != null)
                 {
                     <a href="~/Records/View?recordId=@Model.RecordId" class="btn btn-default">Открыть на просмотр</a>
@@ -93,5 +107,11 @@
         $(function () {
             $("#recordDate").datepicker({ dateFormat: 'yy.mm.dd' });
         });
+
+        function showAllThemes() {
+            $('#showThemesBtn').hide();
+            $('#notActualThemesBlock').show();
+            return false;
+        }
     </script>
 }

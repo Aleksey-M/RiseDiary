@@ -1,0 +1,76 @@
+﻿@page "{handler?}"
+@model RiseDiary.WebUI.Pages.DbFile.ClearBaseModel
+@{
+    ViewData["Title"] = "Файл базы данных";
+    ViewData["TitlePart"] = "Очистка базы от удаленных данных";
+}
+
+@section Styles
+    {
+    <style>
+        #navigationPanel {
+            background-color: #d1fffe;
+            text-align: center;
+        }
+        table tbody tr td {
+            font-weight: bold;
+        }
+    </style>
+}
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <div class="panel panel-default">
+                <div class="form-horizontal" id="navigationPanel">
+                    <a href="/DbFile/Index" class="btn btn-link">Общая информация</a>
+                    &nbsp;|&nbsp;<a href="/DbFile/CompressBase" class="btn btn-link">Сжатие базы</a>
+                </div>
+            </div>
+            <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Данные</th>
+                    <th>Количество</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Записи</td>
+                    <td><i>@Model.DeletedRecordsCount</i></td>
+                </tr>
+                <tr>
+                    <td>Осмысления (комментарии)</td>
+                    <td><i>@Model.DeletedCogitationsCount</i></td>
+                </tr>
+                <tr>
+                    <td>Связи запись-тема</td>
+                    <td><i>@Model.DeletedRecordThemesCount</i></td>
+                </tr>
+                <tr>
+                    <td>Связи запись-изображение</td>
+                    <td><i>@Model.DeletedRecordImagesCount</i></td>
+                </tr>
+                <tr>
+                    <td>Области интересов</td>
+                    <td><i>@Model.DeletedScopesCount</i></td>
+                </tr>
+                <tr>
+                    <td>Темы</td>
+                    <td><i>@Model.DeletedThemesCount</i></td>
+                </tr>
+                <tr>
+                    <td>Изображения</td>
+                    <td><i>@Model.DeletedImagesCount</i></td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2">
+                        <form method="post">
+                            <input type="submit" class="btn btn-danger btn-sm" value="!!! Очистить базу !!!" asp-page-handler="ClearBase" onclick="return confirm('ВНИМАНИЕ!!! После выполнения очистки восстановить удаленные данные будет невозможно. Продолжить?');" />
+                        </form>
+                    </td>
+                </tr>
+            </tfoot>
+            </table>
+        </div>
+    </div>

@@ -23,7 +23,6 @@
             margin-bottom: 5px;
         }
         #navigationPanel {
-            margin-bottom: 10px;
             background-color: #d1fffe;
             text-align:center;
         }
@@ -31,7 +30,7 @@
 }
 
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-sm-12">
         <div class="panel panel-info" id="topPanel">
             <h3 style="float:left;margin-top:10px;">Фотографии и рисунки (@Model.ImagesCount)</h3>
             <a class="btn btn-default" href="/Images/Upload" style="float:right;margin-top:5px">Загрузить</a>
@@ -39,13 +38,15 @@
         </div>
     </div>
     <div class="col-sm-12">
-        <div class="form-horizontal" id="navigationPanel">
-            <a asp-route-pageNo="1" class="btn btn-link">Первая</a>
-            <a asp-route-pageNo="@Model.PrevPage" class="btn btn-link">Предыдущая</a>
-            <span><b> Страница @Model.CurrenPage из @Model.PagesCount </b></span>
-            <a asp-route-pageNo="@Model.NextPage" class="btn btn-link">Следующая</a>
-            <a asp-route-pageNo="@Model.PagesCount" class="btn btn-link">Последняя</a>
-        </div> 
+        <div class="panel panel-default">
+            <div class="form-horizontal" id="navigationPanel">
+                <a asp-route-pageNo="1" class="btn btn-link">Первая</a>
+                |<a asp-route-pageNo="@Model.PrevPage" class="btn btn-link">Предыдущая</a>
+                |<span><b> Страница @Model.CurrenPage из @Model.PagesCount</b></span>
+                |<a asp-route-pageNo="@Model.NextPage" class="btn btn-link">Следующая</a>
+                |<a asp-route-pageNo="@Model.PagesCount" class="btn btn-link">Последняя</a>
+            </div>
+        </div>
     </div>
     @foreach(var image in Model.Images)
     {

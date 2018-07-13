@@ -26,9 +26,19 @@ namespace RiseDiary.WebUI.Pages
         public DateTime? RecordModifyDate { get; set; }
         public string RecordName { get; set; }
         public string RecordText { get; set; }
-        public IEnumerable<int> RecordThemesIds { get; set; }
-        public IEnumerable<DiaryThemeJoined> Themes { get; set; }
-        
+        public List<int> RecordThemesIds { get; set; }
+        public List<DiaryThemeJoined> Themes { get; set; }
+
+        public IEnumerable<DiaryThemeJoined> ActualOrSelectedThemes => Themes
+            .Where(t => RecordThemesIds.Contains(t.Id) || t.Actual)
+            .OrderBy(t => t.ScopeName)
+            .ThenBy(t => t.ThemeName);
+
+        public IEnumerable<DiaryThemeJoined> NotActualThemes => Themes
+            .Where(t => !RecordThemesIds.Contains(t.Id) && !t.Actual)
+            .OrderBy(t => t.ScopeName)
+            .ThenBy(t => t.ThemeName);
+
         private async Task UpdatePageState()
         {
             Themes = await _context.FetchThemesWithScopes();
@@ -44,7 +54,7 @@ namespace RiseDiary.WebUI.Pages
                     RecordModifyDate = rec.ModifyDate;
                     RecordName = rec.Name;
                     RecordText = rec.Text;
-                    RecordThemesIds = (await _context.FetchRecordThemes(rec.Id)).Select(rt => rt.Id);                                        
+                    RecordThemesIds = (await _context.FetchRecordThemes(rec.Id)).Select(rt => rt.Id).ToList();
                 }
             }
         }

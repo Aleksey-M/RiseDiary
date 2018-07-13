@@ -11,47 +11,26 @@ namespace RiseDiary.WebUI.Pages
     public class CalendarModel : PageModel
     {
         private readonly DiaryDbContext _context;
-        private readonly ILogger<CalendarModel> _logger;
         public CalendarModel(DiaryDbContext context, ILogger<CalendarModel> logger)
         {
             _context = context;
-            _logger = logger;
-            Filters.PageSize = 1000;
         }
 
-        public List<DiaryRecord> Records { get; set; }
-        public RecordsFilter Filters { get; set; } = RecordsFilter.Empty;
-        public List<DiaryScope> AllScopes { get; set; }
-        public List<DiaryThemeJoined> AllThemes { get; set; }
-        public int[] SelectedThemes { get; set; } = new int[0];
-
-        private async Task UpdatePageState()
-        {            
-            if (Filters.RecordDateFrom == null)
-            {
-                Filters.RecordDateFrom = new DateTime(DateTime.Now.Year, 01, 01);
-                Filters.RecordDateTo = new DateTime(DateTime.Now.Year, 12, 31);                
-            }
-            AllScopes = await _context.FetchAllScopes();
-            AllThemes = await _context.FetchThemesWithScopes();
-            Records = await _context.FetchRecordsListFiltered(Filters);
-        }
-
-        public async Task OnGetAsync()
+        public List<CalendarRecordItem> Records { get; private set; }
+        public int CurrentYear { get; private set; }
+        public List<DiaryScope> AllScopes { get; private set; }
+        public List<DiaryThemeJoined> AllThemes { get; private set; }
+        public int[] SelectedThemes { get; private set; } = new int[0];
+        public List<int> YearsListFiltered { get; private set; } = new List<int>();
+        
+        public async Task OnGetAsync(int? year, int[] themes)
         {
-            await UpdatePageState();
-        }
-
-        public async Task OnGetFilterAsync(int? year, int[] themes)
-        {           
-            Filters.AddThemeId(themes);
-            SelectedThemes = themes;
-            if(year != null)
-            {
-                Filters.RecordDateFrom = new DateTime(year.Value, 01, 01);
-                Filters.RecordDateTo = new DateTime(year.Value, 12, 31);
-            }
-            await UpdatePageState();
-        }
+            SelectedThemes = themes ?? new int[0];
+            CurrentYear = year ?? DateTime.Now.Year;
+            AllScopes = await _context.FetchAllScopes();
+            AllThemes = await _context.FetchThemesWithScopes();            
+            YearsListFiltered = await _context.FetchYearsListFiltered(SelectedThemes);
+            Records = await _context.FetchCalendarDates(CurrentYear, SelectedThemes);
+        }        
     }
 }

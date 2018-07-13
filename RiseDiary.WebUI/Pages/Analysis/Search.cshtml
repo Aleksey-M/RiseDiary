@@ -6,65 +6,87 @@
 
 }
 
-<table class="table">
-    <tbody>       
-        <tr>
-            <td colspan="6">
+@section Styles
+    {
+    <style>
+        #navigationPanel {
+            background-color: #d1fffe;
+            text-align: center;
+        }
+
+        .date-column {
+            width: 170px;
+        }
+
+        .main-date-column {
+            width: 100px;
+        }
+    </style>
+}
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class=" panel panel-default">
+            <div class="form-horizontal" id="navigationPanel">
                 <form method="get">
-                    <div class="form-horizontal row">
-                        <div class="form-inline col-md-6 col-md-offset-3">
-                            <input type="text" placeholder="Строка поиска" name="searchString" id="searchString" value="@Model.SearchString" class="form-control" style="width:80%" />
-                            &nbsp;&nbsp;
-                            <input type="submit" value="Поиск" class="btn btn-default" />
-                        </div>
-                    </div>
+                    <input type="hidden" name="currentPage" value="@Model.CurrenPage" />
+                    <input type="hidden" name="pagesCount" value="@Model.PagesCount" />
+                    <input type="hidden" name="recordsCount" value="@Model.RecordsCount" />
+                    <input type="hidden" name="searchString" value="@Model.SearchString" />
+                    <input type="submit" name="navTo" value="@Model.First" class="btn btn-link" />
+                    |<input type="submit" name="navTo" value="@Model.Previous" class="btn btn-link" />
+                    |<span><b> Страница @(Model.CurrenPage + 1) из @Model.PagesCount </b></span>
+                    |<input type="submit" name="navTo" value="@Model.Next" class="btn btn-link" />
+                    |<input type="submit" name="navTo" value="@Model.Last" class="btn btn-link" />
                 </form>
-            </td>
-        </tr>
-    </tbody>
-</table>
+            </div>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th colspan="6">
+                        <form method="get">
+                            <div class="form-horizontal row">
+                                <div class="form-inline col-md-6 col-md-offset-3">
+                                    <input type="text" placeholder="Строка поиска" name="searchString" id="searchString" value="@Model.SearchString" class="form-control" style="width:80%" />
+                                    &nbsp;&nbsp;
+                                    <input type="submit" value="Поиск" class="btn btn-default" />
+                                </div>
+                            </div>
+                        </form>
+                    </th>
+                </tr>
+            </thead>
+        </table>
+        <table class="table table-striped" style="table-layout:fixed">
+            <tbody>
+                @if (Model.Records.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6"><b>Соответствий нет</b></td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var rec in Model.Records)
+                    {
+                        <tr>
+                            <td class="main-date-column">@rec.Date.ToString("yyyy.MM.dd")</td>
+                            <td><a href="~/Records/View?recordId=@rec.Id">@rec.RecordNameDisplay</a></td>
+                            <td>@rec.RecordTextShort</td>
+                            <td class="date-column">@rec.CreateDate.ToString("G")</td>
+                            <td class="date-column">@rec.ModifyDate.ToString("G")</td>
+                            <td style="width:30px"><a href="~/Records/Edit?recordId=@rec.Id"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a></td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="6"><b><i>Записей отфильтровано : @Model.RecordsCount </i></b></td>
+                </tr>
+            </tfoot>
+        </table>
 
-<table class="table table-striped" style="table-layout:fixed">
-    <thead>       
-        <tr>
-            <th style="vertical-align: middle;width:10%">Дата</th>
-            <th style="vertical-align: middle;width:20%">Название</th>
-            <th style="vertical-align: middle;width:30%">Текст записи</th>
-            <th style="vertical-align: middle;">Дата создания</th>
-            <th style="vertical-align: middle;">Дата изменения</th>
-            <th style="text-align:center;width:8%"></th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Records.Count == 0)
-        {
-            <tr>
-                <td colspan="6"><b>Соответствий нет</b></td>
-            </tr>
-        }
-        else
-        {
-            foreach (var rec in Model.Records)
-            {
-            <tr>
-                <td>@rec.Date.ToString("yyyy.MM.dd")</td>
-                <td>@rec.RecordNameDisplay</td>
-                <td>@rec.RecordTextShort</td>
-                <td>@rec.CreateDate.ToString("G")</td>
-                <td>@rec.ModifyDate.ToString("G")</td>
-                <td>
-                    <a href="~/RecordEdit?recordId=@rec.Id">Edit</a>
-                    &nbsp;&nbsp;
-                    <a href="~/RecordView?recordId=@rec.Id">View</a>
-                </td>
-            </tr>
-            }
-        }
-    </tbody>
-    <tfoot>
-        <tr>
-            <td colspan="6"><b><i>Записей отфильтровано : @Model.Records.Count </i></b></td>
-        </tr>
-    </tfoot>
-</table>
-
+    </div>
+</div>

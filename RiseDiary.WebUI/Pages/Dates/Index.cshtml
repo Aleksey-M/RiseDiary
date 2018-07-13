@@ -4,20 +4,26 @@
     ViewData["Title"] = "Ближайшие даты";
     ViewData["TitlePart"] = "Ближайшие даты";
 }
-
-<table class="table table-striped">
-    <thead>
-        <tr style="background-color:#ffe0fc">
-            <td colspan="6">
-                <a href="~/Dates/setup" class="btn-link">Настройки</a>
-                &nbsp;&nbsp;
-                <a href="~/Dates/fulllist" class="btn-link">Все даты года</a>
-                &nbsp;&nbsp;
-                <a href="~/Dates/calendar" class="btn-link">Даты на календаре</a>
-                &nbsp;&nbsp;
-            </td>
-        </tr>
-    </thead>
+@section Styles
+    {
+    <style>
+        #navigationPanel {
+            background-color: #d1fffe;
+            text-align: center;
+            padding: 5px;
+        }
+    </style>
+}
+<div class="panel panel-default">
+    <div class="form-horizontal" id="navigationPanel">
+        <a href="~/Dates/setup" class="btn-link">Настройки</a>
+        &nbsp;|&nbsp;
+        <a href="~/Dates/fulllist" class="btn-link">Все даты года</a>
+        &nbsp;|&nbsp;
+        <a href="~/Dates/calendar" class="btn-link">Даты на календаре</a>
+    </div>
+</div>
+<table class="table">
     <tbody>
         @foreach (var date in Model.Dates)
         {
@@ -35,13 +41,10 @@
                         @date.Date.ToString("yyyy.MM.dd")
                     </td>
                     <td>
-                        @date.Name
+                        <a href="~/Records/View?recordId=@date.Id">@date.Name</a>
                     </td>
                     <td>
                         @date.Text
-                    </td>
-                    <td>
-                        <a href="~/RecordView?recordId=@date.Id">View</a>
                     </td>
                 </tr>
 
@@ -60,13 +63,10 @@
                         @date.Date.ToString("yyyy.MM.dd")
                     </td>
                     <td>
-                        @date.Name
+                        <a href="~/Records/View?recordId=@date.Id">@date.Name</a>
                     </td>
                     <td>
                         @date.Text
-                    </td>
-                    <td>
-                        <a href="~/RecordView?recordId=@date.Id">View</a>
                     </td>
                 </tr>
             }
@@ -80,7 +80,6 @@
                     <td colspan="2">
                         Нет событий (сегодня)
                     </td>
-                    <!--<td></td>-->
                     <td></td>
                     <td></td>
                     <td></td>
@@ -99,11 +98,12 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td></td>
                 </tr>
             }
 
         }
     </tbody>
 </table>
+
+
 

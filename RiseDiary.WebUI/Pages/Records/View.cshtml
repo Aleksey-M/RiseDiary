@@ -8,6 +8,10 @@
 <input type="hidden" name="recordId" id="recordId" value="@Model.RecordId" />
 <table class="table table-striped">
     <tr>
+        <td style="vertical-align:middle"><b>Название записи:</b></td>
+        <td colspan="3"><b><i>@Model.Record.RecordNameDisplay</i></b></td>
+    </tr>
+    <tr>
         <td style="vertical-align:middle; width:15%"><b>Дата:</b></td>
         <td style="width:20%">
             <b><i>@Model.Record.Date.ToString("yyyy.MM.dd")</i></b>
@@ -34,10 +38,6 @@
                 <i>[НЕТ]</i>
             }
         </td>
-    </tr>
-    <tr>
-        <td style="vertical-align:middle"><b>Название записи:</b></td>
-        <td colspan="3"><b><i>@Model.Record.RecordNameDisplay</i></b></td>
     </tr>
     <tr>
         <td colspan="4">
@@ -68,10 +68,10 @@
     <tr>
         <td colspan="3">
             <form asp-page-handler="AddImage">
-                <input type="hidden" name="recordId" value="@Model.RecordId" />                
+                <input type="hidden" name="recordId" value="@Model.RecordId" />
                 <div class="form-inline">
                     <input type="text" id="imagesFilter" class="form-control" placeholder="Поиск по названию" style="width:170px;" />
-                    <select name="imageId" id="imageId" class="form-control" style="width:400px;"></select>
+                    <select name="imageId" id="imageId" class="form-control" style="width:350px;"></select>
                     <button type="submit" class="btn btn btn-default form-control">Добавить изображение</button>
                 </div>
             </form>

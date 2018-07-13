@@ -41,7 +41,6 @@ namespace RiseDiary.WebUI
             {
                 var context = new DiaryDbContext(builder.Options);
                 context.Database.Migrate();
-                //context.UpdateThumbnailsFromFullImagesTable();
             }            
         }
 

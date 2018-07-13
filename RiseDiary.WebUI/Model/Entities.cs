@@ -15,6 +15,7 @@ namespace RiseDiary.Model
         public int Id { get; set; }
         public int ScopeId { get; set; }
         public string ThemeName { get; set; }
+        public bool Actual { get; set; }
         public bool Deleted { get; set; }
     }
 
@@ -31,6 +32,7 @@ namespace RiseDiary.Model
         public int? ScopeId { get; set; }
         public string ThemeName { get; set; }        
         public string ScopeName { get; set; }
+        public bool Actual { get; set; }
     }
     
     public class DiaryImage
@@ -142,11 +144,32 @@ namespace RiseDiary.Model
         public string Name { get; }
         public string Text { get; }
 
+        private string GetWeekDayName(DayOfWeek day)
+        {
+            switch (day)
+            {
+                case DayOfWeek.Monday: return "Пн";
+                case DayOfWeek.Tuesday: return "Вт";
+                case DayOfWeek.Wednesday: return "Ср";
+                case DayOfWeek.Thursday: return "Чт";
+                case DayOfWeek.Friday: return "Пт";
+                case DayOfWeek.Saturday: return "Сб";
+                case DayOfWeek.Sunday: return "Вс";
+                default: return "Пн";
+            }
+        }
+
         public DateTime ThisYearDate => new DateTime(DateTime.Now.Year, Date.Month, Date.Day);
-        public string DisplayDate => ThisYearDate.ToString("yyyy.MM.dd") + " " + ThisYearDate.DayOfWeek.ToString();
+        public string DisplayDate => ThisYearDate.ToString("yyyy.MM.dd") + " " + GetWeekDayName(ThisYearDate.DayOfWeek);
         public bool IsWeekday => Name == null;
         public bool IsToday => DateTime.Now.Date == ThisYearDate.Date;
 
     }
 
+    public class CalendarRecordItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public DateTime Date { get; set; }
+    }
 }

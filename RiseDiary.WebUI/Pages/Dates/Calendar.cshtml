@@ -4,28 +4,32 @@
     ViewData["Title"] = "Даты на календаре";
     ViewData["TitlePart"] = "Даты на календаре";
 }
+@section Styles
+    {
+    <style>
+        #navigationPanel {
+            background-color: #d1fffe;
+            text-align: center;
+            padding: 5px;
+        }
+    </style>
+}
+    <div class="panel panel-default">
+        <div class="form-horizontal" id="navigationPanel">
+            <a href="~/Dates/setup" class="btn-link">Настройки</a>
+            &nbsp;|&nbsp;
+            <a href="~/Dates/index" class="btn-link">Ближайшие даты</a>
+            &nbsp;|&nbsp;
+            <a href="~/Dates/fulllist" class="btn-link">Все даты года</a>
+        </div>
+    </div>
 
-<table class="table table-striped">
-    <thead>
-        <tr style="background-color:#ffe0fc">
-            <td colspan="6">
-                <a href="~/Dates/setup" class="btn-link">Настройки</a>
-                &nbsp;&nbsp;
-                <a href="~/Dates/index" class="btn-link">Ближайшие даты</a>
-                &nbsp;&nbsp;
-                <a href="~/Dates/fulllist" class="btn-link">Все даты года</a>
-                &nbsp;&nbsp;
-            </td>
-        </tr>
-    </thead>
-</table>
+<div id="calendar"></div>
 
-    <div id="calendar"></div>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
-    @section Scripts {
-        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-
-        <script type="text/javascript">
+    <script type="text/javascript">
 
         const dates = [
             @for(int i=0, count = Model.Dates.Count(); i<count; i++)
@@ -41,10 +45,10 @@
                 </text>
             }
         ];
-        </script>
+    </script>
 
-        <script src="~/lib/bootstrap-year-calendar/js/bootstrap-year-calendar.js"></script>
-        <script type="text/javascript">
+    <script src="~/lib/bootstrap-year-calendar/js/bootstrap-year-calendar.js"></script>
+    <script type="text/javascript">
 
         function getIdByStartDate(startDate) {
             let _date = startDate.getTime();
@@ -108,5 +112,5 @@
                 updateCalendar($('#calendar').data('calendar').getYear(), $('.multiselect').val());
             });
         });
-        </script>
-    }
+    </script>
+}

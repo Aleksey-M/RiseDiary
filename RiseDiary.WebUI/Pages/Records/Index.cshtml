@@ -5,92 +5,114 @@
     ViewData["TitlePart"] = "Поиск записей";
 }
 
-<table class="table table-striped" style="table-layout:fixed">
-    <thead>
-        <tr>
-            <th style="vertical-align: middle;width:10%">Дата</th>
-            <th style="vertical-align: middle;width:20%">Название</th>
-            <th style="vertical-align: middle;width:30%">Текст записи</th>
-            <th style="vertical-align: middle;">Дата создания</th>
-            <th style="vertical-align: middle;">Дата изменения</th>
-            <th colspan="2" style="text-align:center;width:12%">
-                <input type="hidden" name="currentPageNo" id="currentPageNo" value="@Model.Filters.PageNo" />
-                <ul class="pagination pagination-sm" style="margin:0px;">
-                    <li class="page-item">
-                        <a href="#" id="prevPage">&nbsp;&lt;&nbsp;</a>
-                    </li>
-                    <li class="page-item active">
-                        <input type="hidden" id="currentPage" value="@Model.Filters.PageNo" />
-                        <span>@(Model.Filters.PageNo + 1) / @(Math.Ceiling((float)Model.RecordsCount / Model.Filters.PageSize))</span>
-                    </li>
-                    <li class="page-item">
-                        <a href="#" id="nextPage">&nbsp;&gt;&nbsp;</a>
-                    </li>
-                </ul>
-            </th>
-        </tr>
-        <tr>
-            <th style="padding:2px;">
-                <input type="text" class="form-control" style="margin:0px;" placeholder="От" id="filterFromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? string.Empty)" />
-                <input type="text" class="form-control" placeholder="До" id="filterToDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? string.Empty)" />
-            </th>
-            <th style="padding:2px;vertical-align: middle;">
-                <input type="text" class="form-control" placeholder="Фильтр по названию" id="filterName" value="@Model.Filters.RecordNameFilter" />
-            </th>
-            <th colspan="3" style="vertical-align: middle;">                
-                    <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="multiselect" style="width:560px; height:30px;">
-                        @foreach (var scope in Model.AllScopes)
-                        {
-                            <optgroup label="@scope.ScopeName">
-                                @foreach (var theme in Model.AllThemes.Where(t => t.ScopeId == scope.Id))
-                                {
-                                    @if (Model.SelectedThemes.Contains(theme.Id))
-                                    {
-                                        <option selected="selected" value="@theme.Id">@theme.ThemeName</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@theme.Id">@theme.ThemeName</option>
-                                    }
-                                }
-                            </optgroup>
-                        }                        
-                    </select>                
-            </th>
-            <th colspan="2" style="vertical-align: middle;text-align:center">
-                <a class="btn btn-default" id="btnSearch">Поиск</a>
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var rec in Model.Records)
-        {
-            <tr>
-                <td>@rec.Date.ToString("yyyy.MM.dd")</td>
-                <td>@rec.RecordNameDisplay</td>
-                <td>@rec.RecordTextShort</td>
-                <td>@rec.CreateDate.ToString("G")</td>
-                <td>@rec.ModifyDate.ToString("G")</td>
-                <td><a href="~/Records/Edit?recordId=@rec.Id">Edit</a></td>
-                <td><a href="~/Records/View?recordId=@rec.Id">View</a></td>
-            </tr>
+@section Styles
+    {
+    <style>
+        #navigationPanel {
+            background-color: #d1fffe;
+            text-align: center;
         }
-    </tbody>
-    <tfoot>
-        <tr>
-            <td colspan="7"><b><i>Записей отфильтровано : @Model.RecordsCount </i></b></td>
-        </tr>
-    </tfoot>
-</table>
 
+        .date-column {
+            width: 170px;
+        }
+
+        .main-date-column {
+            width: 100px;
+        }
+    </style>
+}
+<div class="row">
+    <div class="col-sm-12">
+        <div class=" panel panel-default">
+            <div class="form-horizontal" id="navigationPanel">
+                <form method="get">
+                    @foreach (var st in Model.SelectedThemes)
+                    {
+                        <input type="hidden" name="themes" value="@st" />
+                    }
+                    <input type="hidden" name="fromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? string.Empty)" />
+                    <input type="hidden" name="toDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? string.Empty)" />
+                    <input type="hidden" name="searchName" value="@Model.Filters.RecordNameFilter" />
+                    <input type="hidden" name="currentPage" value="@Model.CurrenPage" />
+                    <input type="hidden" name="pagesCount" value="@Model.PagesCount" />
+                    <input type="hidden" name="recordsCount" value="@Model.RecordsCount" />
+
+                    <input type="submit" name="navTo" value="@Model.First" class="btn btn-link" />
+                    |<input type="submit" name="navTo" value="@Model.Previous" class="btn btn-link" />
+                    |<span><b> Страница @(Model.CurrenPage + 1) из @Model.PagesCount </b></span>
+                    |<input type="submit" name="navTo" value="@Model.Next" class="btn btn-link" />
+                    |<input type="submit" name="navTo" value="@Model.Last" class="btn btn-link" />
+                </form>
+            </div>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="padding:2px;">
+                        <input type="text" class="form-control" style="margin:0px;" placeholder="От" id="filterFromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? string.Empty)" />
+                        <input type="text" class="form-control" placeholder="До" id="filterToDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? string.Empty)" />
+                    </th>
+                    <th style="padding:2px;vertical-align: middle;">
+                        <input type="text" class="form-control" placeholder="Фильтр по названию" id="filterName" value="@Model.Filters.RecordNameFilter" />
+                    </th>
+                    <th colspan="2" style="vertical-align: middle;">
+                        <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="multiselect" style="width:350px; height:30px;">
+                            @foreach (var scope in Model.AllScopes)
+                            {
+                                <optgroup label="@scope.ScopeName">
+                                    @foreach (var theme in Model.AllThemes.Where(t => t.ScopeId == scope.Id))
+                                    {
+                                        @if (Model.SelectedThemes.Contains(theme.Id))
+                                        {
+                                            <option selected="selected" value="@theme.Id">@theme.ThemeName</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@theme.Id">@theme.ThemeName</option>
+                                        }
+                                    }
+                                </optgroup>
+                            }
+                        </select>
+                    </th>
+                    <th colspan="2" style="vertical-align: middle;text-align:center">
+                        <a class="btn btn-default" id="btnSearch" style="float:right">Применить фильтр</a>
+                    </th>
+                </tr>
+            </thead>
+        </table>
+        <table class="table table-striped" style="table-layout:fixed">
+            <tbody>
+                @foreach (var rec in Model.Records)
+                {
+                    <tr>
+                        <td class="main-date-column">@rec.Date.ToString("yyyy.MM.dd")</td>
+                        <td><a href="~/Records/View?recordId=@rec.Id">@rec.RecordNameDisplay</a></td>
+                        <td>@rec.RecordTextShort</td>
+                        <td class="date-column">@rec.CreateDate.ToString("G")</td>
+                        <td class="date-column">@rec.ModifyDate.ToString("G")</td>
+                        <td style="width:30px"><a href="~/Records/Edit?recordId=@rec.Id"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a></td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="6"><b><i>Записей отфильтровано : @Model.RecordsCount </i></b></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script type="text/javascript">
 
-        function getThemesUri(themes) {          
+        function getThemesUri(themes) {
             if (themes === null) return "";
             let res = "";
-            for (let i= 0; i < themes.length; i++){
+            for (let i = 0; i < themes.length; i++) {
                 res = res + "&themes=" + themes[i];
             }
             return res;
@@ -105,31 +127,13 @@
                     'Records?handler=Search' +
                     '&fromDate=' + encodeURIComponent($("#filterFromDate").val()) +
                     '&toDate=' + encodeURIComponent($("#filterToDate").val()) +
-                     getThemesUri($('.multiselect').val()) +
+                    getThemesUri($('.multiselect').val()) +
                     '&searchName=' + encodeURIComponent($("#filterName").val()));
-            });
-            $("#prevPage").on('click', function () {
-                window.location.replace(
-                    'Records?handler=PrevPage' +
-                    '&fromDate=' + encodeURIComponent($("#filterFromDate").val()) +
-                    '&toDate=' + encodeURIComponent($("#filterToDate").val()) +
-                     getThemesUri($('.multiselect').val()) +
-                    '&searchName=' + encodeURIComponent($("#filterName").val()) +
-                    '&pageNo=' + encodeURIComponent($("#currentPage").val()));
-            });
-            $("#nextPage").on('click', function () {
-                window.location.replace(
-                    'Records?handler=NextPage' +
-                    '&fromDate=' + encodeURIComponent($("#filterFromDate").val()) +
-                    '&toDate=' + encodeURIComponent($("#filterToDate").val()) +
-                     getThemesUri($('.multiselect').val()) +
-                    '&searchName=' + encodeURIComponent($("#filterName").val()) +
-                    '&pageNo=' + encodeURIComponent($("#currentPage").val()));
             });
 
             $('.multiselect').SumoSelect({ csvDispCount: 7 });
-            $('.SumoSelect').width('500px');
+            $('.SumoSelect').width('350px');
         });
-        
+
     </script>
 }

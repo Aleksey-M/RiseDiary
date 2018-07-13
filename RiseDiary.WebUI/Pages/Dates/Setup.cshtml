@@ -4,19 +4,26 @@
     ViewData["Title"] = "Настройки отображения дат";
     ViewData["TitlePart"] = "Настройки отображения дат";
 }
-<table class="table table-striped">
-    <thead>
-        <tr style="background-color:#ffe0fc">
-            <td colspan="6">
-                <a href="~/Dates/index" class="btn-link">Ближайшие даты</a>
-                &nbsp;&nbsp;
-                <a href="~/Dates/fulllist" class="btn-link">Все даты года</a>
-                &nbsp;&nbsp;
-                <a href="~/Dates/calendar" class="btn-link">Даты на календаре</a>
-                &nbsp;&nbsp;
-            </td>
-        </tr>
-    </thead>
+@section Styles
+    {
+    <style>
+        #navigationPanel {
+            background-color: #d1fffe;
+            text-align: center;
+            padding: 5px;
+        }
+    </style>
+}
+<div class="panel panel-default">
+    <div class="form-horizontal" id="navigationPanel">
+        <a href="~/Dates/index" class="btn-link">Ближайшие даты</a>
+        &nbsp;|&nbsp;
+        <a href="~/Dates/fulllist" class="btn-link">Все даты года</a>
+        &nbsp;|&nbsp;
+        <a href="~/Dates/calendar" class="btn-link">Даты на календаре</a>
+    </div>
+</div>
+<table class="table table-striped">   
 </table>
 <form method="post">
     <div class="panel panel-info">
