@@ -5,135 +5,198 @@
     ViewData["TitlePart"] = Model.Record.Date.ToString("yyyy.MM.dd") + " (" + Model.Record.Name + ")";
 }
 
+@section Styles{
+    <link href="~/lib/summernote/summernote.css" rel="stylesheet" />
+    <style>
+        .edit-text-area {
+        }
+
+        .btn-edit {
+        }
+
+        .record-head {
+            background-color: #fff8dc;
+            text-align: center;
+        }
+
+        .record-body {
+            background-color: #e4ffdc;
+        }
+
+        .record-images {
+            background-color: #d4ffee;
+            text-align: center;
+        }
+
+        .record-cogitations {
+            background-color: #e5e5ff;
+        }
+    </style>
+}
+
 <input type="hidden" name="recordId" id="recordId" value="@Model.RecordId" />
-<table class="table table-striped">
-    <tr>
-        <td style="vertical-align:middle"><b>Название записи:</b></td>
-        <td colspan="3"><b><i>@Model.Record.RecordNameDisplay</i></b></td>
-    </tr>
-    <tr>
-        <td style="vertical-align:middle; width:15%"><b>Дата:</b></td>
-        <td style="width:20%">
-            <b><i>@Model.Record.Date.ToString("yyyy.MM.dd")</i></b>
-        </td>
-        <td style="vertical-align:middle">
-            <b>Дата создания: <i>@Model.Record.CreateDate.ToString("yyyy.MM.dd HH:mm:ss")</i></b>
-        </td>
-        <td style="vertical-align:middle">
-            <b>Дата редактирования: <i>@Model.Record.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss")</i></b>
-        </td>
-    </tr>
-    <tr>
-        <td><b>Темы:</b></td>
-        <td colspan="3">
-            @if (Model.RecordThemes.Count > 0)
-            {
-                foreach (string themeName in Model.RecordThemes)
-                {
-                    <p>@themeName</p>
-                }
-            }
-            else
-            {
-                <i>[НЕТ]</i>
-            }
-        </td>
-    </tr>
-    <tr>
-        <td colspan="4">
-            <textarea id="recordText" readonly="readonly" name="recordText" rows="20" class="form-control" style="font-size:larger; background-color:aliceblue">@Model.Record.Text</textarea>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="4">
-            <a href="~/Records/Edit?recordId=@Model.RecordId" class="btn btn-info">Редактировать запись</a>
-        </td>
-    </tr>
-    @foreach (var image in Model.RecordImages)
-    {
-        <tr>
-            <td>
-                <a href="/Images/Edit?recordId=@Model.RecordId&imageId=@image.Id">@image.Name</a>
-                <br />
-                <br />
-                <form method="post" asp-page-handler="DeleteImage">
-                    <input type="hidden" name="imageId" value="@image.Id" />
-                    <input type="hidden" name="recordId" value="@Model.RecordId" />
-                    <input type="submit" class="btn btn-default btn-sm" value="Открепить" />
-                </form>
-            </td>
-            <td colspan="3"><img src="data:image;base64,@image.ImageBase64" class="img-thumbnail" alt="Изображение" style="max-height:600px;" /></td>
-        </tr>
-    }
-    <tr>
-        <td colspan="3">
-            <form asp-page-handler="AddImage">
-                <input type="hidden" name="recordId" value="@Model.RecordId" />
-                <div class="form-inline">
-                    <input type="text" id="imagesFilter" class="form-control" placeholder="Поиск по названию" style="width:170px;" />
-                    <select name="imageId" id="imageId" class="form-control" style="width:350px;"></select>
-                    <button type="submit" class="btn btn btn-default form-control">Добавить изображение</button>
-                </div>
-            </form>
-        </td>
-        <td colspan="1">
-            <a href="/images/upload?targetRecordId=@Model.RecordId" class="btn btn-info" style="float:right">Загрузить и добавить изображение</a>
-        </td>
-    </tr>
-    <tr style="background-color:#8484fa">
-        <td colspan="4"><b>Мысли по поводу записи:</b></td>
-    </tr>
-    @foreach (var cog in Model.Cogitations)
-    {
-        <tr style="background-color:#bdbdfb">
+<table class="table table-condensed">
+    <tbody>
+        <tr class="record-head">
             <td colspan="4">
-                <p><b>@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")</b></p>
-                <form asp-page-handler="SaveCogitation" method="post">
-                    <input type="hidden" name="cogitationId" value="@cog.Id" />
-                    <input type="hidden" name="recordId" value="@cog.RecordId" />
-                    <textarea id="recordText" name="recordText" rows="7" class="form-control" style="font-size:larger; background-color:aliceblue">@cog.Text</textarea>
+                <h4><b>@Model.Record.Date.ToString("yyyy.MM.dd")</b>&nbsp;:&nbsp;@Model.Record.RecordNameDisplay</h4>
+            </td>
+        </tr>
+        <tr class="record-head">
+            <td colspan="4" style="vertical-align:middle">
+                <h5>Дата создания: <b>@Model.Record.CreateDate.ToString("yyyy.MM.dd HH:mm:ss")</b>&nbsp;&nbsp;&nbsp;&nbsp;Дата редактирования: <b>@Model.Record.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss")</b></h5>
+            </td>
+        </tr>
+        <tr class="record-head">
+            <td colspan="4">
+                @if (Model.RecordThemes.Count > 0)
+                {
+                    <h5>
+                        @Model.RecordThemes[0]
+                        @for (int i = 1; i < Model.RecordThemes.Count; i++)
+                        {
+                            @:| @Model.RecordThemes[i]
+                        }
+                    </h5>
+                }
+            </td>
+        </tr>
+        <tr class="record-body">
+            <td colspan="4">
+                <div style="padding:5px; font-size:larger">
+                    @Html.Raw(Model.Record.Text)
+                </div>
+            </td>
+        </tr>
+        <tr class="record-body">
+            <td colspan="4">
+                <a href="~/Records/Edit?recordId=@Model.RecordId" class="btn btn-info btn-sm">Открыть на редактирование</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<table class="table">
+    <tbody>
+        @foreach (var image in Model.RecordImages)
+        {
+            <tr class="record-images">
+                <td width="150px;">
+                    <a href="/Images/Edit?recordId=@Model.RecordId&imageId=@image.Id">@image.Name</a>
                     <br />
-                    <p style="float:left">
-                        <button type="submit" class="btn btn-success"
-                                onclick="if (confirm('Сохранить изменения?')) { return true; } else { return false }">
-                            Сохранить
-                        </button>
-                    </p>
-                </form>
-                <form asp-page-handler="DeleteCogitation" method="post">
-                    <p style="float:right">
+                    <br />
+                    <form method="post" asp-page-handler="DeleteImage">
+                        <input type="hidden" name="imageId" value="@image.Id" />
+                        <input type="hidden" name="recordId" value="@Model.RecordId" />
+                        <input type="submit" class="btn btn-default btn-sm" value="Открепить" />
+                    </form>
+                </td>
+                <td colspan="3"><img src="data:image;base64,@image.ImageBase64" class="img-thumbnail" alt="Изображение" style="max-height:600px;" /></td>
+            </tr>
+        }
+    </tbody>
+</table>
+<table class="table">
+    <tbody>
+        <tr class="record-images">
+            <td colspan="3" style="text-align:left; width:70%">
+                <div class="form-inline">
+                    <form asp-page-handler="AddImage">
+                        <input type="hidden" name="recordId" value="@Model.RecordId" />
+                        <input type="text" id="imagesFilter" class="form-control" placeholder="Поиск по названию" style="width:170px;" />
+                        <select name="imageId" id="imageId" class="form-control" style="width:250px;"></select>
+                        <button type="submit" class="btn btn-default form-control">Добавить изображение</button>
+                    </form>
+                </div>
+            </td>
+            <td>
+                <a href="/images/upload?targetRecordId=@Model.RecordId" class="btn btn-info btn-sm" style="float:right">Загрузить и прикрепить изображение</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+
+<table class="table">
+    <tbody>
+        <tr class="record-cogitations">
+            <td colspan="4"><h3>Мысли по поводу записи, дополнения, выводы:</h3></td>
+        </tr>
+        @foreach (var cog in Model.Cogitations)
+        {
+            <tr class="record-cogitations">
+                <td colspan="4">
+                    <p><b>@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")</b></p>
+                    <form asp-page-handler="SaveCogitation" method="post">
                         <input type="hidden" name="cogitationId" value="@cog.Id" />
                         <input type="hidden" name="recordId" value="@cog.RecordId" />
-                        <button type="submit" class="btn btn-danger"
-                                onclick="if (confirm('Удалить?')) { return true; } else { return false }">
-                            Удалить
-                        </button>
-                    </p>
+                        <div id="view-cog-@cog.Id" style="padding:10px; font-size:larger">
+                            @Html.Raw(cog.Text)
+                        </div>
+                        <textarea id="edit-cog-@cog.Id" name="cogText" rows="7" class="form-control" style="display:none">@cog.Text</textarea>
+                        <p style="float:left; margin-right:10px;">
+                            <button type="button" class="btn btn-info btn-sm btn-edit" data-btn-save-id="save-@cog.Id" data-edit-form-id="edit-cog-@cog.Id" data-view-form-id="view-cog-@cog.Id">
+                                Редактировать
+                            </button>
+                            <button type="submit" id="save-@cog.Id" class="btn btn-success btn-sm" style="display:none">
+                                Сохранить
+                            </button>
+                        </p>
+                    </form>
+                    <form asp-page-handler="DeleteCogitation" method="post">
+                        <p>
+                            <input type="hidden" name="cogitationId" value="@cog.Id" />
+                            <input type="hidden" name="recordId" value="@cog.RecordId" />
+                            <button type="submit" class="btn btn-danger btn-sm"
+                                    onclick="if (confirm('Удалить осмысдение (комментарий)?')) { return true; } else { return false; }">
+                                Удалить
+                            </button>
+                        </p>
+                    </form>
+                </td>
+            </tr>
+        }
+        <tr class="record-cogitations">
+            <td colspan="4">
+                <form asp-page-handler="AddCogitation" method="post">
+                    <input type="hidden" name="recordId" value="@Model.RecordId" />
+                    <textarea id="newCogText" name="newCogText" class="form-control edit-text-area"></textarea>
+                    <button type="submit" class="btn btn-success btn-sm">Добавить</button>
                 </form>
             </td>
         </tr>
-    }
-    <tr style="background-color:#8ec6fa">
-        <td colspan="4">
-            <form asp-page-handler="AddCogitation" method="post">
-                <input type="hidden" name="recordId" value="@Model.RecordId" />
-                <textarea id="recordText" name="cogText" rows="7" class="form-control" style="font-size:larger;"></textarea>
-                <br />
-                <button type="submit" class="btn btn-success">Добавить</button>
-            </form>
-        </td>
-    </tr>
+    </tbody>
 </table>
 
 @section Scripts {
-
+    <script src="~/lib/summernote/summernote.js"></script>
     <script type="text/javascript">
 
+        $(function () {
+            $('.edit-text-area').summernote({
+                height: 250,
+                focus: false
+            });
+            $(document).on('click', '.btn-edit', function () {
+                console.log('start');
+                let vid = '#' + $(this).data('view-form-id'); console.log(vid);
+                let eid = '#' + $(this).data('edit-form-id'); console.log(eid);
+                let bid = '#' + $(this).data('btn-save-id'); console.log(bid);
+                $(eid).removeAttr('style'); // у инлайновых стилей приоритет выше. JQuery show() не сработает
+                $(bid).removeAttr('style');
+                $(vid).hide();
+                $(this).hide();
+                $(eid).summernote({
+                    height: 250,
+                    focus: true
+                });
+            });
+        });
+
         function updateSelectedList(recordId, inputStr) {
-            let uri = "/Images/ImagesListFiltered/" + recordId + "/"+ inputStr;
+            let uri = "/Images/ImagesListFiltered/" + recordId + "/" + inputStr;
             let selectElement = $("#imageId");
             $.getJSON(uri)
-                .done(function (data) {                    
+                .done(function (data) {
                     $(selectElement).empty();
                     $.each(data,
                         function (key, value) {
@@ -145,7 +208,7 @@
         }
 
         $("#imagesFilter").on('keyup',
-            function (e) {                
+            function (e) {
                 updateSelectedList($("#recordId").val(), $(this).val());
             });
 

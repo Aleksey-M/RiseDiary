@@ -25,9 +25,11 @@ namespace RiseDiary.WebUI.Pages.Images
         public string FullModifiedImageString => Convert.ToBase64String(TempImage?.Data);
         public int BiggestImageDimm => Image.Width > Image.Height ? Image.Width : Image.Height;
         public TempImage TempImage { get; private set; }
+        public string ImageUrl { get; private set; }
 
         private async Task UpdateModel()
         {
+            ImageUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/Images/ImageFile/{ImageId}";
             Image = await _context.FetchImageById(ImageId);
             FullImage = await _context.FetchFullImageById(ImageId);
             TempImage = await _context.FetchTempImage(ImageId);

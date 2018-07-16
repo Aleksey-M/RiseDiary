@@ -73,7 +73,6 @@
                         <tr>
                             <td class="main-date-column">@rec.Date.ToString("yyyy.MM.dd")</td>
                             <td><a href="~/Records/View?recordId=@rec.Id">@rec.RecordNameDisplay</a></td>
-                            <td>@rec.RecordTextShort</td>
                             <td class="date-column">@rec.CreateDate.ToString("G")</td>
                             <td class="date-column">@rec.ModifyDate.ToString("G")</td>
                             <td style="width:30px"><a href="~/Records/Edit?recordId=@rec.Id"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a></td>
@@ -83,7 +82,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="6"><b><i>Записей отфильтровано : @Model.RecordsCount </i></b></td>
+                    <td colspan="5"><b><i>Записей отфильтровано : @Model.RecordsCount </i></b></td>
                 </tr>
             </tfoot>
         </table>

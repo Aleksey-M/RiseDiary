@@ -119,7 +119,9 @@
             </tbody>
         </table>
     </div>
-
+    <div class="col-sm-12" style="text-align:center">
+        <p class="center-block">@Model.ImageUrl</p>
+    </div>
     <div class="col-sm-12">
         @if (Model.TempImage == null)
         {
@@ -129,5 +131,5 @@
         {
             <img id="img" name="img" src="data:image;base64,@Model.FullModifiedImageString" class="thumbnail center-block" style="max-height:600px;max-width:1000px;" />
         }
-    </div>      
+    </div>
 </div>

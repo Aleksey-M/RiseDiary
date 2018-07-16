@@ -40,7 +40,7 @@ namespace RiseDiary.WebUI
             if (needMigration > 0)
             {
                 var context = new DiaryDbContext(builder.Options);
-                context.Database.Migrate();
+                context.Database.Migrate();                
             }            
         }
 

@@ -21,9 +21,11 @@ namespace RiseDiary.WebUI.Pages.Images
         public byte[] FullImage { get; private set; }
         public string FullImageString => Convert.ToBase64String(FullImage);
         public Dictionary<int, string> ImageLinks { get; private set; }
+        public string ImageUrl { get; private set; }
 
         private async Task UpdateModel()
         {
+            ImageUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/Images/ImageFile/{ImageId}";
             Image = await _context.FetchImageById(ImageId);
             FullImage = await _context.FetchFullImageById(ImageId);
             ImageLinks = await _context.FetchRecordsForImage(ImageId);

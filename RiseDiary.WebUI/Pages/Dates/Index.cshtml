@@ -44,7 +44,7 @@
                         <a href="~/Records/View?recordId=@date.Id">@date.Name</a>
                     </td>
                     <td>
-                        @date.Text
+                        @Html.Raw(date.Text)
                     </td>
                 </tr>
 
@@ -66,7 +66,7 @@
                         <a href="~/Records/View?recordId=@date.Id">@date.Name</a>
                     </td>
                     <td>
-                        @date.Text
+                        @Html.Raw(date.Text)
                     </td>
                 </tr>
             }
@@ -80,7 +80,6 @@
                     <td colspan="2">
                         Нет событий (сегодня)
                     </td>
-                    <td></td>
                     <td></td>
                     <td></td>
                 </tr>

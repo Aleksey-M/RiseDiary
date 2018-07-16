@@ -1,5 +1,7 @@
 ﻿using RiseDiary.WebUI.Data;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace RiseDiary.WebUI.Migrations
 {
@@ -23,5 +25,22 @@ namespace RiseDiary.WebUI.Migrations
             context.SaveChanges();
             context.Vacuum();
         }
+
+        public static string PlainTextToHtml(string text)
+        {
+            return HttpUtility.HtmlEncode(text)
+                .Replace("\r\n", "\r")
+                .Replace("\n", "\r")
+                .Replace("\r", "<br>\r\n")
+                .Replace("  ", " &nbsp;");
+        }
+
+        public static void UpdateRecordsAndCogitationsPlainTextToHtml(this DiaryDbContext context)
+        {
+            context.Cogitations.ToList().ForEach(c => c.Text = PlainTextToHtml(c.Text));
+            context.SaveChanges();
+            context.Records.ToList().ForEach(r => r.Text = PlainTextToHtml(r.Text));
+            context.SaveChanges();
+        } 
     }
 }

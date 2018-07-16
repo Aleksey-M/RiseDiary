@@ -67,9 +67,7 @@
                     <td>@Model.Image.SizeKbString</td>
                     <td>@Model.Image.CreateDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
                     <td>@Model.Image.ModifyDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                    <td>
-                        
-                    </td>
+                    <td></td>
                 </tr>
             </tbody>
             <tfoot>
@@ -90,6 +88,9 @@
                 </tr>
             </tfoot>
         </table>
+    </div>
+    <div class="col-sm-12" style="text-align:center">
+        <p class="center-block">@Model.ImageUrl</p>
     </div>
     <div class="col-sm-12">
         <a href="/Images/Edit?imageId=@Model.Image.Id">

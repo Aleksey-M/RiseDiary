@@ -58,15 +58,15 @@ namespace RiseDiary.WebUI.Pages
             }
         }
 
-        public async Task OnPostAddCogitationAsync(int recordId, string cogText)
+        public async Task OnPostAddCogitationAsync(int recordId, string newCogText)
         {
-            if (!string.IsNullOrWhiteSpace(cogText) && recordId != 0)
+            if (!string.IsNullOrWhiteSpace(newCogText) && recordId != 0)
             {
                 await _context.AddCogitation(new Cogitation
                 {
                     Date = DateTime.Now,
                     RecordId = recordId,
-                    Text = cogText
+                    Text = newCogText
                 });                
             }       
             if(recordId != 0)
@@ -89,11 +89,11 @@ namespace RiseDiary.WebUI.Pages
             }
         }
 
-        public async Task OnPostSaveCogitationAsync(int recordId, int cogitationId, string recordText)
+        public async Task OnPostSaveCogitationAsync(int recordId, int cogitationId, string cogText)
         {
-            if(cogitationId != 0 && !string.IsNullOrWhiteSpace(recordText))
+            if(cogitationId != 0 && !string.IsNullOrWhiteSpace(cogText))
             {
-                await _context.UpdateCogitationText(cogitationId, recordText);
+                await _context.UpdateCogitationText(cogitationId, cogText);
             }
             if (recordId != 0)
             {
