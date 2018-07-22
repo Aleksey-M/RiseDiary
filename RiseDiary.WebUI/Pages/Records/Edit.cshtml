@@ -7,6 +7,14 @@
 
 @section Styles{
     <link href="~/lib/summernote/summernote.css" rel="stylesheet" />
+
+    <style>
+        #recordDate {
+            position: relative;
+            z-index: 501;
+            width: 50%;
+        }
+    </style>
 }
 
 <form asp-page-handler="SaveRecord" method="post">
@@ -19,7 +27,7 @@
         <tr>
             <td style="vertical-align:middle; width:15%"><b>Дата:</b></td>
             <td style="width:20%">
-                <input type="text" name="recordDate" id="recordDate" class="form-control" style="width:50%" value="@Model.RecordDate.Value.ToString("yyyy.MM.dd")" />
+                <input type="text" name="recordDate" id="recordDate" class="form-control" value="@Model.RecordDate.Value.ToString("yyyy.MM.dd")" />
             </td>
             <td style="vertical-align:middle">
                 @if (Model.RecordCreateDate != null)
@@ -95,7 +103,7 @@
                 <td>
                     <input type="hidden" name="recordId" value="@Model.RecordId" />
                     <button type="submit" class="btn btn-danger form-control" style="width:155px"
-                            onclick="if (confirm('Удалить запись?')) { return true; } else { return false }">
+                            onclick="if (confirm('Удалить запись?')) { return true; } else { return false; }">
                         Удалить запись
                     </button>
                 </td>
