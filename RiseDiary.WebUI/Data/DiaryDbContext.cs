@@ -599,24 +599,30 @@ namespace RiseDiary.WebUI.Data
                 .OrderByDescending(i => i.ThisYearDate)
                 .ToListAsync();
         }
-
+       
         public static Task<List<DiaryRecord>> SearchRecordsByText(this DiaryDbContext context, string searchText, int skip, int count = 20)
-        {
-            return context.Records                
-                .Where(r => !r.Deleted && ( r.Name.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1 ||
-                    r.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1))
-                    .OrderByDescending(r => r.Date)
-                    .Skip(skip)
-                    .Take(count)
-                    .ToListAsync();
-        }
-
-        public static Task<int> SearchRecordsByTextCount(this DiaryDbContext context, string searchText)
         {
             return context.Records
                 .Where(r => !r.Deleted && (r.Name.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1 ||
-                    r.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1))
-                   .CountAsync();
+                    r.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1) ||
+                    context.Cogitations.Any(c => !c.Deleted && 
+                        c.RecordId == r.Id && 
+                        c.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1))
+                .OrderByDescending(r => r.Date)
+                .Skip(skip)
+                .Take(count)
+                .ToListAsync();          
+        }
+
+        public static Task<int> SearchRecordsByTextCount(this DiaryDbContext context, string searchText)
+        {           
+            return context.Records
+                .Where(r => !r.Deleted && (r.Name.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1 ||
+                    r.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1) ||
+                    context.Cogitations.Any(c => !c.Deleted &&
+                        c.RecordId == r.Id &&
+                        c.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1))
+                .CountAsync();                   
         }
 
         public static async Task ClearDbFromDeletedRecords(this DiaryDbContext context)

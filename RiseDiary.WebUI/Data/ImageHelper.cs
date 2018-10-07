@@ -13,6 +13,10 @@ namespace RiseDiary.WebUI.Data
         {
             using (var bitmap = SKBitmap.Decode(data))
             {
+                if (bitmap.ColorType != SKImageInfo.PlatformColorType)
+                {
+                    bitmap.CopyTo(bitmap, SKImageInfo.PlatformColorType);
+                }
                 int width, height;
                 if(bitmap.Width >= bitmap.Height)
                 {
@@ -24,7 +28,7 @@ namespace RiseDiary.WebUI.Data
                     height = maxSizePx;
                     width = Convert.ToInt32(bitmap.Width / (double)bitmap.Height * maxSizePx);
                 }
-                var imageInfo = new SKImageInfo(width, height);
+                var imageInfo = new SKImageInfo(width, height);               
                 using (var thumbnail = bitmap.Resize(imageInfo, SKBitmapResizeMethod.Lanczos3))
                 using (var img = SKImage.FromBitmap(thumbnail))
                 using (var jpeg = img.Encode(SKEncodedImageFormat.Jpeg, 90))
