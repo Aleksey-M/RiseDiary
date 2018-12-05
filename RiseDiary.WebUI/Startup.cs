@@ -22,7 +22,7 @@ namespace RiseDiary.WebUI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             _dataBaseFileName = Configuration.GetValue<string>("dbFile");
             _needFileBackup = Configuration.GetValue<int>("needFileBackup") > 0;
