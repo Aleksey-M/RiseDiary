@@ -715,26 +715,61 @@ namespace RiseDiary.WebUI.Data
             }
         }
 
-        public static Task<List<CalendarRecordItem>> FetchCalendarDates(this DiaryDbContext context, int year, int[] themes)
+        public static async Task<List<CalendarRecordItem>> FetchCalendarDates(this DiaryDbContext context, int year, int[] themes)
         {
-            var res = context.Records.Where(r => 
-                !r.Deleted && 
-                r.Date >= new DateTime(year, 01, 01) && 
-                r.Date <= new DateTime(year, 12, 31));
+            var firstYearDay = new DateTime(year, 01, 01);
+            var lastYearDay = new DateTime(year, 12, 31);
+
+            var calendarItems = await context.Records
+                .Where(r => !r.Deleted && r.Date >= firstYearDay && r.Date <= lastYearDay)
+                .Select(r => new CalendarRecordItem { Id = r.Id, Date = r.Date, Name = r.Name })
+                .ToListAsync();
+
             if(themes != null && themes.Length > 0)
             {
-                res = res.Where(r => themes.All(id => context.RecordThemes.Where(rt => rt.RecordId == r.Id && !rt.Deleted).Select(rt => rt.ThemeId).Contains(id)));
+                var recordThemes = await context.RecordThemes
+                    .Where(rt => !rt.Deleted)
+                    .ToListAsync();
+
+                return calendarItems
+                    .Where(ci =>
+                        themes.All(id => recordThemes
+                            .Where(rt => rt.RecordId == ci.Id)
+                            .Select(rt => rt.ThemeId).Contains(id)))
+                    .ToList();                
             }
-            return res.Select(r=>new CalendarRecordItem { Id = r.Id, Date = r.Date, Name = r.Name }).ToListAsync();
+            return calendarItems;
         }
 
-        public static Task<List<int>> FetchYearsListFiltered(this DiaryDbContext context, int[] themes)
+        public static async Task<List<int>> FetchYearsListFiltered(this DiaryDbContext context, int[] themes)
         {
             themes = themes ?? new int[0];
-            return context.Records.Where(r => 
-                    !r.Deleted && 
-                    themes.All(id => context.RecordThemes.Where(rt => rt.RecordId == r.Id && !rt.Deleted).Select(rt => rt.ThemeId).Contains(id)))
-                .Select(r => r.Date.Year).Distinct().OrderBy(y => y).ToListAsync();           
+            if(themes.Length == 0)
+                return await context.Records
+                    .Where(r => !r.Deleted)
+                    .Select(r => r.Date.Year)
+                    .Distinct()
+                    .OrderBy(y => y)
+                    .ToListAsync();
+
+            var recordDates = await context.Records
+                .Where(r => !r.Deleted)
+                .Select(r => new KeyValuePair<int, DateTime>(r.Id, r.Date))
+                .ToListAsync();
+
+            var recordThemes = await context.RecordThemes
+                    .Where(rt => !rt.Deleted)
+                    .ToListAsync();
+
+            return recordDates
+                .Where(r => themes.All(id => recordThemes
+                    .Where(rt => rt.RecordId == r.Key)
+                    .Select(rt => rt.ThemeId)
+                    .Contains(id)))
+                .Select(r => r.Value.Year)
+                .Distinct()
+                .OrderBy(y => y)
+                .ToList();              
         }
             
     }
