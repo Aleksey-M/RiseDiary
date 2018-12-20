@@ -1,12 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-    <!--<RuntimeFrameworkVersion>2.1.4</RuntimeFrameworkVersion>-->
+    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
   </PropertyGroup>
     
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.0" />
     <PackageReference Include="SkiaSharp" Version="1.68.0" />
