@@ -30,10 +30,10 @@ namespace RiseDiary.WebUI.Pages.Dates
             {
                 _daysDisplayRange = (int)(await _context.GetAppSettingInt(AppSettingsKeys.DatesDisplayRange));
                 Dates = await _context.FetchDateItems((int)_datesScopeId, DateTime.Now, _daysDisplayRange);
-
+                /* !!! incorrect work if New Year in dates range !!! */
                 var from = DateTime.Now.AddDays(-_daysDisplayRange);
                 var to = DateTime.Now.AddDays(_daysDisplayRange);
-
+                
                 var weekdays = Enumerable
                     .Range(0, _daysDisplayRange * 2 + 1)
                     .Select(i => new DateItem(from.AddDays(i)))
