@@ -29,18 +29,15 @@ namespace RiseDiary.WebUI.Pages.Dates
            if(IsScopeSelected)
             {
                 _daysDisplayRange = (int)(await _context.GetAppSettingInt(AppSettingsKeys.DatesDisplayRange));
-                Dates = await _context.FetchDateItems((int)_datesScopeId, DateTime.Now, _daysDisplayRange);
-                /* !!! incorrect work if New Year in dates range !!! */
-                var from = DateTime.Now.AddDays(-_daysDisplayRange);
-                var to = DateTime.Now.AddDays(_daysDisplayRange);
+                var datesRange = new DatesRange(DateTime.Now, _daysDisplayRange);
+
+                Dates = await _context.FetchDateItems((int)_datesScopeId, datesRange);
                 
-                var weekdays = Enumerable
-                    .Range(0, _daysDisplayRange * 2 + 1)
-                    .Select(i => new DateItem(from.AddDays(i)))
-                    .Where(di => !Dates.Any(d => d.ThisYearDate == di.ThisYearDate));
+                var weekdays = datesRange.AllRangeDates
+                    .Where(di => !Dates.Any(d => d.TransferredDate == di.TransferredDate));
 
                 Dates.AddRange(weekdays);
-                Dates = Dates.OrderByDescending(d => d.ThisYearDate).ToList();
+                Dates = Dates.OrderByDescending(d => d.TransferredDate).ToList();
             }          
         }
 

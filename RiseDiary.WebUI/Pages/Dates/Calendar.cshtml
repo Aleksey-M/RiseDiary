@@ -38,8 +38,8 @@
             {
                 id: @Model.Dates[i].Id,
                 name: "@Model.Dates[i].Theme: "+"@Model.Dates[i].Name",
-                startDate: new Date(@Model.Dates[i].ThisYearDate.Year, @Model.Dates[i].ThisYearDate.Month-1, @Model.Dates[i].ThisYearDate.Day),
-                endDate: new Date(@Model.Dates[i].ThisYearDate.Year, @Model.Dates[i].ThisYearDate.Month-1, @Model.Dates[i].ThisYearDate.Day)
+                startDate: new Date(@Model.Dates[i].TransferredDate.Year, @Model.Dates[i].TransferredDate.Month-1, @Model.Dates[i].TransferredDate.Day),
+                endDate: new Date(@Model.Dates[i].TransferredDate.Year, @Model.Dates[i].TransferredDate.Month-1, @Model.Dates[i].TransferredDate.Day)
 
             }@(i != count - 1 ? "," : string.Empty)
                 </text>

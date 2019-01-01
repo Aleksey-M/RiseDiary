@@ -573,30 +573,26 @@ namespace RiseDiary.WebUI.Data
             }
         }
 
-        public static Task<List<DateItem>> FetchDateItems(this DiaryDbContext context, int scopeId, DateTime today, int displayRange)
+        public static Task<List<DateItem>> FetchDateItems(this DiaryDbContext context, int scopeId, DatesRange datesRange)
         {
-            var from = today.AddDays(-displayRange);
-            var to = today.AddDays(displayRange);
             return context.RecordThemes.Where(rt => !rt.Deleted)
                 .Join(context.Themes.Where(t => !t.Deleted && t.ScopeId == scopeId), rt => rt.ThemeId, t => t.Id, (rt, t) => new { t.ThemeName, rt.RecordId })
                 .Join(
-                    context.Records.Where(
-                        r => !r.Deleted && 
-                        r.Date >= new DateTime(r.Date.Year, from.Month, from.Day) && 
-                        r.Date <= new DateTime(r.Date.Year, to.Month, to.Day)), 
+                    context.Records.Where(r => !r.Deleted && datesRange.IsDateInRange(r.Date)), 
                     t => t.RecordId, 
                     r => r.Id, 
-                    (t, r) => new DateItem(r.Id, t.ThemeName, r.Date, r.Name, r.Text))
-                .OrderByDescending(i => i.ThisYearDate)
+                    (t, r) => new DateItem(datesRange, r.Id, t.ThemeName, r.Date, r.Name, r.Text))
+                .OrderByDescending(i => i.TransferredDate)
                 .ToListAsync();
         }
 
         public static Task<List<DateItem>> FetchAllDateItems(this DiaryDbContext context, int scopeId)
         {
+            var datesRange = DatesRange.ForAllYear();
             return context.RecordThemes.Where(rt => !rt.Deleted)
                 .Join(context.Themes.Where(t => !t.Deleted && t.ScopeId == scopeId), rt => rt.ThemeId, t => t.Id, (rt, t) => new { t.ThemeName, rt.RecordId })
-                .Join(context.Records.Where(r => !r.Deleted), t => t.RecordId, r => r.Id, (t, r) => new DateItem(r.Id, t.ThemeName, r.Date, r.Name, r.Text))
-                .OrderByDescending(i => i.ThisYearDate)
+                .Join(context.Records.Where(r => !r.Deleted), t => t.RecordId, r => r.Id, (t, r) => new DateItem(datesRange, r.Id, t.ThemeName, r.Date, r.Name, r.Text))
+                .OrderByDescending(i => i.TransferredDate)
                 .ToListAsync();
         }
        
