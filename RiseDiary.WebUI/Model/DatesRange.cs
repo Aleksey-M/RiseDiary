@@ -8,11 +8,12 @@ namespace RiseDiary.Model
     {       
         public DatesRange(DateTime today, int daysRange)
         {
-            if (daysRange > MaxDaysInRange) throw new ArgumentException("Dates range is toо big");
-
             Today = today.Date;
             FromDate = Today.AddDays(-daysRange);
             ToDate = Today.AddDays(daysRange);
+
+            ThrowIfRangeIsMoreThanOneYear();
+
             if (ToDate.Year > FromDate.Year) AtTheJunctionOfYears = true;
         }
 
@@ -23,7 +24,18 @@ namespace RiseDiary.Model
             FromDate = fromDate.Date;
             ToDate = toDate.Date;
             Today = FromDate.AddDays((ToDate - FromDate).Days / 2);
+
+            ThrowIfRangeIsMoreThanOneYear();
+
             if (ToDate.Year > FromDate.Year) AtTheJunctionOfYears = true;
+        }
+
+        private void ThrowIfRangeIsMoreThanOneYear()
+        {
+            var testYear = new DateTime(Today.Year, 1, 1); // неправильно учитываются высокосные года
+            var range = ToDate - FromDate;
+
+            if((testYear + range).Year > Today.Year) throw new ArgumentException("Dates range is toо big (more then one year)");
         }
 
         public static DatesRange ForAllYear(int Year = 0)
@@ -32,7 +44,6 @@ namespace RiseDiary.Model
             return new DatesRange(new DateTime(Year, 1, 1), new DateTime(Year, 12, 31));
         }
 
-        public const int MaxDaysInRange = 183;
         public DateTime FromDate { get; }
         public DateTime ToDate { get; }
         public DateTime Today { get; }
@@ -48,7 +59,9 @@ namespace RiseDiary.Model
         {
             if (AtTheJunctionOfYears)
             {
-                if (customDate.Month > 6) return new DateTime(FromDate.Year, customDate.Month, customDate.Day);
+                if(Enumerable.Range(FromDate.Month, 12).Contains(customDate.Month))
+                    return new DateTime(FromDate.Year, customDate.Month, customDate.Day);
+
                 return new DateTime(ToDate.Year, customDate.Month, customDate.Day);
             }
             else
