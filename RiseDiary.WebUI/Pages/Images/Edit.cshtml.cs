@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -26,6 +27,7 @@ namespace RiseDiary.WebUI.Pages.Images
         public int BiggestImageDimm => Image.Width > Image.Height ? Image.Width : Image.Height;
         public TempImage TempImage { get; private set; }
         public string ImageUrl { get; private set; }
+        public Dictionary<int, string> ImageLinks { get; private set; }
 
         private async Task UpdateModel()
         {
@@ -33,6 +35,7 @@ namespace RiseDiary.WebUI.Pages.Images
             Image = await _context.FetchImageById(ImageId);
             FullImage = await _context.FetchFullImageById(ImageId);
             TempImage = await _context.FetchTempImage(ImageId);
+            ImageLinks = await _context.FetchRecordsForImage(ImageId);
         }
 
         public async Task<IActionResult> OnGetAsync(int imageId, int recordId)
@@ -118,6 +121,21 @@ namespace RiseDiary.WebUI.Pages.Images
                 await _context.AddUnsavedTempImage(tmpImage);
             }
             await UpdateModel();
-        }        
+        }
+
+        public async Task<IActionResult> OnPostUpdateImageNameAsync(int imageId, string imageName)
+        {
+            if (imageId == 0)
+            {
+                return Redirect("/Images/Index");
+            }
+            ImageId = imageId;
+            if (!string.IsNullOrWhiteSpace(imageName))
+            {
+                await _context.UpdateImageName(imageId, imageName);
+            }
+            await UpdateModel();
+            return Page();
+        }
     }
 }

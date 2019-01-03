@@ -25,33 +25,41 @@
                                 <a href="/records/view?recordId=@Model.RecordId" class="btn btn-default btn-sm" style="float:right">Венуться к записи</a>
                             }
                         </div>
-                        <div style="float:right; margin-right:10px;">
-                            <form asp-page-handler="DeleteImage" method="post">
-                                <input type="hidden" name="imageId" value="@Model.ImageId" />
-                                <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="if (confirm('Удалить изображение?')) { return true; } else { return false; }">
-                                    Удалить
-                                </button>
-                            </form>
-                        </div>
                     </th>
                 </tr>
             </thead>
             <tbody>
                 <tr style="background-color:#cdff82">
                     <td>
-                        <a asp-page="View" asp-route-imageId="@Model.ImageId" asp-route-recordId="@Model.RecordId"><span style="font-size:larger">@Model.Image.Name</span></a>
+                        <div id="view-form">
+                            <span style="float:left;padding:5px;">@Model.Image.Name</span>
+                            &nbsp;
+                            <button type="button" class="btn btn-link show-edit-form">
+                                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <div id="edit-form" style="visibility:collapse">
+                            <form method="post">
+                                <div class="form form-horizontal">
+                                    <div class="input-group">
+                                        <input type="hidden" name="imageId" value="@Model.Image.Id" />
+                                        <input type="text" name="imageName" class="form-control" value="@Model.Image.Name" />
+                                        <span class="input-group-btn">
+                                            <input type="submit" class="btn btn-success" value="Обновить" asp-page-handler="UpdateImageName" />
+                                        </span>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>                        
                     </td>
                     <td>@Model.Image.Width&nbsp;px;</td>
                     <td>@Model.Image.Height&nbsp;px;</td>
                     <td>@Model.Image.SizeKbString</td>
-                    <td></td>
-
+                    <td><i>@Model.Image.CreateDate.ToString("yyyy.MM.dd HH:mm:ss")&nbsp;&nbsp;|&nbsp;&nbsp;@Model.Image.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss")</i></td>
                 </tr>
                 @if (Model.TempImage != null)
                 {
-                    <tr style="background-color:#ffb3b3">
+                    <tr style="background-color:#fcb17c">
                         <td><b style="color:brown">@Model.TempImage.Modification</b></td>
                         <td>@Model.TempImage.Width&nbsp;px;</td>
                         <td>@Model.TempImage.Height&nbsp;px;</td>
@@ -72,56 +80,70 @@
                 else
                 {
                     <tr style="background-color:#ffef89">
-                        <td>Заменить изображение</td>
-                        <td colspan="3">
-                            <b>Выберите файл:</b>
-                        </td>
-                        <td>
-                            <form asp-page-handler="ReplaceImage" method="post" enctype="multipart/form-data">
-                                <div class="form-inline" style="float:right; margin-right:10px;">
-                                    <div class="form-group-sm">
-                                        <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                        <input type="hidden" name="imageId" value="@Model.ImageId" />
-                                        <input type="file" accept="image/*" id="newImage" name="newImage" class="form-control" style="padding:0px;border:none;width:200px;" />
-                                        <input type="submit" value="Заменить" class="btn btn-sm btn-info" style="width:80px;" />
+                        <td colspan="5">
+                            <div class="panel" style="margin:3px;padding:5px;background-color:#f3d1d1;width:300px;float:left; ">
+                                <form asp-page-handler="ReplaceImage" method="post" enctype="multipart/form-data">
+                                    <div class="form-inline">
+                                        <div class="form-group-sm">
+                                            <input type="hidden" name="recordId" value="@Model.RecordId" />
+                                            <input type="hidden" name="imageId" value="@Model.ImageId" />
+                                            <input type="file" accept="image/*" id="newImage" name="newImage" class="form-control" style="padding:0px;border:none;width:200px;" />
+                                            <input type="submit" value="Заменить" title="Заменить изображение другим" class="btn btn-sm btn-info" style="width:80px;" />
+                                        </div>
                                     </div>
-                                </div>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr style="background-color:#ffef89">
-                        <td>Сжать изображение</td>
-                        <td colspan="3"><b>Введите размер большей стороны в пикселях:</b></td>
-                        <td>
-                            <form method="post" asp-page-handler="ScaleImage">
-                                <div class="form-inline" style="float:right;margin-right:10px;">
-                                    <div class="form-group-sm">
-                                        <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                        <input type="hidden" name="imageId" value="@Model.ImageId" />
-                                        <input type="number" style="width:200px;" class="form-control" name="imageSize" id="imageSize" max="@Model.BiggestImageDimm" value="@Model.BiggestImageDimm" />
-                                        <input type="submit" class="btn btn-info btn-sm" style="width:80px;" value="Сжать" />
-                                    </div>
-                                </div>
-                            </form>
-                        </td>
-                    </tr>
+                                </form>
+                            </div>
 
+                            <div class="panel" style="margin:3px;padding:5px;background-color:#f3d1d1;width:300px;float:left; ">
+                                <form method="post" asp-page-handler="ScaleImage">
+                                    <div class="form-inline">
+                                        <div class="form-group-sm">
+                                            <input type="hidden" name="recordId" value="@Model.RecordId" />
+                                            <input type="hidden" name="imageId" value="@Model.ImageId" />
+                                            <input type="number" style="width:200px;" class="form-control" name="imageSize" id="imageSize" max="@Model.BiggestImageDimm" value="@Model.BiggestImageDimm" />
+                                            <input type="submit" class="btn btn-info btn-sm" style="width:80px;" value="Сжать" title="Сжать изображения таким образом, чтобы большая сторона равнялась введенному значению" />
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="panel" style="margin:3px;padding:5px;background-color:#f3d1d1;width:90px;float:left; ">
+                                <a asp-page="CropImageSelect" asp-route-imageId="@Model.ImageId" asp-route-recordId="@Model.RecordId" class="btn btn-info btn-sm" style="width:80px;" title="Выбрать область изображения и обрезать все лишнее">Обрезать</a>
+                            </div>
+
+                            <div class="panel" style="margin:3px;padding:5px;background-color:#ff6a00;width:90px;float:left; ">
+                                <form asp-page-handler="DeleteImage" method="post">
+                                    <input type="hidden" name="imageId" value="@Model.ImageId" />
+                                    <input type="hidden" name="recordId" value="@Model.RecordId" />
+                                    <button type="submit" class="btn btn-sm btn-danger" style="width:80px;"
+                                            title="Удалить изображение"
+                                            onclick="return confirm('Удалить изображение?');">
+                                        Удалить
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
                     <tr style="background-color:#ffef89">
-                        <td>Обрезать изображение</td>
-                        <td colspan="3"><b>Выберите область и нажмите:</b></td>
-                        <td>
-                            <div class="form-inline" style="float:right;margin-right:10px;">
-                                <a asp-page="CropImageSelect" asp-route-imageId="@Model.ImageId" asp-route-recordId="@Model.RecordId" class="btn btn-info btn-sm" style="width:80px;">Обрезать</a>
+                        <td colspan="5">
+                            <div style="padding:5px;margin:3px">
+                                <b>URL</b> <i>@Model.ImageUrl</i> <b>прикреплено к:</b>&nbsp;&nbsp;
+                                @if (Model.ImageLinks.Count > 0)
+                                {
+                                    foreach (var lnk in Model.ImageLinks)
+                                    {
+                                        @:|&nbsp;
+                                        <a href="/Records/View?recordId=@lnk.Key">@lnk.Value</a>
+                                    }
+                                    @:&nbsp;|
+                                }
                             </div>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
-    </div>
-    <div class="col-sm-12" style="text-align:center">
-        <p class="center-block">@Model.ImageUrl</p>
-    </div>
+    </div>    
     <div class="col-sm-12">
         @if (Model.TempImage == null)
         {
@@ -133,3 +155,16 @@
         }
     </div>
 </div>
+
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $(document).on('click', '.show-edit-form', function () {
+                let vid = $("#view-form");
+                let eid = $("#edit-form");
+                eid.removeAttr('style'); // у инлайновых стилей приоритет выше. JQuery show() не сработает
+                vid.hide();
+            });
+        });
+    </script>
+}
