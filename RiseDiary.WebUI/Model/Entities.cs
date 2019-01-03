@@ -59,6 +59,7 @@ namespace RiseDiary.Model
 
         public DiaryImageFull FullImage { get; private set; }
         public TempImage TempImage { get; private set; }
+        public ICollection<DiaryRecordImage> RecordsRefs { get; private set; }
     }
 
     public class DiaryImageFull

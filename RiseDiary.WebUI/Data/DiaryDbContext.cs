@@ -72,6 +72,11 @@ namespace RiseDiary.WebUI.Data
                .WithOne(ti => ti.DiaryImage)
                .HasForeignKey<TempImage>(ti => ti.SourceImageId)
                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<DiaryImage>()
+                .HasMany(i => i.RecordsRefs)
+                .WithOne(rr => rr.DiaryImage)
+                .HasForeignKey(rr => rr.ImageId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<DiaryRecordImage>().HasKey(nameof(DiaryRecordImage.RecordId), nameof(DiaryRecordImage.ImageId));
             modelBuilder.Entity<DiaryRecordImage>().HasIndex(nameof(DiaryRecordImage.RecordId), nameof(DiaryRecordImage.ImageId));
