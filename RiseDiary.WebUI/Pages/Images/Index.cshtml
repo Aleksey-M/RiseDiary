@@ -29,44 +29,55 @@
     </style>
 }
 
-<div class="row">
-    <div class="col-sm-12">
-        <div class="panel panel-info" id="topPanel">
-            <h3 style="float:left;margin-top:10px;">Фотографии и рисунки (@Model.ImagesCount)</h3>
-            <a class="btn btn-default" href="/Images/Upload" style="float:right;margin-top:5px">Загрузить</a>
-            <div style="clear:both"></div>
-        </div>
-    </div>
-    <div class="col-sm-12">
-        <div class="panel panel-default">
-            <div class="form-horizontal" id="navigationPanel">
-                <a asp-route-pageNo="1" class="btn btn-link">Первая</a>
-                |<a asp-route-pageNo="@Model.PrevPage" class="btn btn-link">Предыдущая</a>
-                |<span><b> Страница @Model.CurrenPage из @Model.PagesCount</b></span>
-                |<a asp-route-pageNo="@Model.NextPage" class="btn btn-link">Следующая</a>
-                |<a asp-route-pageNo="@Model.PagesCount" class="btn btn-link">Последняя</a>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-info" id="topPanel">
+                <h3 style="float:left;margin-top:10px;">Фотографии и рисунки (@Model.ImagesCount)</h3>
+                <a class="btn btn-default" href="/Images/Upload" style="float:right;margin-top:5px">Загрузить</a>
+                <div style="clear:both"></div>
             </div>
         </div>
-    </div>
-    @foreach(var image in Model.Images)
-    {
-    <div class="col-sm-3 center-text">
-        <div class="panel panel-default">
-            <div class="panel-heading thumbnail-head">
-                @image.Name
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="form-horizontal" id="navigationPanel">
+                    <a asp-route-pageNo="1" class="btn btn-link">Первая</a>
+                    |<a asp-route-pageNo="@Model.PrevPage" class="btn btn-link">Предыдущая</a>
+                    |<span><b> Страница @Model.CurrenPage из @Model.PagesCount</b></span>
+                    |<a asp-route-pageNo="@Model.NextPage" class="btn btn-link">Следующая</a>
+                    |<a asp-route-pageNo="@Model.PagesCount" class="btn btn-link">Последняя</a>
+                </div>
             </div>
+        </div>
+        @foreach (var image in Model.Images)
+        {
+            <div class="col-sm-3 center-text">
+                <div class="panel panel-default">
+                    <div class="panel-heading thumbnail-head">
+                        @image.Name
+                    </div>
 
-            <div class="panel-body">
-                <a href="/Images/Edit?imageId=@image.Id">
-                    <img src="data:image;base64,@image.Base64Thumbnail" class="img-thumbnail center-block thumbnail-image" />
-                </a>
-            </div>
+                    <div class="panel-body">
+                        <a href="/Images/Edit?imageId=@image.Id">
+                            <img src="data:image;base64,@image.Base64Thumbnail" class="img-thumbnail center-block thumbnail-image" />
+                        </a>
+                    </div>
 
-            <div class="panel-footer">
-                @image.Width&nbsp;/&nbsp;@image.Height&nbsp;&nbsp;<b>@image.SizeKbString</b>
+                    <div class="panel-footer">
+                        @image.Width&nbsp;/&nbsp;@image.Height&nbsp;&nbsp;<b>@image.SizeKbString</b>
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="form-horizontal" id="navigationPanel">
+                    <a asp-route-pageNo="1" class="btn btn-link">Первая</a>
+                    |<a asp-route-pageNo="@Model.PrevPage" class="btn btn-link">Предыдущая</a>
+                    |<span><b> Страница @Model.CurrenPage из @Model.PagesCount</b></span>
+                    |<a asp-route-pageNo="@Model.NextPage" class="btn btn-link">Следующая</a>
+                    |<a asp-route-pageNo="@Model.PagesCount" class="btn btn-link">Последняя</a>
+                </div>
             </div>
         </div>
     </div>
-    }
-</div>
 
