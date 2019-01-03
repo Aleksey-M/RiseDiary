@@ -11,14 +11,15 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
     internal class CogitationTests : TestFixtureBase
     {
         [Test]
-        public async Task AddCogitation_ShouldNotThrowException()
+        public void AddCogitation_ShouldThrowDbUpdateException()
         {
             var context =  CreateContext();
             var cogitation = new Cogitation { Date = DateTime.Now, RecordId = 101, Text = @"qrhpqfuшвгарщшйрпйшга  йщрайзца" };
 
-            int id = await context.AddCogitation(cogitation);
+            int id;
+            Assert.ThrowsAsync<Microsoft.EntityFrameworkCore.DbUpdateException>(async () => id = await context.AddCogitation(cogitation));
 
-            Assert.LessOrEqual(0, id);
+            //Assert.LessOrEqual(0, id);
         }
 
         [Test]

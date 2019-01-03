@@ -28,15 +28,55 @@ namespace RiseDiary.WebUI.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<DiaryScope>().Property(s => s.Id).ValueGeneratedOnAdd();
-            modelBuilder.Entity<DiaryTheme>().Property(t => t.Id).ValueGeneratedOnAdd();
-            modelBuilder.Entity<DiaryImage>().Property(i => i.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<DiaryRecord>().Property(r => r.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<DiaryRecord>().HasMany(r => r.Cogitations)
+                .WithOne(c => c.Record)
+                .HasForeignKey(c => c.RecordId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<DiaryRecord>().HasMany(r => r.ThemesRefs)
+                .WithOne(tr => tr.Record)
+                .HasForeignKey(tr => tr.RecordId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<DiaryRecord>().HasMany(r => r.ImagesRefs)
+                .WithOne(ir => ir.DiaryRecord)
+                .HasForeignKey(ir => ir.RecordId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<Cogitation>().Property(c => c.Id).ValueGeneratedOnAdd();
-            modelBuilder.Entity<AppSetting>().HasKey(s => s.Key);
+
+            modelBuilder.Entity<DiaryScope>().Property(s => s.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<DiaryScope>()
+                .HasMany(s => s.Themes)
+                .WithOne(t => t.Scope)
+                .HasForeignKey(t => t.ScopeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DiaryTheme>().Property(t => t.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<DiaryTheme>()
+                .HasMany(t => t.RecordsRefs)
+                .WithOne(rt => rt.Theme)
+                .HasForeignKey(rt => rt.ThemeId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<DiaryRecordTheme>().HasKey(nameof(DiaryRecordTheme.RecordId), nameof(DiaryRecordTheme.ThemeId));
+            modelBuilder.Entity<DiaryRecordTheme>().HasIndex(nameof(DiaryRecordTheme.RecordId), nameof(DiaryRecordTheme.ThemeId));
+
+            modelBuilder.Entity<DiaryImage>().Property(i => i.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<DiaryImage>()
+                .HasOne(i => i.FullImage)
+                .WithOne(fi => fi.DiaryImage)
+                .HasForeignKey<DiaryImageFull>(fi => fi.Id)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<DiaryImage>()
+               .HasOne(i => i.TempImage)
+               .WithOne(ti => ti.DiaryImage)
+               .HasForeignKey<TempImage>(ti => ti.SourceImageId)
+               .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<DiaryRecordImage>().HasKey(nameof(DiaryRecordImage.RecordId), nameof(DiaryRecordImage.ImageId));
+            modelBuilder.Entity<DiaryRecordImage>().HasIndex(nameof(DiaryRecordImage.RecordId), nameof(DiaryRecordImage.ImageId));
+
+            modelBuilder.Entity<AppSetting>().HasKey(s => s.Key);
         }
     }
 

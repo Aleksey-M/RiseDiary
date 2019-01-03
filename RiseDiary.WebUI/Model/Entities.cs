@@ -8,6 +8,8 @@ namespace RiseDiary.Model
         public int Id { get; set; }
         public string ScopeName { get; set; }
         public bool Deleted { get; set; }
+
+        public ICollection<DiaryTheme> Themes { get; private set; }
     }
 
     public class DiaryTheme
@@ -17,6 +19,9 @@ namespace RiseDiary.Model
         public string ThemeName { get; set; }
         public bool Actual { get; set; }
         public bool Deleted { get; set; }
+
+        public DiaryScope Scope { get; private set; }
+        public ICollection<DiaryRecordTheme> RecordsRefs { get; private set; }
     }
 
     public class DiaryRecordTheme
@@ -24,6 +29,9 @@ namespace RiseDiary.Model
         public int ThemeId { get; set; }
         public int RecordId { get; set; }
         public bool Deleted { get; set; }
+
+        public DiaryTheme Theme { get; private set; }
+        public DiaryRecord Record { get; private set; }
     }
         
     public class DiaryThemeJoined
@@ -48,12 +56,17 @@ namespace RiseDiary.Model
         public int Height { get; set; }
         public int SizeByte { get; set; }
         public bool Deleted { get; set; }
+
+        public DiaryImageFull FullImage { get; private set; }
+        public TempImage TempImage { get; private set; }
     }
 
     public class DiaryImageFull
     {
         public int Id { get; set; }
         public byte[] Data { get; set; }
+
+        public DiaryImage DiaryImage { get; private set; }
     }
 
     public class TempImage
@@ -66,6 +79,8 @@ namespace RiseDiary.Model
         public int Width { get; set; }
         public int Height { get; set; }
         public int SizeByte { get; set; }
+
+        public DiaryImage DiaryImage { get; private set; }
     }
 
     public class DiaryRecordImage
@@ -73,6 +88,9 @@ namespace RiseDiary.Model
         public int ImageId { get; set; }
         public int RecordId { get; set; }
         public bool Deleted { get; set; }
+
+        public DiaryImage DiaryImage { get; private set; }
+        public DiaryRecord DiaryRecord { get; private set; }
     }
 
     public class DiaryImageEqualityComparerById : IEqualityComparer<DiaryImage>
@@ -100,6 +118,10 @@ namespace RiseDiary.Model
                 return Text.Length < 35 ? Text : Text.Substring(0, 35)+"[...]";
             }
         }
+
+        public ICollection<Cogitation> Cogitations { get; private set; }
+        public ICollection<DiaryRecordTheme> ThemesRefs { get; private set; }
+        public ICollection<DiaryRecordImage> ImagesRefs { get; private set; }
     }
 
     public class Cogitation
@@ -109,6 +131,8 @@ namespace RiseDiary.Model
         public DateTime Date { get; set; }
         public string Text { get; set; }
         public bool Deleted { get; set; }
+
+        public DiaryRecord Record { get; private set; }
     }
 
     public static class AppSettingsKeys
