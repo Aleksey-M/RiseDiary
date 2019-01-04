@@ -65,7 +65,7 @@ namespace RiseDiary.WebUI.Data
             modelBuilder.Entity<DiaryImage>()
                 .HasOne(i => i.FullImage)
                 .WithOne(fi => fi.DiaryImage)
-                .HasForeignKey<DiaryImageFull>(fi => fi.Id)
+                .HasForeignKey<DiaryImageFull>(fi => fi.ImageId)
                 .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<DiaryImage>()
                .HasOne(i => i.TempImage)
@@ -77,6 +77,8 @@ namespace RiseDiary.WebUI.Data
                 .WithOne(rr => rr.DiaryImage)
                 .HasForeignKey(rr => rr.ImageId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DiaryImageFull>().Property(dif => dif.Id).ValueGeneratedOnAdd();
 
             modelBuilder.Entity<DiaryRecordImage>().HasKey(nameof(DiaryRecordImage.RecordId), nameof(DiaryRecordImage.ImageId));
             modelBuilder.Entity<DiaryRecordImage>().HasIndex(nameof(DiaryRecordImage.RecordId), nameof(DiaryRecordImage.ImageId));
@@ -339,7 +341,7 @@ namespace RiseDiary.WebUI.Data
             var fullImage = new DiaryImageFull
             {
                 Data = fullSizeImageData,
-                Id = image.Id
+                ImageId = image.Id
             };
             context.FullSizeImages.Add(fullImage);
             await context.SaveChangesAsync();
@@ -384,7 +386,7 @@ namespace RiseDiary.WebUI.Data
         public static async Task<byte[]> FetchFullImageById(this DiaryDbContext context, int imageId)
         {
             bool imageExists = await context.Images.FirstOrDefaultAsync(i => i.Id == imageId && !i.Deleted) != null;
-            return imageExists ? (await context.FullSizeImages.FirstOrDefaultAsync(i => i.Id == imageId))?.Data : null;
+            return imageExists ? (await context.FullSizeImages.FirstOrDefaultAsync(i => i.ImageId == imageId))?.Data : null;
         }
         public static Task<int> GetImagesCount(this DiaryDbContext context) => context.Images.CountAsync(i => !i.Deleted);
         public static Task<List<DiaryImage>> FetchImageSet(this DiaryDbContext context, int skip, int count) => context.Images.Where(i => !i.Deleted).OrderByDescending(i => i.CreateDate).Skip(skip).Take(count).ToListAsync();

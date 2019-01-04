@@ -65,6 +65,7 @@ namespace RiseDiary.Model
     public class DiaryImageFull
     {
         public int Id { get; set; }
+        public int ImageId { get; set; }
         public byte[] Data { get; set; }
 
         public DiaryImage DiaryImage { get; private set; }

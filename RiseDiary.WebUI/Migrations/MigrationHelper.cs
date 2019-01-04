@@ -12,7 +12,7 @@ namespace RiseDiary.WebUI.Migrations
             var pairs = context.Images.Join(
                 context.FullSizeImages,
                 i => i.Id,
-                fi => fi.Id,
+                fi => fi.ImageId,
                 (i, fi) => new { Image = i, FullImage = fi });
 
             foreach(var pair in pairs)
