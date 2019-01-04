@@ -94,7 +94,7 @@
                 selectRange: function (e) {
                     let id = getIdByStartDate(e.startDate);
                     if (id !== null) {
-                        window.location.replace('/RecordView?recordId=' + encodeURIComponent(id));
+                        window.location.href = '/Records/View?recordId=' + encodeURIComponent(id);
                     }
                 },
                 startYear: @DateTime.Now.Year,

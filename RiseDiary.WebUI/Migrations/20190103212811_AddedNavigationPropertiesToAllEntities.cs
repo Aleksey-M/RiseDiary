@@ -109,7 +109,8 @@ namespace RiseDiary.WebUI.Migrations
 
             INSERT INTO RecordImages (ImageId, RecordId, Deleted)
             SELECT ImageId, RecordId, Deleted
-            FROM RecordImages_temp;
+            FROM RecordImages_temp
+            WHERE RecordId <> 0;
 
             DROP TABLE RecordImages_temp;
 

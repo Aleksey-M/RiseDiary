@@ -42,7 +42,7 @@ namespace RiseDiary.WebUI.Pages.Images
             }
             var imageId = await _context.AddImage(newImageName, imageData);
 
-            if(TargetRecordId != null || TargetRecordId != 0)
+            if(TargetRecordId != null && TargetRecordId != 0)
             {
                 await _context.AddRecordImage(targetRecordId.Value, imageId);
                 return Redirect($"/Images/Edit?recordId={TargetRecordId.Value}&imageId={imageId}");
