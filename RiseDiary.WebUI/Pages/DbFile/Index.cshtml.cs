@@ -31,10 +31,17 @@ namespace RiseDiary.WebUI.Pages.DbFile
             DataBaseFileName = _config.GetValue<string>("dbFile");
             DataBaseFileSize = Math.Round(new FileInfo(DataBaseFileName).Length / 1024f / 1024f, 2).ToString() + " Mb";
             (_, DataBaseBackupPath) = SqliteFileBackup.GetPathAndBackupFolder(DataBaseFileName);
-            var dir = new DirectoryInfo(DataBaseBackupPath);
-            var backupsList = dir.GetFiles();
-            DataBaseBackupsCount = backupsList.Length;
-            DataBaseBackupsSize = Math.Round(backupsList.Aggregate<FileInfo, long>(0, (s, fi) => s + fi.Length) / 1024f / 1024f, 2).ToString() + " Mb";
+            if (Directory.Exists(DataBaseBackupPath))
+            {
+                var dir = new DirectoryInfo(DataBaseBackupPath);
+                var backupsList = dir.GetFiles();
+                DataBaseBackupsCount = backupsList.Length;
+                DataBaseBackupsSize = Math.Round(backupsList.Aggregate<FileInfo, long>(0, (s, fi) => s + fi.Length) / 1024f / 1024f, 2).ToString() + " Mb";
+            }
+            else
+            {
+                DataBaseBackupPath = DataBaseBackupPath + " [NOT EXISTS]";
+            }
         }
     }
 }
