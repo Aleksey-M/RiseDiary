@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using RiseDiary.WebUI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
-using RiseDiary.WebUI.Migrations;
 
 namespace RiseDiary.WebUI
 {
