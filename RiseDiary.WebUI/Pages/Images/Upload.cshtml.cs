@@ -28,19 +28,21 @@ namespace RiseDiary.WebUI.Pages.Images
             TargetRecordId = targetRecordId;
             var validationErrors = new List<string>();
             if (newImage == null) validationErrors.Add("Файл изображения не выбран");
-            if (string.IsNullOrWhiteSpace(newImageName)) validationErrors.Add("Название картинки не введено");
+
             if (validationErrors.Count > 0)
             {
                 validationErrors.ForEach(s => ModelState.AddModelError("Image", s));
                 return Page();
             }
 
+            string imageName = string.IsNullOrWhiteSpace(newImageName) ? Path.GetFileNameWithoutExtension(newImage.FileName) : newImageName;
+
             byte[] imageData = null;
             using (var binaryReader = new BinaryReader(newImage.OpenReadStream()))
             {
                 imageData = binaryReader.ReadBytes((int)newImage.Length);
             }
-            var imageId = await _context.AddImage(newImageName, imageData);
+            var imageId = await _context.AddImage(imageName, imageData);
 
             if(TargetRecordId != null && TargetRecordId != 0)
             {
