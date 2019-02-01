@@ -156,7 +156,7 @@ namespace RiseDiary.WebUI.Data
         {
             if(string.IsNullOrWhiteSpace(scopeName)) throw new ArgumentException($"Parameter {nameof(scopeName)} should not be null or empty");
             var area = new DiaryScope { ScopeName = scopeName };
-            context.Scopes.Add(area);
+            await context.Scopes.AddAsync(area);
             await context.SaveChangesAsync();
             return area.Id;
         }
@@ -168,7 +168,7 @@ namespace RiseDiary.WebUI.Data
             bool canDelete = await context.CanDeleteScope(scopeId);
             if (canDelete)
             {
-                var s = context.Scopes.Find(scopeId);
+                var s = await context.Scopes.FindAsync(scopeId);
                 if (s != null)
                 {
                     s.Deleted = true;
@@ -199,7 +199,7 @@ namespace RiseDiary.WebUI.Data
                 throw new ArgumentException($"Parameter {nameof(themeName)} should not be null or empty");
             }
             var theme = new DiaryTheme { ScopeId = scopeId, ThemeName = themeName };
-            context.Themes.Add(theme);
+            await context.Themes.AddAsync(theme);
             await context.SaveChangesAsync();
             return theme.Id;
         }
@@ -284,7 +284,7 @@ namespace RiseDiary.WebUI.Data
             }
             else
             {
-                context.RecordThemes.Add(new DiaryRecordTheme { RecordId = recordId, ThemeId = themeId });
+                await context.RecordThemes.AddAsync(new DiaryRecordTheme { RecordId = recordId, ThemeId = themeId });
                 await context.SaveChangesAsync();
             }
         }
@@ -335,7 +335,7 @@ namespace RiseDiary.WebUI.Data
                 Thumbnail = ImageHelper.ScaleImage(fullSizeImageData)
             };
             (image.Width, image.Height) = ImageHelper.ImageSize(fullSizeImageData);
-            context.Images.Add(image);
+            await context.Images.AddAsync(image);
             await context.SaveChangesAsync();
 
             var fullImage = new DiaryImageFull
@@ -343,7 +343,7 @@ namespace RiseDiary.WebUI.Data
                 Data = fullSizeImageData,
                 ImageId = image.Id
             };
-            context.FullSizeImages.Add(fullImage);
+            await context.FullSizeImages.AddAsync(fullImage);
             await context.SaveChangesAsync();
             return image.Id;
         }
@@ -404,7 +404,7 @@ namespace RiseDiary.WebUI.Data
             }
             else
             {
-                context.RecordImages.Add(new DiaryRecordImage { ImageId = imageId, RecordId = recordId });
+                await context.RecordImages.AddAsync(new DiaryRecordImage { ImageId = imageId, RecordId = recordId });
                 await context.SaveChangesAsync();
             }            
         }
@@ -440,7 +440,7 @@ namespace RiseDiary.WebUI.Data
         public static async Task<int> AddCogitation(this DiaryDbContext context, Cogitation cogitation)
         {
             if (cogitation == null) throw new ArgumentNullException(nameof(cogitation));
-            context.Cogitations.Add(cogitation);
+            await context.Cogitations.AddAsync(cogitation);
             await context.SaveChangesAsync();
             return cogitation.Id;
         }
@@ -471,7 +471,7 @@ namespace RiseDiary.WebUI.Data
                     Text = record.Text
                 }
                 : record;
-            context.Records.Add(r);
+            await context.Records.AddAsync(r);
             await context.SaveChangesAsync();
             return r.Id;
         }
@@ -601,7 +601,7 @@ namespace RiseDiary.WebUI.Data
             var appSetting = await context.AppSettings.FirstOrDefaultAsync(s => s.Key == key);
             if(appSetting == null)
             {
-                context.AppSettings.Add(new AppSetting
+                await context.AppSettings.AddAsync(new AppSetting
                 {
                     Key = key,
                     Value = value,
@@ -716,7 +716,7 @@ namespace RiseDiary.WebUI.Data
                 context.TempImages.RemoveRange(oldImages);
                 await context.SaveChangesAsync();
             }
-            context.TempImages.Add(image);
+            await context.TempImages.AddAsync(image);
             await context.SaveChangesAsync();
         }
 
@@ -733,7 +733,8 @@ namespace RiseDiary.WebUI.Data
             (image.Width, image.Height) = ImageHelper.ImageSize(tempImage.Data);
 
             fullImage.Data = tempImage.Data;
-            context.TempImages.Remove(context.TempImages.Find(tempImage.Id));
+
+            context.TempImages.Remove(await context.TempImages.FindAsync(tempImage.Id) );
 
             await context.SaveChangesAsync();
         }
