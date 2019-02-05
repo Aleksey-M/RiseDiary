@@ -57,12 +57,12 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             var context = CreateContext();
             string key = "Timeout";
             string value = "Infinity";            
-            context.AppSettings.Add(new AppSetting {
+            await context.AppSettings.AddAsync(new AppSetting {
                 Key = key,
                 Value = value,
                 ModifiedDate = DateTime.Now.AddDays(-2)
             });
-            context.SaveChanges();
+            await context.SaveChangesAsync();
 
             await context.UpdateAppSetting(key, "New Value");
 
@@ -92,13 +92,13 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             var context = CreateContext();
             string key = "Timeout";
             string value = "Infinity";
-            context.AppSettings.Add(new AppSetting
+            await context.AppSettings.AddAsync(new AppSetting
             {
                 Key = key,
                 Value = value,
                 ModifiedDate = DateTime.Now.AddDays(-2)
             });
-            context.SaveChanges(); 
+            await context.SaveChangesAsync(); 
 
             var appSetting = await context.GetAppSetting(key);
 

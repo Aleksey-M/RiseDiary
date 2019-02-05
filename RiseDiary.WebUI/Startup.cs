@@ -23,21 +23,39 @@ namespace RiseDiary.WebUI
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            _dataBaseFileName = Configuration.GetValue<string>("dbFile");
-            _needFileBackup = Configuration.GetValue<int>("needFileBackup") > 0;
-            if (_needFileBackup)
+            bool usePostgreSql = Configuration.GetValue<int>("usePostgreSql") == 1;
+            string postgreSqlConnectionString = string.Empty;
+
+            if (usePostgreSql)
             {
-                SqliteFileBackup.BackupFile(_dataBaseFileName);
+                postgreSqlConnectionString = Configuration.GetConnectionString("Default");
+                services.AddDbContext<DiaryDbContext>(options => options.UseNpgsql(postgreSqlConnectionString));
+            }
+            else
+            {
+                _dataBaseFileName = Configuration.GetValue<string>("dbFile");
+                _needFileBackup = Configuration.GetValue<int>("needFileBackup") > 0;
+                if (_needFileBackup)
+                {
+                    SqliteFileBackup.BackupFile(_dataBaseFileName);
+                }
+
+                services.AddDbContext<DiaryDbContext>(options => options.UseSqlite($"Data Source={_dataBaseFileName};"));                
             }            
-
-            services.AddDbContext<DiaryDbContext>(options => options.UseSqlite($"Data Source={_dataBaseFileName};"));
-
-            var builder = new DbContextOptionsBuilder<DiaryDbContext>();
-            builder.UseSqlite($"Data Source={_dataBaseFileName};");
 
             int needMigration = Configuration.GetValue<int>("needMigration");
             if (needMigration > 0)
             {
+                var builder = new DbContextOptionsBuilder<DiaryDbContext>();
+                if (usePostgreSql)
+                {
+                    builder.UseNpgsql(postgreSqlConnectionString);
+                }
+                else
+                {
+                    builder.UseSqlite($"Data Source={_dataBaseFileName};");
+                }
+                
                 var context = new DiaryDbContext(builder.Options);
                 context.Database.Migrate();                
             }            

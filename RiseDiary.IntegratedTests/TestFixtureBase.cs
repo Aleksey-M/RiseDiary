@@ -13,6 +13,23 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
     // tests for DbContext
     internal class TestFixtureBase
     {
+        [OneTimeSetUp]
+        public void LoadConfig()
+        {
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("config.json")
+                .Build();
+
+            UsePostgreSql = config.GetValue<int>("usePostgreSql") > 0;
+            if (UsePostgreSql)
+            {
+                _connectionString = config.GetValue<string>("postgreSqlConnectionString");
+            }
+        }
+
+        private string _connectionString;
+        protected bool UsePostgreSql { get; private set; }
+
         [OneTimeTearDown]
         public void CleanUp()
         {
@@ -23,10 +40,27 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         private static List<string> _dbFileNames = new List<string>();
         protected static string DirNameFull => AppDomain.CurrentDomain.BaseDirectory;
 
-        protected static DiaryDbContext CreateContext()
+        protected DiaryDbContext CreateContext()
         {
-            var (context, fileName) = GetContextWithFileName();
-            return context;
+            if (UsePostgreSql)
+            {
+                var builder = new DbContextOptionsBuilder<DiaryDbContext>();
+                builder.UseNpgsql(_connectionString);
+                var context = new DiaryDbContext(builder.Options);
+                context.Database.EnsureCreated();
+
+                context.Records.RemoveRange(context.Records);
+                context.Scopes.RemoveRange(context.Scopes);
+                context.Images.RemoveRange(context.Images);
+                context.AppSettings.RemoveRange(context.AppSettings);
+                context.SaveChanges();
+                return context;
+            }
+            else
+            {
+                var (context, fileName) = GetContextWithFileName();
+                return context;
+            }            
         }
 
         protected static (DiaryDbContext context, string fileName) GetContextWithFileName()

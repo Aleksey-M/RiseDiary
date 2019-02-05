@@ -18,7 +18,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
 
             int newId = await context.AddScope(@"New Scope ""!@#$%^''""&*()_+,.<><>?//[]||\\апрорпывоаъъЇЇііі.єєєйй");
 
-            Assert.GreaterOrEqual(1, newId);
+            Assert.GreaterOrEqual(newId, 1);
         }
 
         [Test]

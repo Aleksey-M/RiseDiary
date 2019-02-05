@@ -5,6 +5,7 @@ using System.Linq;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace RiseDiary.SqliteStorages.IntegratedTests
 {
@@ -88,15 +89,19 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         public async Task DeleteImage_ShouldDeleteOneImage()
         {
             var context =  CreateContext();
-            var ids = Enumerable.Range(0, 3).Select(async i => await context.AddImage(UniqueString, ImageBytes)).ToArray();
+            var imagesId = new List<int>();
+            for(int i = 0; i < 3; i++)
+            {
+                imagesId.Add(await context.AddImage(UniqueString, ImageBytes));
+            }
+            
+            await context.DeleteImage(imagesId[1]);
 
-            await context.DeleteImage(await ids[1]);
+            Assert.IsNull(await context.FetchImageById(imagesId[1]));
+            Assert.IsNotNull(await context.FetchImageById(imagesId[0]));
+            Assert.IsNotNull(await context.FetchImageById(imagesId[2]));
 
-            Assert.IsNull(await context.FetchImageById(await ids[1]));
-            Assert.IsNotNull(await context.FetchImageById(await ids[0]));
-            Assert.IsNotNull(await context.FetchImageById(await ids[2]));
-
-            int id = await ids[1];
+            int id = imagesId[1];
             Assert.IsNotNull(context.Images.FirstOrDefault(i => i.Id == id && i.Deleted));
         }
 
@@ -118,8 +123,11 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         public async Task GetImages_ShouldReturn3LastImages()
         {
             var context =  CreateContext();
-            var ids = Enumerable.Range(0, 10).Select(async i => await context.AddImage(UniqueString, ImageBytes)).ToArray();
-
+            for(int i = 0; i<10; i++)
+            {
+                await context.AddImage(UniqueString, ImageBytes);
+            }
+            
             var page = await context.FetchImageSet(7, 5);
 
             Assert.IsNotNull(page);

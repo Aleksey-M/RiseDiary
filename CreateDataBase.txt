@@ -1,0 +1,19 @@
+﻿-- database photosdatabase should be created from pgAdmin 
+create user photodbuser with password 'Ph13#Zz89@001'; 
+grant all privileges on database photosdatabase to photodbuser;
+
+-- database photo_diary_dev should be created from pgAdmin 
+photo_diary_dev
+create user photo_diary_dev_user with password 'Ph13#Zz89@001'; 
+grant all privileges on database photo_diary_dev to photo_diary_dev_user;
+
+-- database photo_diary_prod should be created from pgAdmin 
+photo_diary_prod
+create user photo_diary_prod_user with password 'Ph13#Zz89@001'; 
+grant all privileges on database photo_diary_prod to photo_diary_prod_user;
+
+
+-- database diary_tests should be created from pgAdmin 
+diary_tests
+create user diary_tests_user with password 'Ghj123#71'; 
+grant all privileges on database diary_tests to diary_tests_user;
