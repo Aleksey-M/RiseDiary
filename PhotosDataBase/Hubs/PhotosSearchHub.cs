@@ -52,7 +52,6 @@ namespace PhotosDataBase.Hubs
                 var photoFilesNames = Directory.GetFileSystemEntries(basePath, "*.jpg", SearchOption.AllDirectories);
 
                 _timer = Observable.Interval(TimeSpan.FromMilliseconds(500))
-                    //.DelaySubscription(TimeSpan.FromSeconds(1))
                     .Subscribe(
                         async l => await Clients.All.SendAsync("ShowLoadingProcess", _filesToProcess, _processedFiles)
                     );
