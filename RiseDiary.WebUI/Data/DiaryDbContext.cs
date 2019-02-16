@@ -587,11 +587,11 @@ namespace RiseDiary.WebUI.Data
         public static async Task<int?> GetAppSettingInt(this DiaryDbContext context, string key)
         {
             var str = await context.GetAppSetting(key);
-             var style = new NumberStyles();
-            var formatProv = CultureInfo.CurrentCulture.NumberFormat;
-            bool res = int.TryParse(str, style, formatProv, out int result);
-
-            return res ? new Nullable<int>(result) : null;
+            if(int.TryParse(str, NumberStyles.None, CultureInfo.CurrentCulture.NumberFormat, out int result))
+            {
+                return result;
+            }
+            return null;
         }
 
         public static async Task UpdateAppSetting(this DiaryDbContext context, string key, string value)
