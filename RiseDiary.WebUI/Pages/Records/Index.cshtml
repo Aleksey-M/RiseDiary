@@ -55,7 +55,7 @@
                         <input type="text" class="form-control" placeholder="До" id="filterToDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? string.Empty)" />
                     </th>
                     <th style="padding:2px;vertical-align: middle;">
-                        <input type="text" class="form-control" placeholder="Фильтр по названию" id="filterName" value="@Model.Filters.RecordNameFilter" />
+                        <input type="text" class="form-control" placeholder="Название  (с учетом регистра)" id="filterName" value="@Model.Filters.RecordNameFilter" />
                     </th>
                     <th colspan="2" style="vertical-align: middle;">
                         <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="multiselect" style="width:350px; height:30px;">
