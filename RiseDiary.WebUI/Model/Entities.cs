@@ -57,9 +57,21 @@ namespace RiseDiary.Model
         public int SizeByte { get; set; }
         public bool Deleted { get; set; }
 
-        public DiaryImageFull FullImage { get; private set; }
-        public TempImage TempImage { get; private set; }
-        public ICollection<DiaryRecordImage> RecordsRefs { get; private set; }
+        public DiaryImageFull FullImage { get; set; }
+        public TempImage TempImage { get; set; }
+        public ICollection<DiaryRecordImage> RecordsRefs { get; set; }
+    }
+
+    public static class FileSize
+    {
+        public static string ToString(long bytesCount)
+        {
+            if (bytesCount < 1024) return bytesCount + " B";
+            if (bytesCount < 1024 * 1024) return Math.Round(bytesCount / 1024f, 2).ToString() + " Kb";
+            if(bytesCount < 1024 * 1024 * 1024) return Math.Round(bytesCount / (1024f * 1024f), 2).ToString() + " Mb";
+            if (bytesCount < 1024L * 1024 * 1024 * 1024) return Math.Round(bytesCount / (1024f * 1024f * 1024f), 2).ToString() + " Gb";
+            return "HUGE!";
+        }
     }
 
     public class DiaryImageFull
@@ -68,7 +80,7 @@ namespace RiseDiary.Model
         public int ImageId { get; set; }
         public byte[] Data { get; set; }
 
-        public DiaryImage DiaryImage { get; private set; }
+        public DiaryImage DiaryImage { get; set; }
     }
 
     public class TempImage
@@ -91,8 +103,8 @@ namespace RiseDiary.Model
         public int RecordId { get; set; }
         public bool Deleted { get; set; }
 
-        public DiaryImage DiaryImage { get; private set; }
-        public DiaryRecord DiaryRecord { get; private set; }
+        public DiaryImage DiaryImage { get; set; }
+        public DiaryRecord DiaryRecord { get; set; }
     }
 
     public class DiaryImageEqualityComparerById : IEqualityComparer<DiaryImage>
@@ -121,9 +133,9 @@ namespace RiseDiary.Model
             }
         }
 
-        public ICollection<Cogitation> Cogitations { get; private set; }
-        public ICollection<DiaryRecordTheme> ThemesRefs { get; private set; }
-        public ICollection<DiaryRecordImage> ImagesRefs { get; private set; }
+        public ICollection<Cogitation> Cogitations { get; set; }
+        public ICollection<DiaryRecordTheme> ThemesRefs { get; set; }
+        public ICollection<DiaryRecordImage> ImagesRefs { get; set; }
     }
 
     public class Cogitation

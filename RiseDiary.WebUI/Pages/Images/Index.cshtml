@@ -40,11 +40,11 @@
         <div class="col-sm-12">
             <div class="panel panel-default">
                 <div class="form-horizontal" id="navigationPanel">
-                    <a asp-route-pageNo="1" class="btn btn-link">Первая</a>
-                    |<a asp-route-pageNo="@Model.PrevPage" class="btn btn-link">Предыдущая</a>
-                    |<span><b> Страница @Model.CurrenPage из @Model.PagesCount</b></span>
-                    |<a asp-route-pageNo="@Model.NextPage" class="btn btn-link">Следующая</a>
-                    |<a asp-route-pageNo="@Model.PagesCount" class="btn btn-link">Последняя</a>
+                    <a asp-route-pageNo="0" class="btn btn-link">Первая</a>
+                    |<a asp-route-pageNo="@(Model.PrevPage)" class="btn btn-link">Предыдущая</a>
+                    |<span><b> Страница @(Model.CurrenPage + 1) из @Model.PagesCount</b></span>
+                    |<a asp-route-pageNo="@(Model.NextPage)" class="btn btn-link">Следующая</a>
+                    |<a asp-route-pageNo="@(Model.PagesCount - 1)" class="btn btn-link">Последняя</a>
                 </div>
             </div>
         </div>
@@ -71,11 +71,11 @@
         <div class="col-sm-12">
             <div class="panel panel-default">
                 <div class="form-horizontal" id="navigationPanel">
-                    <a asp-route-pageNo="1" class="btn btn-link">Первая</a>
-                    |<a asp-route-pageNo="@Model.PrevPage" class="btn btn-link">Предыдущая</a>
-                    |<span><b> Страница @Model.CurrenPage из @Model.PagesCount</b></span>
-                    |<a asp-route-pageNo="@Model.NextPage" class="btn btn-link">Следующая</a>
-                    |<a asp-route-pageNo="@Model.PagesCount" class="btn btn-link">Последняя</a>
+                    <a asp-route-pageNo="0" class="btn btn-link">Первая</a>
+                    |<a asp-route-pageNo="@(Model.PrevPage)" class="btn btn-link">Предыдущая</a>
+                    |<span><b> Страница @(Model.CurrenPage + 1) из @Model.PagesCount</b></span>
+                    |<a asp-route-pageNo="@(Model.NextPage)" class="btn btn-link">Следующая</a>
+                    |<a asp-route-pageNo="@(Model.PagesCount - 1)" class="btn btn-link">Последняя</a>
                 </div>
             </div>
         </div>

@@ -26,11 +26,13 @@ namespace RiseDiary.WebUI.Pages.Images
         {
             ImagesCount = await _context.GetImagesCount();
             PagesCount = Convert.ToInt32(Math.Ceiling(ImagesCount / (double)_pageSize));
-            CurrenPage = pageNo <= 0 ? 1 : pageNo;
-            CurrenPage = CurrenPage > PagesCount ? PagesCount : CurrenPage;
-            NextPage = CurrenPage == PagesCount ? CurrenPage : CurrenPage + 1;
-            PrevPage = CurrenPage == 1 ? 1 : CurrenPage - 1;
-            Images = await _context.FetchImageSet((CurrenPage - 1) * _pageSize, _pageSize);
+
+            int CurrenPage = pageNo;
+            if (CurrenPage > PagesCount || CurrenPage < 0) CurrenPage = 0;
+
+            NextPage = CurrenPage >= PagesCount - 1 ? CurrenPage : CurrenPage + 1;
+            PrevPage = CurrenPage == 0 ? 0 : CurrenPage - 1;
+            Images = await _context.FetchImageSet((CurrenPage) * _pageSize, _pageSize);
         }
     }
 }
