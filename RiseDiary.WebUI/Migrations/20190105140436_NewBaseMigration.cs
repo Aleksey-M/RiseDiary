@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-
+// sqlite
 namespace RiseDiary.WebUI.Migrations
 {
     public partial class NewBaseMigration : Migration

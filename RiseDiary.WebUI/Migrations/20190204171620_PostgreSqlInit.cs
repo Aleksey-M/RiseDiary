@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-
+// PostgreSql
 namespace RiseDiary.WebUI.Migrations
 {
     public partial class PostgreSqlInit : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        {/*
             migrationBuilder.AlterColumn<int>(
                 name: "Id",
                 table: "Themes",
@@ -54,7 +54,7 @@ namespace RiseDiary.WebUI.Migrations
                 table: "Cogitations",
                 nullable: false,
                 oldClrType: typeof(int))
-                .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
+                .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);*/
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
