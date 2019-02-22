@@ -44,7 +44,7 @@
                     |<a asp-route-pageNo="@(Model.PrevPage)" class="btn btn-link">Предыдущая</a>
                     |<span><b> Страница @(Model.CurrenPage + 1) из @Model.PagesCount</b></span>
                     |<a asp-route-pageNo="@(Model.NextPage)" class="btn btn-link">Следующая</a>
-                    |<a asp-route-pageNo="@(Model.PagesCount - 1)" class="btn btn-link">Последняя</a>
+                    |<a asp-route-pageNo="@(Model.PagesCount == 0 ? 0 : Model.PagesCount - 1)" class="btn btn-link">Последняя</a>
                 </div>
             </div>
         </div>
@@ -75,7 +75,7 @@
                     |<a asp-route-pageNo="@(Model.PrevPage)" class="btn btn-link">Предыдущая</a>
                     |<span><b> Страница @(Model.CurrenPage + 1) из @Model.PagesCount</b></span>
                     |<a asp-route-pageNo="@(Model.NextPage)" class="btn btn-link">Следующая</a>
-                    |<a asp-route-pageNo="@(Model.PagesCount - 1)" class="btn btn-link">Последняя</a>
+                    |<a asp-route-pageNo="@(Model.PagesCount == 0 ? 0 : Model.PagesCount - 1)" class="btn btn-link">Последняя</a>
                 </div>
             </div>
         </div>

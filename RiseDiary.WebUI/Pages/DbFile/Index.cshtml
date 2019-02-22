@@ -17,7 +17,8 @@
         }
     </style>
 }
-
+@if (Model.IsSqliteUsed)
+{
     <div class="row">
         <div class="col-sm-8 col-sm-offset-2">
             <div class="panel panel-default">
@@ -61,3 +62,12 @@
         </div>
     </div>
 
+}
+else
+{
+    <div class="row">
+        <div class="col-md-offset-4 col-md-4">
+            <h3>Используется PostgreSQL.</h3>
+        </div>
+    </div>    
+}
