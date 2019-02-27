@@ -6,7 +6,7 @@ using RiseDiary.WebUI.Data;
 using RiseDiary.Model;
 using System.Linq;
 
-namespace RiseDiary.SqliteStorages.IntegratedTests
+namespace RiseDiary.IntegratedTests
 {
     [TestFixture]
     internal class ScopeTests : TestFixtureBase
@@ -188,10 +188,10 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         }
 
         [Test]
-        public async Task DeleteScope_WithNotExistingId_ShouldNotThrowException()
+        public Task DeleteScope_WithNotExistingId_ShouldNotThrowException()
         {
             var context =  CreateContext();
-            await context.DeleteScope(150);
+            return context.DeleteScope(150);
         }
 
         [Test]
@@ -205,7 +205,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
 
             Assert.IsNull(Scope);
 
-            Assert.IsNotNull(context.Scopes.FirstOrDefault(s => s.Id == id && s.Deleted));
+            Assert.IsNull(context.Scopes.FirstOrDefault(s => s.Id == id));
         }
     }
 }

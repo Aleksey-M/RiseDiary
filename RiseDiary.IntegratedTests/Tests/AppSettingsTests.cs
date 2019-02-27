@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RiseDiary.SqliteStorages.IntegratedTests
+namespace RiseDiary.IntegratedTests
 {
     [TestFixture]
     internal class AppSettingsTests : TestFixtureBase

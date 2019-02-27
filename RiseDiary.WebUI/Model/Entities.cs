@@ -3,16 +3,21 @@ using System.Collections.Generic;
 
 namespace RiseDiary.Model
 {
-    public class DiaryScope
+    public interface IDeletedEntity
+    {
+        bool Deleted { get; set; }
+    }
+
+    public class DiaryScope : IDeletedEntity
     {
         public int Id { get; set; }
         public string ScopeName { get; set; }
         public bool Deleted { get; set; }
 
-        public ICollection<DiaryTheme> Themes { get; private set; }
+        public ICollection<DiaryTheme> Themes { get; set; }
     }
 
-    public class DiaryTheme
+    public class DiaryTheme : IDeletedEntity
     {
         public int Id { get; set; }
         public int ScopeId { get; set; }
@@ -21,17 +26,17 @@ namespace RiseDiary.Model
         public bool Deleted { get; set; }
 
         public DiaryScope Scope { get; private set; }
-        public ICollection<DiaryRecordTheme> RecordsRefs { get; private set; }
+        public ICollection<DiaryRecordTheme> RecordsRefs { get; set; }
     }
 
-    public class DiaryRecordTheme
+    public class DiaryRecordTheme : IDeletedEntity
     {
         public int ThemeId { get; set; }
         public int RecordId { get; set; }
         public bool Deleted { get; set; }
 
-        public DiaryTheme Theme { get; private set; }
-        public DiaryRecord Record { get; private set; }
+        public DiaryTheme Theme { get; set; }
+        public DiaryRecord Record { get; set; }
     }
         
     public class DiaryThemeJoined
@@ -43,7 +48,7 @@ namespace RiseDiary.Model
         public bool Actual { get; set; }
     }
     
-    public class DiaryImage
+    public class DiaryImage : IDeletedEntity
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -97,14 +102,14 @@ namespace RiseDiary.Model
         public DiaryImage DiaryImage { get; private set; }
     }
 
-    public class DiaryRecordImage
+    public class DiaryRecordImage : IDeletedEntity
     {
         public int ImageId { get; set; }
         public int RecordId { get; set; }
         public bool Deleted { get; set; }
 
-        public DiaryImage DiaryImage { get; set; }
-        public DiaryRecord DiaryRecord { get; set; }
+        public DiaryImage Image { get; set; }
+        public DiaryRecord Record { get; set; }
     }
 
     public class DiaryImageEqualityComparerById : IEqualityComparer<DiaryImage>
@@ -113,7 +118,7 @@ namespace RiseDiary.Model
         public int GetHashCode(DiaryImage obj) => obj.Id.GetHashCode();
     }
 
-    public class DiaryRecord
+    public class DiaryRecord : IDeletedEntity
     {
         public int Id { get; set; }
         private DateTime _recordDate;
@@ -138,7 +143,7 @@ namespace RiseDiary.Model
         public ICollection<DiaryRecordImage> ImagesRefs { get; set; }
     }
 
-    public class Cogitation
+    public class Cogitation : IDeletedEntity
     {
         public int Id { get; set; }
         public int RecordId { get; set; }
@@ -146,7 +151,7 @@ namespace RiseDiary.Model
         public string Text { get; set; }
         public bool Deleted { get; set; }
 
-        public DiaryRecord Record { get; private set; }
+        public DiaryRecord Record { get; set; }
     }
 
     public static class AppSettingsKeys

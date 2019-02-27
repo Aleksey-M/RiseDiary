@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RiseDiary.SqliteStorages.IntegratedTests
+namespace RiseDiary.IntegratedTests
 {
     [TestFixture]
     class ThemeTests : TestFixtureBase
@@ -88,11 +88,10 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         }
 
         [Test]
-        public async Task DeleteTheme_WithNotExistingId_ShouldNotThrowException()
+        public Task DeleteTheme_WithNotExistingId_ShouldNotThrowException()
         {
             var context = CreateContext();
-
-            await context.DeleteTheme(1112);
+            return context.DeleteTheme(1112);
         }
 
         [Test]
@@ -105,7 +104,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             var theme = await context.FetchThemeById(themeId);
             Assert.IsNull(theme);
 
-            Assert.IsNotNull(context.Themes.FirstOrDefault(t => t.Id == themeId && t.Deleted));
+            Assert.IsNull(context.Themes.FirstOrDefault(t => t.Id == themeId));
         }
 
         [Test]
@@ -216,8 +215,8 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
 
             await context.DeleteRecord(recId);
 
-            bindRec = await context.RecordThemes.FirstOrDefaultAsync(br => br.RecordId == recId && br.ThemeId == themeId && br.Deleted);
-            Assert.IsNotNull(bindRec);
+            bindRec = await context.RecordThemes.FirstOrDefaultAsync(br => br.RecordId == recId && br.ThemeId == themeId);
+            Assert.IsNull(bindRec);
         }
 
         [Test]
@@ -233,8 +232,8 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
 
             await context.DeleteTheme(themeId);
 
-            bindRec = await context.RecordThemes.FirstOrDefaultAsync(br => br.RecordId == recId && br.ThemeId == themeId && br.Deleted);
-            Assert.IsNotNull(bindRec);
+            bindRec = await context.RecordThemes.FirstOrDefaultAsync(br => br.RecordId == recId && br.ThemeId == themeId);
+            Assert.IsNull(bindRec);
         }
 
         [Test]

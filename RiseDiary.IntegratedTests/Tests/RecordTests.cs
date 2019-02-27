@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RiseDiary.SqliteStorages.IntegratedTests
+namespace RiseDiary.IntegratedTests
 {
     [TestFixture]
     class RecordTests : TestFixtureBase
@@ -54,7 +54,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
 
             Assert.IsNull(loadedRec);
 
-            Assert.IsNotNull(context.Records.FirstOrDefault(r => r.Id == id && r.Deleted));
+            Assert.IsNull(context.Records.FirstOrDefault(r => r.Id == id));
         }
 
         [Test]

@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using System.IO;
 
-namespace RiseDiary.SqliteStorages.IntegratedTests
+namespace RiseDiary.IntegratedTests
 {
     [TestFixture]
     internal class SQLite_DataBaseTests : TestFixtureBase

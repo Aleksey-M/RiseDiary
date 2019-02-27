@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RiseDiary.SqliteStorages.IntegratedTests
+namespace RiseDiary.IntegratedTests
 {
     [TestFixture]
     internal class CogitationTests : TestFixtureBase
@@ -39,15 +39,14 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
 
             await context.DeleteCogitation(cogId);
 
-            Assert.Zero(context.Cogitations.Count(c=>!c.Deleted));
-            Assert.NotNull(context.Cogitations.FirstOrDefault(c => c.Id == cogId && c.Deleted));
+            Assert.Null(context.Cogitations.SingleOrDefault(c => c.Id == cogId));
         }
 
         [Test]
-        public async Task DeleteCogitation_WithNullParameter_ShouldNotThrowException()
+        public Task DeleteCogitation_WithNullParameter_ShouldNotThrowException()
         {
             var context =  CreateContext();
-            await context.DeleteCogitation(1008);
+            return context.DeleteCogitation(1008);
         }
 
         [Test]
@@ -100,7 +99,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
         {
             var context =  CreateContext();
             var (recId, cogId) =  Create_3Records_1Cogitation(context);
-            var cogitation = context.Cogitations.Find(cogId);
+            var cogitation = await context.Cogitations.FindAsync(cogId);
             var cogOldDate = cogitation.Date;
             var cogOldText = cogitation.Text;
 
@@ -108,7 +107,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             cogitation.Text = ";ijgvirnvirg;rgivuw;rgw";
             await context.UpdateCogitation(cogitation);
             
-            cogitation = context.Cogitations.Find(cogId);
+            cogitation = await context.Cogitations.FindAsync(cogId);
 
             Assert.AreNotEqual(cogOldDate, cogitation.Date);
             Assert.AreNotEqual(cogOldText, cogitation.Text);

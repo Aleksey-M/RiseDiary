@@ -7,7 +7,7 @@ using RiseDiary.WebUI.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
-namespace RiseDiary.SqliteStorages.IntegratedTests
+namespace RiseDiary.IntegratedTests
 {
     [TestFixture]
     class ImageTests : TestFixtureBase
@@ -102,7 +102,7 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             Assert.IsNotNull(await context.FetchImageById(imagesId[2]));
 
             int id = imagesId[1];
-            Assert.IsNotNull(context.Images.FirstOrDefault(i => i.Id == id && i.Deleted));
+            Assert.IsNull(context.Images.FirstOrDefault(i => i.Id == id));
         }
 
         [Test]
@@ -142,13 +142,13 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             int recId = Create_Record(context);
             await context.AddRecordImage(recId, imageId);
 
-            var bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId && !br.Deleted);
+            var bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId);
             Assert.IsNotNull(bindRec);
 
             await context.DeleteImage(imageId);
 
-            bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId && br.Deleted);
-            Assert.IsNotNull(bindRec);
+            bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId);
+            Assert.IsNull(bindRec);
         }
 
         [Test]
@@ -159,13 +159,13 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
             int recId = Create_Record(context);
             await context.AddRecordImage(recId, imageId);
 
-            var bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId && !br.Deleted);
+            var bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId);
             Assert.IsNotNull(bindRec);
 
             await context.DeleteRecord(recId);
 
-            bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId && br.Deleted);
-            Assert.IsNotNull(bindRec);
+            bindRec = await context.RecordImages.FirstOrDefaultAsync(br => br.RecordId == recId && br.ImageId == imageId);
+            Assert.IsNull(bindRec);
         }
 
         [Test]

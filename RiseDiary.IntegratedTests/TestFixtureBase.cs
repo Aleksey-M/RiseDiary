@@ -7,8 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace RiseDiary.SqliteStorages.IntegratedTests
+namespace RiseDiary.IntegratedTests
 {
     // tests for DbContext
     internal class TestFixtureBase
@@ -277,5 +278,26 @@ namespace RiseDiary.SqliteStorages.IntegratedTests
                 context.SaveChanges();
             }
         }     
+
+        protected static (DiaryRecord record, DiaryScope scope, DiaryImage image) CreateEntities(DiaryDbContext context)
+        {
+            var rec = GetTestRecord();
+            var scope = new DiaryScope { ScopeName = $"Some Scope" };
+            scope.Themes = new List<DiaryTheme> { new DiaryTheme { ThemeName = "Some Theme", Actual = true } };
+            var img = GetTestImage();
+                        
+            context.Add(rec);
+            context.Add(scope);
+            context.Add(img);
+
+            context.SaveChanges();
+            
+            context.Add(new DiaryRecordImage { Record = rec, Image = img });
+            context.Add(new DiaryRecordTheme { Record = rec, Theme = scope.Themes.First() });
+            context.Add(new Cogitation { Record = rec, Date = DateTime.Now, Text = "Some Cogitation text" });
+            context.SaveChanges();
+            
+            return (rec, scope, img);
+        }
     }
 }

@@ -22,18 +22,18 @@ namespace RiseDiary.WebUI.Pages.DbFile
 
         public async Task UpdateModel()
         {
-            DeletedCogitationsCount = await _context.Cogitations.CountAsync(a => a.Deleted);
-            DeletedImagesCount = await _context.Images.CountAsync(a => a.Deleted);
-            DeletedRecordImagesCount = await _context.RecordImages.CountAsync(a => a.Deleted);
-            DeletedRecordsCount = await _context.Records.CountAsync(a => a.Deleted);
-            DeletedRecordThemesCount = await _context.RecordThemes.CountAsync(a => a.Deleted);
-            DeletedScopesCount = await _context.Scopes.CountAsync(a => a.Deleted);
-            DeletedThemesCount = await _context.Themes.CountAsync(a => a.Deleted);
+            DeletedCogitationsCount = await _context.Cogitations.IgnoreQueryFilters().CountAsync(a => a.Deleted);
+            DeletedImagesCount = await _context.Images.IgnoreQueryFilters().CountAsync(a => a.Deleted);
+            DeletedRecordImagesCount = await _context.RecordImages.IgnoreQueryFilters().CountAsync(a => a.Deleted);
+            DeletedRecordsCount = await _context.Records.IgnoreQueryFilters().CountAsync(a => a.Deleted);
+            DeletedRecordThemesCount = await _context.RecordThemes.IgnoreQueryFilters().CountAsync(a => a.Deleted);
+            DeletedScopesCount = await _context.Scopes.IgnoreQueryFilters().CountAsync(a => a.Deleted);
+            DeletedThemesCount = await _context.Themes.IgnoreQueryFilters().CountAsync(a => a.Deleted);
         }
 
-        public async Task OnGetAsync()
+        public Task OnGetAsync()
         {
-            await UpdateModel();
+            return UpdateModel();
         }
 
         public async Task OnPostClearBaseAsync()

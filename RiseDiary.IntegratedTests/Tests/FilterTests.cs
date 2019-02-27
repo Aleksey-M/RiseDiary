@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RiseDiary.SqliteStorages.IntegratedTests
+namespace RiseDiary.UnitTests
 {
     [TestFixture]
     class FilterTests

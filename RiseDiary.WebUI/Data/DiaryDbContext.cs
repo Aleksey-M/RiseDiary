@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Data
@@ -38,7 +39,7 @@ namespace RiseDiary.WebUI.Data
                 .HasForeignKey(tr => tr.RecordId)
                 .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<DiaryRecord>().HasMany(r => r.ImagesRefs)
-                .WithOne(ir => ir.DiaryRecord)
+                .WithOne(ir => ir.Record)
                 .HasForeignKey(ir => ir.RecordId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -74,7 +75,7 @@ namespace RiseDiary.WebUI.Data
                .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<DiaryImage>()
                 .HasMany(i => i.RecordsRefs)
-                .WithOne(rr => rr.DiaryImage)
+                .WithOne(rr => rr.Image)
                 .HasForeignKey(rr => rr.ImageId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -84,6 +85,67 @@ namespace RiseDiary.WebUI.Data
             modelBuilder.Entity<DiaryRecordImage>().HasIndex(nameof(DiaryRecordImage.RecordId), nameof(DiaryRecordImage.ImageId));
 
             modelBuilder.Entity<AppSetting>().HasKey(s => s.Key);
+            // soft deleting
+            modelBuilder.Entity<DiaryRecord>().HasQueryFilter(r => !r.Deleted);
+            modelBuilder.Entity<Cogitation>().HasQueryFilter(c => !c.Deleted);
+            modelBuilder.Entity<DiaryImage>().HasQueryFilter(i => !i.Deleted);
+            modelBuilder.Entity<DiaryTheme>().HasQueryFilter(t => !t.Deleted);
+            modelBuilder.Entity<DiaryScope>().HasQueryFilter(s => !s.Deleted);
+            modelBuilder.Entity<DiaryRecordTheme>().HasQueryFilter(rt => !rt.Deleted);
+            modelBuilder.Entity<DiaryRecordImage>().HasQueryFilter(ri => !ri.Deleted);
+        }
+
+        public bool SoftDeleting { get; set; } = true;
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            if (SoftDeleting) OnBeforeSaving();
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (SoftDeleting) OnBeforeSaving();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        private void OnBeforeSaving()
+        {
+            var entries = ChangeTracker.Entries<IDeletedEntity>().ToList();
+
+            foreach (var entry in entries)
+            {
+                switch (entry.State)
+                {                            
+                    case EntityState.Deleted when entry.Entity is DiaryRecord record:
+                        // !!! this should be loaded by Include()
+                        foreach (var c in record.Cogitations) c.Deleted = true;
+                        foreach (var tr in record.ThemesRefs) tr.Deleted = true;
+                        foreach (var ti in record.ImagesRefs) ti.Deleted = true;
+
+                        entry.State = EntityState.Modified;
+                        entry.Entity.Deleted = true;
+                        break;
+                    case EntityState.Deleted when entry.Entity is DiaryImage image:
+                        // !!! this should be loaded by Include()
+                        foreach (var rr in image.RecordsRefs) rr.Deleted = true;
+
+                        entry.State = EntityState.Modified;
+                        entry.Entity.Deleted = true;
+                        break;
+                    case EntityState.Deleted when entry.Entity is DiaryTheme theme:
+                        // !!! this should be loaded by Include()
+                        foreach (var rr in theme.RecordsRefs) rr.Deleted = true;
+
+                        entry.State = EntityState.Modified;
+                        entry.Entity.Deleted = true;
+                        break;
+                    case EntityState.Deleted:
+                        entry.State = EntityState.Modified;
+                        entry.Entity.Deleted = true;
+                        break;
+                }             
+            }
         }
     }
 
@@ -165,16 +227,16 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task DeleteScope(this DiaryDbContext context, int scopeId)
         {
-            bool canDelete = await context.CanDeleteScope(scopeId);
-            if (canDelete)
+            var scope = await context.Scopes
+                .Include(s => s.Themes)
+                .ThenInclude(t => t.RecordsRefs)
+                .FirstOrDefaultAsync(s => s.Id == scopeId);
+
+            if (scope != null && !scope.Themes.Any())
             {
-                var s = await context.Scopes.FindAsync(scopeId);
-                if (s != null)
-                {
-                    s.Deleted = true;
-                    await context.SaveChangesAsync();
-                }
-            }
+                context.Scopes.Remove(scope);
+                await context.SaveChangesAsync();
+            }          
         }
 
         public static async Task<int> UpdateScope(this DiaryDbContext context, DiaryScope scope)
@@ -217,11 +279,13 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task DeleteTheme(this DiaryDbContext context, int themeId)
         {
-            var theme = await context.Themes.FindAsync(themeId);
+            var theme = await context.Themes
+                .Include(t => t.RecordsRefs)
+                .FirstOrDefaultAsync(t => t.Id == themeId);
+
             if (theme != null)
             {
-                await context.RecordThemes.Where(rth => rth.ThemeId == themeId && !rth.Deleted).ForEachAsync(rth => rth.Deleted = true);
-                theme.Deleted = true;
+                context.Themes.Remove(theme);
                 await context.SaveChangesAsync();
             }
         }
@@ -273,28 +337,24 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task AddRecordTheme(this DiaryDbContext context, int recordId, int themeId)
         {
-            var recThem = await context.RecordThemes.FirstOrDefaultAsync(rt=>rt.RecordId == recordId && rt.ThemeId == themeId);
-            if (recThem != null)
+            var rt = await context.RecordThemes.FindAsync(recordId, themeId);
+            if(rt != null)
             {
-                if (recThem.Deleted)
-                {
-                    recThem.Deleted = false;
-                    await context.SaveChangesAsync();
-                }
+                rt.Deleted = false;
             }
             else
             {
                 await context.RecordThemes.AddAsync(new DiaryRecordTheme { RecordId = recordId, ThemeId = themeId });
-                await context.SaveChangesAsync();
             }
+            await context.SaveChangesAsync();
         }
 
         public static async Task RemoveRecordTheme(this DiaryDbContext context, int recordId, int themeId)
         {
-            var rt = await context.RecordThemes.FindAsync(recordId, themeId);
+            var rt = await context.RecordThemes.FirstOrDefaultAsync(r => r.RecordId == recordId && r.ThemeId == themeId);
             if (rt != null)
-            {                
-                rt.Deleted = true;
+            {
+                context.RecordThemes.Remove(rt);
                 await context.SaveChangesAsync();
             }           
         }
@@ -350,11 +410,15 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task DeleteImage(this DiaryDbContext context, int imageId)
         {
-            var img = await context.Images.FindAsync(imageId);
+            var img = await context.Images
+                .Include(i => i.RecordsRefs)
+                .Include(i => i.FullImage)
+                .Include(i => i.TempImage)
+                .FirstOrDefaultAsync(i => i.Id == imageId);
+
             if(img != null)
             {
-                await context.RecordImages.Where(ri => ri.ImageId == img.Id && !ri.Deleted).ForEachAsync(ri=>ri.Deleted = true);
-                img.Deleted = true;
+                context.Images.Remove(img);
                 await context.SaveChangesAsync();
             }
         }
@@ -391,29 +455,27 @@ namespace RiseDiary.WebUI.Data
         public static Task<int> GetImagesCount(this DiaryDbContext context) => context.Images.CountAsync(i => !i.Deleted);
         public static Task<List<DiaryImage>> FetchImageSet(this DiaryDbContext context, int skip, int count) => context.Images.Where(i => !i.Deleted).OrderByDescending(i => i.CreateDate).Skip(skip).Take(count).ToListAsync();
         public static Task<List<DiaryImage>> FetchAllImages(this DiaryDbContext context) => context.Images.Where(i => !i.Deleted).OrderByDescending(i => i.CreateDate).ToListAsync();
+
         public static async Task AddRecordImage(this DiaryDbContext context, int recordId, int imageId)
         {
-            var recImg = await context.RecordImages.FirstOrDefaultAsync(ri => ri.RecordId == recordId && ri.ImageId == imageId);
-            if(recImg != null)
+            var ri = await context.RecordImages.FindAsync(recordId, imageId);
+            if(ri != null)
             {
-                if (recImg.Deleted)
-                {
-                    recImg.Deleted = false;
-                    await context.SaveChangesAsync();
-                }
+                ri.Deleted = false;
             }
             else
             {
                 await context.RecordImages.AddAsync(new DiaryRecordImage { ImageId = imageId, RecordId = recordId });
-                await context.SaveChangesAsync();
             }            
+            await context.SaveChangesAsync();
         }
+
         public static async Task RemoveRecordImage(this DiaryDbContext context, int recordId, int imageId)
         {
             var recordImage = await context.RecordImages.FindAsync(recordId, imageId);
             if(recordImage != null)
             {
-                recordImage.Deleted = true;
+                context.RecordImages.Remove(recordImage);
                 await context.SaveChangesAsync();
             }
         }
@@ -426,10 +488,10 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task DeleteCogitation(this DiaryDbContext context, int cogitationId)
         {
-            var c = await context.Cogitations.FindAsync(cogitationId);
-            if(c != null)
+            var cogitation = await context.Cogitations.FirstOrDefaultAsync(c => c.Id == cogitationId);
+            if(cogitation != null)
             {
-                c.Deleted = true;
+                context.Cogitations.Remove(cogitation);
                 await context.SaveChangesAsync();
             }
         }
@@ -477,14 +539,16 @@ namespace RiseDiary.WebUI.Data
         }
 
         public static async Task DeleteRecord(this DiaryDbContext context, int recordId)
-        {            
-            var record = await context.Records.FindAsync(recordId);
+        {
+            var record = await context.Records
+                .Include(r => r.Cogitations)
+                .Include(r => r.ImagesRefs)
+                .Include(r => r.ThemesRefs)
+                .FirstOrDefaultAsync(r => r.Id == recordId);
+
             if (record != null)
             {
-                await context.Cogitations.Where(c=>c.RecordId == record.Id && !c.Deleted).ForEachAsync(c=>c.Deleted = true);
-                await context.RecordImages.Where(ri=>ri.RecordId == record.Id && !ri.Deleted).ForEachAsync(ri => ri.Deleted = true);
-                await context.RecordThemes.Where(rt => rt.RecordId == record.Id && !rt.Deleted).ForEachAsync(rt => rt.Deleted = true);
-                record.Deleted = true;
+                context.Records.Remove(record);
                 await context.SaveChangesAsync();
             }
         }
@@ -669,27 +733,29 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task ClearDbFromDeletedRecords(this DiaryDbContext context)
         {
-            var recImages = context.RecordImages.Where(ri => ri.Deleted);
+            context.SoftDeleting = false;
+
+            var recImages = context.RecordImages.IgnoreQueryFilters().Where(ri => ri.Deleted);
             context.RecordImages.RemoveRange(recImages);
             await context.SaveChangesAsync();
 
-            var images = context.Images.Where(i => i.Deleted);
+            var images = context.Images.IgnoreQueryFilters().Where(i => i.Deleted);
             context.Images.RemoveRange(images);
             await context.SaveChangesAsync();
 
-            var recThemes = context.RecordThemes.Where(rt => rt.Deleted);
+            var recThemes = context.RecordThemes.IgnoreQueryFilters().Where(rt => rt.Deleted);
             context.RecordThemes.RemoveRange(recThemes);
             await context.SaveChangesAsync();
 
-            var themes = context.Themes.Where(t => t.Deleted);
+            var themes = context.Themes.IgnoreQueryFilters().Where(t => t.Deleted);
             context.Themes.RemoveRange(themes);
             await context.SaveChangesAsync();
 
-            var scopes = context.Scopes.Where(s => s.Deleted);
+            var scopes = context.Scopes.IgnoreQueryFilters().Where(s => s.Deleted);
             context.Scopes.RemoveRange(scopes);
             await context.SaveChangesAsync();
 
-            var records = context.Records.Where(r => r.Deleted);
+            var records = context.Records.IgnoreQueryFilters().Where(r => r.Deleted);
             var cogitations = records.SelectMany(r => context.Cogitations.Where(c => c.RecordId == r.Id));
             context.Cogitations.RemoveRange(cogitations);
             context.Records.RemoveRange(records);
