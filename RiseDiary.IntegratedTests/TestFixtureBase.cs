@@ -48,13 +48,30 @@ namespace RiseDiary.IntegratedTests
                 var builder = new DbContextOptionsBuilder<DiaryDbContext>();
                 builder.UseNpgsql(_connectionString);
                 var context = new DiaryDbContext(builder.Options);
+
+                context.SoftDeleting = false;
+
                 context.Database.EnsureCreated();
 
-                context.Records.RemoveRange(context.Records);
-                context.Scopes.RemoveRange(context.Scopes);
-                context.Images.RemoveRange(context.Images);
+                context.Records.RemoveRange(context.Records
+                    .Include(r => r.Cogitations)
+                    .Include(r => r.ImagesRefs)
+                    .Include(r => r.ThemesRefs)
+                    .ToList());
+                context.Scopes.RemoveRange(context.Scopes
+                    .Include(s => s.Themes)
+                    .ThenInclude(t => t.RecordsRefs)
+                    .ToList());
+                context.Images.RemoveRange(context.Images
+                    .Include(i => i.FullImage)
+                    .Include(i => i.TempImage)
+                    .Include(i => i.RecordsRefs)
+                    .ToList());
                 context.AppSettings.RemoveRange(context.AppSettings);
                 context.SaveChanges();
+
+                context.SoftDeleting = true;
+
                 return context;
             }
             else
@@ -271,12 +288,22 @@ namespace RiseDiary.IntegratedTests
         {
             for (int i = 0; i < 3; i++)
             {
+                var scope = new DiaryScope {
+                    ScopeName = $"Scope {i + 1}",
+                    Themes = new List<DiaryTheme> { new DiaryTheme { ThemeName = $"Theme For Scope {i + 1}" } } };
+                context.Scopes.Add(scope);               
+            }
+            context.SaveChanges();
+            /*
+            for (int i = 0; i < 3; i++)
+            {
                 var scope = new DiaryScope { ScopeName = $"Scope {i + 1}" };
                 context.Scopes.Add(scope);
                 context.SaveChanges();
                 context.Themes.Add(new DiaryTheme { ScopeId = scope.Id, ThemeName = $"Theme For Scope {i + 1}" });
                 context.SaveChanges();
             }
+            */
         }     
 
         protected static (DiaryRecord record, DiaryScope scope, DiaryImage image) CreateEntities(DiaryDbContext context)

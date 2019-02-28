@@ -220,17 +220,19 @@ namespace RiseDiary.WebUI.Data
             var area = new DiaryScope { ScopeName = scopeName };
             await context.Scopes.AddAsync(area);
             await context.SaveChangesAsync();
+
             return area.Id;
         }
 
-        public static async Task<bool> CanDeleteScope(this DiaryDbContext context, int scopeId) => !(await context.Themes.AnyAsync(th => th.ScopeId == scopeId && !th.Deleted));
+        public static async Task<bool> CanDeleteScope(this DiaryDbContext context, int scopeId) => 
+            !(await context.Themes.AnyAsync(th => th.ScopeId == scopeId));
 
         public static async Task DeleteScope(this DiaryDbContext context, int scopeId)
         {
             var scope = await context.Scopes
                 .Include(s => s.Themes)
                 .ThenInclude(t => t.RecordsRefs)
-                .FirstOrDefaultAsync(s => s.Id == scopeId);
+                .SingleOrDefaultAsync(s => s.Id == scopeId);
 
             if (scope != null && !scope.Themes.Any())
             {
@@ -245,24 +247,31 @@ namespace RiseDiary.WebUI.Data
             var targetScope = await context.Scopes.FindAsync(scope.Id);
             if (targetScope == null) throw new ArgumentException($"Scope with id = {scope.Id} is not exists");
             if (targetScope.Deleted) throw new ArgumentException($"Scope with id = {scope.Id} is deleted");
+
             targetScope.ScopeName = scope.ScopeName;
             await context.SaveChangesAsync();
+
             return targetScope.Id;
         }
 
-        public static Task<DiaryScope> FetchScopeById(this DiaryDbContext context, int scopeId) => context.Scopes.FirstOrDefaultAsync(s => s.Id == scopeId && !s.Deleted);
-        public static Task<List<DiaryScope>> FetchAllScopes(this DiaryDbContext context) => context.Scopes.Where(s => !s.Deleted).ToListAsync();
-        public static Task<int> GetScopesCount(this DiaryDbContext context) => context.Scopes.CountAsync(s => !s.Deleted);
+        public static Task<DiaryScope> FetchScopeById(this DiaryDbContext context, int scopeId) => 
+            context.Scopes.SingleOrDefaultAsync(s => s.Id == scopeId);
+
+        public static Task<List<DiaryScope>> FetchAllScopes(this DiaryDbContext context) => 
+            context.Scopes.ToListAsync();
+
+        public static Task<int> GetScopesCount(this DiaryDbContext context) => 
+            context.Scopes.CountAsync();
 
         public static async Task<int> AddTheme(this DiaryDbContext context, int scopeId, string themeName)
         {
             if (string.IsNullOrWhiteSpace(themeName))
-            {
                 throw new ArgumentException($"Parameter {nameof(themeName)} should not be null or empty");
-            }
+            
             var theme = new DiaryTheme { ScopeId = scopeId, ThemeName = themeName };
             await context.Themes.AddAsync(theme);
             await context.SaveChangesAsync();
+
             return theme.Id;
         }
 
@@ -272,8 +281,10 @@ namespace RiseDiary.WebUI.Data
             var targetTheme = await context.Themes.FindAsync(theme?.Id);
             if (targetTheme == null) throw new ArgumentException($"Theme with id = {theme.Id} is not exists");
             if (targetTheme.Deleted) throw new ArgumentException($"Theme with id = {theme.Id} is deleted");
+
             targetTheme.ThemeName = theme.ThemeName;
             await context.SaveChangesAsync();
+
             return targetTheme.Id;
         }
 
@@ -281,7 +292,7 @@ namespace RiseDiary.WebUI.Data
         {
             var theme = await context.Themes
                 .Include(t => t.RecordsRefs)
-                .FirstOrDefaultAsync(t => t.Id == themeId);
+                .SingleOrDefaultAsync(t => t.Id == themeId);
 
             if (theme != null)
             {
@@ -290,29 +301,26 @@ namespace RiseDiary.WebUI.Data
             }
         }
 
-        public static Task<DiaryTheme> FetchThemeById(this DiaryDbContext context, int themeId) => context.Themes.FirstOrDefaultAsync(t => t.Id == themeId && !t.Deleted);
+        public static Task<DiaryTheme> FetchThemeById(this DiaryDbContext context, int themeId) => 
+            context.Themes.SingleOrDefaultAsync(t => t.Id == themeId);
 
         public static Task<List<DiaryTheme>> FetchThemesOfScope(this DiaryDbContext context, int? scopeId)
         {
             return scopeId != null
-                ? context.Themes.Where(t => t.ScopeId == scopeId && !t.Deleted).ToListAsync()
-                : context.Themes.Where(t=>!t.Deleted).ToListAsync();
+                ? context.Themes.Where(t => t.ScopeId == scopeId).ToListAsync()
+                : context.Themes.ToListAsync();
         }
 
-        public static Task<List<int>> FetchThemesIds(this DiaryDbContext context, int? scopeId)
-        {
-            return scopeId != null
-                ? context.Themes
-                    .Where(t => t.ScopeId == scopeId && !t.Deleted)
-                    .Select(t => t.Id)
-                    .ToListAsync()
-                : context.Themes.Where(t=>!t.Deleted).Select(t => t.Id).ToListAsync();
-        }
+        public static async Task<List<int>> FetchThemesIds(this DiaryDbContext context, int? scopeId) =>        
+             (await context.FetchThemesOfScope(scopeId)).Select(t => t.Id).ToList();
+
+        public static async Task<int> GetThemesCount(this DiaryDbContext context, int? scopeId) =>
+            (await context.FetchThemesOfScope(scopeId)).Count();
 
         public static Task<List<DiaryThemeJoined>> FetchThemesWithScopes(this DiaryDbContext context)
         {
-            return context.Scopes.Where(s=>!s.Deleted).Join(
-                context.Themes.Where(t=>!t.Deleted),
+            return context.Scopes.Join(
+                context.Themes,
                 s => s.Id,
                 t => t.ScopeId,
                 (s, t) => new DiaryThemeJoined
@@ -326,14 +334,7 @@ namespace RiseDiary.WebUI.Data
                 .OrderBy(tj => tj.ScopeName)
                 .ThenBy(tj => tj.ThemeName)
                 .ToListAsync();
-        }
-
-        public static Task<int> GetThemesCount(this DiaryDbContext context, int? scopeId)
-        {
-            return scopeId != null
-                ? context.Themes.CountAsync(t => t.ScopeId == scopeId && !t.Deleted)
-                : context.Themes.CountAsync(t => !t.Deleted);
-        }
+        }    
 
         public static async Task AddRecordTheme(this DiaryDbContext context, int recordId, int themeId)
         {
@@ -362,15 +363,15 @@ namespace RiseDiary.WebUI.Data
         public static Task<List<DiaryTheme>> FetchRecordThemes(this DiaryDbContext context, int recordId)
         {
             return context.RecordThemes
-                .Where(rt => rt.RecordId == recordId && !rt.Deleted)
-                .Join(context.Themes.Where(t => !t.Deleted), rt => rt.ThemeId, t => t.Id, (rt, t) => t)
+                .Where(rt => rt.RecordId == recordId)
+                .Join(context.Themes, rt => rt.ThemeId, t => t.Id, (rt, t) => t)
                 .ToListAsync();  
         }
 
         public static Task<List<string>> FetchRecordThemesList(this DiaryDbContext context, int recordId)
         {
             return context.RecordThemes
-                .Where(rt => rt.RecordId == recordId && !rt.Deleted)
+                .Where(rt => rt.RecordId == recordId)
                 .Join(context.Themes.OrderBy(t=>t.ThemeName), rt => rt.ThemeId, t => t.Id, (rt, t) => new { t.Id, t.ThemeName, t.ScopeId })
                 .Join(context.Scopes, t => t.ScopeId, s => s.Id, (t, s) => $"{s.ScopeName} - {t.ThemeName}")
                 .ToListAsync();
@@ -422,20 +423,22 @@ namespace RiseDiary.WebUI.Data
                 await context.SaveChangesAsync();
             }
         }
+
         public static async Task UpdateImageName(this DiaryDbContext context, int imageId, string imageNewName)
         {
-            var img = await context.Images.FindAsync(imageId);
-            if (img != null && !img.Deleted)
+            var img = await context.Images.SingleOrDefaultAsync(i => i.Id == imageId);
+            if (img != null)
             {
                 img.Name = imageNewName;
                 img.ModifyDate = DateTime.Now;
                 await context.SaveChangesAsync();
             }
         }
+
         public static async Task UpdateFullSizeImage(this DiaryDbContext context, int imageId, byte[] newImage)
         {
-            var img = await context.Images.FindAsync(imageId);
-            if (img != null && !img.Deleted)
+            var img = await context.Images.SingleOrDefaultAsync(i => i.Id == imageId);
+            if (img != null)
             {
                 img.Thumbnail = ImageHelper.ScaleImage(newImage);
                 img.ModifyDate = DateTime.Now;
@@ -446,15 +449,24 @@ namespace RiseDiary.WebUI.Data
                 await context.SaveChangesAsync();
             }
         }
-        public static Task<DiaryImage> FetchImageById(this DiaryDbContext context, int imageId) => context.Images.FirstOrDefaultAsync(i => i.Id == imageId && !i.Deleted);
+
+        public static Task<DiaryImage> FetchImageById(this DiaryDbContext context, int imageId) => 
+            context.Images.SingleOrDefaultAsync(i => i.Id == imageId);
+
         public static async Task<byte[]> FetchFullImageById(this DiaryDbContext context, int imageId)
         {
-            bool imageExists = await context.Images.FirstOrDefaultAsync(i => i.Id == imageId && !i.Deleted) != null;
-            return imageExists ? (await context.FullSizeImages.FirstOrDefaultAsync(i => i.ImageId == imageId))?.Data : null;
+            bool imageExists = await context.Images.SingleOrDefaultAsync(i => i.Id == imageId) != null;
+            return imageExists ? (await context.FullSizeImages.SingleOrDefaultAsync(i => i.ImageId == imageId))?.Data : null;
         }
-        public static Task<int> GetImagesCount(this DiaryDbContext context) => context.Images.CountAsync(i => !i.Deleted);
-        public static Task<List<DiaryImage>> FetchImageSet(this DiaryDbContext context, int skip, int count) => context.Images.Where(i => !i.Deleted).OrderByDescending(i => i.CreateDate).Skip(skip).Take(count).ToListAsync();
-        public static Task<List<DiaryImage>> FetchAllImages(this DiaryDbContext context) => context.Images.Where(i => !i.Deleted).OrderByDescending(i => i.CreateDate).ToListAsync();
+
+        public static Task<int> GetImagesCount(this DiaryDbContext context) => 
+            context.Images.CountAsync();
+
+        public static Task<List<DiaryImage>> FetchImageSet(this DiaryDbContext context, int skip, int count) => 
+            context.Images.OrderByDescending(i => i.CreateDate).Skip(skip).Take(count).ToListAsync();
+
+        public static Task<List<DiaryImage>> FetchAllImages(this DiaryDbContext context) => 
+            context.Images.OrderByDescending(i => i.CreateDate).ToListAsync();
 
         public static async Task AddRecordImage(this DiaryDbContext context, int recordId, int imageId)
         {
@@ -479,16 +491,19 @@ namespace RiseDiary.WebUI.Data
                 await context.SaveChangesAsync();
             }
         }
+
         public static async Task<List<DiaryImage>> FetchImagesForRecord(this DiaryDbContext context, int recordId)
         {
-            var imagesIds = await context.RecordImages.Where(ri => ri.RecordId == recordId && !ri.Deleted).Select(ri => ri.ImageId).ToListAsync();
-            return await context.Images.Where(i => imagesIds.Contains(i.Id) && !i.Deleted).ToListAsync();
+            var imagesIds = await context.RecordImages.Where(ri => ri.RecordId == recordId).Select(ri => ri.ImageId).ToListAsync();
+            return await context.Images.Where(i => imagesIds.Contains(i.Id)).ToListAsync();
         }
-        public static Task<int> GetLinkedRecordsCount(this DiaryDbContext context, int imageId) => context.RecordImages.CountAsync(ri => ri.ImageId == imageId && !ri.Deleted);
+
+        public static Task<int> GetLinkedRecordsCount(this DiaryDbContext context, int imageId) => 
+            context.RecordImages.CountAsync(ri => ri.ImageId == imageId);
 
         public static async Task DeleteCogitation(this DiaryDbContext context, int cogitationId)
         {
-            var cogitation = await context.Cogitations.FirstOrDefaultAsync(c => c.Id == cogitationId);
+            var cogitation = await context.Cogitations.SingleOrDefaultAsync(c => c.Id == cogitationId);
             if(cogitation != null)
             {
                 context.Cogitations.Remove(cogitation);
@@ -496,8 +511,11 @@ namespace RiseDiary.WebUI.Data
             }
         }
 
-        public static Task<Cogitation> FetchCogitationById(this DiaryDbContext context, int cogitationId) => context.Cogitations.FirstOrDefaultAsync(c => c.Id == cogitationId && !c.Deleted);
-        public static Task<List<Cogitation>> FetchAllCogitationsOfRecord(this DiaryDbContext context, int recordId) => context.Cogitations.Where(c => c.RecordId == recordId && !c.Deleted).ToListAsync();
+        public static Task<Cogitation> FetchCogitationById(this DiaryDbContext context, int cogitationId) => 
+            context.Cogitations.SingleOrDefaultAsync(c => c.Id == cogitationId);
+
+        public static Task<List<Cogitation>> FetchAllCogitationsOfRecord(this DiaryDbContext context, int recordId) => 
+            context.Cogitations.Where(c => c.RecordId == recordId).ToListAsync();
 
         public static async Task<int> AddCogitation(this DiaryDbContext context, Cogitation cogitation)
         {
@@ -518,7 +536,8 @@ namespace RiseDiary.WebUI.Data
             return c.Id;
         }
 
-        public static Task<int> GetCogitationsCount(this DiaryDbContext context, int recordId) => context.Cogitations.CountAsync(c => c.RecordId == recordId && !c.Deleted);
+        public static Task<int> GetCogitationsCount(this DiaryDbContext context, int recordId) => 
+            context.Cogitations.CountAsync(c => c.RecordId == recordId);
 
         public static async Task<int> AddRecord(this DiaryDbContext context, DiaryRecord record)
         {
@@ -553,17 +572,18 @@ namespace RiseDiary.WebUI.Data
             }
         }
 
-        public static Task<DiaryRecord> FetchRecordById(this DiaryDbContext context, int recordId) => context.Records.FirstOrDefaultAsync(r => r.Id == recordId && !r.Deleted);
+        public static Task<DiaryRecord> FetchRecordById(this DiaryDbContext context, int recordId) => 
+            context.Records.SingleOrDefaultAsync(r => r.Id == recordId);
 
         public static async Task<DiaryRecord> GetRecordByCogitation(this DiaryDbContext context, int cogitationId)
         {
-            var c = await context.Cogitations.FindAsync(cogitationId);
-            return c == null ? null : await context.Records.FindAsync(c.RecordId);
+            var c = await context.Cogitations.SingleOrDefaultAsync(cog => cog.Id == cogitationId);
+            return c == null ? null : await context.Records.SingleOrDefaultAsync(r => r.Id == c.RecordId);
         }
         
         private static IQueryable<DiaryRecord> _FetchRecordsListFiltered(DiaryDbContext context, RecordsFilter filter)
         {
-            var result = context.Records.Where(r => !r.Deleted);
+            var result = context.Records.AsQueryable();
 
             if (!RecordsFilter.IsEmpty(filter))
             {
@@ -581,15 +601,20 @@ namespace RiseDiary.WebUI.Data
                 }
                 if (!filter.IsEmptyTypeFilter)
                 {
-                    result = result.Where(r => filter.RecordThemeIds.All(id => context.RecordThemes.Where(rt => rt.RecordId == r.Id && !rt.Deleted).Select(rt => rt.ThemeId).Contains(id)));                                      
+                    result = result.Where(r => filter.RecordThemeIds.All(id => context.RecordThemes.Where(rt => rt.RecordId == r.Id).Select(rt => rt.ThemeId).Contains(id)));                                      
                 }
             }
             return result;
         }
 
-        public static Task<List<DiaryRecord>> FetchRecordsListFiltered(this DiaryDbContext context, RecordsFilter filter) => _FetchRecordsListFiltered(context, filter).OrderByDescending(r => r.Date).Skip(filter.PageNo * filter.PageSize).Take(filter.PageSize).ToListAsync();
+        public static Task<List<DiaryRecord>> FetchRecordsListFiltered(this DiaryDbContext context, RecordsFilter filter) => 
+            _FetchRecordsListFiltered(context, filter).OrderByDescending(r => r.Date)
+                .Skip(filter.PageNo * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync();
 
-        public static Task<int> GetFilteredRecordsCount(this DiaryDbContext context, RecordsFilter filter) => _FetchRecordsListFiltered(context, filter).CountAsync();
+        public static Task<int> GetFilteredRecordsCount(this DiaryDbContext context, RecordsFilter filter) => 
+            _FetchRecordsListFiltered(context, filter).CountAsync();
 
         public static Task<List<DiaryRecord>> FetchRecordsByMonth(this DiaryDbContext context, int year, int? month = null)
         {
@@ -601,8 +626,8 @@ namespace RiseDiary.WebUI.Data
         public static Task<int> GetMonthRecordsCount(this DiaryDbContext context, int year, int? month = null)
         {
             return month == null
-                ? context.Records.CountAsync(r => r.Date.Year == year && !r.Deleted)
-                : context.Records.CountAsync(r => r.Date.Year == year && r.Date.Month == month && !r.Deleted);
+                ? context.Records.CountAsync(r => r.Date.Year == year)
+                : context.Records.CountAsync(r => r.Date.Year == year && r.Date.Month == month);
         }
 
         public static async Task<int> UpdateRecord(this DiaryDbContext context, DiaryRecord record)
@@ -611,6 +636,7 @@ namespace RiseDiary.WebUI.Data
             var destRec = await context.Records.FindAsync(record.Id);
             if(destRec == null) throw new ArgumentException($"Record with ID={record.Id} is not found");
             if (destRec.Deleted) throw new ArgumentException($"Record with ID={record.Id} is deleted");
+
             destRec.Date = record.Date;
             destRec.CreateDate = record.CreateDate;
             destRec.ModifyDate = record.ModifyDate;
@@ -618,27 +644,30 @@ namespace RiseDiary.WebUI.Data
             destRec.Text = record.Text;
 
             await context.SaveChangesAsync();
+
             return destRec.Id;
         }
 
-        public static Task<List<int>> FetchYearsList(this DiaryDbContext context) => context.Records.Where(r => !r.Deleted).Select(r => r.Date.Year).Distinct().ToListAsync();
+        public static Task<List<int>> FetchYearsList(this DiaryDbContext context) => 
+            context.Records.Select(r => r.Date.Year).Distinct().ToListAsync();
 
         public static async Task<int> UpdateCogitationText(this DiaryDbContext context, int cogitationId, string text)
         {
             var c = await context.Cogitations.FindAsync(cogitationId);
             if (c == null) throw new ArgumentException($"Cogitation with id = {cogitationId} is not exists");
             if (c.Deleted) throw new ArgumentException($"Cogitation with id = {cogitationId} is deleted");
+
             c.Text = text;
             await context.SaveChangesAsync();
+
             return c.Id;
         }
 
         public static Task<Dictionary<DiaryScope, IEnumerable<DiaryTheme>>> FetchScopesWithThemes(this DiaryDbContext context)
         {
             return context.Scopes
-                .Where(s => !s.Deleted)
                 .OrderBy(s => s.ScopeName)
-                .GroupJoin(context.Themes.Where(t => !t.Deleted), s => s.Id, t => t.ScopeId, (s, res) => new { s, res })
+                .GroupJoin(context.Themes, s => s.Id, t => t.ScopeId, (s, res) => new { s, res })
                 .ToDictionaryAsync(j => j.s, j => j.res);
         }
 
@@ -662,7 +691,9 @@ namespace RiseDiary.WebUI.Data
         {
             if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException(nameof(key));
             if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException(nameof(value));
+
             var appSetting = await context.AppSettings.FirstOrDefaultAsync(s => s.Key == key);
+
             if(appSetting == null)
             {
                 await context.AppSettings.AddAsync(new AppSetting
@@ -686,10 +717,10 @@ namespace RiseDiary.WebUI.Data
 
         public static Task<List<DateItem>> FetchDateItems(this DiaryDbContext context, int scopeId, DatesRange datesRange)
         {
-            return context.RecordThemes.Where(rt => !rt.Deleted)
-                .Join(context.Themes.Where(t => !t.Deleted && t.ScopeId == scopeId), rt => rt.ThemeId, t => t.Id, (rt, t) => new { t.ThemeName, rt.RecordId })
+            return context.RecordThemes
+                .Join(context.Themes.Where(t => t.ScopeId == scopeId), rt => rt.ThemeId, t => t.Id, (rt, t) => new { t.ThemeName, rt.RecordId })
                 .Join(
-                    context.Records.Where(r => !r.Deleted && datesRange.IsDateInRange(r.Date)), 
+                    context.Records.Where(r => datesRange.IsDateInRange(r.Date)), 
                     t => t.RecordId, 
                     r => r.Id, 
                     (t, r) => new DateItem(datesRange, r.Id, t.ThemeName, r.Date, r.Name, r.Text))
@@ -700,9 +731,9 @@ namespace RiseDiary.WebUI.Data
         public static Task<List<DateItem>> FetchAllDateItems(this DiaryDbContext context, int scopeId)
         {
             var datesRange = DatesRange.ForAllYear();
-            return context.RecordThemes.Where(rt => !rt.Deleted)
-                .Join(context.Themes.Where(t => !t.Deleted && t.ScopeId == scopeId), rt => rt.ThemeId, t => t.Id, (rt, t) => new { t.ThemeName, rt.RecordId })
-                .Join(context.Records.Where(r => !r.Deleted), t => t.RecordId, r => r.Id, (t, r) => new DateItem(datesRange, r.Id, t.ThemeName, r.Date, r.Name, r.Text))
+            return context.RecordThemes
+                .Join(context.Themes.Where(t => t.ScopeId == scopeId), rt => rt.ThemeId, t => t.Id, (rt, t) => new { t.ThemeName, rt.RecordId })
+                .Join(context.Records, t => t.RecordId, r => r.Id, (t, r) => new DateItem(datesRange, r.Id, t.ThemeName, r.Date, r.Name, r.Text))
                 .OrderByDescending(i => i.TransferredDate)
                 .ToListAsync();
         }
@@ -710,11 +741,9 @@ namespace RiseDiary.WebUI.Data
         private static IQueryable<DiaryRecord> _SearchRecords(this DiaryDbContext context, string searchText)
         {
             return context.Records
-                .Where(r => !r.Deleted && (r.Name.Contains(searchText) ||
+                .Where(r => (r.Name.Contains(searchText) ||
                     r.Text.Contains(searchText)) ||
-                    context.Cogitations.Any(c => !c.Deleted &&
-                        c.RecordId == r.Id &&
-                        c.Text.Contains(searchText)));
+                    context.Cogitations.Any(c => c.RecordId == r.Id && c.Text.Contains(searchText)));
         }
 
         public static Task<List<DiaryRecord>> SearchRecordsByText(this DiaryDbContext context, string searchText, int skip, int count = 20)
@@ -762,16 +791,18 @@ namespace RiseDiary.WebUI.Data
             await context.SaveChangesAsync();
         }
 
-        public static Task Vacuum(this DiaryDbContext context) => context.Database.ExecuteSqlCommandAsync("vacuum;");
+        public static Task Vacuum(this DiaryDbContext context) => 
+            context.Database.ExecuteSqlCommandAsync("vacuum;");
 
         public static Task<Dictionary<int, string>> FetchRecordsForImage(this DiaryDbContext context, int imageId)
         {
-            return context.RecordImages.Where(ri => !ri.Deleted && ri.ImageId == imageId)
-                .Join(context.Records.Where(r => !r.Deleted), ri => ri.RecordId, r => r.Id, (ri, r) => new { r.Id, r.Name })
+            return context.RecordImages.Where(ri => ri.ImageId == imageId)
+                .Join(context.Records, ri => ri.RecordId, r => r.Id, (ri, r) => new { r.Id, r.Name })
                 .ToDictionaryAsync(r => r.Id, r => r.Name);
         }
 
-        public static Task<TempImage> FetchTempImage(this DiaryDbContext context, int imageId) => context.TempImages.FirstOrDefaultAsync(t => t.SourceImageId == imageId);
+        public static Task<TempImage> FetchTempImage(this DiaryDbContext context, int imageId) => 
+            context.TempImages.FirstOrDefaultAsync(t => t.SourceImageId == imageId);
 
         public static async Task AddUnsavedTempImage(this DiaryDbContext context, TempImage image)
         {
@@ -830,15 +861,13 @@ namespace RiseDiary.WebUI.Data
             var lastYearDay = new DateTime(year, 12, 31);
 
             var calendarItems = await context.Records
-                .Where(r => !r.Deleted && r.Date >= firstYearDay && r.Date <= lastYearDay)
+                .Where(r => r.Date >= firstYearDay && r.Date <= lastYearDay)
                 .Select(r => new CalendarRecordItem { Id = r.Id, Date = r.Date, Name = r.Name })
                 .ToListAsync();
 
             if(themes != null && themes.Length > 0)
             {
-                var recordThemes = await context.RecordThemes
-                    .Where(rt => !rt.Deleted)
-                    .ToListAsync();
+                var recordThemes = await context.RecordThemes.ToListAsync();
 
                 return calendarItems
                     .Where(ci =>
@@ -855,20 +884,16 @@ namespace RiseDiary.WebUI.Data
             themes = themes ?? new int[0];
             if(themes.Length == 0)
                 return await context.Records
-                    .Where(r => !r.Deleted)
                     .Select(r => r.Date.Year)
                     .Distinct()
                     .OrderBy(y => y)
                     .ToListAsync();
 
             var recordDates = await context.Records
-                .Where(r => !r.Deleted)
                 .Select(r => new KeyValuePair<int, DateTime>(r.Id, r.Date))
                 .ToListAsync();
 
-            var recordThemes = await context.RecordThemes
-                    .Where(rt => !rt.Deleted)
-                    .ToListAsync();
+            var recordThemes = await context.RecordThemes.ToListAsync();
 
             return recordDates
                 .Where(r => themes.All(id => recordThemes
