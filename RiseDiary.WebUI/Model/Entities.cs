@@ -8,18 +8,25 @@ namespace RiseDiary.Model
         bool Deleted { get; set; }
     }
 
-    public class DiaryScope : IDeletedEntity
+    public interface IExportEntity
+    {
+        string Code { get; set; }
+    }
+
+    public class DiaryScope : IDeletedEntity, IExportEntity
     {
         public int Id { get; set; }
+        public string Code { get; set; }
         public string ScopeName { get; set; }
         public bool Deleted { get; set; }
 
         public ICollection<DiaryTheme> Themes { get; set; }
     }
 
-    public class DiaryTheme : IDeletedEntity
+    public class DiaryTheme : IDeletedEntity, IExportEntity
     {
         public int Id { get; set; }
+        public string Code { get; set; }
         public int ScopeId { get; set; }
         public string ThemeName { get; set; }
         public bool Actual { get; set; }
@@ -48,9 +55,10 @@ namespace RiseDiary.Model
         public bool Actual { get; set; }
     }
     
-    public class DiaryImage : IDeletedEntity
+    public class DiaryImage : IDeletedEntity, IExportEntity
     {
         public int Id { get; set; }
+        public string Code { get; set; }
         public string Name { get; set; }
         public DateTime CreateDate { get; set; }
         public DateTime ModifyDate { get; set; }
@@ -118,9 +126,10 @@ namespace RiseDiary.Model
         public int GetHashCode(DiaryImage obj) => obj.Id.GetHashCode();
     }
 
-    public class DiaryRecord : IDeletedEntity
+    public class DiaryRecord : IDeletedEntity, IExportEntity
     {
         public int Id { get; set; }
+        public string Code { get; set; }
         private DateTime _recordDate;
         public DateTime Date { get => _recordDate; set => _recordDate = value.Date; }
         public DateTime CreateDate { get; set; }
@@ -143,9 +152,10 @@ namespace RiseDiary.Model
         public ICollection<DiaryRecordImage> ImagesRefs { get; set; }
     }
 
-    public class Cogitation : IDeletedEntity
+    public class Cogitation : IDeletedEntity, IExportEntity
     {
         public int Id { get; set; }
+        public string Code { get; set; }
         public int RecordId { get; set; }
         public DateTime Date { get; set; }
         public string Text { get; set; }

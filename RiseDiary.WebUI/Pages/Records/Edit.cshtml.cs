@@ -13,14 +13,13 @@ namespace RiseDiary.WebUI.Pages
     public class RecordEditModel : PageModel
     {
         private readonly DiaryDbContext _context;
-        private readonly ILogger<RecordEditModel> _logger;
-        public RecordEditModel(DiaryDbContext context, ILogger<RecordEditModel> logger)
+        public RecordEditModel(DiaryDbContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
         public int? RecordId { get; set; }
+        public string RecordCode { get; set; }
         public DateTime? RecordDate { get; set; }
         public DateTime? RecordCreateDate { get; set; }
         public DateTime? RecordModifyDate { get; set; }

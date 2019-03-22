@@ -13,11 +13,9 @@ namespace RiseDiary.WebUI.Pages
     public class RecordViewModel : PageModel
     {
         private readonly DiaryDbContext _context;
-        private readonly ILogger<RecordViewModel> _logger;
-        public RecordViewModel(DiaryDbContext context, ILogger<RecordViewModel> logger)
+        public RecordViewModel(DiaryDbContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
         public int RecordId { get; set; }
@@ -46,16 +44,21 @@ namespace RiseDiary.WebUI.Pages
             Cogitations = (await _context.FetchAllCogitationsOfRecord(Record.Id)).OrderBy(c => c.Date).ToList();
         }
 
-        public async Task<IActionResult> OnGetAsync(int? recordId)
+        public async Task<IActionResult> OnGetAsync(string recordId)
         {
-            if (recordId == null || recordId.Value == 0)
-                return Redirect("/Records/Edit");
+            if(int.TryParse(recordId, out int id))
+            {
+                RecordId = id;
+            }
             else
             {
-                RecordId = recordId.Value;
-                await UpdatePageState();
-                return null;
+                var idByCode = await _context.FetchRecordIdByCode(recordId);
+                if(idByCode == null) return Redirect("/Records/Edit");
+                RecordId = idByCode.Value;
             }
+
+            await UpdatePageState();
+            return null;
         }
 
         public async Task OnPostAddCogitationAsync(int recordId, string newCogText)

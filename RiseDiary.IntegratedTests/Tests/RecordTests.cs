@@ -18,6 +18,7 @@ namespace RiseDiary.IntegratedTests
             var rec = GetTestRecord();
 
             int i = await context.AddRecord(rec);
+            rec.Id = 0;
             int j = await context.AddRecord(rec);
 
             Assert.AreNotEqual(i, j);

@@ -12,12 +12,22 @@ namespace RiseDiary.WebUI.Pages.Images
         {
             _context = context;
         }
-        public async Task<IActionResult>  OnGetAsync(int imageId)
+        public async Task<IActionResult> OnGetAsync(string imageId)
         {
-            if (imageId == 0) return BadRequest();
-            var image = await _context.FetchFullImageById(imageId);
-            if (image == null) return NotFound();
-            return File(image, "image/jpeg");
+            if(int.TryParse(imageId, out int id))
+            {
+                if (id == 0) return BadRequest();
+                var image = await _context.FetchFullImageById(id);
+                if (image == null) return NotFound();
+                return File(image, "image/jpeg");
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(imageId)) return BadRequest();
+                var image = await _context.FetchFullImageByCode(imageId);
+                if (image == null) return NotFound();
+                return File(image, "image/jpeg");
+            }            
         }
     }
 }

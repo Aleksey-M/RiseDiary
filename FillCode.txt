@@ -1,0 +1,15 @@
+-- sqlite
+UPDATE Records
+SET Code = 'REC_' || ABS(RANDOM() % 10000);
+
+UPDATE Scopes
+SET Code = 'SCOP_' || ABS(RANDOM() % 10000);
+
+UPDATE Themes
+SET Code = 'THEM_' || ABS(RANDOM() % 10000);
+
+UPDATE Cogitations
+SET Code = 'COG_' || ABS(RANDOM() % 10000);
+
+UPDATE Images
+SET Code = 'IMG_' || ABS(RANDOM() % 10000);

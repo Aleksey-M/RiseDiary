@@ -10,11 +10,9 @@ namespace RiseDiary.WebUI.Pages
     public class ScopePageModel : PageModel
     {
         private readonly DiaryDbContext _context;
-        private readonly ILogger<ScopePageModel> _logger;
-        public ScopePageModel(DiaryDbContext context, ILogger<ScopePageModel> logger)
+        public ScopePageModel(DiaryDbContext context)
         {
             _context = context;
-            _logger = logger;            
         }
 
         public Dictionary<DiaryScope, IEnumerable<DiaryTheme>> ScopesAndThemes { get; private set; }

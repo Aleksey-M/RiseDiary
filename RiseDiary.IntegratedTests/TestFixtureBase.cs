@@ -118,6 +118,7 @@ namespace RiseDiary.IntegratedTests
 
             return new DiaryRecord
             {
+                Code = Guid.NewGuid().ToString(),
                 Date = now,
                 CreateDate = DateTime.Now,
                 ModifyDate = DateTime.Now,
@@ -136,6 +137,7 @@ namespace RiseDiary.IntegratedTests
 
         protected static DiaryImage GetTestImage() => new DiaryImage
         {
+            Code = Guid.NewGuid().ToString(),
             CreateDate = DateTime.Now,
             Name = Guid.NewGuid().ToString(),
             Thumbnail = File.ReadAllBytes(FullImageName)
@@ -186,6 +188,43 @@ namespace RiseDiary.IntegratedTests
             context.SaveChanges();
 
             return (recId, cogitation.Id);
+        }
+
+        protected static (int recId, string cogCode) Create_3Records_1Cogitation_WithCode(DiaryDbContext context)
+        {
+            int recId;
+
+            context.Records.Add(new Model.DiaryRecord
+            {
+                Date = DateTime.Now,
+                Name = "first",
+                Text = "1111"
+            });
+            context.Records.Add(new Model.DiaryRecord
+            {
+                Date = DateTime.Now,
+                Name = "second",
+                Text = "2222"
+            });
+            context.Records.Add(new Model.DiaryRecord
+            {
+                Date = DateTime.Now,
+                Name = "third",
+                Text = "3333"
+            });
+            context.SaveChanges();
+            recId = context.Records.Where(r => r.Name == "second").First().Id;
+
+            var cogitation = new Model.Cogitation
+            {
+                RecordId = recId,
+                Code = Guid.NewGuid().ToString(),
+                Text = "COGITATION"
+            };
+            context.Cogitations.Add(cogitation);
+            context.SaveChanges();
+
+            return (recId, cogitation.Code);
         }
 
         protected static IEnumerable<string> GetNumberList(int count) => Enumerable.Range(1, count).Select(i => i.ToString("00"));
@@ -268,7 +307,7 @@ namespace RiseDiary.IntegratedTests
             return themes.Select(t => t.Id).ToList();
         }
 
-        protected static int Create_Theme(DiaryDbContext context, string themeName, int? scopeId = null)
+        protected static int Create_Theme(DiaryDbContext context, string themeName, int? scopeId = null, string themeCode = null)
         {
             if(scopeId == null)
             {
@@ -277,7 +316,8 @@ namespace RiseDiary.IntegratedTests
             var theme = new DiaryTheme
             {
                 ScopeId = (int)scopeId,
-                ThemeName = themeName
+                ThemeName = themeName,
+                Code = themeCode ?? Guid.NewGuid().ToString()
             };
             context.Themes.Add(theme);
             context.SaveChanges();

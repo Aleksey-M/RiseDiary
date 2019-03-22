@@ -30,26 +30,31 @@ namespace RiseDiary.WebUI.Pages.Images
         public Dictionary<int, string> ImageLinks { get; private set; }
 
         private async Task UpdateModel()
-        {
-            ImageUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/Images/ImageFile/{ImageId}";
+        {            
             Image = await _context.FetchImageById(ImageId);
+            ImageUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/Images/ImageFile/{Image.Code}";
             FullImage = await _context.FetchFullImageById(ImageId);
             TempImage = await _context.FetchTempImage(ImageId);
             ImageLinks = await _context.FetchRecordsForImage(ImageId);
         }
 
-        public async Task<IActionResult> OnGetAsync(int imageId, int recordId)
+        public async Task<IActionResult> OnGetAsync(string imageId, int recordId)
         {
-            if(imageId == 0)
+            if (int.TryParse(imageId, out int id))
             {
-                return Redirect("/images/index");
+                if (id == 0) return Redirect("/images/index");
+                ImageId = id;                
             }
-            ImageId = imageId;
+            else
+            {
+                var idByCode = await _context.FetchImageIdByCode(imageId);
+                if(idByCode == null) return Redirect("/images/index");
+                ImageId = idByCode.Value;
+            }
             RecordId = recordId;
-
             await UpdateModel();
             return Page();
-        }
+        }        
 
         public async Task<IActionResult> OnPostDeleteImageAsync(int? imageId, int recordId)
         {

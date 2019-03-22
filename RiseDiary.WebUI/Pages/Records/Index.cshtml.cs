@@ -11,11 +11,9 @@ namespace RiseDiary.WebUI.Pages
     public class RecordsViewModel : PageModel
     {
         private readonly DiaryDbContext _context;
-        private readonly ILogger<RecordsViewModel> _logger;
-        public RecordsViewModel(DiaryDbContext context, ILogger<RecordsViewModel> logger)
+        public RecordsViewModel(DiaryDbContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
         public List<DiaryRecord> Records { get; private set; }
