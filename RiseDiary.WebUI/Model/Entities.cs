@@ -8,12 +8,7 @@ namespace RiseDiary.Model
         bool Deleted { get; set; }
     }
 
-    public interface IExportEntity
-    {
-        string Code { get; set; }
-    }
-
-    public class DiaryScope : IDeletedEntity, IExportEntity
+    public class DiaryScope : IDeletedEntity
     {
         public int Id { get; set; }
         public string Code { get; set; }
@@ -23,7 +18,7 @@ namespace RiseDiary.Model
         public ICollection<DiaryTheme> Themes { get; set; }
     }
 
-    public class DiaryTheme : IDeletedEntity, IExportEntity
+    public class DiaryTheme : IDeletedEntity
     {
         public int Id { get; set; }
         public string Code { get; set; }
@@ -55,7 +50,7 @@ namespace RiseDiary.Model
         public bool Actual { get; set; }
     }
     
-    public class DiaryImage : IDeletedEntity, IExportEntity
+    public class DiaryImage : IDeletedEntity
     {
         public int Id { get; set; }
         public string Code { get; set; }
@@ -126,7 +121,7 @@ namespace RiseDiary.Model
         public int GetHashCode(DiaryImage obj) => obj.Id.GetHashCode();
     }
 
-    public class DiaryRecord : IDeletedEntity, IExportEntity
+    public class DiaryRecord : IDeletedEntity
     {
         public int Id { get; set; }
         public string Code { get; set; }
@@ -152,7 +147,7 @@ namespace RiseDiary.Model
         public ICollection<DiaryRecordImage> ImagesRefs { get; set; }
     }
 
-    public class Cogitation : IDeletedEntity, IExportEntity
+    public class Cogitation : IDeletedEntity
     {
         public int Id { get; set; }
         public string Code { get; set; }

@@ -1,0 +1,21 @@
+﻿@page
+@model RiseDiary.WebUI.Pages.ConfigModel
+@{
+    ViewData["Title"] = "Config";
+}
+    <div class="row">
+        <div class="col-sm-offset-1 col-sm-10">
+            <table class="table table-striped">
+                <tbody>
+                    <tr>
+                        <td>Информация о базе данных и дополнительные функции для работы с базой</td>
+                        <td><a href="~/DbFile" class="btn btn-link">База</a></td>
+                    </tr>
+                    <tr>
+                        <td>Миграции данных, выполняемые в ручном режиме</td>
+                        <td><a href="~/manualmigrations" class="btn btn-link">Миграции</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
