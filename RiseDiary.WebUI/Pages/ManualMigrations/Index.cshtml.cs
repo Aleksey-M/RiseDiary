@@ -35,11 +35,11 @@ namespace RiseDiary.WebUI.Pages.ManualMigrations
 
         public async Task OnPostExportTestAsync()
         {
-            var records = await _context.Records.Include(r => r.Cogitations).OrderByDescending(r => r.Date).Take(3).ToListAsync();
+            var records = await _context.Records.OrderByDescending(r => r.Date).Select(r => r.Code).ToListAsync();
 
             var basePath = Request.Scheme + Uri.SchemeDelimiter + Request.Host;
 
-            var str = await DiarySerializer.SerializeRecords(records, basePath);
+            var str = await _context.SerializeDiaryRecords(records, basePath, false, true);
             var fname = @"D:\Projects\RiseDiary\DB\ExportTest.xml";
             if (System.IO.File.Exists(fname))
             {

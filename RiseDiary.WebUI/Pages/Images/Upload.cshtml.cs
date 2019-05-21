@@ -23,11 +23,11 @@ namespace RiseDiary.WebUI.Pages.Images
             TargetRecordId = targetRecordId;
         }
 
-        public async Task<IActionResult> OnPostAddNewImageAsync(IFormFile newImage, string newImageName, int? targetRecordId)
+        public async Task<IActionResult> OnPostAddNewImageAsync(List<IFormFile> newImages, string newImageName, int? targetRecordId)
         {
             TargetRecordId = targetRecordId;
             var validationErrors = new List<string>();
-            if (newImage == null) validationErrors.Add("Файл изображения не выбран");
+            if (newImages == null || newImages.Count == 0) validationErrors.Add("Файл изображения не выбран");
 
             if (validationErrors.Count > 0)
             {
@@ -35,21 +35,46 @@ namespace RiseDiary.WebUI.Pages.Images
                 return Page();
             }
 
-            string imageName = string.IsNullOrWhiteSpace(newImageName) ? Path.GetFileNameWithoutExtension(newImage.FileName) : newImageName;
-
+            string imageName = string.Empty;
             byte[] imageData = null;
-            using (var binaryReader = new BinaryReader(newImage.OpenReadStream()))
-            {
-                imageData = binaryReader.ReadBytes((int)newImage.Length);
-            }
-            var imageId = await _context.AddImage(imageName, imageData);
+            int imageId = 0;
 
-            if(TargetRecordId != null && TargetRecordId != 0)
+            for (int i = 0; i < newImages.Count; i++)
             {
-                await _context.AddRecordImage(targetRecordId.Value, imageId);
-                return Redirect($"/Images/Edit?recordId={TargetRecordId.Value}&imageId={imageId}");
+                if(newImages.Count == 1)
+                    imageName = string.IsNullOrWhiteSpace(newImageName) ?
+                    Path.GetFileNameWithoutExtension(newImages[i].FileName) :
+                    newImageName;
+                else
+                    imageName = string.IsNullOrWhiteSpace(newImageName) ? 
+                    Path.GetFileNameWithoutExtension(newImages[i].FileName) : 
+                    $"{newImageName} ({i + 1})";
+
+                using (var binaryReader = new BinaryReader(newImages[i].OpenReadStream()))
+                {
+                    imageData = binaryReader.ReadBytes((int)newImages[i].Length);
+                }
+
+                imageId = await _context.AddImage(imageName, imageData);
+                if(TargetRecordId != null && TargetRecordId != 0)
+                {
+                    await _context.AddRecordImage(targetRecordId.Value, imageId);
+                }                
             }
-            return Redirect($"/Images/Edit?recordId=0&imageId={imageId}");
+
+            if(newImages.Count == 1)
+            {
+                if (TargetRecordId != null && TargetRecordId != 0)
+                    return Redirect($"/Images/Edit?recordId={TargetRecordId.Value}&imageId={imageId}");
+                else
+                    return Redirect($"/Images/Edit?recordId=0&imageId={imageId}");                
+            }
+
+
+            if (TargetRecordId != null && TargetRecordId != 0)
+                return Redirect($"/Records/View?recordId={TargetRecordId.Value}");
+            else
+                return Redirect($"/Images");            
         }
     }
 }

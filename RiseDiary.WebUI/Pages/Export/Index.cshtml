@@ -1,0 +1,33 @@
+﻿@page
+@model RiseDiary.WebUI.Pages.Export.IndexModel
+@{
+    ViewData["Title"] = "Index";
+}
+    <form asp-page-handler="Export">
+        <table class="table table-striped">
+            <tbody>
+                <tr>
+                    <td>Количество записей / комментариев</td>
+                    <td>@Model.RecordsCount / @Model.CogitationsCount</td>
+                    <td><input type="checkbox" checked="checked" class="form-control checkbox" disabled="disabled" /></td>
+                </tr>
+                <tr>
+                    <td>Количество сфер интересов / тем</td>
+                    <td>@Model.ScopesCount / @Model.ThemesCount</td>
+                    <td>@Html.CheckBoxFor(model => model.Themes, new { @class = "form-control checkbox", Checked = "checked" })</td>
+                </tr>
+                <tr>
+                    <td>Количество изображений</td>
+                    <td>@Model.ImagesCount</td>
+                    <td>@Html.CheckBoxFor(model => model.Images, new { @class = "form-control checkbox", Checked = "checked" })</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3">
+                        <input type="submit" class="btn btn-success" value="Сохранить" />
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </form>

@@ -24,7 +24,7 @@
             <input type="hidden" name="targetRecordId" id="targetRecordId" value="@(Model.TargetRecordId ?? 0)" />
             <table class="table">
                 <tr>
-                    <td colspan="2"><input type="file" accept="image/*" id="newImage" name="newImage" class="form-control-file" style="width:80%" /></td>
+                    <td colspan="2"><input type="file" accept="image/*" multiple="multiple" id="newImages" name="newImages" class="form-control-file" style="width:80%" /></td>
                 </tr>
                 <tr>
                     <td style="width:80%"><input type="text" placeholder="Название нового изображения" id="newImageName" name="newImageName" class="form-control" /></td>
