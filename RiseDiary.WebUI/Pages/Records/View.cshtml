@@ -80,17 +80,17 @@
         @foreach (var image in Model.RecordImages)
         {
             <tr class="record-images">
-                <td width="150px;">
-                    <a href="/Images/Edit?recordId=@Model.RecordId&imageId=@image.Id">@image.Name</a>
+                <td width="150">
+                    <a href="/Images/Edit?recordId=@Model.RecordId&imageId=@image.ImageId">@image.ImageName</a>
                     <br />
                     <br />
                     <form method="post" asp-page-handler="DeleteImage">
-                        <input type="hidden" name="imageId" value="@image.Id" />
+                        <input type="hidden" name="imageId" value="@image.ImageId" />
                         <input type="hidden" name="recordId" value="@Model.RecordId" />
                         <input type="submit" class="btn btn-default btn-sm" value="Открепить" />
                     </form>
                 </td>
-                <td colspan="3"><img src="data:image;base64,@image.ImageBase64" class="img-thumbnail" alt="Изображение" style="max-height:600px;" /></td>
+                <td colspan="3"><img src="/Images/imagefile/@image.ImageId" class="img-thumbnail" alt="Изображение" style="max-height:600px;" /></td>
             </tr>
         }
     </tbody>

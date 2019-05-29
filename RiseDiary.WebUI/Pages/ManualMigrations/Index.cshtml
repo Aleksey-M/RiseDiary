@@ -6,34 +6,28 @@
     ViewData["TitlePart"] = "Миграции";
 }
 
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h4>Миграции для функционала импорта/экспорта данных</h4>
-    </div>
-    <div class="panel-body">
-        <div class="col-md-3">
-            <form asp-page-handler="UpdateAllCodes" method="post">
-                <input type="submit" value="Обновить Code для всех данных" class="btn btn-danger" />
-            </form>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4>Миграции для функционала импорта/экспорта данных</h4>
         </div>
-        <div class="col-md-7" style="padding-top:6px">
-            <i>После обновления кодов данные станут несопоставимы с импортированными ранее!</i>
+        <div class="panel-body">
+            <div class="col-md-3">
+                <form asp-page-handler="UpdateAllCodes" method="post">
+                    <input type="submit" value="Обновить Code для всех данных" class="btn btn-danger" />
+                </form>
+            </div>
+            <div class="col-md-7" style="padding-top:6px">
+                <i>После обновления кодов данные станут несопоставимы с импортированными ранее!</i>
+            </div>
         </div>
-    </div>
-</div>
-
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h4>Тест экспорта</h4>
-    </div>
-    <div class="panel-body">
-        <div class="col-md-3">
-            <form asp-page-handler="ExportTest" method="post">
-                <input type="submit" value="Выгрузить записи" class="btn btn-danger" />
-            </form>
-        </div>
-        <div class="col-md-7" style="padding-top:6px">
-            <i>Выгрузка последних трех записей в файл ExportTest.xml</i>
+        <div class="panel-body">
+            <div class="col-md-3">
+                <form asp-page-handler="UpdateEmptyCodes" method="post">
+                    <input type="submit" value="Заполнить пустые Code" class="btn btn-warning" />
+                </form>
+            </div>
+            <div class="col-md-7" style="padding-top:6px">
+                <i>После заполнения Code данные можно экспортировать в xml и синхронизировать между дневниками</i>
+            </div>
         </div>
     </div>
-</div>

@@ -17,16 +17,34 @@ namespace RiseDiary.WebUI.Pages.Images
             if(int.TryParse(imageId, out int id))
             {
                 if (id == 0) return BadRequest();
-                var image = await _context.FetchFullImageById(id);
-                if (image == null) return NotFound();
-                return File(image, "image/jpeg");
+
+                var tmpImg = await _context.FetchTempImage(id);
+                if(tmpImg != null)
+                {
+                    return File(tmpImg.Data, "image/jpeg");
+                }
+                else
+                {
+                    var image = await _context.FetchFullImageById(id);
+                    if (image == null) return NotFound();
+                    return File(image, "image/jpeg");
+                }                
             }
             else
             {
                 if (string.IsNullOrWhiteSpace(imageId)) return BadRequest();
-                var image = await _context.FetchFullImageByCode(imageId);
-                if (image == null) return NotFound();
-                return File(image, "image/jpeg");
+
+                var tmpImg = await _context.FetchTempImage(imageId);
+                if (tmpImg != null)
+                {
+                    return File(tmpImg.Data, "image/jpeg");
+                }
+                else
+                {
+                    var image = await _context.FetchFullImageByCode(imageId);
+                    if (image == null) return NotFound();
+                    return File(image, "image/jpeg");
+                }                
             }            
         }
     }

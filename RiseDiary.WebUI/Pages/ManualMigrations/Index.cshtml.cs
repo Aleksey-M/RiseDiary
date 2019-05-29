@@ -33,19 +33,14 @@ namespace RiseDiary.WebUI.Pages.ManualMigrations
             await _context.SaveChangesAsync();
         }
 
-        public async Task OnPostExportTestAsync()
+        public async Task OnPostUpdateEmptyCodesAsync()
         {
-            var records = await _context.Records.OrderByDescending(r => r.Date).Select(r => r.Code).ToListAsync();
-
-            var basePath = Request.Scheme + Uri.SchemeDelimiter + Request.Host;
-
-            var str = await _context.SerializeDiaryRecords(records, basePath, false, true);
-            var fname = @"D:\Projects\RiseDiary\DB\ExportTest.xml";
-            if (System.IO.File.Exists(fname))
-            {
-                System.IO.File.Delete(fname);
-            }
-            System.IO.File.WriteAllText(fname, str);
+            (await _context.Scopes.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(s => s.Code = Guid.NewGuid().ToString());
+            (await _context.Themes.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(t => t.Code = Guid.NewGuid().ToString());
+            (await _context.Images.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(i => i.Code = Guid.NewGuid().ToString());
+            (await _context.Records.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(r => r.Code = Guid.NewGuid().ToString());
+            (await _context.Cogitations.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(c => c.Code = Guid.NewGuid().ToString());
+            await _context.SaveChangesAsync();
         }
     }
 }

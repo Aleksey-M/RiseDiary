@@ -606,6 +606,15 @@ namespace RiseDiary.WebUI.Data
         public static Task<DiaryRecord> FetchRecordById(this DiaryDbContext context, int recordId) => 
             context.Records.SingleOrDefaultAsync(r => r.Id == recordId);
 
+        public static Task<DiaryRecord> FetchRecordByIdWithData(this DiaryDbContext context, int recordId) =>
+            context.Records
+            .Include(r => r.Cogitations)
+            .Include(r => r.ImagesRefs)
+            .ThenInclude(ir => ir.Image)
+            .Include(r => r.ThemesRefs)
+            .ThenInclude(rt => rt.Theme)
+            .SingleOrDefaultAsync(r => r.Id == recordId);
+
         public static Task<DiaryRecord> FetchRecordByCode(this DiaryDbContext context, string recordCode) =>
             context.Records.SingleOrDefaultAsync(r => r.Code == recordCode);
 
@@ -837,6 +846,8 @@ namespace RiseDiary.WebUI.Data
 
         public static Task<TempImage> FetchTempImage(this DiaryDbContext context, int imageId) => 
             context.TempImages.FirstOrDefaultAsync(t => t.SourceImageId == imageId);
+        public static Task<TempImage> FetchTempImage(this DiaryDbContext context, string imageId) =>
+            context.TempImages.Include(ti => ti.DiaryImage).FirstOrDefaultAsync(t => t.DiaryImage.Code == imageId);
 
         public static async Task AddUnsavedTempImage(this DiaryDbContext context, TempImage image)
         {

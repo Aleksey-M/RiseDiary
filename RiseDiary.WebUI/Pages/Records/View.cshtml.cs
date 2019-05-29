@@ -21,27 +21,15 @@ namespace RiseDiary.WebUI.Pages
         public int RecordId { get; set; }
         public DiaryRecord  Record { get; set; }
         public List<string> RecordThemes { get; set; }
-        public class RecordViewImage
-        {
-            public int Id { get; set; }
-            public string Name { get; set; }
-            public string ImageBase64 { get; set; }
-        }
-        public List<RecordViewImage> RecordImages { get; set; }
+        public List<(int ImageId, string ImageName)> RecordImages { get; set; }
         public List<Cogitation> Cogitations { get; set; }
 
         private async Task UpdatePageState()
         {
-            Record = await _context.FetchRecordById(RecordId);
-            RecordThemes = await _context.FetchRecordThemesList(RecordId);
-            RecordImages = new List<RecordViewImage>();
-            byte[] imgBytes = null;
-            foreach (var img in await _context.FetchImagesForRecord(Record.Id))
-            {
-                imgBytes = await _context.FetchFullImageById(img.Id);
-                RecordImages.Add(new RecordViewImage { Id = img.Id, Name = img.Name, ImageBase64 = Convert.ToBase64String(imgBytes) });
-            }
-            Cogitations = (await _context.FetchAllCogitationsOfRecord(Record.Id)).OrderBy(c => c.Date).ToList();
+            Record = await _context.FetchRecordByIdWithData(RecordId);
+            RecordThemes = Record.ThemesRefs.Select(tr => tr.Theme.ThemeName).ToList();
+            RecordImages = Record.ImagesRefs.Select(ir => (ir.ImageId, ir.Image.Name)).ToList();
+            Cogitations = Record.Cogitations.OrderBy(c => c.Date).ToList();
         }
 
         public async Task<IActionResult> OnGetAsync(string recordId)

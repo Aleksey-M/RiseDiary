@@ -32,7 +32,7 @@ namespace RiseDiary.WebUI.Pages.Images
 
             NextPage = CurrenPage >= PagesCount - 1 ? CurrenPage : CurrenPage + 1;
             PrevPage = CurrenPage == 0 ? 0 : CurrenPage - 1;
-            Images = await _context.FetchImageSet((CurrenPage) * _pageSize, _pageSize);
+            Images = await _context.FetchImageSet(CurrenPage * _pageSize, _pageSize);
         }
     }
 }

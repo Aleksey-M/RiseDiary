@@ -21,9 +21,6 @@ namespace RiseDiary.WebUI.Pages.Images
         public int RecordId { get; private set; }
         public int ImageId { get; private set; }
         public DiaryImage Image { get; private set; }
-        public byte[] FullImage { get; private set; }
-        public string FullImageString => Convert.ToBase64String(FullImage);
-        public string FullModifiedImageString => Convert.ToBase64String(TempImage?.Data);
         public int BiggestImageDimm => Image.Width > Image.Height ? Image.Width : Image.Height;
         public TempImage TempImage { get; private set; }
         public string ImageUrl { get; private set; }
@@ -32,8 +29,7 @@ namespace RiseDiary.WebUI.Pages.Images
         private async Task UpdateModel()
         {            
             Image = await _context.FetchImageById(ImageId);
-            ImageUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/Images/ImageFile/{Image.Code}";
-            FullImage = await _context.FetchFullImageById(ImageId);
+            ImageUrl = $@"/Images/ImageFile/{Image.Code}";
             TempImage = await _context.FetchTempImage(ImageId);
             ImageLinks = await _context.FetchRecordsForImage(ImageId);
         }

@@ -145,15 +145,8 @@
         </table>
     </div>    
     <div class="col-sm-12">
-        @if (Model.TempImage == null)
-        {
-            <img id="img" name="img" src="data:image;base64,@Model.FullImageString" class="thumbnail center-block" style="max-height:600px;max-width:1000px;" />
-        }
-        else
-        {
-            <img id="img" name="img" src="data:image;base64,@Model.FullModifiedImageString" class="thumbnail center-block" style="max-height:600px;max-width:1000px;" />
-        }
-    </div>
+            <img id="img" name="img" src="/Images/imagefile/@Model.Image.Id" class="thumbnail center-block" style="max-height:600px;max-width:1000px;" />
+   </div>
 </div>
 
 @section Scripts{
