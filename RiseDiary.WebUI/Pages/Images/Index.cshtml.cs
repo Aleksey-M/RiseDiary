@@ -27,7 +27,7 @@ namespace RiseDiary.WebUI.Pages.Images
             ImagesCount = await _context.GetImagesCount();
             PagesCount = Convert.ToInt32(Math.Ceiling(ImagesCount / (double)_pageSize));
 
-            int CurrenPage = pageNo;
+            CurrenPage = pageNo;
             if (CurrenPage > PagesCount || CurrenPage < 0) CurrenPage = 0;
 
             NextPage = CurrenPage >= PagesCount - 1 ? CurrenPage : CurrenPage + 1;
