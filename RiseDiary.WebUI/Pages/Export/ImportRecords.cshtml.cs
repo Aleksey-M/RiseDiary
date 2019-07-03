@@ -23,10 +23,10 @@ namespace RiseDiary.WebUI.Pages.Export
 
         }
 
-        public async Task OnPostImportDataAsync(IFormFile xmlFile, UpdateRecordAction updateAction)
-        {
-            if (xmlFile == null) return;
+        //public async Task OnPostImportDataAsync(IFormFile xmlFile, UpdateRecordAction updateAction)
+        //{
+        //    if (xmlFile == null) return;
 
-        }
+        //}
     }
 }

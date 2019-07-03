@@ -84,7 +84,7 @@ namespace RiseDiary.Model
             DatesRange = datesRange ?? throw new ArgumentNullException(nameof(datesRange));
             Date = date;
         }
-        public DateItem(DatesRange datesRange, int id, string theme, DateTime date, string name, string text)
+        public DateItem(DatesRange datesRange, Guid id, string theme, DateTime date, string name, string text)
         {
             if (date == null) throw new ArgumentNullException(nameof(date));
             DatesRange = datesRange ?? throw new ArgumentNullException(nameof(datesRange));
@@ -96,7 +96,7 @@ namespace RiseDiary.Model
             Text = text;
         }
 
-        public int Id { get; }
+        public Guid Id { get; }
         public string Theme { get; }
         public DateTime Date { get; }
         public DatesRange DatesRange { get; }
@@ -127,7 +127,7 @@ namespace RiseDiary.Model
 
     public class CalendarRecordItem
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public DateTime Date { get; set; }
     }

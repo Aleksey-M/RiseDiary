@@ -18,50 +18,30 @@ namespace RiseDiary.WebUI
         public IConfiguration Configuration { get; }
         private string _dataBaseFileName;
         private bool _needFileBackup;
-        // This method gets called by the runtime. Use this method to add services to the container.
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            bool usePostgreSql = Configuration.GetValue<int>("usePostgreSql") == 1;
-            string postgreSqlConnectionString = string.Empty;
-
-            if (usePostgreSql)
+            _dataBaseFileName = Configuration.GetValue<string>("dbFile");
+            _needFileBackup = Configuration.GetValue<int>("needFileBackup") > 0;
+            if (_needFileBackup)
             {
-                postgreSqlConnectionString = Configuration.GetConnectionString("Default");
-                services.AddDbContext<DiaryDbContext>(options => options.UseNpgsql(postgreSqlConnectionString));
+                SqliteFileBackup.BackupFile(_dataBaseFileName);
             }
-            else
-            {
-                _dataBaseFileName = Configuration.GetValue<string>("dbFile");
-                _needFileBackup = Configuration.GetValue<int>("needFileBackup") > 0;
-                if (_needFileBackup)
-                {
-                    SqliteFileBackup.BackupFile(_dataBaseFileName);
-                }
 
-                services.AddDbContext<DiaryDbContext>(options => options.UseSqlite($"Data Source={_dataBaseFileName};"));                
-            }            
-
+            services.AddDbContext<DiaryDbContext>(options => options.UseSqlite($"Data Source={_dataBaseFileName};"));
+            
             int needMigration = Configuration.GetValue<int>("needMigration");
             if (needMigration > 0)
             {
                 var builder = new DbContextOptionsBuilder<DiaryDbContext>();
-                if (usePostgreSql)
-                {
-                    builder.UseNpgsql(postgreSqlConnectionString);
-                }
-                else
-                {
-                    builder.UseSqlite($"Data Source={_dataBaseFileName};");
-                }
-                
+                builder.UseSqlite($"Data Source={_dataBaseFileName};");
                 var context = new DiaryDbContext(builder.Options);
-                context.Database.Migrate();                
-            }            
+                context.Database.Migrate();
+            }
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
         {            
             app.UseDeveloperExceptionPage();

@@ -14,23 +14,6 @@ namespace RiseDiary.IntegratedTests
     // tests for DbContext
     internal class TestFixtureBase
     {
-        [OneTimeSetUp]
-        public void LoadConfig()
-        {
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("config.json")
-                .Build();
-
-            UsePostgreSql = config.GetValue<int>("usePostgreSql") > 0;
-            if (UsePostgreSql)
-            {
-                _connectionString = config.GetValue<string>("postgreSqlConnectionString");
-            }
-        }
-
-        private string _connectionString;
-        protected bool UsePostgreSql { get; private set; }
-
         [OneTimeTearDown]
         public void CleanUp()
         {
@@ -43,42 +26,8 @@ namespace RiseDiary.IntegratedTests
 
         protected DiaryDbContext CreateContext()
         {
-            if (UsePostgreSql)
-            {
-                var builder = new DbContextOptionsBuilder<DiaryDbContext>();
-                builder.UseNpgsql(_connectionString);
-                var context = new DiaryDbContext(builder.Options);
-
-                context.SoftDeleting = false;
-
-                context.Database.EnsureCreated();
-
-                context.Records.RemoveRange(context.Records
-                    .Include(r => r.Cogitations)
-                    .Include(r => r.ImagesRefs)
-                    .Include(r => r.ThemesRefs)
-                    .ToList());
-                context.Scopes.RemoveRange(context.Scopes
-                    .Include(s => s.Themes)
-                    .ThenInclude(t => t.RecordsRefs)
-                    .ToList());
-                context.Images.RemoveRange(context.Images
-                    .Include(i => i.FullImage)
-                    .Include(i => i.TempImage)
-                    .Include(i => i.RecordsRefs)
-                    .ToList());
-                context.AppSettings.RemoveRange(context.AppSettings);
-                context.SaveChanges();
-
-                context.SoftDeleting = true;
-
-                return context;
-            }
-            else
-            {
-                var (context, fileName) = GetContextWithFileName();
-                return context;
-            }            
+            var (context, fileName) = GetContextWithFileName();
+            return context;
         }
 
         protected static (DiaryDbContext context, string fileName) GetContextWithFileName()
@@ -118,7 +67,6 @@ namespace RiseDiary.IntegratedTests
 
             return new DiaryRecord
             {
-                Code = Guid.NewGuid().ToString(),
                 Date = now,
                 CreateDate = DateTime.Now,
                 ModifyDate = DateTime.Now,
@@ -127,7 +75,7 @@ namespace RiseDiary.IntegratedTests
             };
         }
 
-        protected static int Create_Record(DiaryDbContext context)
+        protected static Guid Create_Record(DiaryDbContext context)
         {
             var rec = GetTestRecord();
             context.Records.Add(rec);
@@ -137,7 +85,6 @@ namespace RiseDiary.IntegratedTests
 
         protected static DiaryImage GetTestImage() => new DiaryImage
         {
-            Code = Guid.NewGuid().ToString(),
             CreateDate = DateTime.Now,
             Name = Guid.NewGuid().ToString(),
             Thumbnail = File.ReadAllBytes(FullImageName)
@@ -146,7 +93,7 @@ namespace RiseDiary.IntegratedTests
         protected static string UniqueString => Guid.NewGuid().ToString();
         protected static byte[] ImageBytes => File.ReadAllBytes(FullImageName);
 
-        protected static int Create_Image(DiaryDbContext context)
+        protected static Guid Create_Image(DiaryDbContext context)
         {
             var img = GetTestImage();
             context.Images.Add(img);
@@ -154,9 +101,9 @@ namespace RiseDiary.IntegratedTests
             return img.Id;
         }
 
-        protected static (int recId, int cogId) Create_3Records_1Cogitation(DiaryDbContext context)
+        protected static (Guid recId, Guid cogId) Create_3Records_1Cogitation(DiaryDbContext context)
         {
-            int recId;
+            Guid recId;
 
             context.Records.Add(new Model.DiaryRecord
             {
@@ -190,42 +137,42 @@ namespace RiseDiary.IntegratedTests
             return (recId, cogitation.Id);
         }
 
-        protected static (int recId, string cogCode) Create_3Records_1Cogitation_WithCode(DiaryDbContext context)
-        {
-            int recId;
+        //protected static (int recId, string cogCode) Create_3Records_1Cogitation_WithCode(DiaryDbContext context)
+        //{
+        //    int recId;
 
-            context.Records.Add(new Model.DiaryRecord
-            {
-                Date = DateTime.Now,
-                Name = "first",
-                Text = "1111"
-            });
-            context.Records.Add(new Model.DiaryRecord
-            {
-                Date = DateTime.Now,
-                Name = "second",
-                Text = "2222"
-            });
-            context.Records.Add(new Model.DiaryRecord
-            {
-                Date = DateTime.Now,
-                Name = "third",
-                Text = "3333"
-            });
-            context.SaveChanges();
-            recId = context.Records.Where(r => r.Name == "second").First().Id;
+        //    context.Records.Add(new Model.DiaryRecord
+        //    {
+        //        Date = DateTime.Now,
+        //        Name = "first",
+        //        Text = "1111"
+        //    });
+        //    context.Records.Add(new Model.DiaryRecord
+        //    {
+        //        Date = DateTime.Now,
+        //        Name = "second",
+        //        Text = "2222"
+        //    });
+        //    context.Records.Add(new Model.DiaryRecord
+        //    {
+        //        Date = DateTime.Now,
+        //        Name = "third",
+        //        Text = "3333"
+        //    });
+        //    context.SaveChanges();
+        //    recId = context.Records.Where(r => r.Name == "second").First().Id;
 
-            var cogitation = new Model.Cogitation
-            {
-                RecordId = recId,
-                Code = Guid.NewGuid().ToString(),
-                Text = "COGITATION"
-            };
-            context.Cogitations.Add(cogitation);
-            context.SaveChanges();
+        //    var cogitation = new Model.Cogitation
+        //    {
+        //        RecordId = recId,
+        //        Code = Guid.NewGuid().ToString(),
+        //        Text = "COGITATION"
+        //    };
+        //    context.Cogitations.Add(cogitation);
+        //    context.SaveChanges();
 
-            return (recId, cogitation.Code);
-        }
+        //    return (recId, cogitation.Code);
+        //}
 
         protected static IEnumerable<string> GetNumberList(int count) => Enumerable.Range(1, count).Select(i => i.ToString("00"));
         protected static IEnumerable<DateTime> GetDatesList(int count) => Enumerable.Range(1, count).Select(i => DateTime.Now.AddDays(-i).Date);
@@ -271,7 +218,7 @@ namespace RiseDiary.IntegratedTests
 
         protected static bool HasRecordWithIntName(List<DiaryRecord> records, int intName) => records.Any(r => int.Parse(r.Name) == intName);
 
-        protected static List<int> Create_3Records_3_2_1Cogitations(DiaryDbContext context)
+        protected static List<Guid> Create_3Records_3_2_1Cogitations(DiaryDbContext context)
         {
             context.Records.AddRange(GetTestRecord(), GetTestRecord(), GetTestRecord());
             context.SaveChanges();
@@ -291,7 +238,7 @@ namespace RiseDiary.IntegratedTests
             return resList;
         }
 
-        protected static int Create_Scope(DiaryDbContext context, string scopeName = null)
+        protected static Guid Create_Scope(DiaryDbContext context, string scopeName = null)
         {
             var scope = new DiaryScope { ScopeName = scopeName ?? Guid.NewGuid().ToString() };
             context.Scopes.Add(scope);
@@ -299,7 +246,7 @@ namespace RiseDiary.IntegratedTests
             return scope.Id;
         }
 
-        protected static List<int> Create_ThemesForScope(DiaryDbContext context, int scopeId, List<string> themeNames)
+        protected static List<Guid> Create_ThemesForScope(DiaryDbContext context, Guid scopeId, List<string> themeNames)
         {
             var themes = themeNames.Select(n => new DiaryTheme { ScopeId = scopeId, ThemeName = n }).ToList();
             context.Themes.AddRange(themes);
@@ -307,7 +254,7 @@ namespace RiseDiary.IntegratedTests
             return themes.Select(t => t.Id).ToList();
         }
 
-        protected static int Create_Theme(DiaryDbContext context, string themeName, int? scopeId = null, string themeCode = null)
+        protected static Guid Create_Theme(DiaryDbContext context, string themeName, Guid? scopeId = null)
         {
             if(scopeId == null)
             {
@@ -315,9 +262,8 @@ namespace RiseDiary.IntegratedTests
             }
             var theme = new DiaryTheme
             {
-                ScopeId = (int)scopeId,
-                ThemeName = themeName,
-                Code = themeCode ?? Guid.NewGuid().ToString()
+                ScopeId = (Guid)scopeId,
+                ThemeName = themeName
             };
             context.Themes.Add(theme);
             context.SaveChanges();

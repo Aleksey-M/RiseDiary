@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-// sqlite
+
 namespace RiseDiary.WebUI.Migrations
 {
-    public partial class NewBaseMigration : Migration
+    public partial class Init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -26,6 +26,7 @@ namespace RiseDiary.WebUI.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    Code = table.Column<string>(nullable: true),
                     Name = table.Column<string>(nullable: true),
                     CreateDate = table.Column<DateTime>(nullable: false),
                     ModifyDate = table.Column<DateTime>(nullable: false),
@@ -46,6 +47,7 @@ namespace RiseDiary.WebUI.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    Code = table.Column<string>(nullable: true),
                     Date = table.Column<DateTime>(nullable: false),
                     CreateDate = table.Column<DateTime>(nullable: false),
                     ModifyDate = table.Column<DateTime>(nullable: false),
@@ -64,6 +66,7 @@ namespace RiseDiary.WebUI.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    Code = table.Column<string>(nullable: true),
                     ScopeName = table.Column<string>(nullable: true),
                     Deleted = table.Column<bool>(nullable: false)
                 },
@@ -122,6 +125,7 @@ namespace RiseDiary.WebUI.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    Code = table.Column<string>(nullable: true),
                     RecordId = table.Column<int>(nullable: false),
                     Date = table.Column<DateTime>(nullable: false),
                     Text = table.Column<string>(nullable: true),
@@ -169,6 +173,7 @@ namespace RiseDiary.WebUI.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    Code = table.Column<string>(nullable: true),
                     ScopeId = table.Column<int>(nullable: false),
                     ThemeName = table.Column<string>(nullable: true),
                     Actual = table.Column<bool>(nullable: false),
@@ -211,6 +216,11 @@ namespace RiseDiary.WebUI.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Cogitations_Code",
+                table: "Cogitations",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Cogitations_RecordId",
                 table: "Cogitations",
                 column: "RecordId");
@@ -220,6 +230,11 @@ namespace RiseDiary.WebUI.Migrations
                 table: "FullSizeImages",
                 column: "ImageId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Images_Code",
+                table: "Images",
+                column: "Code");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RecordImages_ImageId",
@@ -232,6 +247,11 @@ namespace RiseDiary.WebUI.Migrations
                 columns: new[] { "RecordId", "ImageId" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Records_Code",
+                table: "Records",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RecordThemes_ThemeId",
                 table: "RecordThemes",
                 column: "ThemeId");
@@ -242,10 +262,20 @@ namespace RiseDiary.WebUI.Migrations
                 columns: new[] { "RecordId", "ThemeId" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Scopes_Code",
+                table: "Scopes",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TempImages_SourceImageId",
                 table: "TempImages",
                 column: "SourceImageId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Themes_Code",
+                table: "Themes",
+                column: "Code");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Themes_ScopeId",

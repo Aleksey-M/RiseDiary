@@ -1,4 +1,0 @@
-{
-  "usePostgreSql": 0,
-  "postgreSqlConnectionString": "Server=127.0.0.1;Port=5432;Database=diary_tests;User Id=diary_tests_user;Password=Ph13#Zz89@001;"
-}

@@ -9,14 +9,14 @@ using RiseDiary.WebUI.Data;
 namespace RiseDiary.WebUI.Migrations
 {
     [DbContext(typeof(DiaryDbContext))]
-    [Migration("20190105140436_NewBaseMigration")]
-    partial class NewBaseMigration
+    [Migration("20190702152149_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.0-rtm-35687");
+                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062");
 
             modelBuilder.Entity("RiseDiary.Model.AppSetting", b =>
                 {
@@ -37,6 +37,8 @@ namespace RiseDiary.WebUI.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("Code");
+
                     b.Property<DateTime>("Date");
 
                     b.Property<bool>("Deleted");
@@ -47,6 +49,8 @@ namespace RiseDiary.WebUI.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Code");
+
                     b.HasIndex("RecordId");
 
                     b.ToTable("Cogitations");
@@ -56,6 +60,8 @@ namespace RiseDiary.WebUI.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Code");
 
                     b.Property<DateTime>("CreateDate");
 
@@ -74,6 +80,8 @@ namespace RiseDiary.WebUI.Migrations
                     b.Property<int>("Width");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code");
 
                     b.ToTable("Images");
                 });
@@ -100,6 +108,8 @@ namespace RiseDiary.WebUI.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("Code");
+
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<DateTime>("Date");
@@ -113,6 +123,8 @@ namespace RiseDiary.WebUI.Migrations
                     b.Property<string>("Text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code");
 
                     b.ToTable("Records");
                 });
@@ -156,11 +168,15 @@ namespace RiseDiary.WebUI.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("Code");
+
                     b.Property<bool>("Deleted");
 
                     b.Property<string>("ScopeName");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code");
 
                     b.ToTable("Scopes");
                 });
@@ -172,6 +188,8 @@ namespace RiseDiary.WebUI.Migrations
 
                     b.Property<bool>("Actual");
 
+                    b.Property<string>("Code");
+
                     b.Property<bool>("Deleted");
 
                     b.Property<int>("ScopeId");
@@ -179,6 +197,8 @@ namespace RiseDiary.WebUI.Migrations
                     b.Property<string>("ThemeName");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code");
 
                     b.HasIndex("ScopeId");
 
@@ -228,12 +248,12 @@ namespace RiseDiary.WebUI.Migrations
 
             modelBuilder.Entity("RiseDiary.Model.DiaryRecordImage", b =>
                 {
-                    b.HasOne("RiseDiary.Model.DiaryImage", "DiaryImage")
+                    b.HasOne("RiseDiary.Model.DiaryImage", "Image")
                         .WithMany("RecordsRefs")
                         .HasForeignKey("ImageId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RiseDiary.Model.DiaryRecord", "DiaryRecord")
+                    b.HasOne("RiseDiary.Model.DiaryRecord", "Record")
                         .WithMany("ImagesRefs")
                         .HasForeignKey("RecordId")
                         .OnDelete(DeleteBehavior.Cascade);

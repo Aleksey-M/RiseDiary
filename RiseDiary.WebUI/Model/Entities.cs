@@ -10,8 +10,7 @@ namespace RiseDiary.Model
 
     public class DiaryScope : IDeletedEntity
     {
-        public int Id { get; set; }
-        public string Code { get; set; }
+        public Guid Id { get; set; }
         public string ScopeName { get; set; }
         public bool Deleted { get; set; }
 
@@ -20,9 +19,8 @@ namespace RiseDiary.Model
 
     public class DiaryTheme : IDeletedEntity
     {
-        public int Id { get; set; }
-        public string Code { get; set; }
-        public int ScopeId { get; set; }
+        public Guid Id { get; set; }
+        public Guid ScopeId { get; set; }
         public string ThemeName { get; set; }
         public bool Actual { get; set; }
         public bool Deleted { get; set; }
@@ -33,8 +31,8 @@ namespace RiseDiary.Model
 
     public class DiaryRecordTheme : IDeletedEntity
     {
-        public int ThemeId { get; set; }
-        public int RecordId { get; set; }
+        public Guid ThemeId { get; set; }
+        public Guid RecordId { get; set; }
         public bool Deleted { get; set; }
 
         public DiaryTheme Theme { get; set; }
@@ -43,8 +41,8 @@ namespace RiseDiary.Model
         
     public class DiaryThemeJoined
     {
-        public int Id { get; set; }
-        public int? ScopeId { get; set; }
+        public Guid Id { get; set; }
+        public Guid? ScopeId { get; set; }
         public string ThemeName { get; set; }        
         public string ScopeName { get; set; }
         public bool Actual { get; set; }
@@ -52,8 +50,7 @@ namespace RiseDiary.Model
     
     public class DiaryImage : IDeletedEntity
     {
-        public int Id { get; set; }
-        public string Code { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public DateTime CreateDate { get; set; }
         public DateTime ModifyDate { get; set; }
@@ -84,8 +81,8 @@ namespace RiseDiary.Model
 
     public class DiaryImageFull
     {
-        public int Id { get; set; }
-        public int ImageId { get; set; }
+        public Guid Id { get; set; }
+        public Guid ImageId { get; set; }
         public byte[] Data { get; set; }
 
         public DiaryImage DiaryImage { get; set; }
@@ -93,8 +90,8 @@ namespace RiseDiary.Model
 
     public class TempImage
     {
-        public int Id { get; set; }
-        public int SourceImageId { get; set; }
+        public Guid Id { get; set; }
+        public Guid SourceImageId { get; set; }
         public string Modification { get; set; }
         public byte[] Data { get; set; }
         public string SizeKbString => Math.Round(SizeByte / 1024f, 2).ToString() + " Kb";
@@ -107,8 +104,8 @@ namespace RiseDiary.Model
 
     public class DiaryRecordImage : IDeletedEntity
     {
-        public int ImageId { get; set; }
-        public int RecordId { get; set; }
+        public Guid ImageId { get; set; }
+        public Guid RecordId { get; set; }
         public bool Deleted { get; set; }
 
         public DiaryImage Image { get; set; }
@@ -123,8 +120,7 @@ namespace RiseDiary.Model
 
     public class DiaryRecord : IDeletedEntity
     {
-        public int Id { get; set; }
-        public string Code { get; set; }
+        public Guid Id { get; set; }
         private DateTime _recordDate;
         public DateTime Date { get => _recordDate; set => _recordDate = value.Date; }
         public DateTime CreateDate { get; set; }
@@ -149,9 +145,8 @@ namespace RiseDiary.Model
 
     public class Cogitation : IDeletedEntity
     {
-        public int Id { get; set; }
-        public string Code { get; set; }
-        public int RecordId { get; set; }
+        public Guid Id { get; set; }
+        public Guid RecordId { get; set; }
         public DateTime Date { get; set; }
         public string Text { get; set; }
         public bool Deleted { get; set; }

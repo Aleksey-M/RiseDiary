@@ -9,8 +9,6 @@ namespace RiseDiary.IntegratedTests
         [Test]
         public void GetConnection_ShouldCreateDbFile_ByDbContext()
         {
-            if (UsePostgreSql) Assert.Ignore("This test for SQLite only");
-
             var (context, fileName) = GetContextWithFileName();
 
             Assert.IsNotNull(context);
