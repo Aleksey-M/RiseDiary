@@ -20,12 +20,12 @@ namespace RiseDiary.WebUI.Pages
         public int CurrentYear { get; private set; }
         public List<DiaryScope> AllScopes { get; private set; }
         public List<DiaryThemeJoined> AllThemes { get; private set; }
-        public int[] SelectedThemes { get; private set; } = new int[0];
+        public Guid[] SelectedThemes { get; private set; } = new Guid[0];
         public List<int> YearsListFiltered { get; private set; } = new List<int>();
         
-        public async Task OnGetAsync(int? year, int[] themes)
+        public async Task OnGetAsync(int? year, Guid[] themes)
         {
-            SelectedThemes = themes ?? new int[0];
+            SelectedThemes = themes ?? new Guid[0];
             CurrentYear = year ?? DateTime.Now.Year;
             AllScopes = await _context.FetchAllScopes();
             AllThemes = await _context.FetchThemesWithScopes();            

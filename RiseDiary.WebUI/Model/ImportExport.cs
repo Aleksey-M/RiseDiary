@@ -14,7 +14,7 @@ namespace RiseDiary.Model.ImportExport
     [Serializable]
     public class SDiaryRecord
     {
-        public string Code { get; set; }
+        public string Id { get; set; }
         public DateTime Date { get; set; }
         public DateTime CreateDate { get; set; }
         public DateTime ModifyDate { get; set; }
@@ -36,14 +36,14 @@ namespace RiseDiary.Model.ImportExport
         }
         public List<SCogitation> Cogitations { get; set; }
 
-        public List<string> CodesOfThemes { get; set; }
-        public List<string> CodesOfImages { get; set; }
+        public List<string> IdentsOfThemes { get; set; }
+        public List<string> IdentsOfImages { get; set; }
 
         public static SDiaryRecord CreateFromEntity(DiaryRecord diaryRecord)
         {
             return new SDiaryRecord
             {
-                Code = diaryRecord.Code,
+                Id = diaryRecord.Id.ToString(),
                 Date = diaryRecord.Date,
                 CreateDate = diaryRecord.CreateDate,
                 ModifyDate = diaryRecord.ModifyDate,
@@ -51,12 +51,12 @@ namespace RiseDiary.Model.ImportExport
                 Text = diaryRecord.Text,
                 Cogitations = diaryRecord.Cogitations.Select(c => new SCogitation
                 {
-                    Code = c.Code,
+                    Id = c.Id.ToString(),
                     Date = c.Date,
                     Text = c.Text
                 }).ToList(),
-                CodesOfThemes = diaryRecord.ThemesRefs?.Select(tr => tr.Theme.Code).ToList() ?? new List<string>(),
-                CodesOfImages = diaryRecord.ImagesRefs?.Select(ir => ir.Image.Code).ToList() ?? new List<string>()
+                IdentsOfThemes = diaryRecord.ThemesRefs?.Select(tr => tr.Theme.Id.ToString()).ToList() ?? new List<string>(),
+                IdentsOfImages = diaryRecord.ImagesRefs?.Select(ir => ir.Image.Id.ToString()).ToList() ?? new List<string>()
             };
         }
     }
@@ -64,7 +64,7 @@ namespace RiseDiary.Model.ImportExport
     [Serializable]
     public class SCogitation
     {
-        public string Code { get; set; }
+        public string Id { get; set; }
         public DateTime Date { get; set; }
         [XmlIgnore]
         public string Text { get; set; }
@@ -79,7 +79,7 @@ namespace RiseDiary.Model.ImportExport
     [Serializable]
     public class SDiaryScope
     {
-        public string Code { get; set; }
+        public string Id { get; set; }
         [XmlIgnore]
         public string ScopeName { get; set; }
         [XmlElement("ScopeName")]
@@ -94,7 +94,7 @@ namespace RiseDiary.Model.ImportExport
     [Serializable]
     public class SDiaryTheme
     {
-        public string Code { get; set; }
+        public string Id { get; set; }
         [XmlIgnore]
         public string ThemeName { get; set; }
         [XmlElement("ThemeName")]
@@ -108,7 +108,7 @@ namespace RiseDiary.Model.ImportExport
     [Serializable]
     public class SDiaryImage
     {
-        public string Code { get; set; }
+        public string Id { get; set; }
         [XmlIgnore]
         public string ImageName { get; set; }
         [XmlElement("Name")]
@@ -153,7 +153,7 @@ namespace RiseDiary.Model.ImportExport
 
     public static class DiarySerializer
     {
-        public static async Task<string> SerializeDiaryRecords(this DiaryDbContext context, IEnumerable<string> codesOfRecords, string hostWithPort, bool withThemes, bool withImages)
+        public static async Task<string> SerializeDiaryRecords(this DiaryDbContext context, IEnumerable<Guid> idsOfRecords, string hostWithPort, bool withThemes, bool withImages)
         {
             IEnumerable<DiaryRecord> allRecordsData = null;
 
@@ -161,7 +161,7 @@ namespace RiseDiary.Model.ImportExport
             {
                 allRecordsData = await context.Records
                      .Include(r => r.Cogitations)
-                     .Where(r => codesOfRecords.Contains(r.Code))
+                     .Where(r => idsOfRecords.Contains(r.Id))
                      .ToListAsync();
             }
             else if (withThemes && !withImages)
@@ -171,7 +171,7 @@ namespace RiseDiary.Model.ImportExport
                      .Include(r => r.ThemesRefs)
                      .ThenInclude(rt => rt.Theme)
                      .ThenInclude(t => t.Scope)
-                     .Where(r => codesOfRecords.Contains(r.Code))
+                     .Where(r => idsOfRecords.Contains(r.Id))
                      .ToListAsync();
             }
             else if (!withThemes && withImages)
@@ -181,7 +181,7 @@ namespace RiseDiary.Model.ImportExport
                      .Include(r => r.ImagesRefs)
                      .ThenInclude(ri => ri.Image)
                      .ThenInclude(i => i.FullImage)
-                     .Where(r => codesOfRecords.Contains(r.Code))
+                     .Where(r => idsOfRecords.Contains(r.Id))
                      .ToListAsync();
             }
             else 
@@ -194,7 +194,7 @@ namespace RiseDiary.Model.ImportExport
                      .Include(r => r.ImagesRefs)
                      .ThenInclude(ri => ri.Image)
                      .ThenInclude(i => i.FullImage)
-                     .Where(r => codesOfRecords.Contains(r.Code))
+                     .Where(r => idsOfRecords.Contains(r.Id))
                      .ToListAsync();
             }
 
@@ -220,11 +220,11 @@ namespace RiseDiary.Model.ImportExport
 
             allData.Scopes = allUsedScopes.Select(s => new SDiaryScope
             {
-                Code = s.Code,
+                Id = s.Id.ToString(),
                 ScopeName = s.ScopeName,
                 Themes = s.Themes.Where(t => allUsedThemes.Contains(t)).Select(t => new SDiaryTheme
                 {
-                    Code = t.Code,
+                    Id = t.Id.ToString(),
                     ThemeName = t.ThemeName
                 }).ToList()
             }).ToList();
@@ -236,7 +236,7 @@ namespace RiseDiary.Model.ImportExport
                 .Distinct()
                 .Select(img => new SDiaryImage
                 {
-                    Code = img.Code,
+                    Id = img.Id.ToString(),
                     CreateDate = img.CreateDate,
                     ModifyDate = img.ModifyDate,
                     ImageName = img.Name,

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -19,12 +20,12 @@ namespace RiseDiary.WebUI.Pages.Dates
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var scopeId = await _context.GetAppSettingInt(AppSettingsKeys.DatesScopeId);
-            if (scopeId == null)
+            var scopeId = await _context.GetAppSetting(AppSettingsKeys.DatesScopeId);
+            if (scopeId == null || !Guid.TryParse(scopeId, out _))
             {
                 return Redirect("~/Dates/setup");
             }
-            Dates = await _context.FetchAllDateItems(scopeId.Value);
+            Dates = await _context.FetchAllDateItems(Guid.Parse(scopeId));
             return Page();
         }
     }

@@ -19,7 +19,7 @@ namespace RiseDiary.WebUI.Pages.Dates
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var scopeId = await _context.GetAppSettingInt(AppSettingsKeys.DatesScopeId);
+            var scopeId = await _context.GetAppSetting(AppSettingsKeys.DatesScopeId);
             if(scopeId == null)
             {
                 return Redirect("~/Dates/setup");
