@@ -23,7 +23,7 @@ namespace RiseDiary.WebUI.Pages
         public int CurrenPage { get; private set; }
         public List<DiaryScope> AllScopes { get; private set; }
         public List<DiaryThemeJoined> AllThemes { get; private set; }
-        public int[] SelectedThemes { get; private set; } = new int[0];
+        public Guid[] SelectedThemes { get; private set; } = new Guid[0];
 
         private const int _pageSize = 30;
         private const string _first = "Первая";        
@@ -35,7 +35,7 @@ namespace RiseDiary.WebUI.Pages
         public string Next => _next;
         public string Last => _last;
 
-        public async Task OnGetSearchAsync(DateTime? fromDate,  DateTime? toDate, int[] themes, string searchName)
+        public async Task OnGetSearchAsync(DateTime? fromDate,  DateTime? toDate, Guid[] themes, string searchName)
         {            
             Filters = new RecordsFilter {
                 PageSize = _pageSize,
@@ -58,7 +58,7 @@ namespace RiseDiary.WebUI.Pages
             AllThemes = await _context.FetchThemesWithScopes();
         }
 
-        public async Task OnGetAsync(DateTime? fromDate, DateTime? toDate, int[] themes, string searchName, int recordsCount, int currentPage, int pagesCount, string navTo)
+        public async Task OnGetAsync(DateTime? fromDate, DateTime? toDate, Guid[] themes, string searchName, int recordsCount, int currentPage, int pagesCount, string navTo)
         {
             if(recordsCount == 0)
             {

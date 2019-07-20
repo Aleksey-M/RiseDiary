@@ -11,12 +11,12 @@ namespace RiseDiary.WebUI.Pages.Dates
 {
     public class IndexModel : PageModel
     {
-        private int? _datesScopeId;
+        private Guid? _datesScopeId;
         private int _daysDisplayRange;
         private readonly DiaryDbContext _context;
 
         public List<DateItem> Dates;
-        public bool IsScopeSelected => _datesScopeId >= 0;
+        public bool IsScopeSelected => _datesScopeId != null && _datesScopeId.Value != Guid.Empty;
 
         public IndexModel(DiaryDbContext context)
         {
@@ -25,13 +25,14 @@ namespace RiseDiary.WebUI.Pages.Dates
 
         private async Task UpdateViewModel()
         {            
-            _datesScopeId = await _context.GetAppSettingInt(AppSettingsKeys.DatesScopeId);
+            var stringId = await _context.GetAppSetting(AppSettingsKeys.DatesScopeId);
+            _datesScopeId = Guid.Parse(stringId);
            if(IsScopeSelected)
             {
                 _daysDisplayRange = (int)(await _context.GetAppSettingInt(AppSettingsKeys.DatesDisplayRange));
                 var datesRange = new DatesRange(DateTime.Now, _daysDisplayRange);
 
-                Dates = await _context.FetchDateItems((int)_datesScopeId, datesRange);
+                Dates = await _context.FetchDateItems(_datesScopeId.Value, datesRange);
                 
                 var weekdays = datesRange.AllRangeDates
                     .Where(di => !Dates.Any(d => d.TransferredDate == di.TransferredDate));

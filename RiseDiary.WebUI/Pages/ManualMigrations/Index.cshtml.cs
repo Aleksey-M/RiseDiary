@@ -23,24 +23,24 @@ namespace RiseDiary.WebUI.Pages.ManualMigrations
 
         }
 
-        public async Task OnPostUpdateAllCodesAsync()
-        {
-            (await _context.Scopes.ToListAsync()).ForEach(s => s.Code = Guid.NewGuid().ToString());
-            (await _context.Themes.ToListAsync()).ForEach(t => t.Code = Guid.NewGuid().ToString());
-            (await _context.Images.ToListAsync()).ForEach(i => i.Code = Guid.NewGuid().ToString());
-            (await _context.Records.ToListAsync()).ForEach(r => r.Code = Guid.NewGuid().ToString());
-            (await _context.Cogitations.ToListAsync()).ForEach(c => c.Code = Guid.NewGuid().ToString());
-            await _context.SaveChangesAsync();
-        }
+        //public async Task OnPostUpdateAllCodesAsync()
+        //{
+        //    (await _context.Scopes.ToListAsync()).ForEach(s => s.Code = Guid.NewGuid().ToString());
+        //    (await _context.Themes.ToListAsync()).ForEach(t => t.Code = Guid.NewGuid().ToString());
+        //    (await _context.Images.ToListAsync()).ForEach(i => i.Code = Guid.NewGuid().ToString());
+        //    (await _context.Records.ToListAsync()).ForEach(r => r.Code = Guid.NewGuid().ToString());
+        //    (await _context.Cogitations.ToListAsync()).ForEach(c => c.Code = Guid.NewGuid().ToString());
+        //    await _context.SaveChangesAsync();
+        //}
 
-        public async Task OnPostUpdateEmptyCodesAsync()
-        {
-            (await _context.Scopes.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(s => s.Code = Guid.NewGuid().ToString());
-            (await _context.Themes.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(t => t.Code = Guid.NewGuid().ToString());
-            (await _context.Images.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(i => i.Code = Guid.NewGuid().ToString());
-            (await _context.Records.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(r => r.Code = Guid.NewGuid().ToString());
-            (await _context.Cogitations.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(c => c.Code = Guid.NewGuid().ToString());
-            await _context.SaveChangesAsync();
-        }
+        //public async Task OnPostUpdateEmptyCodesAsync()
+        //{
+        //    (await _context.Scopes.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(s => s.Code = Guid.NewGuid().ToString());
+        //    (await _context.Themes.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(t => t.Code = Guid.NewGuid().ToString());
+        //    (await _context.Images.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(i => i.Code = Guid.NewGuid().ToString());
+        //    (await _context.Records.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(r => r.Code = Guid.NewGuid().ToString());
+        //    (await _context.Cogitations.Where(s => string.IsNullOrEmpty(s.Code)).ToListAsync()).ForEach(c => c.Code = Guid.NewGuid().ToString());
+        //    await _context.SaveChangesAsync();
+        //}
     }
 }

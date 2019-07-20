@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -16,14 +17,14 @@ namespace RiseDiary.WebUI.Pages.Images
             _context = context;
         }
 
-        public int? TargetRecordId { get; private set; }
+        public Guid? TargetRecordId { get; private set; }
 
-        public void OnGet(int? targetRecordId)
+        public void OnGet(Guid? targetRecordId)
         {
             TargetRecordId = targetRecordId;
         }
 
-        public async Task<IActionResult> OnPostAddNewImageAsync(List<IFormFile> newImages, string newImageName, int? targetRecordId)
+        public async Task<IActionResult> OnPostAddNewImageAsync(List<IFormFile> newImages, string newImageName, Guid? targetRecordId)
         {
             TargetRecordId = targetRecordId;
             var validationErrors = new List<string>();
@@ -37,7 +38,7 @@ namespace RiseDiary.WebUI.Pages.Images
 
             string imageName = string.Empty;
             byte[] imageData = null;
-            int imageId = 0;
+            Guid imageId = Guid.Empty;
 
             for (int i = 0; i < newImages.Count; i++)
             {
@@ -56,7 +57,7 @@ namespace RiseDiary.WebUI.Pages.Images
                 }
 
                 imageId = await _context.AddImage(imageName, imageData);
-                if(TargetRecordId != null && TargetRecordId != 0)
+                if(TargetRecordId != null && TargetRecordId != Guid.Empty)
                 {
                     await _context.AddRecordImage(targetRecordId.Value, imageId);
                 }                
@@ -64,14 +65,14 @@ namespace RiseDiary.WebUI.Pages.Images
 
             if(newImages.Count == 1)
             {
-                if (TargetRecordId != null && TargetRecordId != 0)
+                if (TargetRecordId != null && TargetRecordId != Guid.Empty)
                     return Redirect($"/Images/Edit?recordId={TargetRecordId.Value}&imageId={imageId}");
                 else
                     return Redirect($"/Images/Edit?recordId=0&imageId={imageId}");                
             }
 
 
-            if (TargetRecordId != null && TargetRecordId != 0)
+            if (TargetRecordId != null && TargetRecordId != Guid.Empty)
                 return Redirect($"/Records/View?recordId={TargetRecordId.Value}");
             else
                 return Redirect($"/Images");            

@@ -15,22 +15,26 @@ namespace RiseDiary.WebUI.Pages.Images
         {
             _context = context;
         }
-        public async Task<ActionResult> OnGetAsync(string imageId)
+        public async Task<ActionResult> OnGetAsync(Guid imageId)
         {
-            if (int.TryParse(imageId, out int id))
-            {
-                if (id == 0) return BadRequest();
-                var image = await _context.FetchImageById(id);
-                if (image == null) return NotFound();
-                return File(image.Thumbnail, "image/jpeg");
-            }
-            else
-            {
-                if (string.IsNullOrWhiteSpace(imageId)) return BadRequest();
-                var image = await _context.FetchImageByCode(imageId);
-                if (image == null) return NotFound();
-                return File(image.Thumbnail, "image/jpeg");
-            }
+            if (imageId == Guid.Empty) return BadRequest();
+            var image = await _context.FetchImageById(imageId);
+            if (image == null) return NotFound();
+            return File(image.Thumbnail, "image/jpeg");
+            //if (Guid.TryParse(imageId, out int id))
+            //{
+            //    if (id == 0) return BadRequest();
+            //    var image = await _context.FetchImageById(id);
+            //    if (image == null) return NotFound();
+            //    return File(image.Thumbnail, "image/jpeg");
+            //}
+            //else
+            //{
+            //    if (string.IsNullOrWhiteSpace(imageId)) return BadRequest();
+            //    var image = await _context.FetchImageByCode(imageId);
+            //    if (image == null) return NotFound();
+            //    return File(image.Thumbnail, "image/jpeg");
+            //}
         }
     }
 }

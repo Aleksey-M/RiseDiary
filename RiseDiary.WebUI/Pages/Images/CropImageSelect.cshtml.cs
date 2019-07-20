@@ -15,16 +15,16 @@ namespace RiseDiary.WebUI.Pages.Images
         }
         private const int MaxScaledWidth = 750;
         private const int MaxScaledHeight = 600;
-        public int ImageId { get; private set; }
-        public int RecordId { get; private set; }
+        public Guid ImageId { get; private set; }
+        public Guid RecordId { get; private set; }
         public byte[] ScaledImage { get; private set; }
         public double Coefficient { get; private set; }
         public string ScaledImageString => Convert.ToBase64String(ScaledImage);
-        public async Task<ActionResult> OnGetAsync(int imageId, int recordId)
+        public async Task<ActionResult> OnGetAsync(Guid? imageId, Guid? recordId)
         {
-            ImageId = imageId;
-            RecordId = recordId;
-            if(imageId == 0)
+            ImageId = imageId ?? Guid.Empty;
+            RecordId = recordId ?? Guid.Empty;
+            if(imageId == Guid.Empty)
             {
                 return Redirect("Images");
             }
@@ -64,14 +64,14 @@ namespace RiseDiary.WebUI.Pages.Images
             return Page();
         }
 
-        public async Task<RedirectToPageResult> OnPostCropImageAsync(int imageId, int selLeft, int selTop, int selWidth, int selHeight, double coefficient, int recordId)
+        public async Task<RedirectToPageResult> OnPostCropImageAsync(Guid? imageId, int selLeft, int selTop, int selWidth, int selHeight, double coefficient, Guid? recordId)
         {
-            RecordId = recordId;
-            ImageId = imageId;
+            RecordId = recordId ?? Guid.Empty;
+            ImageId = imageId ?? Guid.Empty;
             if (selLeft >= 0 && selTop >= 0 && selWidth > 0 && selHeight > 0 && coefficient >= 1)
             {
-                var image = await _context.FetchImageById(imageId);
-                var sourceImage = await _context.FetchFullImageById(imageId);
+                var image = await _context.FetchImageById(ImageId);
+                var sourceImage = await _context.FetchFullImageById(ImageId);
 
                 int realTop = Convert.ToInt32(selTop * coefficient);
                 int realLeft = Convert.ToInt32(selLeft * coefficient);

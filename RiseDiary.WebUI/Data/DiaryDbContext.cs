@@ -480,7 +480,7 @@ namespace RiseDiary.WebUI.Data
             await context.SaveChangesAsync();
         }
 
-        public static async Task RemoveRecordImage(this DiaryDbContext context, int recordId, int imageId)
+        public static async Task RemoveRecordImage(this DiaryDbContext context, Guid recordId, Guid imageId)
         {
             var recordImage = await context.RecordImages.FindAsync(recordId, imageId);
             if(recordImage != null)

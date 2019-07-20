@@ -18,76 +18,71 @@ namespace RiseDiary.WebUI.Pages.Images
             _context = context;
         }
 
-        public int RecordId { get; private set; }
-        public int ImageId { get; private set; }
+        public Guid? RecordId { get; private set; }
+        public Guid ImageId { get; private set; }
         public DiaryImage Image { get; private set; }
         public int BiggestImageDimm => Image.Width > Image.Height ? Image.Width : Image.Height;
         public TempImage TempImage { get; private set; }
         public string ImageUrl { get; private set; }
-        public Dictionary<int, string> ImageLinks { get; private set; }
+        public Dictionary<Guid, string> ImageLinks { get; private set; }
 
         private async Task UpdateModel()
         {            
             Image = await _context.FetchImageById(ImageId);
-            ImageUrl = $@"/Images/ImageFile/{Image.Code}";
+            ImageUrl = $@"/Images/ImageFile/{Image.Id.ToString()}";
             TempImage = await _context.FetchTempImage(ImageId);
             ImageLinks = await _context.FetchRecordsForImage(ImageId);
         }
 
-        public async Task<IActionResult> OnGetAsync(string imageId, int recordId)
+        public async Task<IActionResult> OnGetAsync(Guid? imageId, Guid? recordId)
         {
-            if (int.TryParse(imageId, out int id))
-            {
-                if (id == 0) return Redirect("/images/index");
-                ImageId = id;                
-            }
-            else
-            {
-                var idByCode = await _context.FetchImageIdByCode(imageId);
-                if(idByCode == null) return Redirect("/images/index");
-                ImageId = idByCode.Value;
-            }
+            if (imageId == null || imageId.Value == Guid.Empty) return Redirect("/images/index");
+
             RecordId = recordId;
+            ImageId = imageId.Value;
             await UpdateModel();
             return Page();
         }        
 
-        public async Task<IActionResult> OnPostDeleteImageAsync(int? imageId, int recordId)
+        public async Task<IActionResult> OnPostDeleteImageAsync(Guid? imageId, Guid? recordId)
         {
-            if(imageId != null && imageId.Value != 0)
+            if(imageId != null && imageId.Value != Guid.Empty)
             {
                 await _context.DeleteTempImage(imageId.Value);
                 await _context.DeleteImage(imageId.Value);
             }
-            return recordId != 0 ? Redirect($"/Records/View?recordid={recordId}") : Redirect("/images/index");
+            return (recordId != null && recordId != Guid.Empty) ? Redirect($"/Records/View?recordid={recordId.Value.ToString()}") : Redirect("/images/index");
         }
 
-        public async Task OnPostReplaceImageAsync(IFormFile newImage, int imageId, int recordId)
+        public async Task OnPostReplaceImageAsync(IFormFile newImage, Guid? imageId, Guid? recordId)
         {
-            RecordId = recordId;
-            ImageId = imageId;
-            if (newImage != null && ImageId != 0)
+            if (imageId != null || imageId.Value != Guid.Empty)
             {
-                byte[] imageData = null;
-                using (var binaryReader = new BinaryReader(newImage.OpenReadStream()))
+                RecordId = recordId;
+                ImageId = imageId.Value;
+                if (newImage != null)
                 {
-                    imageData = binaryReader.ReadBytes((int)newImage.Length);
+                    byte[] imageData = null;
+                    using (var binaryReader = new BinaryReader(newImage.OpenReadStream()))
+                    {
+                        imageData = binaryReader.ReadBytes((int)newImage.Length);
+                    }
+                    var image = await _context.FetchImageById(ImageId);
+                    var uploaded = ImageHelper.ReplaceImage(image, imageData);
+                    await _context.AddUnsavedTempImage(uploaded);
                 }
-                var image = await _context.FetchImageById(imageId);
-                var uploaded = ImageHelper.ReplaceImage(image, imageData);
-                await _context.AddUnsavedTempImage(uploaded);
-            }
-            await UpdateModel();
+                await UpdateModel();
+            }            
         }
 
-        public async Task OnPostCancelEditAsync(int imageId, int recordId)
+        public async Task OnPostCancelEditAsync(Guid imageId, Guid? recordId)
         {
             RecordId = recordId;
             ImageId = imageId;
             await _context.DeleteTempImage(ImageId);
             await UpdateModel();
         }
-        public async Task OnPostSaveUpdatedImageAsync(int imageId, int recordId)
+        public async Task OnPostSaveUpdatedImageAsync(Guid imageId, Guid? recordId)
         {
             RecordId = recordId;
             ImageId = imageId;
@@ -96,21 +91,21 @@ namespace RiseDiary.WebUI.Pages.Images
             await UpdateModel();
         }
 
-        public async Task OnPostSaveUpdatedAsNewImageAsync(int imageId, int recordId)
+        public async Task OnPostSaveUpdatedAsNewImageAsync(Guid imageId, Guid? recordId)
         {            
             var tmpImage = await _context.FetchTempImage(imageId);
             var image = await _context.FetchImageById(imageId);
             ImageId = await _context.AddImage($"{image.Name} ({tmpImage.Modification})", tmpImage.Data);
             await _context.DeleteTempImage(imageId);
             RecordId = recordId;
-            if(RecordId != 0)
+            if(RecordId.Value != Guid.Empty)
             {
-                await _context.AddRecordImage(RecordId, ImageId);
+                await _context.AddRecordImage(RecordId.Value, ImageId);
             }
             await UpdateModel();
         }
         
-        public async Task OnPostScaleImageAsync(int imageId, int imageSize, int recordId)
+        public async Task OnPostScaleImageAsync(Guid imageId, int imageSize, Guid? recordId)
         {
             RecordId = recordId;
             ImageId = imageId;
@@ -124,9 +119,9 @@ namespace RiseDiary.WebUI.Pages.Images
             await UpdateModel();
         }
 
-        public async Task<IActionResult> OnPostUpdateImageNameAsync(int imageId, string imageName)
+        public async Task<IActionResult> OnPostUpdateImageNameAsync(Guid imageId, string imageName)
         {
-            if (imageId == 0)
+            if (imageId == Guid.Empty)
             {
                 return Redirect("/Images/Index");
             }

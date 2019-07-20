@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -24,7 +25,13 @@ namespace RiseDiary.WebUI.Pages.Dates
             {
                 return Redirect("~/Dates/setup");
             }
-            Dates = await _context.FetchAllDateItems(scopeId.Value);
+            if (Guid.TryParse(scopeId, out var sId))
+            {
+                Dates = await _context.FetchAllDateItems(sId);
+            }
+            else
+                throw new Exception("Incorrect format of Scope ID in the AppSettings");
+
             return Page();
         }
     }

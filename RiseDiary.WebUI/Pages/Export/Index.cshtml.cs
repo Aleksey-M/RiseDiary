@@ -38,7 +38,7 @@ namespace RiseDiary.WebUI.Pages.Export
 
         public async Task<FileResult> OnPostExportAsync()
         {
-            var records = await _context.Records.OrderByDescending(r => r.Date).Select(r => r.Code).ToListAsync();
+            var records = await _context.Records.OrderByDescending(r => r.Date).Select(r => r.Id).ToListAsync();
 
             var basePath = Request.Scheme + Uri.SchemeDelimiter + Request.Host;
 

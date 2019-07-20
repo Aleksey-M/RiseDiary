@@ -16,13 +16,13 @@
                     <th>Размер</th>
                     <th>
                         <div style="float:right;margin-right:10px;">
-                            @if (Model.RecordId == 0)
+                            @if (Model.RecordId == Guid.Empty)
                             {
                                 <a href="/images/index" class="btn btn-default btn-sm" style="float:right">Закрыть</a>
                             }
                             else
                             {
-                                <a href="/records/view?recordId=@Model.RecordId" class="btn btn-default btn-sm" style="float:right">Венуться к записи</a>
+                                <a href="/records/view?recordId=@Model.RecordId.Value.ToString()" class="btn btn-default btn-sm" style="float:right">Венуться к записи</a>
                             }
                         </div>
                     </th>

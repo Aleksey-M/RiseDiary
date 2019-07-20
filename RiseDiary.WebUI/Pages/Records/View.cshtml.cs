@@ -18,10 +18,10 @@ namespace RiseDiary.WebUI.Pages
             _context = context;
         }
 
-        public int RecordId { get; set; }
+        public Guid RecordId { get; set; }
         public DiaryRecord  Record { get; set; }
         public List<string> RecordThemes { get; set; }
-        public List<(int ImageId, string ImageName)> RecordImages { get; set; }
+        public List<(Guid ImageId, string ImageName)> RecordImages { get; set; }
         public List<Cogitation> Cogitations { get; set; }
 
         private async Task UpdatePageState()
@@ -32,26 +32,26 @@ namespace RiseDiary.WebUI.Pages
             Cogitations = Record.Cogitations.OrderBy(c => c.Date).ToList();
         }
 
-        public async Task<IActionResult> OnGetAsync(string recordId)
+        public async Task<IActionResult> OnGetAsync(Guid recordId)
         {
-            if(int.TryParse(recordId, out int id))
-            {
-                RecordId = id;
-            }
-            else
-            {
-                var idByCode = await _context.FetchRecordIdByCode(recordId);
-                if(idByCode == null) return Redirect("/Records/Edit");
-                RecordId = idByCode.Value;
-            }
-
+            //if(int.TryParse(recordId, out int id))
+            //{
+            //    RecordId = id;
+            //}
+            //else
+            //{
+            //    var idByCode = await _context.FetchRecordIdByCode(recordId);
+            //    if(idByCode == null) return Redirect("/Records/Edit");
+            //    RecordId = idByCode.Value;
+            //}
+            RecordId = recordId;
             await UpdatePageState();
             return null;
         }
 
-        public async Task OnPostAddCogitationAsync(int recordId, string newCogText)
+        public async Task OnPostAddCogitationAsync(Guid recordId, string newCogText)
         {
-            if (!string.IsNullOrWhiteSpace(newCogText) && recordId != 0)
+            if (!string.IsNullOrWhiteSpace(newCogText) && recordId != Guid.Empty)
             {
                 await _context.AddCogitation(new Cogitation
                 {
@@ -60,53 +60,53 @@ namespace RiseDiary.WebUI.Pages
                     Text = newCogText
                 });                
             }       
-            if(recordId != 0)
+            if(recordId != Guid.Empty)
             {
                 RecordId = recordId;
                 await UpdatePageState();
             }
         }
 
-        public async Task OnPostDeleteCogitationAsync(int recordId, int cogitationId)
+        public async Task OnPostDeleteCogitationAsync(Guid recordId, Guid cogitationId)
         {
-            if(cogitationId != 0)
+            if(cogitationId != Guid.Empty)
             {
                 await _context.DeleteCogitation(cogitationId);
             }
-            if(recordId != 0)
+            if(recordId != Guid.Empty)
             {
                 RecordId = recordId;
                 await UpdatePageState();
             }
         }
 
-        public async Task OnPostSaveCogitationAsync(int recordId, int cogitationId, string cogText)
+        public async Task OnPostSaveCogitationAsync(Guid recordId, Guid cogitationId, string cogText)
         {
-            if(cogitationId != 0 && !string.IsNullOrWhiteSpace(cogText))
+            if(cogitationId != Guid.Empty && !string.IsNullOrWhiteSpace(cogText))
             {
                 await _context.UpdateCogitationText(cogitationId, cogText);
             }
-            if (recordId != 0)
+            if (recordId != Guid.Empty)
             {
                 RecordId = recordId;
                 await UpdatePageState();
             }
         }
 
-        public async Task OnPostDeleteImageAsync(int recordId, int imageId)
+        public async Task OnPostDeleteImageAsync(Guid recordId, Guid imageId)
         {
-            if (recordId != 0) RecordId = recordId;
-            if (imageId != 0)
+            if (recordId != Guid.Empty) RecordId = recordId;
+            if (imageId != Guid.Empty)
             {
                 await _context.RemoveRecordImage(recordId, imageId);
             }            
             await UpdatePageState();
         }
 
-        public async Task OnPostAddImageAsync(int recordId, int imageId)
+        public async Task OnPostAddImageAsync(Guid recordId, Guid imageId)
         {
-            if (recordId != 0) RecordId = recordId;
-            if (imageId != 0)
+            if (recordId != Guid.Empty) RecordId = recordId;
+            if (imageId != Guid.Empty)
             {
                 await _context.AddRecordImage(recordId, imageId);
             }

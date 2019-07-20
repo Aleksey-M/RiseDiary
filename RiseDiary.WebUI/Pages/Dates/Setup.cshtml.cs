@@ -13,7 +13,7 @@ namespace RiseDiary.WebUI.Pages.Dates
     {
         private readonly DiaryDbContext _context;
         public List<DiaryScope> Scopes;
-        public int SelectedScopeId;
+        public Guid SelectedScopeId;
         public int DaysDisplayRange;
         public string Message;
 
@@ -25,7 +25,13 @@ namespace RiseDiary.WebUI.Pages.Dates
         public async Task UpdateViewModel()
         {
             Scopes = await _context.FetchAllScopes();
-            SelectedScopeId = await _context.GetAppSettingInt(AppSettingsKeys.DatesScopeId) ?? 0;
+            var setting = await _context.GetAppSetting(AppSettingsKeys.DatesScopeId);
+            if (setting != null && Guid.TryParse(setting, out Guid id))
+            {
+                SelectedScopeId = id;
+            }
+            else
+                SelectedScopeId = Guid.Empty;
             DaysDisplayRange = await _context.GetAppSettingInt(AppSettingsKeys.DatesDisplayRange) ?? 20;
         }
 

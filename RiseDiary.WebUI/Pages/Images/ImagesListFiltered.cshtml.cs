@@ -17,16 +17,16 @@ namespace RiseDiary.WebUI.Pages.Images
         }        
         public class ImageListOption
         {
-            public int Id { get; set; }
+            public Guid Id { get; set; }
             public string Name { get; set; }
         }
-        public async Task<JsonResult> OnGetAsync(int recordId, string namePart)
+        public async Task<JsonResult> OnGetAsync(Guid recordId, string namePart)
         {
             var images = !string.IsNullOrWhiteSpace(namePart)
                 ? _context.Images.Where(i => !i.Deleted && i.Name.IndexOf(namePart, StringComparison.CurrentCultureIgnoreCase) > -1)
                 : _context.Images.Where(i => !i.Deleted);
 
-            images = recordId != 0
+            images = recordId != Guid.Empty
                 ? images.Where(i => !_context.RecordImages.Where(ri => !ri.Deleted).Any(ri => ri.RecordId == recordId && ri.ImageId == i.Id))
                 : images;
             

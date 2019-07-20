@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.WebUI.Data;
 using RiseDiary.Model;
@@ -18,14 +17,14 @@ namespace RiseDiary.WebUI.Pages
             _context = context;
         }
 
-        public int? RecordId { get; set; }
+        public Guid? RecordId { get; set; }
         public string RecordCode { get; set; }
         public DateTime? RecordDate { get; set; }
         public DateTime? RecordCreateDate { get; set; }
         public DateTime? RecordModifyDate { get; set; }
         public string RecordName { get; set; }
         public string RecordText { get; set; }
-        public List<int> RecordThemesIds { get; set; }
+        public List<Guid> RecordThemesIds { get; set; }
         public List<DiaryThemeJoined> Themes { get; set; }
 
         public IEnumerable<DiaryThemeJoined> ActualOrSelectedThemes => Themes
@@ -42,7 +41,7 @@ namespace RiseDiary.WebUI.Pages
         {
             Themes = await _context.FetchThemesWithScopes();
             RecordDate = DateTime.Now.Date;
-            RecordThemesIds = new List<int>();
+            RecordThemesIds = new List<Guid>();
             if (RecordId != null)
             {
                 var rec = await _context.FetchRecordById(RecordId.Value);
@@ -58,13 +57,13 @@ namespace RiseDiary.WebUI.Pages
             }
         }
 
-        public async Task OnGetAsync(int? recordId)
+        public async Task OnGetAsync(Guid? recordId)
         {
             RecordId = recordId;
             await UpdatePageState();
         }
 
-        public async Task OnPostSaveRecordAsync(int? recordId, DateTime recordDate, string recordName, string recordText, int[] themeId)
+        public async Task OnPostSaveRecordAsync(Guid? recordId, DateTime recordDate, string recordName, string recordText, Guid[] themeId)
         {
             if (recordId == null)
             {
@@ -76,8 +75,8 @@ namespace RiseDiary.WebUI.Pages
                     Name = recordName?.Trim() ?? string.Empty,
                     Text = recordText?.Trim() ?? string.Empty
                 };
-                int newRecordId = await _context.AddRecord(newRecord);
-                foreach (int tid in themeId)
+                Guid newRecordId = await _context.AddRecord(newRecord);
+                foreach (Guid tid in themeId)
                 {
                     await _context.AddRecordTheme(newRecordId, tid);
                 }
@@ -95,11 +94,11 @@ namespace RiseDiary.WebUI.Pages
                     await _context.UpdateRecord(record);
 
                     var recThemesIds = (await _context.FetchRecordThemes(record.Id)).Select(rth => rth.Id);
-                    foreach (int id in recThemesIds.Except(themeId))
+                    foreach (Guid id in recThemesIds.Except(themeId))
                     {
                         await _context.RemoveRecordTheme(record.Id, id);
                     }
-                    foreach (int id in themeId.Except(recThemesIds))
+                    foreach (Guid id in themeId.Except(recThemesIds))
                     {
                         await _context.AddRecordTheme(record.Id, id);
                     }
@@ -109,7 +108,7 @@ namespace RiseDiary.WebUI.Pages
             await UpdatePageState();
         }
 
-        public async Task<IActionResult> OnPostDeleteRecordAsync(int recordId)
+        public async Task<IActionResult> OnPostDeleteRecordAsync(Guid recordId)
         {
             await _context.DeleteRecord(recordId);
             return Redirect("~/Records");

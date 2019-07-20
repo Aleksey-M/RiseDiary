@@ -21,7 +21,7 @@
         }
 
         <form asp-page-handler="AddNewImage" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="targetRecordId" id="targetRecordId" value="@(Model.TargetRecordId ?? 0)" />
+            <input type="hidden" name="targetRecordId" id="targetRecordId" value="@(Model.TargetRecordId ?? Guid.Empty)" />
             <table class="table">
                 <tr>
                     <td colspan="2"><input type="file" accept="image/*" multiple="multiple" id="newImages" name="newImages" class="form-control-file" style="width:80%" /></td>

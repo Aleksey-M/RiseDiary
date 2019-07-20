@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -40,7 +41,7 @@ namespace RiseDiary.WebUI.Pages
             await UpdatePageState();
         }
 
-        public async Task OnPostUpdateScopeAsync(int scopeId, string scopeName)
+        public async Task OnPostUpdateScopeAsync(Guid scopeId, string scopeName)
         {
             if (!string.IsNullOrWhiteSpace(scopeName))
             {
@@ -53,7 +54,7 @@ namespace RiseDiary.WebUI.Pages
             await UpdatePageState();
         }
 
-        public async Task OnPostDeleteScopeAsync(int scopeId)
+        public async Task OnPostDeleteScopeAsync(Guid scopeId)
         {
             if (await _context.CanDeleteScope(scopeId))
             {
@@ -66,7 +67,7 @@ namespace RiseDiary.WebUI.Pages
             await UpdatePageState();
         }
 
-        public async Task OnPostAddThemeAsync(int scopeId, string newThemeName)
+        public async Task OnPostAddThemeAsync(Guid scopeId, string newThemeName)
         {
             var area = await _context.FetchScopeById(scopeId);
             if (area != null)
@@ -87,13 +88,13 @@ namespace RiseDiary.WebUI.Pages
             await UpdatePageState();
         }
 
-        public async Task OnPostDeleteThemeAsync(int themeId)
+        public async Task OnPostDeleteThemeAsync(Guid themeId)
         {
             await _context.DeleteTheme(themeId);
             await UpdatePageState();
         }
 
-        public async Task OnPostUpdateThemeAsync(int themeId, string newThemeName)
+        public async Task OnPostUpdateThemeAsync(Guid themeId, string newThemeName)
         {
             if (!string.IsNullOrWhiteSpace(newThemeName))
             {
