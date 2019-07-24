@@ -879,7 +879,7 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task<List<int>> FetchYearsListFiltered(this DiaryDbContext context, Guid[] themes)
         {
-            themes = themes ?? new Guid[0];
+            themes ??= new Guid[0];
             if(themes.Length == 0)
                 return await context.Records
                     .Select(r => r.Date.Year)

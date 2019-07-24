@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RiseDiary.WebUI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 
 namespace RiseDiary.WebUI
 {
@@ -21,7 +22,7 @@ namespace RiseDiary.WebUI
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
             _dataBaseFileName = Configuration.GetValue<string>("dbFile");
             _needFileBackup = Configuration.GetValue<int>("needFileBackup") > 0;
@@ -37,16 +38,16 @@ namespace RiseDiary.WebUI
             {
                 var builder = new DbContextOptionsBuilder<DiaryDbContext>();
                 builder.UseSqlite($"Data Source={_dataBaseFileName};");
-                var context = new DiaryDbContext(builder.Options);
+                using var context = new DiaryDbContext(builder.Options);
                 context.Database.Migrate();
             }
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
+        public void Configure(IApplicationBuilder app, IHostApplicationLifetime applicationLifetime)
         {            
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
-            app.UseMvc();
+            //app.UseMvc();
 
             if (_needFileBackup)
             {

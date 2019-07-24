@@ -21,12 +21,12 @@ namespace RiseDiary.IntegratedTests
         }
 
         protected const string FullImageName = @"D:\Projects\RiseDiary\RiseDiary.IntegratedTests\TestImage.jpg";
-        private static List<string> _dbFileNames = new List<string>();
+        private readonly static List<string> _dbFileNames = new List<string>();
         protected static string DirNameFull => AppDomain.CurrentDomain.BaseDirectory;
 
         protected DiaryDbContext CreateContext()
         {
-            var (context, fileName) = GetContextWithFileName();
+            var (context, _) = GetContextWithFileName();
             return context;
         }
 
