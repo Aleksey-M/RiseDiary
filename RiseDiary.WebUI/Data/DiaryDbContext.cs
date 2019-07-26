@@ -790,7 +790,7 @@ namespace RiseDiary.WebUI.Data
         }
 
         public static Task Vacuum(this DiaryDbContext context) => 
-            context.Database.ExecuteSqlCommandAsync("vacuum;");
+            context.Database.ExecuteSqlRawAsync("vacuum;");
 
         public static Task<Dictionary<Guid, string>> FetchRecordsForImage(this DiaryDbContext context, Guid imageId)
         {

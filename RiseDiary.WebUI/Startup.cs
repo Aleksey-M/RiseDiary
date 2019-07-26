@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RiseDiary.WebUI.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 
 namespace RiseDiary.WebUI
@@ -21,9 +19,7 @@ namespace RiseDiary.WebUI
         private bool _needFileBackup;
 
         public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-
+        {            
             _dataBaseFileName = Configuration.GetValue<string>("dbFile");
             _needFileBackup = Configuration.GetValue<int>("needFileBackup") > 0;
             if (_needFileBackup)
@@ -31,6 +27,7 @@ namespace RiseDiary.WebUI
                 SqliteFileBackup.BackupFile(_dataBaseFileName);
             }
 
+            services.AddRazorPages();
             services.AddDbContext<DiaryDbContext>(options => options.UseSqlite($"Data Source={_dataBaseFileName};"));
             
             int needMigration = Configuration.GetValue<int>("needMigration");
@@ -47,7 +44,14 @@ namespace RiseDiary.WebUI
         {            
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
-            //app.UseMvc();
+            //app.UseHttpsRedirection();
+            //app.UseAuthorization();
+
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapRazorPages();
+            });
 
             if (_needFileBackup)
             {
