@@ -228,7 +228,7 @@ namespace RiseDiary.WebUI.Data
         }
 
         public static async Task<bool> CanDeleteScope(this DiaryDbContext context, Guid scopeId) => 
-            !(await context.Themes.AnyAsync(th => th.ScopeId == scopeId));
+           !(await context.Themes.AnyAsync(th => th.ScopeId == scopeId));
 
         public static async Task DeleteScope(this DiaryDbContext context, Guid scopeId)
         {
@@ -581,7 +581,24 @@ namespace RiseDiary.WebUI.Data
         
         private static IQueryable<DiaryRecord> FetchRecordsListFilteredQuery(DiaryDbContext context, RecordsFilter filter)
         {
-            var result = context.Records.AsQueryable();
+            IQueryable<DiaryRecord> result;
+
+            if (!filter.IsEmptyTypeFilter)
+            {
+                var temp = context.RecordThemes
+                    .Where(rt => filter.RecordThemeIds.Contains(rt.ThemeId))
+                    .Select(r => new { r.RecordId, r.ThemeId })
+                    .ToList()
+                    .GroupBy(r => r.RecordId)
+                    .Where(g => filter.RecordThemeIds.All(id => g.Select(r => r.ThemeId).Contains(id)))
+                    .Select(g => g.Key);
+
+                result = context.Records.Where(r => temp.Contains(r.Id));
+            }
+            else
+            {
+                result = context.Records.AsQueryable();
+            }
 
             if (!RecordsFilter.IsEmpty(filter))
             {
@@ -591,18 +608,37 @@ namespace RiseDiary.WebUI.Data
                 }
                 if (filter.RecordDateFrom != null)
                 {
-                    result = result.Where(r => r.Date >= filter.RecordDateFrom);                    
+                    result = result.Where(r => r.Date >= filter.RecordDateFrom);
                 }
                 if (filter.RecordDateTo != null)
                 {
-                    result = result.Where(r => r.Date <= filter.RecordDateTo);                    
-                }
-                if (!filter.IsEmptyTypeFilter)
-                {
-                    result = result.Where(r => filter.RecordThemeIds.All(id => context.RecordThemes.Where(rt => rt.RecordId == r.Id).Select(rt => rt.ThemeId).Contains(id)));                                      
+                    result = result.Where(r => r.Date <= filter.RecordDateTo);
                 }
             }
+
             return result;
+            //var result = context.Records.AsQueryable();
+
+            //if (!RecordsFilter.IsEmpty(filter))
+            //{
+            //    if (!string.IsNullOrWhiteSpace(filter.RecordNameFilter))
+            //    {
+            //        result = result.Where(r => r.Name.Contains(filter.RecordNameFilter));
+            //    }
+            //    if (filter.RecordDateFrom != null)
+            //    {
+            //        result = result.Where(r => r.Date >= filter.RecordDateFrom);                    
+            //    }
+            //    if (filter.RecordDateTo != null)
+            //    {
+            //        result = result.Where(r => r.Date <= filter.RecordDateTo);                    
+            //    }
+            //    if (!filter.IsEmptyTypeFilter)
+            //    {
+            //        result = result.Where(r => filter.RecordThemeIds.All(id => context.RecordThemes.Where(rt => rt.RecordId == r.Id).Select(rt => rt.ThemeId).Contains(id)));                                      
+            //    }
+            //}
+            //return result;
         }
 
         public static Task<List<DiaryRecord>> FetchRecordsListFiltered(this DiaryDbContext context, RecordsFilter filter) => 

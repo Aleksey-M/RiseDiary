@@ -64,10 +64,10 @@ namespace RiseDiary.UnitTests
         public void Filter_AddRecTypesList_ShouldAddId()
         {
             var recFilter = RecordsFilter.Empty;
-            var recList = new int[] { 101, 102, 103, 104, 105 };
+            var recList = new Guid[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
 
-            recFilter.AddThemeId(105);
-            recFilter.AddThemeId(101);
+            recFilter.AddThemeId(recList[4]);
+            recFilter.AddThemeId(recList[0]);
             recFilter.AddThemeId(recList);
 
             Assert.AreEqual(recList.Count(), recFilter.RecordThemeIds.Count);
@@ -79,21 +79,25 @@ namespace RiseDiary.UnitTests
         public void Filter_RemoveNotExistingId_ShouldDoNothing()
         {
             var recFilter = RecordsFilter.Empty;
-            recFilter.AddThemeId(105);
+            var id = Guid.NewGuid();
 
-            recFilter.RemoveThemeId(101);
+            recFilter.AddThemeId(id);
+
+            recFilter.RemoveThemeId(Guid.NewGuid());
 
             Assert.AreEqual(1, recFilter.RecordThemeIds.Count);
-            Assert.AreEqual(105, recFilter.RecordThemeIds[0]);
+            Assert.AreEqual(id, recFilter.RecordThemeIds[0]);
         }
 
         [Test]
         public void Filter_RemoveId_ShouldRemoveId()
         {
             var recFilter = RecordsFilter.Empty;
-            recFilter.AddThemeId(105);
+            var id = Guid.NewGuid();
 
-            recFilter.RemoveThemeId(105);
+            recFilter.AddThemeId(id);
+
+            recFilter.RemoveThemeId(id);
 
             Assert.AreEqual(0, recFilter.RecordThemeIds.Count);
         }
@@ -102,19 +106,24 @@ namespace RiseDiary.UnitTests
         public void Filter_RemoveIdList_ShouldRemoveId()
         {
             var recFilter = RecordsFilter.Empty;
-            var recList = new List<int> { 101, 102, 103, 104, 105 };
-            recFilter.AddThemeId(recList);
-            recFilter.AddThemeId(108);
-            recFilter.AddThemeId(99);
+            var recList = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            var id3 = Guid.NewGuid();
+            var id4 = recList[2];
 
-            recList.Remove(103);
-            recList.Add(111);
+            recFilter.AddThemeId(recList);
+            recFilter.AddThemeId(id1);
+            recFilter.AddThemeId(id2);
+
+            recList.Remove(id4);
+            recList.Add(id3);
             recFilter.RemoveThemeId(recList);
 
             Assert.AreEqual(3, recFilter.RecordThemeIds.Count);
-            Assert.IsTrue(recFilter.RecordThemeIds.Contains(103));
-            Assert.IsTrue(recFilter.RecordThemeIds.Contains(99));
-            Assert.IsTrue(recFilter.RecordThemeIds.Contains(108));
+            Assert.IsTrue(recFilter.RecordThemeIds.Contains(id4));
+            Assert.IsTrue(recFilter.RecordThemeIds.Contains(id1));
+            Assert.IsTrue(recFilter.RecordThemeIds.Contains(id2));
         }
 
         [Test]
