@@ -139,7 +139,7 @@ namespace RiseDiary.WebUI.Data
 
                         entry.State = EntityState.Modified;
                         entry.Entity.Deleted = true;
-                        break;
+                        break;                    
                     case EntityState.Deleted:
                         entry.State = EntityState.Modified;
                         entry.Entity.Deleted = true;
@@ -232,12 +232,14 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task DeleteScope(this DiaryDbContext context, Guid scopeId)
         {
+            if (!(await context.CanDeleteScope(scopeId))) return;
+
             var scope = await context.Scopes
                 .Include(s => s.Themes)
                 .ThenInclude(t => t.RecordsRefs)
                 .SingleOrDefaultAsync(s => s.Id == scopeId);
 
-            if (scope != null && !scope.Themes.Any())
+            if (scope != null && !scope.Themes.Any(t => !t.Deleted))
             {
                 context.Scopes.Remove(scope);
                 await context.SaveChangesAsync();
@@ -915,7 +917,7 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task<List<int>> FetchYearsListFiltered(this DiaryDbContext context, Guid[] themes)
         {
-            themes ??= new Guid[0];
+            themes ??= Array.Empty<Guid>();
             if(themes.Length == 0)
                 return await context.Records
                     .Select(r => r.Date.Year)

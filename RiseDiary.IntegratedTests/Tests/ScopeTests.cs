@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using RiseDiary.WebUI.Data;
 using RiseDiary.Model;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace RiseDiary.IntegratedTests
 {
@@ -17,6 +18,8 @@ namespace RiseDiary.IntegratedTests
             var context = CreateContext();
 
             Guid newId = await context.AddScope(@"New Scope ""!@#$%^''""&*()_+,.<><>?//[]||\\апрорпывоаъъЇЇііі.єєєйй");
+
+            Assert.AreNotEqual(default, newId);
         }
 
         [Test]
@@ -183,6 +186,7 @@ namespace RiseDiary.IntegratedTests
             Guid typeId = await context.AddTheme(ScopeId, "New type");
 
             Assert.IsFalse(await context.CanDeleteScope(ScopeId));
+            Assert.AreNotEqual(default, typeId);
         }
 
         [Test]
@@ -203,7 +207,23 @@ namespace RiseDiary.IntegratedTests
 
             Assert.IsNull(Scope);
 
-            Assert.IsNotNull(context.Scopes.FirstOrDefault(s => s.Id == id));
+            Assert.IsNotNull(context.Scopes.IgnoreQueryFilters().FirstOrDefault(s => s.Id == id));
+        }
+
+        [Test]
+        public async Task DeleteScope_WithDeletedThemes_ShouldDeleteScope()
+        {
+            var context = CreateContext();
+            var themeId = Create_Theme(context, "Theme Name");
+            var scopeId = (await context.Themes.FindAsync(themeId)).ScopeId;
+
+            await context.DeleteTheme(themeId);
+            await context.DeleteScope(scopeId);
+            var Scope = await context.FetchScopeById(scopeId);
+
+            Assert.IsNull(Scope);
+
+            Assert.IsNotNull(context.Scopes.IgnoreQueryFilters().FirstOrDefault(s => s.Id == scopeId));
         }
     }
 }
