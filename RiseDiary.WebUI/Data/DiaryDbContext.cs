@@ -373,15 +373,6 @@ namespace RiseDiary.WebUI.Data
                 .ToListAsync();
         }
 
-        public static Task<List<string>> FetchRecordThemesList(this DiaryDbContext context, Guid recordId)
-        {
-            return context.RecordThemes
-                .Where(rt => rt.RecordId == recordId)
-                .Join(context.Themes.OrderBy(t => t.ThemeName), rt => rt.ThemeId, t => t.Id, (rt, t) => new { t.Id, t.ThemeName, t.ScopeId })
-                .Join(context.Scopes, t => t.ScopeId, s => s.Id, (t, s) => $"{s.ScopeName} - {t.ThemeName}")
-                .ToListAsync();
-        }
-
         public static async Task<Guid> AddImage(this DiaryDbContext context, string imageName, byte[] fullSizeImageData)
         {
             if (imageName == null) throw new ArgumentNullException(nameof(imageName));
@@ -435,21 +426,6 @@ namespace RiseDiary.WebUI.Data
             }
         }
 
-        public static async Task UpdateFullSizeImage(this DiaryDbContext context, Guid imageId, byte[] newImage)
-        {
-            var img = await context.Images.SingleOrDefaultAsync(i => i.Id == imageId);
-            if (img != null)
-            {
-                img.Thumbnail = ImageHelper.ScaleImage(newImage);
-                img.ModifyDate = DateTime.Now;
-                img.SizeByte = newImage.Length;
-                (img.Width, img.Height) = ImageHelper.ImageSize(newImage);
-                var fullImg = await context.FullSizeImages.FindAsync(img.Id);
-                fullImg.Data = newImage;
-                await context.SaveChangesAsync();
-            }
-        }
-
         public static Task<DiaryImage> FetchImageById(this DiaryDbContext context, Guid imageId) =>
             context.Images.SingleOrDefaultAsync(i => i.Id == imageId);
 
@@ -464,9 +440,6 @@ namespace RiseDiary.WebUI.Data
 
         public static Task<List<DiaryImage>> FetchImageSet(this DiaryDbContext context, int skip, int count) =>
             context.Images.OrderByDescending(i => i.CreateDate).Skip(skip).Take(count).ToListAsync();
-
-        public static Task<List<DiaryImage>> FetchAllImages(this DiaryDbContext context) =>
-            context.Images.OrderByDescending(i => i.CreateDate).ToListAsync();
 
         public static async Task AddRecordImage(this DiaryDbContext context, Guid recordId, Guid imageId)
         {
@@ -491,15 +464,6 @@ namespace RiseDiary.WebUI.Data
                 await context.SaveChangesAsync();
             }
         }
-
-        public static async Task<List<DiaryImage>> FetchImagesForRecord(this DiaryDbContext context, Guid recordId)
-        {
-            var imagesIds = await context.RecordImages.Where(ri => ri.RecordId == recordId).Select(ri => ri.ImageId).ToListAsync();
-            return await context.Images.Where(i => imagesIds.Contains(i.Id)).ToListAsync();
-        }
-
-        public static Task<int> GetLinkedRecordsCount(this DiaryDbContext context, Guid imageId) =>
-            context.RecordImages.CountAsync(ri => ri.ImageId == imageId);
 
         public static async Task DeleteCogitation(this DiaryDbContext context, Guid cogitationId)
         {
@@ -620,28 +584,6 @@ namespace RiseDiary.WebUI.Data
             }
 
             return result;
-            //var result = context.Records.AsQueryable();
-
-            //if (!RecordsFilter.IsEmpty(filter))
-            //{
-            //    if (!string.IsNullOrWhiteSpace(filter.RecordNameFilter))
-            //    {
-            //        result = result.Where(r => r.Name.Contains(filter.RecordNameFilter));
-            //    }
-            //    if (filter.RecordDateFrom != null)
-            //    {
-            //        result = result.Where(r => r.Date >= filter.RecordDateFrom);                    
-            //    }
-            //    if (filter.RecordDateTo != null)
-            //    {
-            //        result = result.Where(r => r.Date <= filter.RecordDateTo);                    
-            //    }
-            //    if (!filter.IsEmptyTypeFilter)
-            //    {
-            //        result = result.Where(r => filter.RecordThemeIds.All(id => context.RecordThemes.Where(rt => rt.RecordId == r.Id).Select(rt => rt.ThemeId).Contains(id)));                                      
-            //    }
-            //}
-            //return result;
         }
 
         public static Task<List<DiaryRecord>> FetchRecordsListFiltered(this DiaryDbContext context, RecordsFilter filter) =>
@@ -698,14 +640,6 @@ namespace RiseDiary.WebUI.Data
             await context.SaveChangesAsync();
 
             return c.Id;
-        }
-
-        public static Task<Dictionary<DiaryScope, IEnumerable<DiaryTheme>>> FetchScopesWithThemes(this DiaryDbContext context)
-        {
-            return context.Scopes
-                .OrderBy(s => s.ScopeName)
-                .GroupJoin(context.Themes, s => s.Id, t => t.ScopeId, (s, res) => new { s, res })
-                .ToDictionaryAsync(j => j.s, j => j.res);
         }
 
         public static async Task<string> GetAppSetting(this DiaryDbContext context, string key)
