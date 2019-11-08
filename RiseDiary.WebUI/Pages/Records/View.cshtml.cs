@@ -34,19 +34,9 @@ namespace RiseDiary.WebUI.Pages
 
         public async Task<IActionResult> OnGetAsync(Guid recordId)
         {
-            //if(int.TryParse(recordId, out int id))
-            //{
-            //    RecordId = id;
-            //}
-            //else
-            //{
-            //    var idByCode = await _context.FetchRecordIdByCode(recordId);
-            //    if(idByCode == null) return Redirect("/Records/Edit");
-            //    RecordId = idByCode.Value;
-            //}
             RecordId = recordId;
             await UpdatePageState();
-            return null;
+            return Page();
         }
 
         public async Task OnPostAddCogitationAsync(Guid recordId, string newCogText)

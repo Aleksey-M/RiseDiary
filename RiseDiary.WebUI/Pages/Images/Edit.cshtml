@@ -16,7 +16,7 @@
                     <th>Размер</th>
                     <th>
                         <div style="float:right;margin-right:10px;">
-                            @if (Model.RecordId == Guid.Empty)
+                            @if (Model.RecordId == null || Model.RecordId.Value == Guid.Empty)
                             {
                                 <a href="/images/index" class="btn btn-default btn-sm" style="float:right">Закрыть</a>
                             }
@@ -127,9 +127,10 @@
                     <tr style="background-color:#ffef89">
                         <td colspan="5">
                             <div style="padding:5px;margin:3px">
-                                <b>URL</b> <i>@Model.ImageUrl</i> <b>прикреплено к:</b>&nbsp;&nbsp;
+                                <b>URL</b> <i>@Model.ImageUrl</i>
                                 @if (Model.ImageLinks.Count > 0)
                                 {
+                                    <b>прикреплено к:</b>
                                     foreach (var lnk in Model.ImageLinks)
                                     {
                                         @:|&nbsp;

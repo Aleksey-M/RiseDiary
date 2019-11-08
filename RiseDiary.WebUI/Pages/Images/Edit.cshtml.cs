@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Images
 {
@@ -27,9 +27,11 @@ namespace RiseDiary.WebUI.Pages.Images
         public Dictionary<Guid, string> ImageLinks { get; private set; }
 
         private async Task UpdateModel()
-        {            
+        {
+            string url = Request.Host.Host + ":" + Request.Host.Port;
+
             Image = await _context.FetchImageById(ImageId);
-            ImageUrl = $@"/Images/ImageFile/{Image.Id.ToString()}";
+            ImageUrl = $@"{url}/Images/ImageFile/{Image.Id.ToString()}";
             TempImage = await _context.FetchTempImage(ImageId);
             ImageLinks = await _context.FetchRecordsForImage(ImageId);
         }
@@ -42,11 +44,11 @@ namespace RiseDiary.WebUI.Pages.Images
             ImageId = imageId.Value;
             await UpdateModel();
             return Page();
-        }        
+        }
 
         public async Task<IActionResult> OnPostDeleteImageAsync(Guid? imageId, Guid? recordId)
         {
-            if(imageId != null && imageId.Value != Guid.Empty)
+            if (imageId != null && imageId.Value != Guid.Empty)
             {
                 await _context.DeleteTempImage(imageId.Value);
                 await _context.DeleteImage(imageId.Value);
@@ -72,7 +74,7 @@ namespace RiseDiary.WebUI.Pages.Images
                     await _context.AddUnsavedTempImage(uploaded);
                 }
                 await UpdateModel();
-            }            
+            }
         }
 
         public async Task OnPostCancelEditAsync(Guid imageId, Guid? recordId)
@@ -82,6 +84,7 @@ namespace RiseDiary.WebUI.Pages.Images
             await _context.DeleteTempImage(ImageId);
             await UpdateModel();
         }
+
         public async Task OnPostSaveUpdatedImageAsync(Guid imageId, Guid? recordId)
         {
             RecordId = recordId;
@@ -92,24 +95,24 @@ namespace RiseDiary.WebUI.Pages.Images
         }
 
         public async Task OnPostSaveUpdatedAsNewImageAsync(Guid imageId, Guid? recordId)
-        {            
+        {
             var tmpImage = await _context.FetchTempImage(imageId);
             var image = await _context.FetchImageById(imageId);
             ImageId = await _context.AddImage($"{image.Name} ({tmpImage.Modification})", tmpImage.Data);
             await _context.DeleteTempImage(imageId);
             RecordId = recordId;
-            if(RecordId.Value != Guid.Empty)
+            if (RecordId != null && RecordId.Value != Guid.Empty)
             {
                 await _context.AddRecordImage(RecordId.Value, ImageId);
             }
             await UpdateModel();
         }
-        
+
         public async Task OnPostScaleImageAsync(Guid imageId, int imageSize, Guid? recordId)
         {
             RecordId = recordId;
             ImageId = imageId;
-            if(imageSize > 0)
+            if (imageSize > 0)
             {
                 var image = await _context.FetchImageById(imageId);
                 var sourceImage = await _context.FetchFullImageById(imageId);

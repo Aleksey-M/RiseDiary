@@ -36,7 +36,7 @@
             {
                 <text>
             {
-                id: @Model.Dates[i].Id,
+                id: "@Model.Dates[i].Id",
                 name: "@Model.Dates[i].Theme: "+"@Model.Dates[i].Name",
                 startDate: new Date(@Model.Dates[i].TransferredDate.Year, @Model.Dates[i].TransferredDate.Month-1, @Model.Dates[i].TransferredDate.Day),
                 endDate: new Date(@Model.Dates[i].TransferredDate.Year, @Model.Dates[i].TransferredDate.Month-1, @Model.Dates[i].TransferredDate.Day)

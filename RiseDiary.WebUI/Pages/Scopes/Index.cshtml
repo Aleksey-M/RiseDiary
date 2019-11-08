@@ -49,18 +49,18 @@
                 </div>
             </div>           
 
-            @foreach (var sc in Model.ScopesAndThemes)
+            @foreach (var sc in Model.AllScopes)
             {
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <div class="view-form" id="view-scope-@sc.Key.Id">
+                        <div class="view-form" id="view-scope-@sc.Id">
                             <table>
                                 <tbody>
                                     <tr>
                                         <td>
-                                            <h4 style="float:left">@sc.Key.ScopeName</h4>
+                                            <h4 style="float:left">@sc.ScopeName</h4>
                                             &nbsp;
-                                            <button type="button" class="btn btn-link show-edit-form" data-edit-form-id="edit-scope-@sc.Key.Id" data-view-form-id="view-scope-@sc.Key.Id">
+                                            <button type="button" class="btn btn-link show-edit-form" data-edit-form-id="edit-scope-@sc.Id" data-view-form-id="view-scope-@sc.Id">
                                                 <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
                                             </button>
                                         </td>
@@ -68,12 +68,12 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="edit-form" style="display:none" id="edit-scope-@sc.Key.Id">
+                        <div class="edit-form" style="display:none" id="edit-scope-@sc.Id">
                             <form method="post">
                                 <div class="form form-horizontal">
                                     <div class="input-group">
-                                        <input type="hidden" name="scopeId" value="@sc.Key.Id" />
-                                        <input type="text" name="scopeName" class="form-control" value="@sc.Key.ScopeName" />
+                                        <input type="hidden" name="scopeId" value="@sc.Id" />
+                                        <input type="text" name="scopeName" class="form-control" value="@sc.ScopeName" />
                                         <span class="input-group-btn">
                                             <input type="submit" class="btn btn-danger" value="Удалить" asp-page-handler="DeleteScope" />
                                             <input type="submit" class="btn btn-success" value="Обновить" asp-page-handler="UpdateScope" />
@@ -83,12 +83,12 @@
                             </form>
                         </div>
                     </div>
-                    @if (sc.Value.Count() > 0)
+                    @if (sc.Themes.Count() > 0)
                     {
                     <div class="panel-body">
                         <table class="table table-bordered">
                             <tbody>
-                                @foreach (var th in sc.Value)
+                                @foreach (var th in sc.Themes)
                                     {
                                 <tr class="view-form" id="view-theme-@th.Id">
                                     <td>
@@ -102,7 +102,7 @@
                                     <td>
                                         <form method="post">
                                             <div class="form form-horizontal">
-                                                <input type="hidden" name="scopeId" value="@sc.Key.Id" />
+                                                <input type="hidden" name="scopeId" value="@sc.Id" />
                                                 <input type="hidden" name="themeId" value="@th.Id" />
                                                 <div class="input-group">
                                                     <input type="text" name="newThemeName" class="form-control" value=" @th.ThemeName" />
@@ -125,8 +125,8 @@
                         <form method="post">
                             <div class="form form-horizontal">
                                 <div class="input-group">
-                                    <input type="hidden" name="scopeId" value="@sc.Key.Id" />
-                                    <input type="text" name="newThemeName" class="form-control" placeholder='Название новой темы для области "@sc.Key.ScopeName"' />
+                                    <input type="hidden" name="scopeId" value="@sc.Id" />
+                                    <input type="text" name="newThemeName" class="form-control" placeholder='Название новой темы для области "@sc.ScopeName"' />
                                     <span class="input-group-btn">
                                         <input type="submit" class="btn btn-success" value="Создать" asp-page-handler="AddTheme" />
                                     </span>

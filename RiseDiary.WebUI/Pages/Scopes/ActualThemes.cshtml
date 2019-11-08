@@ -35,10 +35,10 @@
         </div>
         <table class="table">
             <tbody>
-                @foreach (var theme in Model.Themes)
+                @foreach (var theme in Model.AllScopes.SelectMany(s => s.Themes))
                 {
                     <tr class=@(theme.Actual ? "actual" : "not-actual")>
-                        <td>@theme.ScopeName</td>
+                        <td>@theme.Scope.ScopeName</td>
                         <td>@theme.ThemeName</td>
                         @if (theme.Actual)
                         {

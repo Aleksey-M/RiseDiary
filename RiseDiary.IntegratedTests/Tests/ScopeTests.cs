@@ -1,11 +1,11 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
+using RiseDiary.Model;
+using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using RiseDiary.WebUI.Data;
-using RiseDiary.Model;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace RiseDiary.IntegratedTests
 {

@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Dates
 {
@@ -40,18 +38,20 @@ namespace RiseDiary.WebUI.Pages.Dates
             await UpdateViewModel();
         }
 
-        public async Task OnPostAsync(int scopeId, int displayRange)
-        {            
-            if (scopeId < 0)
+        public async Task OnPostAsync(Guid scopeId, int displayRange)
+        {
+            if (scopeId  == default)
             {
                 Message = "Некорректная область";
                 return;
             }
-            if(displayRange <= 0)
+
+            if (displayRange <= 0 || displayRange >= 35)
             {
                 Message = "Некорректное значение диапазона";
                 return;
             }
+
             await _context.UpdateAppSetting(AppSettingsKeys.DatesScopeId, scopeId.ToString());
             await _context.UpdateAppSetting(AppSettingsKeys.DatesDisplayRange, displayRange.ToString());
             Message = "Данные обновлены";

@@ -1,10 +1,10 @@
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using RiseDiary.Model;
+using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
-using RiseDiary.Model;
-using RiseDiary.WebUI.Data;
 
 namespace RiseDiary.WebUI.Pages
 {
@@ -16,16 +16,16 @@ namespace RiseDiary.WebUI.Pages
             _context = context;
         }
 
-        public Dictionary<DiaryScope, IEnumerable<DiaryTheme>> ScopesAndThemes { get; private set; }
-        
+        public List<DiaryScope> AllScopes { get; private set; }
+
         public async Task OnGetAsync()
         {
             await UpdatePageState();
         }
-               
+
         private async Task UpdatePageState()
         {
-            ScopesAndThemes = await _context.FetchScopesWithThemes();            
+            AllScopes = await _context.GetAllScopes();      
         }
 
         public async Task OnPostAddScopeAsync(string newScopeName)

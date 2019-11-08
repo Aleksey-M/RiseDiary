@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Scopes
 {
@@ -13,27 +14,21 @@ namespace RiseDiary.WebUI.Pages.Scopes
         {
             _context = context;
         }
-        public List<DiaryThemeJoined> Themes { get; set; }        
+        public List<DiaryScope> AllScopes { get; set; }
         public async Task OnGetAsync()
         {
-            Themes = await _context.FetchThemesWithScopes();
+            AllScopes = await _context.GetAllScopes();
         }
-        
-        public async Task OnPostSetNotActualAsync(int themeId)
+
+        public async Task OnPostSetNotActualAsync(Guid themeId)
         {
-            if(themeId != 0)
-            {
-                await _context.ChangeThemeActuality(themeId, false);
-            }
-            Themes = await _context.FetchThemesWithScopes();
+            await _context.ChangeThemeActuality(themeId, false);
+            AllScopes = await _context.GetAllScopes();
         }
-        public async Task OnPostSetActualAsync(int themeId)
+        public async Task OnPostSetActualAsync(Guid themeId)
         {
-            if (themeId != 0)
-            {
-                await _context.ChangeThemeActuality(themeId, true);
-            }
-            Themes = await _context.FetchThemesWithScopes();
+            await _context.ChangeThemeActuality(themeId, true);
+            AllScopes = await _context.GetAllScopes();
         }
     }
 }

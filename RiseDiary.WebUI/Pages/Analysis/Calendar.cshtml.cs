@@ -22,15 +22,15 @@ namespace RiseDiary.WebUI.Pages
         public List<DiaryThemeJoined> AllThemes { get; private set; }
         public Guid[] SelectedThemes { get; private set; } = new Guid[0];
         public List<int> YearsListFiltered { get; private set; } = new List<int>();
-        
+
         public async Task OnGetAsync(int? year, Guid[] themes)
         {
-            SelectedThemes = themes ?? new Guid[0];
+            SelectedThemes = themes ?? Array.Empty<Guid>();
             CurrentYear = year ?? DateTime.Now.Year;
             AllScopes = await _context.FetchAllScopes();
-            AllThemes = await _context.FetchThemesWithScopes();            
+            AllThemes = await _context.FetchThemesWithScopes();
             YearsListFiltered = await _context.FetchYearsListFiltered(SelectedThemes);
             Records = await _context.FetchCalendarDates(CurrentYear, SelectedThemes);
-        }        
+        }
     }
 }
