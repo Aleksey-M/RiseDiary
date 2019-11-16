@@ -28,7 +28,7 @@ namespace RiseDiary.WebUI.Pages.Images
 
         private async Task UpdateModel()
         {
-            string url = Request.Host.Host + ":" + Request.Host.Port;
+            string url = Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
 
             Image = await _context.FetchImageById(ImageId);
             ImageUrl = $@"{url}/Images/ImageFile/{Image.Id.ToString()}";

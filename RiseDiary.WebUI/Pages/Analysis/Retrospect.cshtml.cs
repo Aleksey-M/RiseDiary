@@ -37,6 +37,8 @@ namespace RiseDiary.WebUI.Pages
         public string Next => _next;
         public string Last => _last;
 
+        private string LocalHostAndPort => Request.Scheme + @"://"+ Request.Host.Host + ":" + Request.Host.Port;
+
         public async Task OnGetSearchAsync(DateTime? fromDate, DateTime? toDate, Guid[] themes, string searchName)
         {
             Filters = new RecordsFilter
@@ -57,9 +59,9 @@ namespace RiseDiary.WebUI.Pages
             CurrenPage = 0;
 
             Records = new Dictionary<DiaryRecord, List<Cogitation>>();
-            foreach (var rec in await _context.FetchRecordsListFiltered(Filters))
+            foreach (var rec in await _context.FetchRecordsListFiltered(Filters, LocalHostAndPort))
             {
-                Records.Add(rec, await _context.FetchAllCogitationsOfRecord(rec.Id));
+                Records.Add(rec, await _context.FetchAllCogitationsOfRecord(rec.Id, LocalHostAndPort));
             }
             AllScopes = await _context.FetchAllScopes();
             AllThemes = await _context.FetchThemesWithScopes();
@@ -109,12 +111,12 @@ namespace RiseDiary.WebUI.Pages
             }
 
             Records = new Dictionary<DiaryRecord, List<Cogitation>>();
-            foreach (var rec in await _context.FetchRecordsListFiltered(Filters))
+            foreach (var rec in await _context.FetchRecordsListFiltered(Filters, LocalHostAndPort))
             {
-                Records.Add(rec, await _context.FetchAllCogitationsOfRecord(rec.Id));
+                Records.Add(rec, await _context.FetchAllCogitationsOfRecord(rec.Id, LocalHostAndPort));
             }
             AllScopes = await _context.FetchAllScopes();
             AllThemes = await _context.FetchThemesWithScopes();
-        }        
+        }
     }
 }

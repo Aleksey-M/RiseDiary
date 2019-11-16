@@ -23,6 +23,8 @@ namespace RiseDiary.WebUI.Pages.Dates
             _context = context;
         }
 
+        private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
+
         private async Task UpdateViewModel()
         {
             var stringId = await _context.GetAppSetting(AppSettingsKeys.DatesScopeId);
@@ -30,10 +32,10 @@ namespace RiseDiary.WebUI.Pages.Dates
 
             if (IsScopeSelected)
             {
-                _daysDisplayRange = (int)(await _context.GetAppSettingInt(AppSettingsKeys.DatesDisplayRange));
+                _daysDisplayRange = (await _context.GetAppSettingInt(AppSettingsKeys.DatesDisplayRange)) ?? 7;
                 var datesRange = new DatesRange(DateTime.Now, _daysDisplayRange);
 
-                Dates = await _context.FetchDateItems(_datesScopeId, datesRange);
+                Dates = await _context.FetchDateItems(_datesScopeId, datesRange, LocalHostAndPort);
 
                 var weekdays = datesRange.AllRangeDates
                     .Where(di => !Dates.Any(d => d.TransferredDate == di.TransferredDate));

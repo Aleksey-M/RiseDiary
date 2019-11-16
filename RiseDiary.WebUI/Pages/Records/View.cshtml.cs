@@ -1,12 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Mvc;
+using RiseDiary.Model;
+using RiseDiary.WebUI.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
-using RiseDiary.WebUI.Data;
-using RiseDiary.Model;
+using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages
 {
@@ -19,14 +18,14 @@ namespace RiseDiary.WebUI.Pages
         }
 
         public Guid RecordId { get; set; }
-        public DiaryRecord  Record { get; set; }
+        public DiaryRecord Record { get; set; }
         public List<string> RecordThemes { get; set; }
         public List<(Guid ImageId, string ImageName)> RecordImages { get; set; }
         public List<Cogitation> Cogitations { get; set; }
-
+        private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
         private async Task UpdatePageState()
         {
-            Record = await _context.FetchRecordByIdWithData(RecordId);
+            Record = await _context.FetchRecordByIdWithData(RecordId, LocalHostAndPort);
             RecordThemes = Record.ThemesRefs.Select(tr => tr.Theme.ThemeName).ToList();
             RecordImages = Record.ImagesRefs.Select(ir => (ir.ImageId, ir.Image.Name)).ToList();
             Cogitations = Record.Cogitations.OrderBy(c => c.Date).ToList();
@@ -48,9 +47,10 @@ namespace RiseDiary.WebUI.Pages
                     Date = DateTime.Now,
                     RecordId = recordId,
                     Text = newCogText
-                });                
-            }       
-            if(recordId != Guid.Empty)
+                },
+                LocalHostAndPort);
+            }
+            if (recordId != Guid.Empty)
             {
                 RecordId = recordId;
                 await UpdatePageState();
@@ -59,11 +59,11 @@ namespace RiseDiary.WebUI.Pages
 
         public async Task OnPostDeleteCogitationAsync(Guid recordId, Guid cogitationId)
         {
-            if(cogitationId != Guid.Empty)
+            if (cogitationId != Guid.Empty)
             {
                 await _context.DeleteCogitation(cogitationId);
             }
-            if(recordId != Guid.Empty)
+            if (recordId != Guid.Empty)
             {
                 RecordId = recordId;
                 await UpdatePageState();
@@ -72,9 +72,9 @@ namespace RiseDiary.WebUI.Pages
 
         public async Task OnPostSaveCogitationAsync(Guid recordId, Guid cogitationId, string cogText)
         {
-            if(cogitationId != Guid.Empty && !string.IsNullOrWhiteSpace(cogText))
+            if (cogitationId != Guid.Empty && !string.IsNullOrWhiteSpace(cogText))
             {
-                await _context.UpdateCogitationText(cogitationId, cogText);
+                await _context.UpdateCogitationText(cogitationId, cogText, LocalHostAndPort);
             }
             if (recordId != Guid.Empty)
             {
@@ -89,7 +89,7 @@ namespace RiseDiary.WebUI.Pages
             if (imageId != Guid.Empty)
             {
                 await _context.RemoveRecordImage(recordId, imageId);
-            }            
+            }
             await UpdatePageState();
         }
 

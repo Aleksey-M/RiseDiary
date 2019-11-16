@@ -38,16 +38,16 @@ namespace RiseDiary.Model
         public DiaryTheme Theme { get; set; }
         public DiaryRecord Record { get; set; }
     }
-        
+
     public class DiaryThemeJoined
     {
         public Guid Id { get; set; }
         public Guid? ScopeId { get; set; }
-        public string ThemeName { get; set; }        
+        public string ThemeName { get; set; }
         public string ScopeName { get; set; }
         public bool Actual { get; set; }
     }
-    
+
     public class DiaryImage : IDeletedEntity
     {
         public Guid Id { get; set; }
@@ -73,7 +73,7 @@ namespace RiseDiary.Model
         {
             if (bytesCount < 1024) return bytesCount + " B";
             if (bytesCount < 1024 * 1024) return Math.Round(bytesCount / 1024f, 2).ToString() + " Kb";
-            if(bytesCount < 1024 * 1024 * 1024) return Math.Round(bytesCount / (1024f * 1024f), 2).ToString() + " Mb";
+            if (bytesCount < 1024 * 1024 * 1024) return Math.Round(bytesCount / (1024f * 1024f), 2).ToString() + " Mb";
             if (bytesCount < 1024L * 1024 * 1024 * 1024) return Math.Round(bytesCount / (1024f * 1024f * 1024f), 2).ToString() + " Gb";
             return "HUGE!";
         }
@@ -115,6 +115,7 @@ namespace RiseDiary.Model
     public class DiaryImageEqualityComparerById : IEqualityComparer<DiaryImage>
     {
         public bool Equals(DiaryImage x, DiaryImage y) => x.Id == y.Id;
+
         public int GetHashCode(DiaryImage obj) => obj.Id.GetHashCode();
     }
 
@@ -130,11 +131,13 @@ namespace RiseDiary.Model
         public bool Deleted { get; set; }
 
         public string RecordNameDisplay => string.IsNullOrWhiteSpace(Name) ? "[ПУСТО]" : Name;
-        public string RecordTextShort {
+
+        public string RecordTextShort
+        {
             get
             {
                 if (string.IsNullOrEmpty(Text)) return "[ПУСТО]";
-                return Text.Length < 35 ? Text : Text.Substring(0, 35)+"[...]";
+                return Text.Length < 35 ? Text : Text.Substring(0, 35) + "[...]";
             }
         }
 
@@ -165,5 +168,5 @@ namespace RiseDiary.Model
         public string Key { get; set; }
         public string Value { get; set; }
         public DateTime ModifiedDate { get; set; }
-    }    
+    }
 }

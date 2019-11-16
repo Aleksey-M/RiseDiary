@@ -115,7 +115,7 @@ namespace RiseDiary.IntegratedTests
 
             var appSetting = await context.GetAppSetting("NotExisting");
 
-            Assert.AreEqual(string.Empty, appSetting);
+            Assert.IsNull(appSetting);
         }
     }
 }

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace RiseDiary.IntegratedTests
 {
     [TestFixture]
-    class RecordTests : TestFixtureBase
+    internal class RecordTests : TestFixtureBase
     {
         [Test]
         public async Task AddDiaryRecord_ShouldReturnUniqueIdForEveryRecord()
@@ -18,9 +18,9 @@ namespace RiseDiary.IntegratedTests
             var context = CreateContext();
             var rec = GetTestRecord();
 
-            var i = await context.AddRecord(rec);
+            var i = await context.AddRecord(rec, "host");
             rec.Id = Guid.NewGuid();
-            var j = await context.AddRecord(rec);
+            var j = await context.AddRecord(rec, "host");
 
             Assert.AreNotEqual(i, j);
         }
@@ -31,8 +31,8 @@ namespace RiseDiary.IntegratedTests
             var context = CreateContext();
             var rec = GetTestRecord();
 
-            var id = await context.AddRecord(rec);
-            var loadedRec = await context.FetchRecordById(id);
+            var id = await context.AddRecord(rec, "host");
+            var loadedRec = await context.FetchRecordById(id, "host");
 
             Assert.NotNull(loadedRec);
             Assert.AreEqual(rec.CreateDate, loadedRec.CreateDate);
@@ -48,11 +48,11 @@ namespace RiseDiary.IntegratedTests
             var context = CreateContext();
             var rec = GetTestRecord();
 
-            var id = await context.AddRecord(rec);
-            var loadedRec = await context.FetchRecordById(id);
+            var id = await context.AddRecord(rec, "host");
+            var loadedRec = await context.FetchRecordById(id, "host");
             if (loadedRec == null) Assert.Ignore("Error saving diary records");
             await context.DeleteRecord(id);
-            loadedRec = await context.FetchRecordById(id);
+            loadedRec = await context.FetchRecordById(id, "host");
 
             Assert.IsNull(loadedRec);
 
@@ -73,9 +73,9 @@ namespace RiseDiary.IntegratedTests
                 Text = "Инфраструктура ASP.NET MVC 5 представляет собой последнюю версию веб-платформы ASP.NET от Microsoft. Она предлагает высокопродуктивную модель программирования, которая способствует построению более чистой кодовой архитектуры, обеспечивает разработку через тестирование и поддерживает повсеместную расширяемость в комбинации со всеми преимуществами ASP.NET. У инфраструктуры ASP.NET MVC есть множество преимуществ, по сравнению с классической платформой веб-разработки ASP.NET Web Forms. Компоненты ASИнфраструктура ASP.NET MVC 5 представляет собой последнюю версию веб-платформы ASP.NET от Microsoft. Она предлагает высокопродуктивную модель программирования, которая способствует построению более чистой кодовой архитектуры, обеспечивает разработку через тестирование и поддерживает повсеместную расширяемость в комбинации со всеми преимуществами ASP.NET. У инфраструктуры ASP.NET MVC есть множество преимуществ, по сравнению с классической платформой веб-разработки ASP.NET Web Forms. Компоненты ASИнфраструктура ASP.NET MVC 5 представляет собой последнюю версию веб-платформы ASP.NET от Microsoft. Она предлагает высокопродуктивную модель программирования, которая способствует построению более чистой кодовой архитектуры, обеспечивает разработку через тестирование и поддерживает повсеместную расширяемость в комбинации со всеми преимуществами ASP.NET. У инфраструктуры ASP.NET MVC есть множество преимуществ, по сравнению с классической платформой веб-разработки ASP.NET Web Forms. Компоненты ASИнфраструктура ASP.NET MVC 5 представляет собой последнюю версию веб-платформы ASP.NET от Microsoft. Она предлагает высокопродуктивную модель программирования, которая способствует построению более чистой кодовой архитектуры, обеспечивает разработку через тестирование и поддерживает повсеместную расширяемость в комбинации со всеми преимуществами ASP.NET. У инфраструктуры ASP.NET MVC есть множество преимуществ, по сравнению с классической платформой веб-разработки ASP.NET Web Forms. Компоненты AS"
             };
 
-            updatedRec.Id = rec.Id = await context.AddRecord(rec);
-            await context.UpdateRecord(updatedRec);
-            rec = await context.FetchRecordById(updatedRec.Id);
+            updatedRec.Id = rec.Id = await context.AddRecord(rec, "host");
+            await context.UpdateRecord(updatedRec, "host");
+            rec = await context.FetchRecordById(updatedRec.Id, "host");
 
             Assert.NotNull(rec);
             Assert.AreEqual(updatedRec.CreateDate, rec.CreateDate);
@@ -83,84 +83,6 @@ namespace RiseDiary.IntegratedTests
             Assert.AreEqual(updatedRec.ModifyDate, rec.ModifyDate);
             Assert.AreEqual(updatedRec.Name, rec.Name);
             Assert.AreEqual(updatedRec.Text, rec.Text);
-        }
-
-        [Test]
-        public async Task FetchRecordsByMonth_WithourMonth_ShouldReturn3RecordForYear()
-        {
-            var context = CreateContext();
-            for (int i = -5; i < 5; i++)
-                for (int j = 1; j < 10; j = j + 3)
-                {
-                    await context.AddRecord(GetTestRecord(i, j));
-                }
-            int year = DateTime.Now.Year - 2;
-
-            var list = await context.FetchRecordsByMonth(year);
-
-            Assert.AreEqual(3, list.Count);
-            Assert.IsTrue(list.All(rec => rec.Date.Year == year));
-        }
-
-        [Test]
-        public async Task FetchRecordsByMonth_ForMarch_ShouldReturn1Record()
-        {
-            var context = CreateContext();
-            for (int i = -5; i < 5; i++)
-                for (int j = 3; j < 10; j = j + 3)
-                {
-                    await context.AddRecord(GetTestRecord(i, j));
-                }
-            int year = DateTime.Now.Year - 2;
-
-            var list = await context.FetchRecordsByMonth(year, 3);
-
-            Assert.AreEqual(1, list.Count);
-            Assert.IsTrue(list.All(rec => rec.Date.Year == year && rec.Date.Month == 3));
-        }
-
-        [Test]
-        public async Task GetMonthRecordsCount_WithourMonth_ShouldReturn3()
-        {
-            var context = CreateContext();
-            for (int i = -5; i < 5; i++)
-                for (int j = 1; j < 10; j = j + 3)
-                {
-                    await context.AddRecord(GetTestRecord(i, j));
-                }
-            int year = DateTime.Now.Year - 2;
-
-            int recCount = await context.GetMonthRecordsCount(year);
-
-            Assert.AreEqual(3, recCount);
-        }
-
-        [Test]
-        public async Task GetMonthRecordsCount_ForMarch_ShouldReturn1()
-        {
-            var context = CreateContext();
-            for (int i = -5; i < 5; i++)
-                for (int j = 3; j < 10; j = j + 3)
-                {
-                    await context.AddRecord(GetTestRecord(i, j));
-                }
-            int year = DateTime.Now.Year - 2;
-
-            int recCount = await context.GetMonthRecordsCount(year, 3);
-
-            Assert.AreEqual(1, recCount);
-        }
-
-        [Test]
-        public async Task GetRecordByCogitation_ShouldReturnRecord()
-        {
-            var context = CreateContext();
-            var (recId, cogId) = Create_3Records_1Cogitation(context);
-
-            var rec = await context.GetRecordByCogitation(cogId);
-
-            Assert.NotNull(rec);
-            Assert.AreEqual(recId, rec.Id);
         }
 
         private class DiaryRecordNameAndIdComparer : IEqualityComparer<DiaryRecord>
@@ -176,7 +98,7 @@ namespace RiseDiary.IntegratedTests
             var context = CreateContext();
             Create_20Records(context, GetNumberList(20), GetDatesList(20));
 
-            var pageList = await context.FetchRecordsListFiltered(RecordsFilter.Empty);
+            var pageList = await context.FetchRecordsListFiltered(RecordsFilter.Empty, "host");
 
             Assert.AreEqual(20, pageList.Count);
             Assert.True(pageList.All(rec => context.Records.ToList().Contains(rec, DiaryRecordNameAndIdComparer.Instance)));
@@ -202,9 +124,9 @@ namespace RiseDiary.IntegratedTests
             var filterWithNull = new RecordsFilter { RecordNameFilter = null };
             var filterWithRmRf = new RecordsFilter { RecordNameFilter = "\r\r\n\r\n  \r  \n\n " };
 
-            var pageList1 = await context.FetchRecordsListFiltered(filterWithWhiteSpace);
-            var pageList2 = await context.FetchRecordsListFiltered(filterWithNull);
-            var pageList3 = await context.FetchRecordsListFiltered(filterWithRmRf);
+            var pageList1 = await context.FetchRecordsListFiltered(filterWithWhiteSpace, "host");
+            var pageList2 = await context.FetchRecordsListFiltered(filterWithNull, "host");
+            var pageList3 = await context.FetchRecordsListFiltered(filterWithRmRf, "host");
 
             Assert.AreEqual(context.Records.Count(), pageList1.Count);
             Assert.True(pageList1.All(rec => context.Records.ToList().Contains(rec, DiaryRecordNameAndIdComparer.Instance)));
@@ -262,7 +184,7 @@ namespace RiseDiary.IntegratedTests
             Create_20Records(context, namesList, GetDatesList(20));
             var filters = new RecordsFilter { RecordNameFilter = searchName };
 
-            var resPage = await context.FetchRecordsListFiltered(filters);
+            var resPage = await context.FetchRecordsListFiltered(filters, "host");
 
             Assert.AreEqual(matches, resPage.Count);
             Assert.True(resPage.All(rec => rec.Name.IndexOf(searchName, StringComparison.InvariantCultureIgnoreCase) != -1));
@@ -311,7 +233,7 @@ namespace RiseDiary.IntegratedTests
             var dateTo = DateTime.Now.AddDays(-8);
             var filters = new RecordsFilter { RecordDateTo = dateTo };
 
-            var resList = await context.FetchRecordsListFiltered(filters);
+            var resList = await context.FetchRecordsListFiltered(filters, "host");
 
             Assert.True(resList.All(rec => rec.Date < dateTo));
         }
@@ -338,7 +260,7 @@ namespace RiseDiary.IntegratedTests
             var dateFrom = DateTime.Now.AddDays(-7);
             var filters = new RecordsFilter { RecordDateFrom = dateFrom };
 
-            var resList = await context.FetchRecordsListFiltered(filters);
+            var resList = await context.FetchRecordsListFiltered(filters, "host");
 
             Assert.True(resList.All(rec => rec.Date >= dateFrom.Date), "Not All Records have correct date");
         }
@@ -365,7 +287,7 @@ namespace RiseDiary.IntegratedTests
             var concreteDate = DateTime.Now.AddDays(-7);
             var filters = new RecordsFilter { RecordDateFrom = concreteDate, RecordDateTo = concreteDate };
 
-            var resList = await context.FetchRecordsListFiltered(filters);
+            var resList = await context.FetchRecordsListFiltered(filters, "host");
 
             Assert.IsNotEmpty(resList);
             Assert.True(resList.All(rec => rec.Date.Year == concreteDate.Year && rec.Date.Day == concreteDate.Day));
@@ -421,7 +343,7 @@ namespace RiseDiary.IntegratedTests
                 RecordDateTo = dateTo
             };
 
-            var resList = await context.FetchRecordsListFiltered(filters);
+            var resList = await context.FetchRecordsListFiltered(filters, "host");
 
             Assert.IsTrue(resList.All(rec =>
                 rec.Name.IndexOf(searchName, StringComparison.InvariantCultureIgnoreCase) != -1 &&
@@ -479,7 +401,7 @@ namespace RiseDiary.IntegratedTests
             var filter = new RecordsFilter();
             filter.AddThemeId(Guid.NewGuid());
 
-            var list = await context.FetchRecordsListFiltered(filter);
+            var list = await context.FetchRecordsListFiltered(filter, "");
 
             Assert.IsEmpty(list);
         }
@@ -517,7 +439,7 @@ namespace RiseDiary.IntegratedTests
             var filter = new RecordsFilter();
 
             filter.AddThemeId(ThemeId1);
-            var result = await context.FetchRecordsListFiltered(filter);
+            var result = await context.FetchRecordsListFiltered(filter, "host");
 
             Assert.IsNotEmpty(result);
             Assert.IsTrue(HasRecordWithIntName(result, 3));
@@ -528,14 +450,14 @@ namespace RiseDiary.IntegratedTests
 
             filter.AddThemeId(ThemeId2);
             filter.RemoveThemeId(ThemeId1);
-            result = await context.FetchRecordsListFiltered(filter);
+            result = await context.FetchRecordsListFiltered(filter, "host");
 
             Assert.IsNotEmpty(result);
             Assert.IsTrue(HasRecordWithIntName(result, 5));
             Assert.IsTrue(HasRecordWithIntName(result, 17));
 
             filter.AddThemeId(ThemeId1);
-            result = await context.FetchRecordsListFiltered(filter);
+            result = await context.FetchRecordsListFiltered(filter, "host");
 
             Assert.IsNotEmpty(result);
             Assert.IsTrue(HasRecordWithIntName(result, 5));
@@ -601,7 +523,7 @@ namespace RiseDiary.IntegratedTests
             var filter = new RecordsFilter { RecordDateFrom = dateFrom, RecordDateTo = dateTo };
             filter.AddThemeId(ThemeId1);
 
-            var result = await context.FetchRecordsListFiltered(filter);
+            var result = await context.FetchRecordsListFiltered(filter, "host");
 
             Assert.IsNotEmpty(result);
             Assert.True(result.TrueForAll(rec => rec.Date >= dateFrom && rec.Date <= dateTo), "Dates of records is not correct");
@@ -612,7 +534,7 @@ namespace RiseDiary.IntegratedTests
             filter.AddThemeId(ThemeId2);
             filter.RemoveThemeId(ThemeId1);
 
-            result = await context.FetchRecordsListFiltered(filter);
+            result = await context.FetchRecordsListFiltered(filter, "host");
 
             Assert.IsTrue(HasRecordWithIntName(result, 5));
         }
@@ -690,7 +612,7 @@ namespace RiseDiary.IntegratedTests
             var filter = new RecordsFilter { RecordNameFilter = searchName };
             filter.AddThemeId(themeId1);
 
-            var result = await context.FetchRecordsListFiltered(filter);
+            var result = await context.FetchRecordsListFiltered(filter, "host");
 
 
             Assert.IsNotEmpty(result);
@@ -751,34 +673,6 @@ namespace RiseDiary.IntegratedTests
         }
 
         [Test]
-        public async Task FetchYearsList_With7Records_ShouldReturnUniqueYears()
-        {
-            var context = CreateContext();
-            var recs = new List<DiaryRecord>
-            {
-                new DiaryRecord { Date = DateTime.Parse("2016-10-31 00:00:00") },
-                new DiaryRecord { Date = DateTime.Parse("2016-10-31 00:00:00") },
-                new DiaryRecord { Date = DateTime.Parse("2015-10-31 00:00:00") },
-                new DiaryRecord { Date = DateTime.Parse("2014-10-31 00:00:00") },
-                new DiaryRecord { Date = DateTime.Parse("2015-10-31 00:00:00") },
-                new DiaryRecord { Date = DateTime.Parse("2015-10-31 00:00:00") },
-                new DiaryRecord { Date = DateTime.Parse("2016-10-31 00:00:00") }
-            };
-            foreach (var rec in recs)
-            {
-                await context.AddRecord(rec);
-            }
-
-            List<int> result = await context.FetchYearsList();
-
-            Assert.NotNull(result);
-            Assert.AreEqual(3, result.Count());
-            Assert.Contains(2016, result);
-            Assert.Contains(2015, result);
-            Assert.Contains(2014, result);
-        }
-
-        [Test]
         public async Task CheckEntityFrameworkQuert()
         {
             var context = CreateContext();
@@ -799,7 +693,7 @@ namespace RiseDiary.IntegratedTests
                     .Where(g => filter.RecordThemeIds.All(id => g.Select(r => r.ThemeId).Contains(id)))
                     .Select(g => g.Key);
 
-                result = context.Records.Where(r => temp.Contains(r.Id));                  
+                result = context.Records.Where(r => temp.Contains(r.Id));
             }
             else
             {

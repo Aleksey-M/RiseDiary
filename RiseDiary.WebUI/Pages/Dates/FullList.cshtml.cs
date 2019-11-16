@@ -18,6 +18,8 @@ namespace RiseDiary.WebUI.Pages.Dates
             _context = context;
         }
 
+        private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
+
         public async Task<IActionResult> OnGetAsync()
         {
             var scopeId = await _context.GetAppSetting(AppSettingsKeys.DatesScopeId);
@@ -27,10 +29,10 @@ namespace RiseDiary.WebUI.Pages.Dates
             }
             if (Guid.TryParse(scopeId, out var sId))
             {
-                Dates = await _context.FetchAllDateItems(sId);
+                Dates = await _context.FetchAllDateItems(sId, LocalHostAndPort);
             }
             else
-                throw new Exception("Incorrect format of Scope ID in the AppSettings");
+                throw new Exception($"Incorrect format of Scope ID in the AppSettings: {scopeId}");
 
             return Page();
         }

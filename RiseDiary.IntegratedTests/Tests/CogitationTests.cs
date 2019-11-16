@@ -16,7 +16,7 @@ namespace RiseDiary.IntegratedTests
             var context = CreateContext();
             var cogitation = new Cogitation { Date = DateTime.Now, RecordId = Guid.NewGuid(), Text = @"qrhpqfuшвгарщшйрпйшга  йщрайзца" };
 
-            Assert.ThrowsAsync<Microsoft.EntityFrameworkCore.DbUpdateException>(async () => _ = await context.AddCogitation(cogitation));
+            Assert.ThrowsAsync<Microsoft.EntityFrameworkCore.DbUpdateException>(async () => _ = await context.AddCogitation(cogitation, "host"));
 
             //Assert.LessOrEqual(0, id);
         }
@@ -26,7 +26,7 @@ namespace RiseDiary.IntegratedTests
         {
             var context = CreateContext();
 
-            Assert.ThrowsAsync<ArgumentNullException>(async () => _ = await context.AddCogitation(null));
+            Assert.ThrowsAsync<ArgumentNullException>(async () => _ = await context.AddCogitation(null, ""));
         }
 
         [Test]
@@ -53,7 +53,7 @@ namespace RiseDiary.IntegratedTests
             var context = CreateContext();
             var (recId, cogId) = Create_3Records_1Cogitation(context);
 
-            var cog = await context.FetchCogitationById(cogId);
+            var cog = await context.FetchCogitationById(cogId, "");
 
             Assert.IsNotNull(cog);
             Assert.AreEqual(recId, cog.RecordId);
@@ -64,7 +64,7 @@ namespace RiseDiary.IntegratedTests
         {
             var context = CreateContext();
 
-            var cog = await context.FetchCogitationById(Guid.NewGuid());
+            var cog = await context.FetchCogitationById(Guid.NewGuid(), "host");
 
             Assert.IsNull(cog);
         }
@@ -75,7 +75,7 @@ namespace RiseDiary.IntegratedTests
             var context = CreateContext();
             var recIds = Create_3Records_3_2_1Cogitations(context);
 
-            var resList = await context.FetchAllCogitationsOfRecord(recIds[1]);
+            var resList = await context.FetchAllCogitationsOfRecord(recIds[1], "");
 
             Assert.IsNotNull(resList);
             Assert.AreEqual(2, resList.Count);
@@ -86,7 +86,7 @@ namespace RiseDiary.IntegratedTests
         {
             var context = CreateContext();
 
-            var resList = await context.FetchAllCogitationsOfRecord(Guid.NewGuid());
+            var resList = await context.FetchAllCogitationsOfRecord(Guid.NewGuid(), "host");
 
             Assert.IsNotNull(resList);
             Assert.Zero(resList.Count);
@@ -96,14 +96,14 @@ namespace RiseDiary.IntegratedTests
         public async Task UpdateCogitation_ShouldUpdateDateAndText()
         {
             var context = CreateContext();
-            var (recId, cogId) = Create_3Records_1Cogitation(context);
+            var (_, cogId) = Create_3Records_1Cogitation(context);
             var cogitation = await context.Cogitations.FindAsync(cogId);
             var cogOldDate = cogitation.Date;
             var cogOldText = cogitation.Text;
 
             cogitation.Date = DateTime.Now.AddDays(-23);
             cogitation.Text = ";ijgvirnvirg;rgivuw;rgw";
-            await context.UpdateCogitation(cogitation);
+            await context.UpdateCogitation(cogitation, "host");
 
             cogitation = await context.Cogitations.FindAsync(cogId);
 
@@ -115,7 +115,7 @@ namespace RiseDiary.IntegratedTests
         public void UpdateCogitation_WithNotExistingId_ShouldThrowArgumentException()
         {
             var context = CreateContext();
-            Assert.ThrowsAsync<ArgumentException>(async () => await context.UpdateCogitation(new Cogitation { Id = Guid.NewGuid() }));
+            Assert.ThrowsAsync<ArgumentException>(async () => await context.UpdateCogitation(new Cogitation { Id = Guid.NewGuid() }, ""));
         }
 
         [Test]

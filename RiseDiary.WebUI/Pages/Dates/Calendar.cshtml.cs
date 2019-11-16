@@ -18,13 +18,15 @@ namespace RiseDiary.WebUI.Pages.Dates
             _context = context;
         }
 
+        private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
+
         public async Task<IActionResult> OnGetAsync()
         {
             var scopeId = await _context.GetAppSetting(AppSettingsKeys.DatesScopeId);
             Guid sId = default;
             if (scopeId != null && Guid.TryParse(scopeId, out sId))
             {
-                Dates = await _context.FetchAllDateItems(sId);
+                Dates = await _context.FetchAllDateItems(sId, LocalHostAndPort);
                 return Page();
             }
             return Redirect("~/Dates/setup");

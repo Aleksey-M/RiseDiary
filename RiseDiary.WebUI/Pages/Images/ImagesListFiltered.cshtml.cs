@@ -23,7 +23,7 @@ namespace RiseDiary.WebUI.Pages.Images
         public async Task<JsonResult> OnGetAsync(Guid recordId, string namePart)
         {
             var images = !string.IsNullOrWhiteSpace(namePart)
-                ? _context.Images.Where(i => !i.Deleted && i.Name.IndexOf(namePart, StringComparison.CurrentCultureIgnoreCase) > -1)
+                ? _context.Images.Where(i => !i.Deleted && i.Name.Contains(namePart))
                 : _context.Images.Where(i => !i.Deleted);
 
             images = recordId != Guid.Empty

@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Analysis
 {
@@ -30,6 +30,8 @@ namespace RiseDiary.WebUI.Pages.Analysis
         {
             _context = context;
         }
+
+        private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
 
         public async Task OnGetAsync(int recordsCount, int currentPage, int pagesCount, string navTo, string searchString)
         {
@@ -65,10 +67,10 @@ namespace RiseDiary.WebUI.Pages.Analysis
                     default: CurrenPage = 0; break;
                 }
                 CurrenPage = CurrenPage >= 0 ? CurrenPage : 0;
-                CurrenPage = CurrenPage >= PagesCount ? PagesCount - 1 : CurrenPage;               
+                CurrenPage = CurrenPage >= PagesCount ? PagesCount - 1 : CurrenPage;
 
-                Records = await _context.SearchRecordsByText(SearchString, CurrenPage * _pageSize, _pageSize);
-            }            
-        }               
+                Records = await _context.SearchRecordsByText(SearchString, CurrenPage * _pageSize, LocalHostAndPort, _pageSize);
+            }
+        }
     }
 }

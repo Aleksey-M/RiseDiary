@@ -443,7 +443,7 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task AddRecordImage(this DiaryDbContext context, Guid recordId, Guid imageId)
         {
-            var ri = await  context.RecordImages.IgnoreQueryFilters().SingleOrDefaultAsync(ri => ri.RecordId == recordId && ri.ImageId == imageId);
+            var ri = await context.RecordImages.IgnoreQueryFilters().SingleOrDefaultAsync(ri => ri.RecordId == recordId && ri.ImageId == imageId);
             if (ri != null)
             {
                 ri.Deleted = false;
@@ -475,27 +475,38 @@ namespace RiseDiary.WebUI.Data
             }
         }
 
-        public static Task<Cogitation> FetchCogitationById(this DiaryDbContext context, Guid cogitationId) =>
-            context.Cogitations.SingleOrDefaultAsync(c => c.Id == cogitationId);
+        public static string hostAndPortPlaceholder = "[HOST_AND_PORT]";
 
-        public static Task<List<Cogitation>> FetchAllCogitationsOfRecord(this DiaryDbContext context, Guid recordId) =>
-            context.Cogitations.Where(c => c.RecordId == recordId).ToListAsync();
+        public static async Task<Cogitation> FetchCogitationById(this DiaryDbContext context, Guid cogitationId, string localHostAndPort)
+        {
+            var c = await context.Cogitations.SingleOrDefaultAsync(c => c.Id == cogitationId);
+            if(c != null && c.Text != null) c.Text = c.Text.Replace(hostAndPortPlaceholder, localHostAndPort);
+            return c;
+        }
+            
+        public static async Task<List<Cogitation>> FetchAllCogitationsOfRecord(this DiaryDbContext context, Guid recordId, string localHostAndPort)
+        {
+            var cList = await context.Cogitations.Where(c => c.RecordId == recordId).ToListAsync();
+            cList.ForEach(c => c.Text = c.Text.Replace(hostAndPortPlaceholder, localHostAndPort));
+            return cList;
+        }            
 
-        public static async Task<Guid> AddCogitation(this DiaryDbContext context, Cogitation cogitation)
+        public static async Task<Guid> AddCogitation(this DiaryDbContext context, Cogitation cogitation, string localHostAndPort)
         {
             if (cogitation == null) throw new ArgumentNullException(nameof(cogitation));
+            cogitation.Text = cogitation.Text.Replace(localHostAndPort, hostAndPortPlaceholder);
             await context.Cogitations.AddAsync(cogitation);
             await context.SaveChangesAsync();
             return cogitation.Id;
         }
 
-        public static async Task<Guid> UpdateCogitation(this DiaryDbContext context, Cogitation cogitation)
+        public static async Task<Guid> UpdateCogitation(this DiaryDbContext context, Cogitation cogitation, string localHostAndPort)
         {
             var c = await context.Cogitations.FindAsync(cogitation.Id);
             if (c == null) throw new ArgumentException($"Cogitation with id = {cogitation.Id} is not exists");
             if (c.Deleted) throw new ArgumentException($"Cogitation with id = {cogitation.Id} is deleted");
             c.Date = cogitation.Date;
-            c.Text = cogitation.Text;
+            c.Text = cogitation.Text.Replace(localHostAndPort, hostAndPortPlaceholder);
             await context.SaveChangesAsync();
             return c.Id;
         }
@@ -503,10 +514,10 @@ namespace RiseDiary.WebUI.Data
         public static Task<int> GetCogitationsCount(this DiaryDbContext context, Guid recordId) =>
             context.Cogitations.CountAsync(c => c.RecordId == recordId);
 
-        public static async Task<Guid> AddRecord(this DiaryDbContext context, DiaryRecord record)
+        public static async Task<Guid> AddRecord(this DiaryDbContext context, DiaryRecord record, string localHostAndPort)
         {
             if (record == null) throw new ArgumentNullException(nameof(record));
-
+            record.Text = record.Text.Replace(localHostAndPort, hostAndPortPlaceholder);
             await context.Records.AddAsync(record);
             await context.SaveChangesAsync();
             return record.Id;
@@ -527,23 +538,27 @@ namespace RiseDiary.WebUI.Data
             }
         }
 
-        public static Task<DiaryRecord> FetchRecordById(this DiaryDbContext context, Guid recordId) =>
-            context.Records.SingleOrDefaultAsync(r => r.Id == recordId);
-
-        public static Task<DiaryRecord> FetchRecordByIdWithData(this DiaryDbContext context, Guid recordId) =>
-            context.Records
-            .AsNoTracking()
-            .Include(r => r.Cogitations)
-            .Include(r => r.ImagesRefs)
-            .ThenInclude(ir => ir.Image)
-            .Include(r => r.ThemesRefs)
-            .ThenInclude(rt => rt.Theme)
-            .SingleOrDefaultAsync(r => r.Id == recordId);
-
-        public static async Task<DiaryRecord> GetRecordByCogitation(this DiaryDbContext context, Guid cogitationId)
+        public static async Task<DiaryRecord> FetchRecordById(this DiaryDbContext context, Guid recordId, string localHostAndPort)
         {
-            var c = await context.Cogitations.SingleOrDefaultAsync(cog => cog.Id == cogitationId);
-            return c == null ? null : await context.Records.SingleOrDefaultAsync(r => r.Id == c.RecordId);
+            var r = await context.Records.SingleOrDefaultAsync(r => r.Id == recordId);
+            if(r != null && r.Text != null) r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort);
+            return r;
+        }
+
+        public static async Task<DiaryRecord> FetchRecordByIdWithData(this DiaryDbContext context, Guid recordId, string localHostAndPort)
+        {
+            var r = await context.Records
+                .AsNoTracking()
+                .Include(r => r.Cogitations)
+                .Include(r => r.ImagesRefs)
+                .ThenInclude(ir => ir.Image)
+                .Include(r => r.ThemesRefs)
+                .ThenInclude(rt => rt.Theme)
+                .SingleOrDefaultAsync(r => r.Id == recordId);
+
+            if(r != null && r.Text != null) r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort);
+            r.Cogitations.ToList().ForEach(c => c.Text = c.Text.Replace(hostAndPortPlaceholder, localHostAndPort));
+            return r;
         }
 
         private static IQueryable<DiaryRecord> FetchRecordsListFilteredQuery(DiaryDbContext context, RecordsFilter filter)
@@ -586,30 +601,22 @@ namespace RiseDiary.WebUI.Data
             return result;
         }
 
-        public static Task<List<DiaryRecord>> FetchRecordsListFiltered(this DiaryDbContext context, RecordsFilter filter) =>
-            FetchRecordsListFilteredQuery(context, filter).OrderByDescending(r => r.Date)
+        public static async Task<List<DiaryRecord>> FetchRecordsListFiltered(this DiaryDbContext context, RecordsFilter filter, string localHostAndPort)
+        {
+            var rList = await FetchRecordsListFilteredQuery(context, filter)
+                .OrderByDescending(r => r.Date)
                 .Skip(filter.PageNo * filter.PageSize)
                 .Take(filter.PageSize)
                 .ToListAsync();
 
+            rList.ForEach(r => r.Text = r?.Text?.Replace(hostAndPortPlaceholder, localHostAndPort));
+            return rList;
+        }           
+
         public static Task<int> GetFilteredRecordsCount(this DiaryDbContext context, RecordsFilter filter) =>
             FetchRecordsListFilteredQuery(context, filter).CountAsync();
 
-        public static Task<List<DiaryRecord>> FetchRecordsByMonth(this DiaryDbContext context, int year, int? month = null)
-        {
-            return month == null
-                ? context.Records.Where(r => r.Date.Year == year).ToListAsync()
-                : context.Records.Where(r => r.Date.Year == year && r.Date.Month == month).ToListAsync();
-        }
-
-        public static Task<int> GetMonthRecordsCount(this DiaryDbContext context, int year, int? month = null)
-        {
-            return month == null
-                ? context.Records.CountAsync(r => r.Date.Year == year)
-                : context.Records.CountAsync(r => r.Date.Year == year && r.Date.Month == month);
-        }
-
-        public static async Task<Guid> UpdateRecord(this DiaryDbContext context, DiaryRecord record)
+        public static async Task<Guid> UpdateRecord(this DiaryDbContext context, DiaryRecord record, string localHostAndPort)
         {
             if (record == null) throw new ArgumentNullException(nameof(record));
             var destRec = await context.Records.FindAsync(record.Id);
@@ -620,23 +627,20 @@ namespace RiseDiary.WebUI.Data
             destRec.CreateDate = record.CreateDate;
             destRec.ModifyDate = record.ModifyDate;
             destRec.Name = record.Name;
-            destRec.Text = record.Text;
+            destRec.Text = record.Text.Replace(localHostAndPort, hostAndPortPlaceholder);
 
             await context.SaveChangesAsync();
 
             return destRec.Id;
         }
 
-        public static Task<List<int>> FetchYearsList(this DiaryDbContext context) =>
-            context.Records.Select(r => r.Date.Year).Distinct().ToListAsync();
-
-        public static async Task<Guid> UpdateCogitationText(this DiaryDbContext context, Guid cogitationId, string text)
+        public static async Task<Guid> UpdateCogitationText(this DiaryDbContext context, Guid cogitationId, string text, string localHostAndPort)
         {
             var c = await context.Cogitations.FindAsync(cogitationId);
             if (c == null) throw new ArgumentException($"Cogitation with id = {cogitationId} is not exists");
             if (c.Deleted) throw new ArgumentException($"Cogitation with id = {cogitationId} is deleted");
 
-            c.Text = text;
+            c.Text = text.Replace(localHostAndPort, hostAndPortPlaceholder);
             await context.SaveChangesAsync();
 
             return c.Id;
@@ -645,7 +649,7 @@ namespace RiseDiary.WebUI.Data
         public static async Task<string> GetAppSetting(this DiaryDbContext context, string key)
         {
             if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException(nameof(key));
-            return (await context.AppSettings.FirstOrDefaultAsync(s => s.Key == key))?.Value ?? string.Empty;
+            return (await context.AppSettings.FirstOrDefaultAsync(s => s.Key == key))?.Value;
         }
 
         public static async Task<int?> GetAppSettingInt(this DiaryDbContext context, string key)
@@ -686,7 +690,7 @@ namespace RiseDiary.WebUI.Data
             }
         }
 
-        public static async Task<List<DateItem>> FetchDateItems(this DiaryDbContext context, Guid scopeId, DatesRange datesRange)
+        public static async Task<List<DateItem>> FetchDateItems(this DiaryDbContext context, Guid scopeId, DatesRange datesRange, string localHostAndPort)
         {
             var recThemes = await context.RecordThemes
                 .Include(rt => rt.Theme)
@@ -702,20 +706,20 @@ namespace RiseDiary.WebUI.Data
 
             var dateItems = recThemes
                 .Select(rt => new DateItem(
-                    datesRange, 
-                    rt.Record.Id, 
-                    rt.Theme.ThemeName, 
-                    rt.Record.Date, 
-                    rt.Record.Name, 
-                    rt.Record.Text))
+                    datesRange,
+                    rt.Record.Id,
+                    rt.Theme.ThemeName,
+                    rt.Record.Date,
+                    rt.Record.Name,
+                    rt.Record.Text.Replace(hostAndPortPlaceholder, localHostAndPort)))
                 .OrderByDescending(i => i.TransferredDate)
                 .ToList();
 
             return dateItems;
         }
 
-        public static Task<List<DateItem>> FetchAllDateItems(this DiaryDbContext context, Guid scopeId) => 
-            context.FetchDateItems(scopeId, DatesRange.ForAllYear());
+        public static Task<List<DateItem>> FetchAllDateItems(this DiaryDbContext context, Guid scopeId, string localHostAndPort) =>
+            context.FetchDateItems(scopeId, DatesRange.ForAllYear(), localHostAndPort);
 
         private static IQueryable<DiaryRecord> SearchRecords(this DiaryDbContext context, string searchText)
         {
@@ -725,13 +729,16 @@ namespace RiseDiary.WebUI.Data
                     context.Cogitations.Any(c => c.RecordId == r.Id && c.Text.Contains(searchText)));
         }
 
-        public static Task<List<DiaryRecord>> SearchRecordsByText(this DiaryDbContext context, string searchText, int skip, int count = 20)
+        public static async Task<List<DiaryRecord>> SearchRecordsByText(this DiaryDbContext context, string searchText, int skip, string localHostAndPort, int count = 20)
         {
-            return context.SearchRecords(searchText)
+            var rList = await context.SearchRecords(searchText)
                 .OrderByDescending(r => r.Date)
                 .Skip(skip)
                 .Take(count)
                 .ToListAsync();
+
+            rList.ForEach(r => r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort));
+            return rList;
         }
 
         public static Task<int> SearchRecordsByTextCount(this DiaryDbContext context, string searchText)

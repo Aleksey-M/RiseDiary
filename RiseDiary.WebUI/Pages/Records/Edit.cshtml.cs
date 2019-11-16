@@ -27,6 +27,8 @@ namespace RiseDiary.WebUI.Pages
         public List<Guid> RecordThemesIds { get; set; }
         public List<DiaryThemeJoined> Themes { get; set; }
 
+        private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
+
         public IEnumerable<DiaryThemeJoined> ActualOrSelectedThemes => Themes
             .Where(t => RecordThemesIds.Contains(t.Id) || t.Actual)
             .OrderBy(t => t.ScopeName)
@@ -44,7 +46,7 @@ namespace RiseDiary.WebUI.Pages
             RecordThemesIds = new List<Guid>();
             if (RecordId != null)
             {
-                var rec = await _context.FetchRecordById(RecordId.Value);
+                var rec = await _context.FetchRecordById(RecordId.Value, LocalHostAndPort);
                 if (rec != null)
                 {
                     RecordDate = rec.Date;
@@ -75,7 +77,7 @@ namespace RiseDiary.WebUI.Pages
                     Name = recordName?.Trim() ?? string.Empty,
                     Text = recordText?.Trim() ?? string.Empty
                 };
-                Guid newRecordId = await _context.AddRecord(newRecord);
+                Guid newRecordId = await _context.AddRecord(newRecord, LocalHostAndPort);
                 foreach (Guid tid in themeId)
                 {
                     await _context.AddRecordTheme(newRecordId, tid);
@@ -84,14 +86,14 @@ namespace RiseDiary.WebUI.Pages
             }
             else
             {
-                var record = await _context.FetchRecordById(recordId.Value);
+                var record = await _context.FetchRecordById(recordId.Value, LocalHostAndPort);
                 if (record != null)
                 {
                     record.Date = recordDate;
                     record.ModifyDate = DateTime.Now;
                     record.Name = recordName?.Trim() ?? string.Empty;
                     record.Text = recordText?.Trim() ?? string.Empty;
-                    await _context.UpdateRecord(record);
+                    await _context.UpdateRecord(record, LocalHostAndPort);
 
                     var recThemesIds = (await _context.FetchRecordThemes(record.Id)).Select(rth => rth.Id);
                     foreach (Guid id in recThemesIds.Except(themeId))
