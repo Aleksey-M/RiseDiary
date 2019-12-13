@@ -5,6 +5,7 @@ using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace RiseDiary.IntegratedTests
 
         protected const string FullImageName = @"D:\Projects\RiseDiary\RiseDiary.IntegratedTests\TestImage.jpg";
         private readonly static List<string> _dbFileNames = new List<string>();
-        protected static string DirNameFull => AppDomain.CurrentDomain.BaseDirectory;
+        protected static string DirNameFull => AppDomain.CurrentDomain.BaseDirectory ?? throw new ArgumentNullException(nameof(AppDomain.CurrentDomain.BaseDirectory));
 
         protected DiaryDbContext CreateContext()
         {
@@ -174,7 +175,7 @@ namespace RiseDiary.IntegratedTests
         //    return (recId, cogitation.Code);
         //}
 
-        protected static IEnumerable<string> GetNumberList(int count) => Enumerable.Range(1, count).Select(i => i.ToString("00"));
+        protected static IEnumerable<string> GetNumberList(int count) => Enumerable.Range(1, count).Select(i => i.ToString("00", CultureInfo.InvariantCulture));
         protected static IEnumerable<DateTime> GetDatesList(int count) => Enumerable.Range(1, count).Select(i => DateTime.Now.AddDays(-i).Date);
         protected static IEnumerable<DateTime> GetDatesListWithTwoSameDatesWeekAgo(int count) => Enumerable.Range(1, count).Select(i => i == 2 ? DateTime.Now.AddDays(-7).Date : DateTime.Now.AddDays(-i).Date);
 
@@ -196,7 +197,7 @@ namespace RiseDiary.IntegratedTests
             context.Scopes.Add(scope);
             context.SaveChanges();
 
-            context.Themes.AddRange(Enumerable.Range(0, 30).Select(i => new DiaryTheme { ScopeId = scope.Id, ThemeName = i.ToString() }));
+            context.Themes.AddRange(Enumerable.Range(0, 30).Select(i => new DiaryTheme { ScopeId = scope.Id, ThemeName = i.ToString(CultureInfo.InvariantCulture) }));
             context.SaveChanges();
         }
 
@@ -216,7 +217,7 @@ namespace RiseDiary.IntegratedTests
             context.SaveChanges();
         }
 
-        protected static bool HasRecordWithIntName(List<DiaryRecord> records, int intName) => records.Any(r => int.Parse(r.Name) == intName);
+        protected static bool HasRecordWithIntName(List<DiaryRecord> records, int intName) => records.Any(r => int.Parse(r.Name, CultureInfo.InvariantCulture) == intName);
 
         protected static List<Guid> Create_3Records_3_2_1Cogitations(DiaryDbContext context)
         {
@@ -238,7 +239,7 @@ namespace RiseDiary.IntegratedTests
             return resList;
         }
 
-        protected static Guid Create_Scope(DiaryDbContext context, string scopeName = null)
+        protected static Guid Create_Scope(DiaryDbContext context, string? scopeName = null)
         {
             var scope = new DiaryScope { ScopeName = scopeName ?? Guid.NewGuid().ToString() };
             context.Scopes.Add(scope);
@@ -270,8 +271,9 @@ namespace RiseDiary.IntegratedTests
             return theme.Id;
         }
 
-        protected static void Create_3Scopes_With1ThemeForEach(DiaryDbContext context)
+        protected static List<DiaryScope> Create_3Scopes_With1ThemeForEach(DiaryDbContext context)
         {
+            var res = new List<DiaryScope>();
             for (int i = 0; i < 3; i++)
             {
                 var scope = new DiaryScope {
@@ -280,16 +282,7 @@ namespace RiseDiary.IntegratedTests
                 context.Scopes.Add(scope);               
             }
             context.SaveChanges();
-            /*
-            for (int i = 0; i < 3; i++)
-            {
-                var scope = new DiaryScope { ScopeName = $"Scope {i + 1}" };
-                context.Scopes.Add(scope);
-                context.SaveChanges();
-                context.Themes.Add(new DiaryTheme { ScopeId = scope.Id, ThemeName = $"Theme For Scope {i + 1}" });
-                context.SaveChanges();
-            }
-            */
+            return context.Scopes.ToList();
         }     
 
         protected static (DiaryRecord record, DiaryScope scope, DiaryImage image) CreateEntities(DiaryDbContext context)
@@ -298,13 +291,13 @@ namespace RiseDiary.IntegratedTests
             var scope = new DiaryScope { ScopeName = $"Some Scope" };
             scope.Themes = new List<DiaryTheme> { new DiaryTheme { ThemeName = "Some Theme", Actual = true } };
             var img = GetTestImage();
-                        
+
             context.Add(rec);
             context.Add(scope);
             context.Add(img);
 
             context.SaveChanges();
-            
+
             context.Add(new DiaryRecordImage { Record = rec, Image = img });
             context.Add(new DiaryRecordTheme { Record = rec, Theme = scope.Themes.First() });
             context.Add(new Cogitation { Record = rec, Date = DateTime.Now, Text = "Some Cogitation text" });
@@ -312,5 +305,75 @@ namespace RiseDiary.IntegratedTests
             
             return (rec, scope, img);
         }
+
+        protected static async Task<List<DiaryRecord>> AddSetOfRecordsWithDates(DiaryDbContext context, IEnumerable<DateTime> recDates)
+        {
+            var recs = recDates.Select(d => new DiaryRecord
+            {
+                Date = d,
+                CreateDate = d,
+                ModifyDate = d,
+                Id = Guid.NewGuid(),
+                Name = "Record for date " + d.ToString("yyyy.MM.dd", CultureInfo.InvariantCulture),
+                Text = "Record for date " + d.ToString("yyyy.MM.dd", CultureInfo.InvariantCulture)                
+            }).ToList();
+
+            context.Records.AddRange(recs);
+            await context.SaveChangesAsync().ConfigureAwait(false);
+
+            return recs;
+        }
+
+        protected static IEnumerable<(DateTime date, List<Guid> themesIds)> AddThemesForRecords(DiaryDbContext context, Dictionary<DateTime, List<string>> themesByDate)
+        {
+            _ = AddSetOfRecordsWithDates(context, themesByDate.Select(tbd => tbd.Key).ToList());
+
+            var addedThemes = new List<DiaryTheme>();
+
+            foreach (var kv in themesByDate)
+            {
+                var rec = context.Records.Single(r => r.Date == kv.Key);
+
+                foreach(var tn in kv.Value)
+                {
+                    var themeAdded = addedThemes.Any(t => t.ThemeName == tn);
+                    if (!themeAdded)
+                    {
+                        var theme = new DiaryTheme
+                        {
+                            ThemeName = tn,
+                            Id = Guid.NewGuid(),
+                            Scope = new DiaryScope
+                            {
+                                Id = Guid.NewGuid(),
+                                ScopeName = "Scope For " + kv.Value
+                            }
+                        };                       
+
+                        context.Themes.Add(theme);
+                        context.SaveChanges();
+
+                        addedThemes.Add(theme);
+                    }                    
+                }    
+                
+                foreach(var tn in kv.Value)
+                {
+                    var t = addedThemes.Single(tt => tt.ThemeName == tn);
+
+                    context.RecordThemes.Add(new DiaryRecordTheme { RecordId = rec.Id, ThemeId = t.Id });                   
+                }
+
+                context.SaveChanges();
+            }
+
+            var res = context.RecordThemes.Include(rt => rt.Record).ToList();
+
+            foreach (var kv in themesByDate)
+            {
+                yield return (kv.Key, res.Where(r => r.Record!.Date == kv.Key).Select(rt => rt.ThemeId).ToList());
+            }            
+        }
+
     }
 }

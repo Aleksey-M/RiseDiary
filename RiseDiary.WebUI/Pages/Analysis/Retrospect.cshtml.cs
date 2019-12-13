@@ -37,7 +37,7 @@ namespace RiseDiary.WebUI.Pages
         public string Next => _next;
         public string Last => _last;
 
-        private string LocalHostAndPort => Request.Scheme + @"://"+ Request.Host.Host + ":" + Request.Host.Port;
+        private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
 
         public async Task OnGetSearchAsync(DateTime? fromDate, DateTime? toDate, Guid[] themes, string searchName)
         {

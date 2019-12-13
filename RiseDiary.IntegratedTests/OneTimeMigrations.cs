@@ -23,7 +23,7 @@ namespace Migrations
 
             var connStrSource = $@"Data Source={sourceSqlite};";
             var connStrMigrated = $@"Data Source={migratedSqlite};";
-            
+
             // new database with migrated data
             if (File.Exists(migratedSqlite))
             {
@@ -47,7 +47,7 @@ namespace Migrations
             while (reader.Read())
             {
                 scopes.Add((
-                    reader["Id"].ToString(), 
+                    reader["Id"].ToString(),
                     reader["ScopeName"].ToString(),
                     Convert.ToBoolean(reader["Deleted"])));
             }
@@ -60,9 +60,9 @@ namespace Migrations
             while (r2.Read())
             {
                 themes.Add((
-                    r2["Id"].ToString(), 
-                    r2["ScopeId"].ToString(), 
-                    r2["ThemeName"].ToString(), 
+                    r2["Id"].ToString(),
+                    r2["ScopeId"].ToString(),
+                    r2["ThemeName"].ToString(),
                     Convert.ToBoolean(r2["Deleted"]),
                     Convert.ToBoolean(r2["Actual"]))
                     );
@@ -75,7 +75,7 @@ namespace Migrations
 
             // write Scopes
             var sList = new List<DiaryScope>();
-            foreach(var scope in scopes)
+            foreach (var scope in scopes)
             {
                 var s = new DiaryScope
                 {
@@ -87,7 +87,7 @@ namespace Migrations
 
                 scopesMap[scope.Id] = s.Id;
 
-                foreach(var theme in themes.Where(t => t.ScopeId == scope.Id))
+                foreach (var theme in themes.Where(t => t.ScopeId == scope.Id))
                 {
                     var t = new DiaryTheme
                     {
@@ -150,7 +150,7 @@ namespace Migrations
 
             // write Images
             var imgList = new List<DiaryImageFull>();
-            foreach(var img in images)
+            foreach (var img in images)
             {
                 var i = new DiaryImage
                 {
@@ -198,7 +198,7 @@ namespace Migrations
             }
             r5.Close();
             await context.SaveChangesAsync();
-                                   
+
 
             // Records Map
             var recordsMap = new Dictionary<string, Guid>();
@@ -249,7 +249,7 @@ namespace Migrations
                 string link, newLink;
 
                 current = srcText.IndexOf(host, start, StringComparison.OrdinalIgnoreCase);
-                while(current > -1)
+                while (current > -1)
                 {
                     end = srcText.IndexOf('"', current);
                     link = srcText[current..end];
@@ -286,7 +286,7 @@ namespace Migrations
             }
 
             // update local links in records
-            foreach(var rec in recordsInstances)
+            foreach (var rec in recordsInstances)
             {
                 rec.Text = ReplaceIdAndHostInText(rec.Text);
             }
@@ -314,7 +314,7 @@ namespace Migrations
 
             // write cogitations
             var cogList = new List<Cogitation>();
-            foreach(var cog in cogitations)
+            foreach (var cog in cogitations)
             {
                 var c = new Cogitation
                 {
@@ -349,7 +349,7 @@ namespace Migrations
             // write RecordThemes
 
             var recThemList = new List<DiaryRecordTheme>();
-            foreach(var recThem in recThemes)
+            foreach (var recThem in recThemes)
             {
                 var rt = new DiaryRecordTheme
                 {

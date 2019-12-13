@@ -10,36 +10,39 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Data
 {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
     public class DiaryDbContext : DbContext
     {
         public DiaryDbContext(DbContextOptions<DiaryDbContext> options) : base(options) { }
 
-        public DbSet<DiaryScope> Scopes { get; set; }
-        public DbSet<DiaryTheme> Themes { get; set; }
-        public DbSet<DiaryImage> Images { get; set; }
-        public DbSet<DiaryImageFull> FullSizeImages { get; set; }
-        public DbSet<DiaryRecord> Records { get; set; }
-        public DbSet<Cogitation> Cogitations { get; set; }
+        public DbSet<DiaryScope> Scopes { get; set; } = null!;
+        public DbSet<DiaryTheme> Themes { get; set; } = null!;
+        public DbSet<DiaryImage> Images { get; set; } = null!;
+        public DbSet<DiaryImageFull> FullSizeImages { get; set; } = null!;
+        public DbSet<DiaryRecord> Records { get; set; } = null!;
+        public DbSet<Cogitation> Cogitations { get; set; } = null!;
 
-        public DbSet<DiaryRecordTheme> RecordThemes { get; set; }
-        public DbSet<DiaryRecordImage> RecordImages { get; set; }
+        public DbSet<DiaryRecordTheme> RecordThemes { get; set; } = null!;
+        public DbSet<DiaryRecordImage> RecordImages { get; set; } = null!;
 
-        public DbSet<AppSetting> AppSettings { get; set; }
-        public DbSet<TempImage> TempImages { get; set; }
+        public DbSet<AppSetting> AppSettings { get; set; } = null!;
+        public DbSet<TempImage> TempImages { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            if (modelBuilder == null) throw new ArgumentNullException(nameof(modelBuilder));
+
             modelBuilder.Entity<DiaryRecord>().Property(r => r.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<DiaryRecord>().HasMany(r => r.Cogitations)
-                .WithOne(c => c.Record)
+                .WithOne(c => c.Record!)
                 .HasForeignKey(c => c.RecordId)
                 .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<DiaryRecord>().HasMany(r => r.ThemesRefs)
-                .WithOne(tr => tr.Record)
+                .WithOne(tr => tr.Record!)
                 .HasForeignKey(tr => tr.RecordId)
                 .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<DiaryRecord>().HasMany(r => r.ImagesRefs)
-                .WithOne(ir => ir.Record)
+                .WithOne(ir => ir.Record!)
                 .HasForeignKey(ir => ir.RecordId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -48,14 +51,14 @@ namespace RiseDiary.WebUI.Data
             modelBuilder.Entity<DiaryScope>().Property(s => s.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<DiaryScope>()
                 .HasMany(s => s.Themes)
-                .WithOne(t => t.Scope)
+                .WithOne(t => t.Scope!)
                 .HasForeignKey(t => t.ScopeId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<DiaryTheme>().Property(t => t.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<DiaryTheme>()
                 .HasMany(t => t.RecordsRefs)
-                .WithOne(rt => rt.Theme)
+                .WithOne(rt => rt.Theme!)
                 .HasForeignKey(rt => rt.ThemeId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -65,17 +68,17 @@ namespace RiseDiary.WebUI.Data
             modelBuilder.Entity<DiaryImage>().Property(i => i.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<DiaryImage>()
                 .HasOne(i => i.FullImage)
-                .WithOne(fi => fi.DiaryImage)
+                .WithOne(fi => fi!.DiaryImage!)
                 .HasForeignKey<DiaryImageFull>(fi => fi.ImageId)
                 .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<DiaryImage>()
                .HasOne(i => i.TempImage)
-               .WithOne(ti => ti.DiaryImage)
+               .WithOne(ti => ti!.DiaryImage!)
                .HasForeignKey<TempImage>(ti => ti.SourceImageId)
                .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<DiaryImage>()
                 .HasMany(i => i.RecordsRefs)
-                .WithOne(rr => rr.Image)
+                .WithOne(rr => rr.Image!)
                 .HasForeignKey(rr => rr.ImageId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -100,7 +103,7 @@ namespace RiseDiary.WebUI.Data
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             if (SoftDeleting) OnBeforeSaving();
-            return await base.SaveChangesAsync(cancellationToken);
+            return await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public override int SaveChanges()
@@ -151,7 +154,7 @@ namespace RiseDiary.WebUI.Data
 
     public sealed class RecordsFilter
     {
-        public string RecordNameFilter { get; set; }
+        public string? RecordNameFilter { get; set; }
 
         private DateTime? _recordDateFrom;
         private DateTime? _recordDateTo;
@@ -169,11 +172,15 @@ namespace RiseDiary.WebUI.Data
         public int PageNo { get; set; } = 0;
         public int PageSize { get; set; } = 20;
         public static RecordsFilter Empty => new RecordsFilter();
-        public static bool IsEmpty(RecordsFilter filter) =>
-            string.IsNullOrWhiteSpace(filter.RecordNameFilter) &&
+        public static bool IsEmpty(RecordsFilter filter)
+        {
+            if (filter == null) throw new ArgumentNullException(nameof(filter));
+
+            return string.IsNullOrWhiteSpace(filter.RecordNameFilter) &&
             filter.RecordDateFrom == null &&
             filter.RecordDateTo == null &&
             filter.RecordThemeIds.Count == 0;
+        }
         public ReadOnlyCollection<Guid> RecordThemeIds { get; private set; } = new ReadOnlyCollection<Guid>(new List<Guid>());
 
         public void AddThemeId(Guid rtid)
@@ -204,7 +211,7 @@ namespace RiseDiary.WebUI.Data
         public void RemoveThemeId(IEnumerable<Guid> idsList)
         {
             var foundIds = RecordThemeIds.Intersect(idsList);
-            if (foundIds.Count() > 0)
+            if (foundIds.Any())
             {
                 RecordThemeIds = new ReadOnlyCollection<Guid>(RecordThemeIds.Except(idsList).ToList());
             }
@@ -216,115 +223,152 @@ namespace RiseDiary.WebUI.Data
     {
         public static async Task<Guid> AddScope(this DiaryDbContext context, string scopeName)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
             if (string.IsNullOrWhiteSpace(scopeName)) throw new ArgumentException($"Parameter {nameof(scopeName)} should not be null or empty");
             var scope = new DiaryScope
             {
                 ScopeName = scopeName
             };
             await context.Scopes.AddAsync(scope);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             return scope.Id;
         }
 
-        public static async Task<bool> CanDeleteScope(this DiaryDbContext context, Guid scopeId) =>
-           !(await context.Themes.AnyAsync(th => th.ScopeId == scopeId));
+        public static async Task<bool> CanDeleteScope(this DiaryDbContext context, Guid scopeId)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return !(await context.Themes.AnyAsync(th => th.ScopeId == scopeId).ConfigureAwait(false));
+        }
 
         public static async Task DeleteScope(this DiaryDbContext context, Guid scopeId)
         {
-            if (!(await context.CanDeleteScope(scopeId))) return;
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            if (!(await context.CanDeleteScope(scopeId).ConfigureAwait(false))) return;
 
             var scope = await context.Scopes
                 .Include(s => s.Themes)
                 .ThenInclude(t => t.RecordsRefs)
-                .SingleOrDefaultAsync(s => s.Id == scopeId);
+                .SingleOrDefaultAsync(s => s.Id == scopeId)
+                .ConfigureAwait(false);
 
             if (scope != null && !scope.Themes.Any(t => !t.Deleted))
             {
                 context.Scopes.Remove(scope);
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
         public static async Task<Guid> UpdateScope(this DiaryDbContext context, DiaryScope scope)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
             if (scope == null) throw new ArgumentNullException(nameof(scope));
             var targetScope = await context.Scopes.FindAsync(scope.Id);
             if (targetScope == null) throw new ArgumentException($"Scope with id = {scope.Id} is not exists");
             if (targetScope.Deleted) throw new ArgumentException($"Scope with id = {scope.Id} is deleted");
 
             targetScope.ScopeName = scope.ScopeName;
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             return targetScope.Id;
         }
 
-        public static Task<DiaryScope> FetchScopeById(this DiaryDbContext context, Guid scopeId) =>
-            context.Scopes.SingleOrDefaultAsync(s => s.Id == scopeId);
+        public static Task<DiaryScope> FetchScopeById(this DiaryDbContext context, Guid scopeId)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return context.Scopes.SingleOrDefaultAsync(s => s.Id == scopeId);
+        }
 
-        public static Task<List<DiaryScope>> FetchAllScopes(this DiaryDbContext context) =>
-            context.Scopes.ToListAsync();
+        public static async Task<List<DiaryScope>> FetchAllScopes(this DiaryDbContext context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return await context.Scopes.ToListAsync().ConfigureAwait(false);
+        }
 
-        public static Task<int> GetScopesCount(this DiaryDbContext context) =>
-            context.Scopes.CountAsync();
+        public static Task<int> GetScopesCount(this DiaryDbContext context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return context.Scopes.CountAsync();
+        }
 
         public static async Task<Guid> AddTheme(this DiaryDbContext context, Guid scopeId, string themeName)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             if (string.IsNullOrWhiteSpace(themeName))
                 throw new ArgumentException($"Parameter {nameof(themeName)} should not be null or empty");
 
             var theme = new DiaryTheme { ScopeId = scopeId, ThemeName = themeName };
             await context.Themes.AddAsync(theme);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             return theme.Id;
         }
 
         public static async Task<Guid> UpdateTheme(this DiaryDbContext context, DiaryTheme theme)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
             if (theme == null) throw new ArgumentNullException(nameof(theme));
-            var targetTheme = await context.Themes.FindAsync(theme?.Id);
-            if (targetTheme == null) throw new ArgumentException($"Theme with id = {theme.Id} is not exists");
-            if (targetTheme.Deleted) throw new ArgumentException($"Theme with id = {theme.Id} is deleted");
 
-            targetTheme.ThemeName = theme.ThemeName;
-            await context.SaveChangesAsync();
+            var targetTheme = await context.Themes.FindAsync(theme?.Id);
+            if (targetTheme == null) throw new ArgumentException($"Theme with id = {theme?.Id} is not exists");
+            if (targetTheme.Deleted) throw new ArgumentException($"Theme with id = {theme?.Id} is deleted");
+
+            targetTheme.ThemeName = theme?.ThemeName ?? string.Empty;
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             return targetTheme.Id;
         }
 
         public static async Task DeleteTheme(this DiaryDbContext context, Guid themeId)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             var theme = await context.Themes
                 .Include(t => t.RecordsRefs)
-                .SingleOrDefaultAsync(t => t.Id == themeId);
+                .SingleOrDefaultAsync(t => t.Id == themeId)
+                .ConfigureAwait(false);
 
             if (theme != null)
             {
                 context.Themes.Remove(theme);
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
-        public static Task<DiaryTheme> FetchThemeById(this DiaryDbContext context, Guid themeId) =>
-            context.Themes.SingleOrDefaultAsync(t => t.Id == themeId);
-
-        public static Task<List<DiaryTheme>> FetchThemesOfScope(this DiaryDbContext context, Guid? scopeId)
+        public static Task<DiaryTheme> FetchThemeById(this DiaryDbContext context, Guid themeId)
         {
-            return scopeId != null
-                ? context.Themes.Where(t => t.ScopeId == scopeId).ToListAsync()
-                : context.Themes.ToListAsync();
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return context.Themes.SingleOrDefaultAsync(t => t.Id == themeId);
         }
 
-        public static async Task<List<Guid>> FetchThemesIds(this DiaryDbContext context, Guid? scopeId) =>
-             (await context.FetchThemesOfScope(scopeId)).Select(t => t.Id).ToList();
-
-        public static async Task<int> GetThemesCount(this DiaryDbContext context, Guid? scopeId) =>
-            (await context.FetchThemesOfScope(scopeId)).Count();
-
-        public static Task<List<DiaryThemeJoined>> FetchThemesWithScopes(this DiaryDbContext context)
+        public static async Task<List<DiaryTheme>> FetchThemesOfScope(this DiaryDbContext context, Guid? scopeId)
         {
-            return context.Scopes.Join(
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            return scopeId != null
+                ? await context.Themes.Where(t => t.ScopeId == scopeId).ToListAsync().ConfigureAwait(false)
+                : await context.Themes.ToListAsync().ConfigureAwait(false);
+        }
+
+        public static async Task<List<Guid>> FetchThemesIds(this DiaryDbContext context, Guid? scopeId)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return (await context.FetchThemesOfScope(scopeId).ConfigureAwait(false)).Select(t => t.Id).ToList();
+        }
+
+        public static async Task<int> GetThemesCount(this DiaryDbContext context, Guid? scopeId)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return (await context.FetchThemesOfScope(scopeId).ConfigureAwait(false)).Count;
+        }
+
+        public static async Task<List<DiaryThemeJoined>> FetchThemesWithScopes(this DiaryDbContext context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            return await context.Scopes.Join(
                 context.Themes,
                 s => s.Id,
                 t => t.ScopeId,
@@ -338,12 +382,15 @@ namespace RiseDiary.WebUI.Data
                 })
                 .OrderBy(tj => tj.ScopeName)
                 .ThenBy(tj => tj.ThemeName)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
         }
 
         public static async Task AddRecordTheme(this DiaryDbContext context, Guid recordId, Guid themeId)
         {
-            var rt = await context.RecordThemes.IgnoreQueryFilters().SingleOrDefaultAsync(rt => rt.RecordId == recordId && rt.ThemeId == themeId);
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            var rt = await context.RecordThemes.IgnoreQueryFilters().SingleOrDefaultAsync(rt => rt.RecordId == recordId && rt.ThemeId == themeId).ConfigureAwait(false);
             if (rt != null)
             {
                 rt.Deleted = false;
@@ -352,31 +399,36 @@ namespace RiseDiary.WebUI.Data
             {
                 await context.RecordThemes.AddAsync(new DiaryRecordTheme { RecordId = recordId, ThemeId = themeId });
             }
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public static async Task RemoveRecordTheme(this DiaryDbContext context, Guid recordId, Guid themeId)
         {
-            var rt = await context.RecordThemes.FirstOrDefaultAsync(r => r.RecordId == recordId && r.ThemeId == themeId);
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            var rt = await context.RecordThemes.FirstOrDefaultAsync(r => r.RecordId == recordId && r.ThemeId == themeId).ConfigureAwait(false);
             if (rt != null)
             {
                 context.RecordThemes.Remove(rt);
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
-        public static Task<List<DiaryTheme>> FetchRecordThemes(this DiaryDbContext context, Guid recordId)
+        public static async Task<List<DiaryTheme>> FetchRecordThemes(this DiaryDbContext context, Guid recordId)
         {
-            return context.RecordThemes
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            return await context.RecordThemes
                 .Where(rt => rt.RecordId == recordId)
                 .Join(context.Themes, rt => rt.ThemeId, t => t.Id, (rt, t) => t)
-                .ToListAsync();
+                .ToListAsync().ConfigureAwait(false);
         }
 
         public static async Task<Guid> AddImage(this DiaryDbContext context, string imageName, byte[] fullSizeImageData)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
             if (imageName == null) throw new ArgumentNullException(nameof(imageName));
-            if (fullSizeImageData == null || fullSizeImageData.Length == 0) throw new ArgumentException(nameof(fullSizeImageData));
+            if (fullSizeImageData == null || fullSizeImageData.Length == 0) throw new ArgumentException($"Parameter '{nameof(fullSizeImageData)}' is null or empty");
 
             var image = new DiaryImage
             {
@@ -388,7 +440,7 @@ namespace RiseDiary.WebUI.Data
             };
             (image.Width, image.Height) = ImageHelper.ImageSize(fullSizeImageData);
             await context.Images.AddAsync(image);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             var fullImage = new DiaryImageFull
             {
@@ -396,54 +448,71 @@ namespace RiseDiary.WebUI.Data
                 ImageId = image.Id
             };
             await context.FullSizeImages.AddAsync(fullImage);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
             return image.Id;
         }
 
         public static async Task DeleteImage(this DiaryDbContext context, Guid imageId)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             var img = await context.Images
                 .Include(i => i.RecordsRefs)
                 .Include(i => i.FullImage)
                 .Include(i => i.TempImage)
-                .FirstOrDefaultAsync(i => i.Id == imageId);
+                .FirstOrDefaultAsync(i => i.Id == imageId)
+                .ConfigureAwait(false);
 
             if (img != null)
             {
                 context.Images.Remove(img);
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
         public static async Task UpdateImageName(this DiaryDbContext context, Guid imageId, string imageNewName)
         {
-            var img = await context.Images.SingleOrDefaultAsync(i => i.Id == imageId);
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            var img = await context.Images.SingleOrDefaultAsync(i => i.Id == imageId).ConfigureAwait(false);
             if (img != null)
             {
                 img.Name = imageNewName;
                 img.ModifyDate = DateTime.Now;
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
-        public static Task<DiaryImage> FetchImageById(this DiaryDbContext context, Guid imageId) =>
-            context.Images.SingleOrDefaultAsync(i => i.Id == imageId);
-
-        public static async Task<byte[]> FetchFullImageById(this DiaryDbContext context, Guid imageId)
+        public static Task<DiaryImage> FetchImageById(this DiaryDbContext context, Guid imageId)
         {
-            var img = await context.Images.Include(i => i.FullImage).SingleOrDefaultAsync(i => i.Id == imageId);
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return context.Images.SingleOrDefaultAsync(i => i.Id == imageId);
+        }
+
+        public static async Task<byte[]?> FetchFullImageById(this DiaryDbContext context, Guid imageId)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            var img = await context.Images.Include(i => i.FullImage).SingleOrDefaultAsync(i => i.Id == imageId).ConfigureAwait(false);
             return img?.FullImage?.Data;
         }
 
-        public static Task<int> GetImagesCount(this DiaryDbContext context) =>
-            context.Images.CountAsync();
+        public static Task<int> GetImagesCount(this DiaryDbContext context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return context.Images.CountAsync();
+        }
 
-        public static Task<List<DiaryImage>> FetchImageSet(this DiaryDbContext context, int skip, int count) =>
-            context.Images.OrderByDescending(i => i.CreateDate).Skip(skip).Take(count).ToListAsync();
+        public static async Task<List<DiaryImage>> FetchImageSet(this DiaryDbContext context, int skip, int count)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return await context.Images.OrderByDescending(i => i.CreateDate).Skip(skip).Take(count).ToListAsync().ConfigureAwait(false);
+        }
 
         public static async Task AddRecordImage(this DiaryDbContext context, Guid recordId, Guid imageId)
         {
-            var ri = await context.RecordImages.IgnoreQueryFilters().SingleOrDefaultAsync(ri => ri.RecordId == recordId && ri.ImageId == imageId);
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            var ri = await context.RecordImages.IgnoreQueryFilters().SingleOrDefaultAsync(ri => ri.RecordId == recordId && ri.ImageId == imageId).ConfigureAwait(false);
             if (ri != null)
             {
                 ri.Deleted = false;
@@ -452,101 +521,126 @@ namespace RiseDiary.WebUI.Data
             {
                 await context.RecordImages.AddAsync(new DiaryRecordImage { ImageId = imageId, RecordId = recordId });
             }
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public static async Task RemoveRecordImage(this DiaryDbContext context, Guid recordId, Guid imageId)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             var recordImage = await context.RecordImages.FindAsync(recordId, imageId);
             if (recordImage != null)
             {
                 context.RecordImages.Remove(recordImage);
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
         public static async Task DeleteCogitation(this DiaryDbContext context, Guid cogitationId)
         {
-            var cogitation = await context.Cogitations.SingleOrDefaultAsync(c => c.Id == cogitationId);
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            var cogitation = await context.Cogitations.SingleOrDefaultAsync(c => c.Id == cogitationId).ConfigureAwait(false);
             if (cogitation != null)
             {
                 context.Cogitations.Remove(cogitation);
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
-        public static string hostAndPortPlaceholder = "[HOST_AND_PORT]";
+        private const string hostAndPortPlaceholder = "[HOST_AND_PORT]";
 
-        public static async Task<Cogitation> FetchCogitationById(this DiaryDbContext context, Guid cogitationId, string localHostAndPort)
+        public static async Task<Cogitation?> FetchCogitationById(this DiaryDbContext context, Guid cogitationId, string localHostAndPort)
         {
-            var c = await context.Cogitations.SingleOrDefaultAsync(c => c.Id == cogitationId);
-            if(c != null && c.Text != null) c.Text = c.Text.Replace(hostAndPortPlaceholder, localHostAndPort);
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            var c = await context.Cogitations.SingleOrDefaultAsync(c => c.Id == cogitationId).ConfigureAwait(false);
+            if(c != null && c.Text != null) c.Text = c.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase);
             return c;
         }
             
         public static async Task<List<Cogitation>> FetchAllCogitationsOfRecord(this DiaryDbContext context, Guid recordId, string localHostAndPort)
         {
-            var cList = await context.Cogitations.Where(c => c.RecordId == recordId).ToListAsync();
-            cList.ForEach(c => c.Text = c.Text.Replace(hostAndPortPlaceholder, localHostAndPort));
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            var cList = await context.Cogitations.Where(c => c.RecordId == recordId).ToListAsync().ConfigureAwait(false);
+            cList.ForEach(c => c.Text = c.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase));
             return cList;
         }            
 
         public static async Task<Guid> AddCogitation(this DiaryDbContext context, Cogitation cogitation, string localHostAndPort)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             if (cogitation == null) throw new ArgumentNullException(nameof(cogitation));
-            cogitation.Text = cogitation.Text.Replace(localHostAndPort, hostAndPortPlaceholder);
+            cogitation.Text = cogitation.Text.Replace(localHostAndPort, hostAndPortPlaceholder, StringComparison.OrdinalIgnoreCase);
             await context.Cogitations.AddAsync(cogitation);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
             return cogitation.Id;
         }
 
         public static async Task<Guid> UpdateCogitation(this DiaryDbContext context, Cogitation cogitation, string localHostAndPort)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (cogitation == null) throw new ArgumentNullException(nameof(cogitation));
+
             var c = await context.Cogitations.FindAsync(cogitation.Id);
             if (c == null) throw new ArgumentException($"Cogitation with id = {cogitation.Id} is not exists");
             if (c.Deleted) throw new ArgumentException($"Cogitation with id = {cogitation.Id} is deleted");
             c.Date = cogitation.Date;
-            c.Text = cogitation.Text.Replace(localHostAndPort, hostAndPortPlaceholder);
-            await context.SaveChangesAsync();
+            c.Text = cogitation.Text.Replace(localHostAndPort, hostAndPortPlaceholder, StringComparison.OrdinalIgnoreCase);
+            await context.SaveChangesAsync().ConfigureAwait(false);
             return c.Id;
         }
 
-        public static Task<int> GetCogitationsCount(this DiaryDbContext context, Guid recordId) =>
-            context.Cogitations.CountAsync(c => c.RecordId == recordId);
+        public static async Task<int> GetCogitationsCount(this DiaryDbContext context, Guid recordId)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return await context.Cogitations.CountAsync(c => c.RecordId == recordId).ConfigureAwait(false);
+        }
 
         public static async Task<Guid> AddRecord(this DiaryDbContext context, DiaryRecord record, string localHostAndPort)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
             if (record == null) throw new ArgumentNullException(nameof(record));
-            record.Text = record.Text.Replace(localHostAndPort, hostAndPortPlaceholder);
+
+            record.Text = record.Text.Replace(localHostAndPort, hostAndPortPlaceholder, StringComparison.OrdinalIgnoreCase);
             await context.Records.AddAsync(record);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
             return record.Id;
         }
 
         public static async Task DeleteRecord(this DiaryDbContext context, Guid recordId)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             var record = await context.Records
                 .Include(r => r.Cogitations)
                 .Include(r => r.ImagesRefs)
                 .Include(r => r.ThemesRefs)
-                .FirstOrDefaultAsync(r => r.Id == recordId);
+                .FirstOrDefaultAsync(r => r.Id == recordId)
+                .ConfigureAwait(false);
 
             if (record != null)
             {
                 context.Records.Remove(record);
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
-        public static async Task<DiaryRecord> FetchRecordById(this DiaryDbContext context, Guid recordId, string localHostAndPort)
+        public static async Task<DiaryRecord?> FetchRecordById(this DiaryDbContext context, Guid recordId, string localHostAndPort)
         {
-            var r = await context.Records.SingleOrDefaultAsync(r => r.Id == recordId);
-            if(r != null && r.Text != null) r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort);
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            var r = await context.Records.SingleOrDefaultAsync(r => r.Id == recordId).ConfigureAwait(false);
+            if(r != null && r.Text != null) r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase);
             return r;
         }
 
-        public static async Task<DiaryRecord> FetchRecordByIdWithData(this DiaryDbContext context, Guid recordId, string localHostAndPort)
+        public static async Task<DiaryRecord?> FetchRecordByIdWithData(this DiaryDbContext context, Guid recordId, string localHostAndPort)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             var r = await context.Records
                 .AsNoTracking()
                 .Include(r => r.Cogitations)
@@ -554,10 +648,12 @@ namespace RiseDiary.WebUI.Data
                 .ThenInclude(ir => ir.Image)
                 .Include(r => r.ThemesRefs)
                 .ThenInclude(rt => rt.Theme)
-                .SingleOrDefaultAsync(r => r.Id == recordId);
+                .SingleOrDefaultAsync(r => r.Id == recordId)
+                .ConfigureAwait(false);
 
-            if(r != null && r.Text != null) r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort);
-            r.Cogitations.ToList().ForEach(c => c.Text = c.Text.Replace(hostAndPortPlaceholder, localHostAndPort));
+            if(r != null && r.Text != null) r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase);
+            r?.Cogitations?.ToList()?.ForEach(c => c.Text = c.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase));
+            
             return r;
         }
 
@@ -586,7 +682,7 @@ namespace RiseDiary.WebUI.Data
             {
                 if (!string.IsNullOrWhiteSpace(filter.RecordNameFilter))
                 {
-                    result = result.Where(r => r.Name.Contains(filter.RecordNameFilter));
+                    result = result.Where(r => r.Name.Contains(filter.RecordNameFilter, StringComparison.OrdinalIgnoreCase));
                 }
                 if (filter.RecordDateFrom != null)
                 {
@@ -603,22 +699,31 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task<List<DiaryRecord>> FetchRecordsListFiltered(this DiaryDbContext context, RecordsFilter filter, string localHostAndPort)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (filter == null) throw new ArgumentNullException(nameof(filter));
+
             var rList = await FetchRecordsListFilteredQuery(context, filter)
                 .OrderByDescending(r => r.Date)
                 .Skip(filter.PageNo * filter.PageSize)
                 .Take(filter.PageSize)
-                .ToListAsync();
+                .ToListAsync().ConfigureAwait(false);
 
-            rList.ForEach(r => r.Text = r?.Text?.Replace(hostAndPortPlaceholder, localHostAndPort));
+            rList.ForEach(r => r.Text = r.Text?.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase) ?? string.Empty);
             return rList;
-        }           
+        }
 
-        public static Task<int> GetFilteredRecordsCount(this DiaryDbContext context, RecordsFilter filter) =>
-            FetchRecordsListFilteredQuery(context, filter).CountAsync();
+        public static Task<int> GetFilteredRecordsCount(this DiaryDbContext context, RecordsFilter filter)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (filter == null) throw new ArgumentNullException(nameof(filter));
+            return FetchRecordsListFilteredQuery(context, filter).CountAsync();
+        }
 
         public static async Task<Guid> UpdateRecord(this DiaryDbContext context, DiaryRecord record, string localHostAndPort)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
             if (record == null) throw new ArgumentNullException(nameof(record));
+
             var destRec = await context.Records.FindAsync(record.Id);
             if (destRec == null) throw new ArgumentException($"Record with ID={record.Id} is not found");
             if (destRec.Deleted) throw new ArgumentException($"Record with ID={record.Id} is deleted");
@@ -627,34 +732,41 @@ namespace RiseDiary.WebUI.Data
             destRec.CreateDate = record.CreateDate;
             destRec.ModifyDate = record.ModifyDate;
             destRec.Name = record.Name;
-            destRec.Text = record.Text.Replace(localHostAndPort, hostAndPortPlaceholder);
+            destRec.Text = record.Text.Replace(localHostAndPort, hostAndPortPlaceholder, StringComparison.OrdinalIgnoreCase);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             return destRec.Id;
         }
 
         public static async Task<Guid> UpdateCogitationText(this DiaryDbContext context, Guid cogitationId, string text, string localHostAndPort)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (text == null) throw new ArgumentNullException(nameof(text));
+
             var c = await context.Cogitations.FindAsync(cogitationId);
             if (c == null) throw new ArgumentException($"Cogitation with id = {cogitationId} is not exists");
             if (c.Deleted) throw new ArgumentException($"Cogitation with id = {cogitationId} is deleted");
 
-            c.Text = text.Replace(localHostAndPort, hostAndPortPlaceholder);
-            await context.SaveChangesAsync();
+            c.Text = text.Replace(localHostAndPort, hostAndPortPlaceholder, StringComparison.OrdinalIgnoreCase);
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             return c.Id;
         }
 
-        public static async Task<string> GetAppSetting(this DiaryDbContext context, string key)
+        public static async Task<string?> GetAppSetting(this DiaryDbContext context, string key)
         {
-            if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException(nameof(key));
-            return (await context.AppSettings.FirstOrDefaultAsync(s => s.Key == key))?.Value;
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException("Key should not be null or empty");
+            return (await context.AppSettings.FirstOrDefaultAsync(s => s.Key == key).ConfigureAwait(false))?.Value;
         }
 
         public static async Task<int?> GetAppSettingInt(this DiaryDbContext context, string key)
         {
-            var str = await context.GetAppSetting(key);
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            var str = await context.GetAppSetting(key).ConfigureAwait(false);
             if (int.TryParse(str, NumberStyles.None, CultureInfo.CurrentCulture.NumberFormat, out int result))
             {
                 return result;
@@ -664,10 +776,11 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task UpdateAppSetting(this DiaryDbContext context, string key, string value)
         {
-            if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException(nameof(key));
-            if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException(nameof(value));
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException("Key should not be null or empty");
+            if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Value should not be null or empty");
 
-            var appSetting = await context.AppSettings.FirstOrDefaultAsync(s => s.Key == key);
+            var appSetting = await context.AppSettings.FirstOrDefaultAsync(s => s.Key == key).ConfigureAwait(false);
 
             if (appSetting == null)
             {
@@ -677,7 +790,7 @@ namespace RiseDiary.WebUI.Data
                     Value = value,
                     ModifiedDate = DateTime.Now
                 });
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync().ConfigureAwait(false);
             }
             else
             {
@@ -685,33 +798,35 @@ namespace RiseDiary.WebUI.Data
                 {
                     appSetting.Value = value;
                     appSetting.ModifiedDate = DateTime.Now;
-                    await context.SaveChangesAsync();
+                    await context.SaveChangesAsync().ConfigureAwait(false);
                 }
             }
         }
 
         public static async Task<List<DateItem>> FetchDateItems(this DiaryDbContext context, Guid scopeId, DatesRange datesRange, string localHostAndPort)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             var recThemes = await context.RecordThemes
                 .Include(rt => rt.Theme)
                 .Include(rt => rt.Record)
-                .Where(rt => rt.Theme.ScopeId == scopeId)
-                .ToListAsync();
+                .Where(rt => rt.Theme != null && rt.Theme.ScopeId == scopeId)
+                .ToListAsync().ConfigureAwait(false);
 
             recThemes = recThemes
                 .GroupBy(rt => rt.RecordId)
                 .Select(gb => gb.First())
-                .Where(rt => datesRange.IsDateInRange(rt.Record.Date))
+                .Where(rt => rt.Record != null && datesRange.IsDateInRange(rt.Record.Date))
                 .ToList();
 
             var dateItems = recThemes
                 .Select(rt => new DateItem(
                     datesRange,
-                    rt.Record.Id,
-                    rt.Theme.ThemeName,
+                    rt.Record!.Id,
+                    rt.Theme!.ThemeName,
                     rt.Record.Date,
                     rt.Record.Name,
-                    rt.Record.Text.Replace(hostAndPortPlaceholder, localHostAndPort)))
+                    rt.Record.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase)))
                 .OrderByDescending(i => i.TransferredDate)
                 .ToList();
 
@@ -724,88 +839,109 @@ namespace RiseDiary.WebUI.Data
         private static IQueryable<DiaryRecord> SearchRecords(this DiaryDbContext context, string searchText)
         {
             return context.Records
-                .Where(r => (r.Name.Contains(searchText) ||
-                    r.Text.Contains(searchText)) ||
-                    context.Cogitations.Any(c => c.RecordId == r.Id && c.Text.Contains(searchText)));
+                .Where(r => (r.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    r.Text.Contains(searchText, StringComparison.OrdinalIgnoreCase)) ||
+                    context.Cogitations.Any(c => c.RecordId == r.Id && c.Text.Contains(searchText, StringComparison.OrdinalIgnoreCase)));
         }
 
         public static async Task<List<DiaryRecord>> SearchRecordsByText(this DiaryDbContext context, string searchText, int skip, string localHostAndPort, int count = 20)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             var rList = await context.SearchRecords(searchText)
                 .OrderByDescending(r => r.Date)
                 .Skip(skip)
                 .Take(count)
-                .ToListAsync();
+                .ToListAsync().ConfigureAwait(false);
 
-            rList.ForEach(r => r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort));
+            rList.ForEach(r => r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase));
             return rList;
         }
 
         public static Task<int> SearchRecordsByTextCount(this DiaryDbContext context, string searchText)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
             return context.SearchRecords(searchText).CountAsync();
         }
 
         public static async Task ClearDbFromDeletedRecords(this DiaryDbContext context)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             context.SoftDeleting = false;
 
             var recImages = context.RecordImages.IgnoreQueryFilters().Where(ri => ri.Deleted);
             context.RecordImages.RemoveRange(recImages);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             var images = context.Images.IgnoreQueryFilters().Where(i => i.Deleted);
             context.Images.RemoveRange(images);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             var recThemes = context.RecordThemes.IgnoreQueryFilters().Where(rt => rt.Deleted);
             context.RecordThemes.RemoveRange(recThemes);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             var themes = context.Themes.IgnoreQueryFilters().Where(t => t.Deleted);
             context.Themes.RemoveRange(themes);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             var scopes = context.Scopes.IgnoreQueryFilters().Where(s => s.Deleted);
             context.Scopes.RemoveRange(scopes);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             var records = context.Records.IgnoreQueryFilters().Where(r => r.Deleted);
             var cogitations = records.SelectMany(r => context.Cogitations.Where(c => c.RecordId == r.Id));
             context.Cogitations.RemoveRange(cogitations);
             context.Records.RemoveRange(records);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public static Task Vacuum(this DiaryDbContext context) =>
-            context.Database.ExecuteSqlRawAsync("vacuum;");
+        public static async Task Vacuum(this DiaryDbContext context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            await context.Database.ExecuteSqlRawAsync("vacuum;").ConfigureAwait(false);
+        }
 
         public static Task<Dictionary<Guid, string>> FetchRecordsForImage(this DiaryDbContext context, Guid imageId)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             return context.RecordImages.Where(ri => ri.ImageId == imageId)
                 .Join(context.Records, ri => ri.RecordId, r => r.Id, (ri, r) => new { r.Id, r.Name })
                 .ToDictionaryAsync(r => r.Id, r => r.Name);
         }
 
-        public static Task<TempImage> FetchTempImage(this DiaryDbContext context, Guid imageId) =>
-            context.TempImages.FirstOrDefaultAsync(t => t.SourceImageId == imageId);
+        public static Task<TempImage> FetchTempImage(this DiaryDbContext context, Guid imageId)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return context.TempImages.FirstOrDefaultAsync(t => t.SourceImageId == imageId);
+        }
 
         public static async Task AddUnsavedTempImage(this DiaryDbContext context, TempImage image)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             var oldImages = context.TempImages.Where(t => t.SourceImageId == image.SourceImageId);
-            if (oldImages.Count() > 0)
+            if (oldImages.Any())
             {
                 context.TempImages.RemoveRange(oldImages);
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync().ConfigureAwait(false);
             }
             await context.TempImages.AddAsync(image);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public static async Task ApplyChangesFromTempImage(this DiaryDbContext context, TempImage tempImage)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (tempImage == null) throw new ArgumentNullException(nameof(tempImage));
+
             var image = await context.Images.FindAsync(tempImage.SourceImageId) ?? throw new ArgumentException($"Image with Id ={tempImage.SourceImageId} is not found");
-            var fullImage = await context.FullSizeImages.SingleOrDefaultAsync(fi => fi.ImageId == tempImage.SourceImageId) ?? throw new ArgumentException($"Full image with Id ={tempImage.SourceImageId} is not found! Database is inconsist");
+            var fullImage = await context.FullSizeImages
+                .SingleOrDefaultAsync(fi => fi.ImageId == tempImage.SourceImageId)
+                .ConfigureAwait(false) ?? 
+                throw new ArgumentException($"Full image with Id ={tempImage.SourceImageId} is not found! Database is inconsist");
 
             if (image.Deleted) throw new ArgumentException("Image is deleted. Can't update deleted image");
 
@@ -818,42 +954,48 @@ namespace RiseDiary.WebUI.Data
 
             context.TempImages.Remove(await context.TempImages.FindAsync(tempImage.Id));
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public static async Task DeleteTempImage(this DiaryDbContext context, Guid imageId)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             var oldImages = context.TempImages.Where(t => t.SourceImageId == imageId);
-            if (oldImages.Count() > 0)
+            if (oldImages.Any())
             {
                 context.TempImages.RemoveRange(oldImages);
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
         public static async Task ChangeThemeActuality(this DiaryDbContext context, Guid themeId, bool actual)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             var theme = await context.Themes.FindAsync(themeId);
             if (theme.Actual != actual)
             {
                 theme.Actual = actual;
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
         public static async Task<List<CalendarRecordItem>> FetchCalendarDates(this DiaryDbContext context, int year, Guid[] themes)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             var firstYearDay = new DateTime(year, 01, 01);
             var lastYearDay = new DateTime(year, 12, 31);
 
             var calendarItems = await context.Records
                 .Where(r => r.Date >= firstYearDay && r.Date <= lastYearDay)
                 .Select(r => new CalendarRecordItem { Id = r.Id, Date = r.Date, Name = r.Name })
-                .ToListAsync();
+                .ToListAsync().ConfigureAwait(false);
 
             if (themes != null && themes.Length > 0)
             {
-                var recordThemes = await context.RecordThemes.ToListAsync();
+                var recordThemes = await context.RecordThemes.ToListAsync().ConfigureAwait(false);
 
                 return calendarItems
                     .Where(ci =>
@@ -867,19 +1009,21 @@ namespace RiseDiary.WebUI.Data
 
         public static async Task<List<int>> FetchYearsListFiltered(this DiaryDbContext context, Guid[] themes)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             themes ??= Array.Empty<Guid>();
             if (themes.Length == 0)
                 return await context.Records
                     .Select(r => r.Date.Year)
                     .Distinct()
                     .OrderBy(y => y)
-                    .ToListAsync();
+                    .ToListAsync().ConfigureAwait(false);
 
             var recordDates = await context.Records
                 .Select(r => new KeyValuePair<Guid, DateTime>(r.Id, r.Date))
-                .ToListAsync();
+                .ToListAsync().ConfigureAwait(false);
 
-            var recordThemes = await context.RecordThemes.ToListAsync();
+            var recordThemes = await context.RecordThemes.ToListAsync().ConfigureAwait(false);
 
             return recordDates
                 .Where(r => themes.All(id => recordThemes
@@ -892,8 +1036,14 @@ namespace RiseDiary.WebUI.Data
                 .ToList();
         }
 
-        public static Task<List<DiaryScope>> GetAllScopes(this DiaryDbContext context) =>
-            context.Scopes.AsNoTracking().Include(s => s.Themes).ToListAsync();
+        public static async Task<List<DiaryScope>> GetAllScopes(this DiaryDbContext context) =>
+            await (context?.Scopes
+            .AsNoTracking()
+            .Include(s => s.Themes)
+            .ToListAsync()
+            .ConfigureAwait(false) ?? throw new ArgumentNullException(nameof(context)));
 
     }
+
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
 }
