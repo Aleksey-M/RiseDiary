@@ -162,7 +162,8 @@ namespace RiseDiary.Model.ImportExport
                 allRecordsData = await context.Records
                      .Include(r => r.Cogitations)
                      .Where(r => idsOfRecords.Contains(r.Id))
-                     .ToListAsync();
+                     .ToListAsync()
+                     .ConfigureAwait(false);
             }
             else if (withThemes && !withImages)
             {
@@ -172,7 +173,8 @@ namespace RiseDiary.Model.ImportExport
                      .ThenInclude(rt => rt.Theme)
                      .ThenInclude(t => t.Scope)
                      .Where(r => idsOfRecords.Contains(r.Id))
-                     .ToListAsync();
+                     .ToListAsync()
+                     .ConfigureAwait(false);
             }
             else if (!withThemes && withImages)
             {
@@ -182,7 +184,8 @@ namespace RiseDiary.Model.ImportExport
                      .ThenInclude(ri => ri.Image)
                      .ThenInclude(i => i.FullImage)
                      .Where(r => idsOfRecords.Contains(r.Id))
-                     .ToListAsync();
+                     .ToListAsync()
+                     .ConfigureAwait(false);
             }
             else 
             {
@@ -195,12 +198,13 @@ namespace RiseDiary.Model.ImportExport
                      .ThenInclude(ri => ri.Image)
                      .ThenInclude(i => i.FullImage)
                      .Where(r => idsOfRecords.Contains(r.Id))
-                     .ToListAsync();
+                     .ToListAsync()
+                     .ConfigureAwait(false);
             }
 
             var allData = CreateSerializedEntities(allRecordsData, hostWithPort);
 
-            return await SerializeToString(allData);
+            return await SerializeToString(allData).ConfigureAwait(false);
         }
 
         private static ExportedData CreateSerializedEntities(IEnumerable<DiaryRecord> recordsToSerialization, string hostWithPort)
@@ -260,11 +264,11 @@ namespace RiseDiary.Model.ImportExport
                     new Type[] { typeof(SDiaryTheme), typeof(SDiaryScope), typeof(SDiaryRecord), typeof(SCogitation), typeof(SDiaryImage) });
 
                 serializer.Serialize(destStream, diaryRecordsData);
-                await destStream.FlushAsync();
+                await destStream.FlushAsync().ConfigureAwait(false);
                 destStream.Position = 0;
 
                 var sr = new StreamReader(destStream);
-                result = await sr.ReadToEndAsync();                
+                result = await sr.ReadToEndAsync().ConfigureAwait(false);                
             }
 
             return result;

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class RecordViewModel : PageModel
     {
         private readonly DiaryDbContext _context;
@@ -69,7 +70,7 @@ namespace RiseDiary.WebUI.Pages
                 await UpdatePageState();
             }
         }
-
+                
         public async Task OnPostSaveCogitationAsync(Guid recordId, Guid cogitationId, string cogText)
         {
             if (cogitationId != Guid.Empty && !string.IsNullOrWhiteSpace(cogText))

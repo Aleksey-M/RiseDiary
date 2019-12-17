@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Dates
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class IndexModel : PageModel
     {
         private Guid _datesScopeId = default;

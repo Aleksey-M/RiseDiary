@@ -9,6 +9,7 @@ using RiseDiary.Model;
 
 namespace RiseDiary.WebUI.Pages
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class RecordEditModel : PageModel
     {
         private readonly DiaryDbContext _context;

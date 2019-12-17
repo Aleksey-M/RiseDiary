@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class CalendarModel : PageModel
     {
         private readonly DiaryDbContext _context;

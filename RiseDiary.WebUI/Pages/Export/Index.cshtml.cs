@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Export
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class IndexModel : PageModel
     {
         private DiaryDbContext _context;
