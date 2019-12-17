@@ -1,0 +1,60 @@
+﻿@using Data
+@using Model
+
+@namespace RiseDiary.WebUI.Pages
+@inject DiaryDbContext DiaryDbContext
+
+<div class="panel panel-success">    
+    <div class="panel-heading">
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <p style="color:red;">@ErrorMessage</p>
+        }
+        <div class="form form-horizontal">
+            <div class="input-group">
+                <input type="text" @bind-value="NewScopeName" @bind-value:event="onchange" class="form-control" placeholder="Введите название новой области интересов" />
+                <span class="input-group-btn">
+                    <input type="button" @onclick="CreateNewScope" class="btn btn-success" value="Создать" />
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@foreach (var sc in Scopes)
+{
+    <ScopeComponent Scope="sc" DeleteScopeCallback="DeleteScopeCallback" @key="sc"></ScopeComponent>
+}
+
+@code {
+    private List<DiaryScope> Scopes { get; set; } = null!;
+    private string? NewScopeName { get; set; }
+    private string? ErrorMessage { get; set; }
+
+    private async Task CreateNewScope()
+    {
+        if (string.IsNullOrWhiteSpace(NewScopeName))
+        {
+            ErrorMessage = "Название области не введено";
+        }
+        else
+        {
+            await DiaryDbContext.AddScope(NewScopeName.Trim());
+            NewScopeName = null;
+            Scopes = await DiaryDbContext.FetchScopesWithThemes();
+            ErrorMessage = null;
+        }
+    }
+
+    private async Task DeleteScopeCallback(Guid scopeId)
+    {
+        await DiaryDbContext.DeleteScope(scopeId);
+        Scopes = await DiaryDbContext.FetchScopesWithThemes();
+        this.StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Scopes = await DiaryDbContext.FetchScopesWithThemes();
+    }
+}

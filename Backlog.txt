@@ -105,24 +105,25 @@ V 5.0
 + переход на dotnet core 3.0
 + замена хоста в ссылках на [HOST_AND_PORT] 
 
+
 V 5.1.0
-- asp core 3.1
++ asp core 3.1
 - —# 8 (nullable reference types, пофиксить что анализатор покажет)
-- загрузка настроек из json в класс настроек
-- добавить настройку дл€ значени€ сжати€ jpeg-изображений
+- добавить настройку дл€ значени€ сжати€ jpeg-изображений (используетс€ при сжатии и обрезке изображений)
++ Server side Blazor дл€ разделов
+	+ —фер и тем
+
 - Unit-тесты дл€ методов db:
 	+ FetchYearsListFiltered
 	- FetchCalendarDates
 	- ChangeThemeActuality
-	- DeleteTempImage
-	- ApplyChangesFromTempImage
-	- AddUnsavedTempImage
-	- FetchTempImage
-	- FetchRecordsForImage
-	- SearchRecordsByText
-	- FetchDateItems
-	- FetchAllDateItems
-	- UpdateCogitationText
+
+
+
+
+
+
+vNext
 
 - ƒобавить тесты на проверку замены хоста во внутренних ссылках (на записи и картинки)
 	- FetchCogitationById
@@ -139,7 +140,6 @@ V 5.1.0
 	- FetchAllDateItems
 	- SearchRecordsByText
 
-V 5.2.0
 - ћодель дл€ импорта/экспорта (набор классов дл€ удобной сериализации)
 - Ёкспорт записей в xml 
 	1) базовый - записи с осмыслени€ми
@@ -153,12 +153,21 @@ V 5.2.0
 - —траница выбора записей по темам дл€ экспорта в xml 
 - —траница выбора записей по тексту и по диапазону дат (фильтраци€) дл€ экспорта в xml
 
+- Unit-тесты дл€ методов db:	
+	- DeleteTempImage
+	- ApplyChangesFromTempImage
+	- AddUnsavedTempImage
+	- FetchTempImage
+	- FetchRecordsForImage
+	- SearchRecordsByText
+	- FetchDateItems
+	- FetchAllDateItems
+	- UpdateCogitationText
 
-V 5.3.0
 - API GraphQL or OData
 - Swagger UI
 
-V 5.4.0
+
 - Server side Blazor дл€ разделов
 	- —фер и тем
 	-  ртинок
@@ -168,8 +177,7 @@ V 5.4.0
 	- –етроспективы
 	-  алендар€
 
-Next
-- распознание рукописного текста с фото
+
 - сортировка картинок дл€ записи
 - вывод картинок в виде Thumbnails на форме просмотра записи и в –етроспективе. ѕопап с полноразмерной картинкой по клику
 - удобна€ форма выбора картинок дл€ записи

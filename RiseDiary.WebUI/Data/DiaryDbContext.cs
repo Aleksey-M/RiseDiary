@@ -277,13 +277,19 @@ namespace RiseDiary.WebUI.Data
         public static Task<DiaryScope> FetchScopeById(this DiaryDbContext context, Guid scopeId)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
-            return context.Scopes.SingleOrDefaultAsync(s => s.Id == scopeId);
+            return context.Scopes.Include(s => s.Themes).AsNoTracking().SingleOrDefaultAsync(s => s.Id == scopeId);
         }
 
         public static async Task<List<DiaryScope>> FetchAllScopes(this DiaryDbContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
-            return await context.Scopes.ToListAsync().ConfigureAwait(false);
+            return await context.Scopes.AsNoTracking().ToListAsync().ConfigureAwait(false);
+        }
+
+        public static async Task<List<DiaryScope>> FetchScopesWithThemes(this DiaryDbContext context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return await context.Scopes.Include(s => s.Themes).AsNoTracking().ToListAsync().ConfigureAwait(false);
         }
 
         public static Task<int> GetScopesCount(this DiaryDbContext context)
