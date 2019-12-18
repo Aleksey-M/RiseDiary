@@ -688,7 +688,7 @@ namespace RiseDiary.WebUI.Data
             {
                 if (!string.IsNullOrWhiteSpace(filter.RecordNameFilter))
                 {
-                    result = result.Where(r => r.Name.Contains(filter.RecordNameFilter, StringComparison.OrdinalIgnoreCase));
+                    result = result.Where(r => r.Name.Contains(filter.RecordNameFilter));
                 }
                 if (filter.RecordDateFrom != null)
                 {

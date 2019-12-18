@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace RiseDiary.Model
 {
@@ -14,7 +15,7 @@ namespace RiseDiary.Model
         public string ScopeName { get; set; } = string.Empty;
         public bool Deleted { get; set; }
 
-        public ICollection<DiaryTheme> Themes { get; set; } = new List<DiaryTheme>();
+        public ICollection<DiaryTheme>? Themes { get; set; }
     }
 
     public class DiaryTheme : IDeletedEntity
@@ -26,7 +27,7 @@ namespace RiseDiary.Model
         public bool Deleted { get; set; }
 
         public DiaryScope? Scope { get; set; }
-        public ICollection<DiaryRecordTheme> RecordsRefs { get; set; } = new List<DiaryRecordTheme>();
+        public ICollection<DiaryRecordTheme>? RecordsRefs { get; set; }
     }
 
     public class DiaryRecordTheme : IDeletedEntity
@@ -56,7 +57,7 @@ namespace RiseDiary.Model
         public DateTime ModifyDate { get; set; }
         public byte[] Thumbnail { get; set; } = Array.Empty<byte>();
         public string Base64Thumbnail => Convert.ToBase64String(Thumbnail);
-        public string SizeKbString => Math.Round(SizeByte / 1024f, 2).ToString() + " Kb";
+        public string SizeKbString => Math.Round(SizeByte / 1024f, 2).ToString(CultureInfo.InvariantCulture) + " Kb";
         public int Width { get; set; }
         public int Height { get; set; }
         public int SizeByte { get; set; }
