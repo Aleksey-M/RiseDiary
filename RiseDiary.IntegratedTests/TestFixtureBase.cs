@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.IntegratedTests
 {
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
     // tests for DbContext
     internal class TestFixtureBase
     {
@@ -138,43 +140,6 @@ namespace RiseDiary.IntegratedTests
             return (recId, cogitation.Id);
         }
 
-        //protected static (int recId, string cogCode) Create_3Records_1Cogitation_WithCode(DiaryDbContext context)
-        //{
-        //    int recId;
-
-        //    context.Records.Add(new Model.DiaryRecord
-        //    {
-        //        Date = DateTime.Now,
-        //        Name = "first",
-        //        Text = "1111"
-        //    });
-        //    context.Records.Add(new Model.DiaryRecord
-        //    {
-        //        Date = DateTime.Now,
-        //        Name = "second",
-        //        Text = "2222"
-        //    });
-        //    context.Records.Add(new Model.DiaryRecord
-        //    {
-        //        Date = DateTime.Now,
-        //        Name = "third",
-        //        Text = "3333"
-        //    });
-        //    context.SaveChanges();
-        //    recId = context.Records.Where(r => r.Name == "second").First().Id;
-
-        //    var cogitation = new Model.Cogitation
-        //    {
-        //        RecordId = recId,
-        //        Code = Guid.NewGuid().ToString(),
-        //        Text = "COGITATION"
-        //    };
-        //    context.Cogitations.Add(cogitation);
-        //    context.SaveChanges();
-
-        //    return (recId, cogitation.Code);
-        //}
-
         protected static IEnumerable<string> GetNumberList(int count) => Enumerable.Range(1, count).Select(i => i.ToString("00", CultureInfo.InvariantCulture));
         protected static IEnumerable<DateTime> GetDatesList(int count) => Enumerable.Range(1, count).Select(i => DateTime.Now.AddDays(-i).Date);
         protected static IEnumerable<DateTime> GetDatesListWithTwoSameDatesWeekAgo(int count) => Enumerable.Range(1, count).Select(i => i == 2 ? DateTime.Now.AddDays(-7).Date : DateTime.Now.AddDays(-i).Date);
@@ -273,13 +238,19 @@ namespace RiseDiary.IntegratedTests
 
         protected static List<DiaryScope> Create_3Scopes_With1ThemeForEach(DiaryDbContext context)
         {
-            var res = new List<DiaryScope>();
             for (int i = 0; i < 3; i++)
             {
-                var scope = new DiaryScope {
-                    ScopeName = $"Scope {i + 1}",
-                    Themes = new List<DiaryTheme> { new DiaryTheme { ThemeName = $"Theme For Scope {i + 1}" } } };
-                context.Scopes.Add(scope);               
+                var theme = new DiaryTheme
+                {
+                    Id = Guid.NewGuid(),
+                    ThemeName = $"Theme For Scope {i + 1}",
+                    Scope = new DiaryScope
+                    {
+                        Id = Guid.NewGuid(),
+                        ScopeName = $"Scope {i + 1}"
+                    }
+                };
+                context.Themes.Add(theme);              
             }
             context.SaveChanges();
             return context.Scopes.ToList();
@@ -288,22 +259,26 @@ namespace RiseDiary.IntegratedTests
         protected static (DiaryRecord record, DiaryScope scope, DiaryImage image) CreateEntities(DiaryDbContext context)
         {
             var rec = GetTestRecord();
-            var scope = new DiaryScope { ScopeName = $"Some Scope" };
-            scope.Themes = new List<DiaryTheme> { new DiaryTheme { ThemeName = "Some Theme", Actual = true } };
+            var theme = new DiaryTheme { 
+                ThemeName = "Some Theme", 
+                Actual = true, 
+                Scope = new DiaryScope { ScopeName = $"Some Scope" }
+            };
+            
             var img = GetTestImage();
 
             context.Add(rec);
-            context.Add(scope);
+            context.Add(theme);
             context.Add(img);
 
             context.SaveChanges();
 
             context.Add(new DiaryRecordImage { Record = rec, Image = img });
-            context.Add(new DiaryRecordTheme { Record = rec, Theme = scope.Themes.First() });
+            context.Add(new DiaryRecordTheme { Record = rec, Theme = theme });
             context.Add(new Cogitation { Record = rec, Date = DateTime.Now, Text = "Some Cogitation text" });
             context.SaveChanges();
             
-            return (rec, scope, img);
+            return (rec, theme.Scope, img);
         }
 
         protected static async Task<List<DiaryRecord>> AddSetOfRecordsWithDates(DiaryDbContext context, IEnumerable<DateTime> recDates)

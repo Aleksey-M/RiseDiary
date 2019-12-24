@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.IntegratedTests
 {
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
     [TestFixture]
-    class ThemeTests : TestFixtureBase
+    internal class ThemeTests : TestFixtureBase
     {
         [Test]
         public async Task AddTheme_ShouldNotThrowException()
@@ -155,24 +156,7 @@ namespace RiseDiary.IntegratedTests
             Assert.IsNotNull(lst);
             Assert.AreEqual(3, lst.Count);
         }
-
-        [Test]
-        public async Task GetThemesJoined_ShouldReturnJoinedListOfThemesAndScopesNames()
-        {
-            var context = CreateContext();
-            var aId1 = Create_Scope(context, "1");
-            var aId2 = Create_Scope(context, "2");
-            Create_ThemesForScope(context, aId1, new List<string> { "theme 1-1", "theme 1-2" });
-            Create_ThemesForScope(context, aId2, new List<string> { "theme 2-1", "theme 2-2", "theme 2-3" });
-
-            var joinedList = await context.FetchThemesWithScopes();
-
-            Assert.IsNotNull(joinedList);
-            Assert.AreEqual(5, joinedList.Count);
-            Assert.AreEqual(2, joinedList.Where(jr => jr.ScopeName == "1").Count());
-            Assert.AreEqual(3, joinedList.Where(jr => jr.ScopeName == "2").Count());
-        }
-
+                
         [Test]
         public async Task FetchThemesIds_WithoutScopeId_ShouldReturnAllThemes()
         {
@@ -250,6 +234,28 @@ namespace RiseDiary.IntegratedTests
 
             int boundRecordCount = context.RecordThemes.Count(br => br.RecordId == recId && br.ThemeId == themeId);
             Assert.AreEqual(1, boundRecordCount);
+        }
+
+        [Test]
+        public async Task ThemeActuality_ChangeTwice()
+        {
+            var context = CreateContext();
+            var scopes = Create_3Scopes_With1ThemeForEach(context);
+            var themes = scopes.SelectMany(s => s.Themes).ToList();
+
+            await context.ChangeThemeActuality(themes[0].Id, true);
+            await context.ChangeThemeActuality(themes[1].Id, false);
+            await context.ChangeThemeActuality(themes[2].Id, true);
+
+            Assert.IsTrue(context.Themes.Single(t => t.Id == themes[0].Id).Actual);
+            Assert.IsFalse(context.Themes.Single(t => t.Id == themes[1].Id).Actual);
+            Assert.IsTrue(context.Themes.Single(t => t.Id == themes[2].Id).Actual);
+
+            await context.ChangeThemeActuality(themes[2].Id, false);
+
+            Assert.IsTrue(context.Themes.Single(t => t.Id == themes[0].Id).Actual);
+            Assert.IsFalse(context.Themes.Single(t => t.Id == themes[1].Id).Actual);
+            Assert.IsFalse(context.Themes.Single(t => t.Id == themes[2].Id).Actual);
         }
     }
 }

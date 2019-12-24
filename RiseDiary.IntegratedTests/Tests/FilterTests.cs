@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace RiseDiary.UnitTests
 {
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
     [TestFixture]
     class FilterTests
     {

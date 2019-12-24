@@ -15,7 +15,7 @@ namespace RiseDiary.Model
         public string ScopeName { get; set; } = string.Empty;
         public bool Deleted { get; set; }
 
-        public ICollection<DiaryTheme>? Themes { get; set; }
+        public ICollection<DiaryTheme>? Themes { get; private set; } = new List<DiaryTheme>();
     }
 
     public class DiaryTheme : IDeletedEntity
@@ -27,7 +27,7 @@ namespace RiseDiary.Model
         public bool Deleted { get; set; }
 
         public DiaryScope? Scope { get; set; }
-        public ICollection<DiaryRecordTheme>? RecordsRefs { get; set; }
+        public ICollection<DiaryRecordTheme>? RecordsRefs { get; private set; } = new List<DiaryRecordTheme>();
     }
 
     public class DiaryRecordTheme : IDeletedEntity
@@ -40,22 +40,15 @@ namespace RiseDiary.Model
         public DiaryRecord? Record { get; set; }
     }
 
-    public class DiaryThemeJoined
-    {
-        public Guid Id { get; set; }
-        public Guid? ScopeId { get; set; }
-        public string ThemeName { get; set; } = string.Empty;
-        public string ScopeName { get; set; } = string.Empty;
-        public bool Actual { get; set; }
-    }
-
     public class DiaryImage : IDeletedEntity
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public DateTime CreateDate { get; set; }
         public DateTime ModifyDate { get; set; }
+#pragma warning disable CA1819 // Properties should not return arrays
         public byte[] Thumbnail { get; set; } = Array.Empty<byte>();
+#pragma warning restore CA1819 // Properties should not return arrays
         public string Base64Thumbnail => Convert.ToBase64String(Thumbnail);
         public string SizeKbString => Math.Round(SizeByte / 1024f, 2).ToString(CultureInfo.InvariantCulture) + " Kb";
         public int Width { get; set; }
@@ -65,26 +58,28 @@ namespace RiseDiary.Model
 
         public DiaryImageFull? FullImage { get; set; }
         public TempImage? TempImage { get; set; }
-        public ICollection<DiaryRecordImage> RecordsRefs { get; set; } = new List<DiaryRecordImage>();
+        public ICollection<DiaryRecordImage> RecordsRefs { get; private set; } = new List<DiaryRecordImage>();
     }
 
-    public static class FileSize
-    {
-        public static string ToString(long bytesCount)
-        {
-            if (bytesCount < 1024) return bytesCount + " B";
-            if (bytesCount < 1024 * 1024) return Math.Round(bytesCount / 1024f, 2).ToString() + " Kb";
-            if (bytesCount < 1024 * 1024 * 1024) return Math.Round(bytesCount / (1024f * 1024f), 2).ToString() + " Mb";
-            if (bytesCount < 1024L * 1024 * 1024 * 1024) return Math.Round(bytesCount / (1024f * 1024f * 1024f), 2).ToString() + " Gb";
-            return "HUGE!";
-        }
-    }
+    //public static class FileSize
+    //{
+    //    public static string ToString(long bytesCount)
+    //    {
+    //        if (bytesCount < 1024) return bytesCount + " B";
+    //        if (bytesCount < 1024 * 1024) return Math.Round(bytesCount / 1024f, 2).ToString() + " Kb";
+    //        if (bytesCount < 1024 * 1024 * 1024) return Math.Round(bytesCount / (1024f * 1024f), 2).ToString() + " Mb";
+    //        if (bytesCount < 1024L * 1024 * 1024 * 1024) return Math.Round(bytesCount / (1024f * 1024f * 1024f), 2).ToString() + " Gb";
+    //        return "HUGE!";
+    //    }
+    //}
 
     public class DiaryImageFull
     {
         public Guid Id { get; set; }
         public Guid ImageId { get; set; }
+#pragma warning disable CA1819 // Properties should not return arrays
         public byte[] Data { get; set; } = Array.Empty<byte>();
+#pragma warning restore CA1819 // Properties should not return arrays
 
         public DiaryImage? DiaryImage { get; set; }
     }
@@ -94,8 +89,10 @@ namespace RiseDiary.Model
         public Guid Id { get; set; }
         public Guid SourceImageId { get; set; }
         public string Modification { get; set; } = string.Empty;
+#pragma warning disable CA1819 // Properties should not return arrays
         public byte[] Data { get; set; } = Array.Empty<byte>();
-        public string SizeKbString => Math.Round(SizeByte / 1024f, 2).ToString() + " Kb";
+#pragma warning restore CA1819 // Properties should not return arrays
+        public string SizeKbString => Math.Round(SizeByte / 1024f, 2).ToString(CultureInfo.InvariantCulture) + " Kb";
         public int Width { get; set; }
         public int Height { get; set; }
         public int SizeByte { get; set; }
@@ -113,12 +110,12 @@ namespace RiseDiary.Model
         public DiaryRecord? Record { get; set; }
     }
 
-    public class DiaryImageEqualityComparerById : IEqualityComparer<DiaryImage>
-    {
-        public bool Equals(DiaryImage x, DiaryImage y) => x.Id == y.Id;
+    //public class DiaryImageEqualityComparerById : IEqualityComparer<DiaryImage>
+    //{
+    //    public bool Equals(DiaryImage x, DiaryImage y) => x.Id == y.Id;
 
-        public int GetHashCode(DiaryImage obj) => obj.Id.GetHashCode();
-    }
+    //    public int GetHashCode(DiaryImage obj) => obj.Id.GetHashCode();
+    //}
 
     public class DiaryRecord : IDeletedEntity
     {
@@ -142,9 +139,9 @@ namespace RiseDiary.Model
             }
         }
 
-        public ICollection<Cogitation> Cogitations { get; set; } = new List<Cogitation>();
-        public ICollection<DiaryRecordTheme> ThemesRefs { get; set; } = new List<DiaryRecordTheme>();
-        public ICollection<DiaryRecordImage> ImagesRefs { get; set; } = new List<DiaryRecordImage>();
+        public ICollection<Cogitation> Cogitations { get; private set; } = new List<Cogitation>();
+        public ICollection<DiaryRecordTheme> ThemesRefs { get; private set; } = new List<DiaryRecordTheme>();
+        public ICollection<DiaryRecordImage> ImagesRefs { get; private set; } = new List<DiaryRecordImage>();
     }
 
     public class Cogitation : IDeletedEntity

@@ -111,11 +111,10 @@ V 5.1.0
 + Server side Blazor для разделов
 	+ Сфер и тем
 - С# 8 (nullable reference types, пофиксить что анализатор покажет)
-- миграция баз данных anemic model -> DDD (сделать тест с миграцией из файла в файл)
 - Unit-тесты для методов db:
 	+ FetchYearsListFiltered
 	- FetchCalendarDates
-	- ChangeThemeActuality
+	+ ChangeThemeActuality
 	- DeleteTempImage
 	- ApplyChangesFromTempImage
 	- AddUnsavedTempImage
@@ -189,3 +188,4 @@ vNext
 	- максимально перенести логику в сущности
 	- удалить неиспользуемые методы доступа к данным
 	- обновить тесты, UI
+- миграция баз данных anemic model -> DDD (сделать тест с миграцией из файла в файл)

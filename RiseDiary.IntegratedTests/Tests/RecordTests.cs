@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.IntegratedTests
 {
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
     [TestFixture]
     internal class RecordTests : TestFixtureBase
     {

@@ -138,7 +138,7 @@ namespace RiseDiary.WebUI.Data
                         break;
                     case EntityState.Deleted when entry.Entity is DiaryTheme theme:
                         // !!! this should be loaded by Include()
-                        foreach (var rr in theme.RecordsRefs) rr.Deleted = true;
+                        foreach (var rr in theme.RecordsRefs!) rr.Deleted = true;
 
                         entry.State = EntityState.Modified;
                         entry.Entity.Deleted = true;
@@ -368,28 +368,6 @@ namespace RiseDiary.WebUI.Data
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             return (await context.FetchThemesOfScope(scopeId).ConfigureAwait(false)).Count;
-        }
-
-        public static async Task<List<DiaryThemeJoined>> FetchThemesWithScopes(this DiaryDbContext context)
-        {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-
-            return await context.Scopes.Join(
-                context.Themes,
-                s => s.Id,
-                t => t.ScopeId,
-                (s, t) => new DiaryThemeJoined
-                {
-                    Id = t.Id,
-                    ScopeId = s.Id,
-                    ScopeName = s.ScopeName,
-                    ThemeName = t.ThemeName,
-                    Actual = t.Actual
-                })
-                .OrderBy(tj => tj.ScopeName)
-                .ThenBy(tj => tj.ThemeName)
-                .ToListAsync()
-                .ConfigureAwait(false);
         }
 
         public static async Task AddRecordTheme(this DiaryDbContext context, Guid recordId, Guid themeId)
@@ -688,7 +666,9 @@ namespace RiseDiary.WebUI.Data
             {
                 if (!string.IsNullOrWhiteSpace(filter.RecordNameFilter))
                 {
+#pragma warning disable CA1307 // Specify StringComparison
                     result = result.Where(r => r.Name.Contains(filter.RecordNameFilter));
+#pragma warning restore CA1307 // Specify StringComparison
                 }
                 if (filter.RecordDateFrom != null)
                 {

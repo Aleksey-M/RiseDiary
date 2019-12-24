@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 
 namespace Migrations
 {
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
     [TestFixture]
     public class OneTimeMigrations
     {
@@ -81,8 +83,7 @@ namespace Migrations
                 {
                     Id = Guid.NewGuid(),
                     ScopeName = scope.Name,
-                    Deleted = scope.Deleted,
-                    Themes = new List<DiaryTheme>()
+                    Deleted = scope.Deleted
                 };
 
                 scopesMap[scope.Id] = s.Id;
@@ -92,7 +93,6 @@ namespace Migrations
                     var t = new DiaryTheme
                     {
                         Id = Guid.NewGuid(),
-                        RecordsRefs = null,
                         ScopeId = s.Id,
                         ThemeName = theme.ThemeName,
                         Deleted = theme.Deleted,
