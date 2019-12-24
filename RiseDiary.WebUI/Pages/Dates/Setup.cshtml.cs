@@ -23,7 +23,7 @@ namespace RiseDiary.WebUI.Pages.Dates
 
         public async Task UpdateViewModel()
         {
-            Scopes = await _context.FetchAllScopes();
+            Scopes = await _context.FetchScopesWithThemes();
             var setting = await _context.GetAppSetting(AppSettingsKeys.DatesScopeId);
             if (setting != null && Guid.TryParse(setting, out Guid id))
             {

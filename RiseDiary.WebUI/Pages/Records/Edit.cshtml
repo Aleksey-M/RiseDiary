@@ -61,8 +61,8 @@
                         {
                         <div class="custom-control custom-checkbox">
                             <label class="custom-control-label">
-                                <input type="checkbox" class="custom-control-input" name="themeId" value="@theme.Id" @(Model.RecordThemesIds.Contains(theme.Id) ? "checked='checked'" : "") />
-                                @theme.ScopeName&nbsp;-&nbsp;@theme.ThemeName
+                                <input type="checkbox" class="custom-control-input" name="themeId" value="@theme.themeId" @(Model.RecordThemesIds.Contains(theme.themeId) ? "checked='checked'" : "") />
+                                @theme.scopeName&nbsp;-&nbsp;@theme.themeName
                             </label>
                         </div>
                         }
@@ -74,8 +74,8 @@
                                 {
                                 <div class="custom-control custom-checkbox">
                                     <label class="custom-control-label">
-                                        <input type="checkbox" class="custom-control-input" name="themeId" value="@theme.Id" @(Model.RecordThemesIds.Contains(theme.Id) ? "checked='checked'" : "") />
-                                        @theme.ScopeName&nbsp;-&nbsp;@theme.ThemeName
+                                        <input type="checkbox" class="custom-control-input" name="themeId" value="@theme.themeId" @(Model.RecordThemesIds.Contains(theme.themeId) ? "checked='checked'" : "") />
+                                        @theme.scopeName&nbsp;-&nbsp;@theme.themeName
                                     </label>
                                 </div>
                                 }

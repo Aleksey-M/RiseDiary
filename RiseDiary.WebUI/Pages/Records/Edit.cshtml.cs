@@ -26,23 +26,28 @@ namespace RiseDiary.WebUI.Pages
         public string RecordName { get; set; }
         public string RecordText { get; set; }
         public List<Guid> RecordThemesIds { get; set; }
-        public List<DiaryThemeJoined> Themes { get; set; }
+        public List<DiaryScope> Scopes { get; private set; }
 
         private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
 
-        public IEnumerable<DiaryThemeJoined> ActualOrSelectedThemes => Themes
+        public IEnumerable<(Guid themeId, string themeName, string scopeName)> ActualOrSelectedThemes => Scopes
+            .SelectMany(s => s.Themes)
             .Where(t => RecordThemesIds.Contains(t.Id) || t.Actual)
-            .OrderBy(t => t.ScopeName)
-            .ThenBy(t => t.ThemeName);
+            .Select(t => (themeId: t.Id, themeName:t.ThemeName, scopeName:t.Scope?.ScopeName ?? string.Empty))
+            .OrderBy(t => t.scopeName)
+            .ThenBy(t => t.themeName);
+            
 
-        public IEnumerable<DiaryThemeJoined> NotActualThemes => Themes
+        public IEnumerable<(Guid themeId, string themeName, string scopeName)> NotActualThemes => Scopes
+            .SelectMany(s => s.Themes)
             .Where(t => !RecordThemesIds.Contains(t.Id) && !t.Actual)
-            .OrderBy(t => t.ScopeName)
-            .ThenBy(t => t.ThemeName);
+            .Select(t => (themeId: t.Id, themeName: t.ThemeName, scopeName: t.Scope?.ScopeName ?? string.Empty))
+            .OrderBy(t => t.scopeName)
+            .ThenBy(t => t.themeName);
 
         private async Task UpdatePageState()
         {
-            Themes = await _context.FetchThemesWithScopes();
+            Scopes = await _context.FetchScopesWithThemes();
             RecordDate = DateTime.Now.Date;
             RecordThemesIds = new List<Guid>();
             if (RecordId != null)

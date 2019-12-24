@@ -41,7 +41,7 @@
             @foreach (var scope in Model.AllScopes)
             {
                 <optgroup label="@scope.ScopeName">
-                    @foreach (var theme in Model.AllThemes.Where(t => t.ScopeId == scope.Id))
+                    @foreach (var theme in scope.Themes)
                     {
                         @if (Model.SelectedThemes.Contains(theme.Id))
                         {

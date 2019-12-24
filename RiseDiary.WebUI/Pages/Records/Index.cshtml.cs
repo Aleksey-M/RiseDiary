@@ -22,7 +22,6 @@ namespace RiseDiary.WebUI.Pages
         public int PagesCount { get; private set; }
         public int CurrenPage { get; private set; }
         public List<DiaryScope> AllScopes { get; private set; }
-        public List<DiaryThemeJoined> AllThemes { get; private set; }
         public Guid[] SelectedThemes { get; private set; } = Array.Empty<Guid>();
 
         private const int _pageSize = 30;
@@ -57,8 +56,7 @@ namespace RiseDiary.WebUI.Pages
             CurrenPage = 0;
 
             Records = await _context.FetchRecordsListFiltered(Filters, LocalHostAndPort);
-            AllScopes = await _context.FetchAllScopes();
-            AllThemes = await _context.FetchThemesWithScopes();
+            AllScopes = await _context.FetchScopesWithThemes();
         }
 
         public async Task OnGetAsync(DateTime? fromDate, DateTime? toDate, Guid[] themes, string searchName, int recordsCount, int currentPage, int pagesCount, string navTo)
@@ -105,8 +103,7 @@ namespace RiseDiary.WebUI.Pages
             }
 
             Records = await _context.FetchRecordsListFiltered(Filters, LocalHostAndPort);
-            AllScopes = await _context.FetchAllScopes();
-            AllThemes = await _context.FetchThemesWithScopes();
+            AllScopes = await _context.FetchScopesWithThemes();
         }
     }
 }
