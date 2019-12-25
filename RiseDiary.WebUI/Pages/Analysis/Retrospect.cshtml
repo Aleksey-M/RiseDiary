@@ -60,11 +60,11 @@
                     <input type="hidden" name="pagesCount" value="@Model.PagesCount" />
                     <input type="hidden" name="recordsCount" value="@Model.RecordsCount" />
 
-                    <input type="submit" name="navTo" value="@Model.First" class="btn btn-link" />
-                    |<input type="submit" name="navTo" value="@Model.Previous" class="btn btn-link" />
+                    <input type="submit" name="navTo" value="Первая" class="btn btn-link" />
+                    |<input type="submit" name="navTo" value="Предыдущая" class="btn btn-link" />
                     |<span><b> Страница @(Model.CurrenPage + 1) из @Model.PagesCount </b></span>
-                    |<input type="submit" name="navTo" value="@Model.Next" class="btn btn-link" />
-                    |<input type="submit" name="navTo" value="@Model.Last" class="btn btn-link" />
+                    |<input type="submit" name="navTo" value="Следующая" class="btn btn-link" />
+                    |<input type="submit" name="navTo" value="Последняя" class="btn btn-link" />
                 </form>
             </div>
         </div>

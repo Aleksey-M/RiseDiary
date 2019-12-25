@@ -19,15 +19,15 @@ namespace RiseDiary.WebUI.Pages
         }
 
         public Guid RecordId { get; set; }
-        public DiaryRecord Record { get; set; }
-        public List<string> RecordThemes { get; set; }
-        public List<(Guid ImageId, string ImageName)> RecordImages { get; set; }
-        public List<Cogitation> Cogitations { get; set; }
+        public DiaryRecord Record { get; set; } = null!;
+        public IEnumerable<string> RecordThemes { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<(Guid ImageId, string ImageName)> RecordImages { get; private set; } = Enumerable.Empty<(Guid ImageId, string ImageName)>();
+        public IEnumerable<Cogitation> Cogitations { get; private set; } = Enumerable.Empty<Cogitation>();
         private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
         private async Task UpdatePageState()
         {
-            Record = await _context.FetchRecordByIdWithData(RecordId, LocalHostAndPort);
-            RecordThemes = Record.ThemesRefs.Select(tr => tr.Theme.ThemeName).ToList();
+            Record = await _context.FetchRecordByIdWithData(RecordId, LocalHostAndPort) ?? throw new ArgumentException($"Record with Id = '{RecordId}' is not exists");
+            RecordThemes = Record.ThemesRefs.Select(tr => tr.Theme?.ThemeName ?? string.Empty).ToList();
             RecordImages = Record.ImagesRefs.Select(ir => (ir.ImageId, ir.Image.Name)).ToList();
             Cogitations = Record.Cogitations.OrderBy(c => c.Date).ToList();
         }

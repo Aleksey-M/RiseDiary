@@ -8,6 +8,7 @@ using System;
 namespace RiseDiary.IntegratedTests
 {
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+#pragma warning disable CA1812
     [TestFixture]
     internal class SoftDeletingTests : TestFixtureBase
     {
@@ -161,7 +162,7 @@ namespace RiseDiary.IntegratedTests
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            var (recId, cogId) = Create_3Records_1Cogitation(context);
+            var (_, cogId) = Create_3Records_1Cogitation(context);
 
             await context.DeleteCogitation(cogId);
 
@@ -175,7 +176,7 @@ namespace RiseDiary.IntegratedTests
         {
             var context = CreateContext();
             context.SoftDeleting = false;
-            var (recId, cogId) = Create_3Records_1Cogitation(context);
+            var (_, cogId) = Create_3Records_1Cogitation(context);
 
             await context.DeleteCogitation(cogId);
 

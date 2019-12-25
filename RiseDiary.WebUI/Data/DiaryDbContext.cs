@@ -473,11 +473,11 @@ namespace RiseDiary.WebUI.Data
             return context.Images.SingleOrDefaultAsync(i => i.Id == imageId);
         }
 
-        public static async Task<byte[]?> FetchFullImageById(this DiaryDbContext context, Guid imageId)
+        public static async Task<byte[]> FetchFullImageById(this DiaryDbContext context, Guid imageId)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             var img = await context.Images.Include(i => i.FullImage).SingleOrDefaultAsync(i => i.Id == imageId).ConfigureAwait(false);
-            return img?.FullImage?.Data;
+            return img?.FullImage?.Data ?? throw new Exception("Saved image is not contains image data");
         }
 
         public static Task<int> GetImagesCount(this DiaryDbContext context)
@@ -822,14 +822,17 @@ namespace RiseDiary.WebUI.Data
         public static Task<List<DateItem>> FetchAllDateItems(this DiaryDbContext context, Guid scopeId, string localHostAndPort) =>
             context.FetchDateItems(scopeId, DatesRange.ForAllYear(), localHostAndPort);
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1307:Specify StringComparison", Justification = "<Pending>")]
         private static IQueryable<DiaryRecord> SearchRecords(this DiaryDbContext context, string searchText)
         {
             return context.Records
-                .Where(r => (r.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                    r.Text.Contains(searchText, StringComparison.OrdinalIgnoreCase)) ||
-                    context.Cogitations.Any(c => c.RecordId == r.Id && c.Text.Contains(searchText, StringComparison.OrdinalIgnoreCase)));
+
+                .Where(r => r.Name.Contains(searchText) ||
+                    r.Text.Contains(searchText) ||
+                    context.Cogitations.Any(c => c.RecordId == r.Id && c.Text.Contains(searchText)));
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1307:Specify StringComparison", Justification = "<Pending>")]
         public static async Task<List<DiaryRecord>> SearchRecordsByText(this DiaryDbContext context, string searchText, int skip, string localHostAndPort, int count = 20)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
@@ -840,7 +843,7 @@ namespace RiseDiary.WebUI.Data
                 .Take(count)
                 .ToListAsync().ConfigureAwait(false);
 
-            rList.ForEach(r => r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase));
+            rList.ForEach(r => r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort));
             return rList;
         }
 

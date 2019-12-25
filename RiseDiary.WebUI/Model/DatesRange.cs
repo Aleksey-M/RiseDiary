@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace RiseDiary.Model
 {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
     public class DatesRange
     {       
         public DatesRange(DateTime today, int daysRange)
@@ -97,13 +99,13 @@ namespace RiseDiary.Model
         }
 
         public Guid Id { get; }
-        public string Theme { get; }
+        public string Theme { get; } = string.Empty;
         public DateTime Date { get; }
         public DatesRange DatesRange { get; }
-        public string Name { get; }
-        public string Text { get; }
+        public string Name { get; } = string.Empty;
+        public string Text { get; } = string.Empty;
 
-        private string GetWeekDayName(DayOfWeek day)
+        private static string GetWeekDayName(DayOfWeek day)
         {
             return day switch
             {
@@ -119,7 +121,7 @@ namespace RiseDiary.Model
         }
 
         public DateTime TransferredDate => DatesRange.GetTransferredDate(Date);
-        public string DisplayDate => TransferredDate.ToString("yyyy.MM.dd") + " " + GetWeekDayName(TransferredDate.DayOfWeek);
+        public string DisplayDate => TransferredDate.ToString("yyyy.MM.dd", CultureInfo.InvariantCulture) + " " + DateItem.GetWeekDayName(TransferredDate.DayOfWeek);
         public bool IsWeekday => Name == null;
         public bool IsToday => DatesRange.Today == TransferredDate.Date;
 
@@ -128,7 +130,7 @@ namespace RiseDiary.Model
     public class CalendarRecordItem
     {
         public Guid Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public DateTime Date { get; set; }
     }
 }

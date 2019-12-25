@@ -38,10 +38,10 @@ namespace RiseDiary.WebUI.Pages.Images
             }
 
             string imageName = string.Empty;
-            byte[] imageData = null;
+            byte[] imageData = Array.Empty<byte>();
             Guid imageId = Guid.Empty;
 
-            for (int i = 0; i < newImages.Count; i++)
+            for (int i = 0; i < newImages?.Count; i++)
             {
                 if(newImages.Count == 1)
                     imageName = string.IsNullOrWhiteSpace(newImageName) ?
@@ -60,11 +60,11 @@ namespace RiseDiary.WebUI.Pages.Images
                 imageId = await _context.AddImage(imageName, imageData);
                 if(TargetRecordId != null && TargetRecordId != Guid.Empty)
                 {
-                    await _context.AddRecordImage(targetRecordId.Value, imageId);
+                    await _context.AddRecordImage(TargetRecordId.Value, imageId);
                 }                
             }
 
-            if(newImages.Count == 1)
+            if(newImages?.Count == 1)
             {
                 if (TargetRecordId != null && TargetRecordId != Guid.Empty)
                     return Redirect($"/Images/Edit?recordId={TargetRecordId.Value}&imageId={imageId}");

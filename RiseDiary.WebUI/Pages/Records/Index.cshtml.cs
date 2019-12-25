@@ -3,10 +3,12 @@ using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages
 {
+#pragma warning disable CA1822 // Mark members as static
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class RecordsViewModel : PageModel
     {
@@ -16,13 +18,15 @@ namespace RiseDiary.WebUI.Pages
             _context = context;
         }
 
-        public List<DiaryRecord> Records { get; private set; }
-        public RecordsFilter Filters { get; private set; }
+        public IEnumerable<DiaryRecord> Records { get; private set; } = Enumerable.Empty<DiaryRecord>();
+        public RecordsFilter Filters { get; private set; } = RecordsFilter.Empty;
         public int RecordsCount { get; private set; }
         public int PagesCount { get; private set; }
         public int CurrenPage { get; private set; }
-        public List<DiaryScope> AllScopes { get; private set; }
+        public IEnumerable<DiaryScope> AllScopes { get; private set; } = Enumerable.Empty<DiaryScope>();
+#pragma warning disable CA1819 // Properties should not return arrays
         public Guid[] SelectedThemes { get; private set; } = Array.Empty<Guid>();
+#pragma warning restore CA1819 // Properties should not return arrays
 
         private const int _pageSize = 30;
         private const string _first = "Первая";

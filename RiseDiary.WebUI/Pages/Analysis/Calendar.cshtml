@@ -24,12 +24,12 @@
                     {
                         <input type="hidden" name="themes" value="@st" />
                     }                    
-                    @if(Model.YearsListFiltered.Count > 0)
+                    @if(Model.YearsListFiltered.Count() > 0)
                     {
-                        <input type="submit" class="btn btn-link" name="year" value="@Model.YearsListFiltered[0]" />
-                        @for(int i=1; i< Model.YearsListFiltered.Count; i++)
+                        <input type="submit" class="btn btn-link" name="year" value="@Model.YearsListFiltered.First()" />
+                        @for(int i=1; i< Model.YearsListFiltered.Count(); i++)
                         {
-                            @:| <input type = "submit" class="btn btn-link" name="year" value="@Model.YearsListFiltered[i]" />
+                            @:| <input type = "submit" class="btn btn-link" name="year" value="@Model.YearsListFiltered.ElementAt(i)" />
                         }
                     }
                 </form>
@@ -72,10 +72,10 @@
             {
                 <text>
             {
-                id: "@Model.Records[i].Id",
-                name: "@Model.Records[i].Name",
-                startDate: new Date("@Model.Records[i].Date.Year", "@(Model.Records[i].Date.Month-1)", "@Model.Records[i].Date.Day"),
-                endDate: new Date("@Model.Records[i].Date.Year", "@(Model.Records[i].Date.Month-1)", "@Model.Records[i].Date.Day")
+                id: "@Model.Records.ElementAt(i).Id",
+                name: "@Model.Records.ElementAt(i).Name",
+                startDate: new Date("@Model.Records.ElementAt(i).Date.Year", "@(Model.Records.ElementAt(i).Date.Month-1)", "@Model.Records.ElementAt(i).Date.Day"),
+                endDate: new Date("@Model.Records.ElementAt(i).Date.Year", "@(Model.Records.ElementAt(i).Date.Month-1)", "@Model.Records.ElementAt(i).Date.Day")
 
             }@(i != count - 1 ? "," : string.Empty)
                 </text>

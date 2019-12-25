@@ -3,6 +3,7 @@ using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Images
@@ -11,7 +12,7 @@ namespace RiseDiary.WebUI.Pages.Images
     public class IndexModel : PageModel
     {
         private readonly DiaryDbContext _context;
-        public List<DiaryImage> Images { get; private set; }
+        public IEnumerable<DiaryImage> Images { get; private set; } = Enumerable.Empty<DiaryImage>();
         private const int _pageSize = 32;
         public int CurrenPage { get; private set; }
         public int NextPage { get; private set; }

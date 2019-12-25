@@ -19,14 +19,14 @@ namespace RiseDiary.WebUI.Pages
         }
 
         public Guid? RecordId { get; set; }
-        public string RecordCode { get; set; }
+        //public string RecordCode { get; set; }
         public DateTime? RecordDate { get; set; }
         public DateTime? RecordCreateDate { get; set; }
         public DateTime? RecordModifyDate { get; set; }
-        public string RecordName { get; set; }
-        public string RecordText { get; set; }
-        public List<Guid> RecordThemesIds { get; set; }
-        public List<DiaryScope> Scopes { get; private set; }
+        public string? RecordName { get; set; }
+        public string? RecordText { get; set; }
+        public IEnumerable<Guid> RecordThemesIds { get; set; } = Enumerable.Empty<Guid>();
+        public IEnumerable<DiaryScope> Scopes { get; private set; } = Enumerable.Empty<DiaryScope>();
 
         private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
 
@@ -73,6 +73,7 @@ namespace RiseDiary.WebUI.Pages
 
         public async Task OnPostSaveRecordAsync(Guid? recordId, DateTime recordDate, string recordName, string recordText, Guid[] themeId)
         {
+            themeId ??= Array.Empty<Guid>();
             if (recordId == null)
             {
                 var newRecord = new DiaryRecord

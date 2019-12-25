@@ -25,7 +25,9 @@ namespace RiseDiary.IntegratedTests
 
         protected const string FullImageName = @"D:\Projects\RiseDiary\RiseDiary.IntegratedTests\TestImage.jpg";
         private readonly static List<string> _dbFileNames = new List<string>();
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
         protected static string DirNameFull => AppDomain.CurrentDomain.BaseDirectory ?? throw new ArgumentNullException(nameof(AppDomain.CurrentDomain.BaseDirectory));
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
 
         protected DiaryDbContext CreateContext()
         {

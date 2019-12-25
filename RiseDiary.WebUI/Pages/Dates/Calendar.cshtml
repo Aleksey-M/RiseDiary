@@ -36,10 +36,10 @@
             {
                 <text>
             {
-                id: "@Model.Dates[i].Id",
-                name: "@Model.Dates[i].Theme: "+"@Model.Dates[i].Name",
-                startDate: new Date(@Model.Dates[i].TransferredDate.Year, @Model.Dates[i].TransferredDate.Month-1, @Model.Dates[i].TransferredDate.Day),
-                endDate: new Date(@Model.Dates[i].TransferredDate.Year, @Model.Dates[i].TransferredDate.Month-1, @Model.Dates[i].TransferredDate.Day)
+                id: "@Model.Dates.ElementAt(i).Id",
+                name: "@Model.Dates.ElementAt(i).Theme: "+"@Model.Dates.ElementAt(i).Name",
+                startDate: new Date(@Model.Dates.ElementAt(i).TransferredDate.Year, @Model.Dates.ElementAt(i).TransferredDate.Month-1, @Model.Dates.ElementAt(i).TransferredDate.Day),
+                endDate: new Date(@Model.Dates.ElementAt(i).TransferredDate.Year, @Model.Dates.ElementAt(i).TransferredDate.Month-1, @Model.Dates.ElementAt(i).TransferredDate.Day)
 
             }@(i != count - 1 ? "," : string.Empty)
                 </text>

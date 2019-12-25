@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 namespace RiseDiary.IntegratedTests
 {
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+#pragma warning disable CA1812
     [TestFixture]
     internal class ScopeTests : TestFixtureBase
     {
@@ -43,7 +44,7 @@ namespace RiseDiary.IntegratedTests
             var context = CreateContext();
 
             Guid id;
-            Assert.ThrowsAsync<ArgumentException>(async () => id = await context.AddScope(null));
+            Assert.ThrowsAsync<ArgumentException>(async () => id = await context.AddScope(null!));
         }
 
         [Test]

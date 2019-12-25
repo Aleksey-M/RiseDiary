@@ -3,23 +3,27 @@ using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Dates
 {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class SetupModel : PageModel
     {
-        private readonly DiaryDbContext _context;
-        public List<DiaryScope> Scopes;
-        public Guid SelectedScopeId;
-        public int DaysDisplayRange;
-        public string Message;
+        private readonly DiaryDbContext _context;        
 
         public SetupModel(DiaryDbContext context)
         {
             _context = context;
         }
+
+        public IEnumerable<DiaryScope> Scopes { get; private set; } = Enumerable.Empty<DiaryScope>();
+        public Guid SelectedScopeId { get; private set; }
+        public int DaysDisplayRange { get; private set; }
+        public string Message { get; private set; } = string.Empty;
 
         public async Task UpdateViewModel()
         {
@@ -54,7 +58,7 @@ namespace RiseDiary.WebUI.Pages.Dates
             }
 
             await _context.UpdateAppSetting(AppSettingsKeys.DatesScopeId, scopeId.ToString());
-            await _context.UpdateAppSetting(AppSettingsKeys.DatesDisplayRange, displayRange.ToString());
+            await _context.UpdateAppSetting(AppSettingsKeys.DatesDisplayRange, displayRange.ToString(CultureInfo.InvariantCulture));
             Message = "Данные обновлены";
             await UpdateViewModel();
         }

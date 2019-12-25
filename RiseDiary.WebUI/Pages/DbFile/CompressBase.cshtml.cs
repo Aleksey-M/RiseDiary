@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using RiseDiary.WebUI.Data;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -19,19 +20,19 @@ namespace RiseDiary.WebUI.Pages.DbFile
             _context = context;
         }
 
-        public string FileSize { get; private set; }
-        public string CompressedFileSize { get; private set; }
+        public string FileSize { get; private set; } = string.Empty;
+        public string CompressedFileSize { get; private set; } = string.Empty;
 
         public void OnGet()
         {
-            FileSize = Math.Round(new FileInfo(_config.GetValue<string>("dbFile")).Length / 1024f / 1024f, 2).ToString() + " Mb";
+            FileSize = Math.Round(new FileInfo(_config.GetValue<string>("dbFile")).Length / 1024f / 1024f, 2).ToString(CultureInfo.InvariantCulture) + " Mb";
         }
 
         public async Task OnPostCompressBaseAsync()
         {
-            FileSize = Math.Round(new FileInfo(_config.GetValue<string>("dbFile")).Length / 1024f / 1024f, 2).ToString() + " Mb";
+            FileSize = Math.Round(new FileInfo(_config.GetValue<string>("dbFile")).Length / 1024f / 1024f, 2).ToString(CultureInfo.InvariantCulture) + " Mb";
             await _context.Vacuum();
-            CompressedFileSize = Math.Round(new FileInfo(_config.GetValue<string>("dbFile")).Length / 1024f / 1024f, 2).ToString() + " Mb";
+            CompressedFileSize = Math.Round(new FileInfo(_config.GetValue<string>("dbFile")).Length / 1024f / 1024f, 2).ToString(CultureInfo.InvariantCulture) + " Mb";
         }
     }
 }

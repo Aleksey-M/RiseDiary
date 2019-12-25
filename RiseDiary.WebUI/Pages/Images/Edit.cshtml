@@ -128,10 +128,10 @@
                         <td colspan="5">
                             <div style="padding:5px;margin:3px">
                                 <b>URL</b> <i>@Model.ImageUrl</i>
-                                @if (Model.ImageLinks.Count > 0)
+                                @if (Model.ImageLinks != null && (Model.ImageLinks?.Count ?? 0) > 0)
                                 {
                                     <b>прикреплено к:</b>
-                                    foreach (var lnk in Model.ImageLinks)
+                                    foreach (var lnk in Model.ImageLinks ?? new Dictionary<Guid, string>())
                                     {
                                         @:|&nbsp;
                                         <a href="/Records/View?recordId=@lnk.Key">@lnk.Value</a>

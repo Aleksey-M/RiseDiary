@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 namespace RiseDiary.IntegratedTests
 {
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+#pragma warning disable CA1812
     [TestFixture]
     internal class AppSettingsTests : TestFixtureBase
     {
@@ -27,10 +28,10 @@ namespace RiseDiary.IntegratedTests
         public void UpdateSettings_WithNullKeyValue_ShouldThrowArgumentException()
         {
             var context = CreateContext();
-            string key = null;
+            string? key = null;
             string value = "Infinity";
 
-            Assert.ThrowsAsync<ArgumentException>(async () => await context.UpdateAppSetting(key, value));
+            Assert.ThrowsAsync<ArgumentException>(async () => await context.UpdateAppSetting(key!, value));
 
             key = string.Empty;
             Assert.ThrowsAsync<ArgumentException>(async () => await context.UpdateAppSetting(key, value));

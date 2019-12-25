@@ -4,6 +4,7 @@ using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages
@@ -17,11 +18,13 @@ namespace RiseDiary.WebUI.Pages
             _context = context;
         }
 
-        public List<CalendarRecordItem> Records { get; private set; }
+        public IEnumerable<CalendarRecordItem> Records { get; private set; } = Enumerable.Empty<CalendarRecordItem>();
         public int CurrentYear { get; private set; }
-        public List<DiaryScope> AllScopes { get; private set; }
+        public IEnumerable<DiaryScope> AllScopes { get; private set; } = Enumerable.Empty<DiaryScope>();
+#pragma warning disable CA1819 // Properties should not return arrays
         public Guid[] SelectedThemes { get; private set; } = Array.Empty<Guid>();
-        public List<int> YearsListFiltered { get; private set; } = new List<int>();
+#pragma warning restore CA1819 // Properties should not return arrays
+        public IEnumerable<int> YearsListFiltered { get; private set; } = Enumerable.Empty<int>();
 
         public async Task OnGetAsync(int? year, Guid[] themes)
         {

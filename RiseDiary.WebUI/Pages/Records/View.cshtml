@@ -49,13 +49,13 @@
         </tr>
         <tr class="record-head">
             <td colspan="4">
-                @if (Model.RecordThemes.Count > 0)
+                @if (Model.RecordThemes.Count() > 0)
                 {
                     <h5>
-                        @Model.RecordThemes[0]
-                        @for (int i = 1; i < Model.RecordThemes.Count; i++)
+                        @Model.RecordThemes.First()
+                        @for (int i = 1; i < Model.RecordThemes.Count(); i++)
                         {
-                            @:| @Model.RecordThemes[i]
+                            @:| @Model.RecordThemes.ElementAt(i)
                         }
                     </h5>
                 }

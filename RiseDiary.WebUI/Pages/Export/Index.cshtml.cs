@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using RiseDiary.Model.ImportExport;
+//using RiseDiary.Model.ImportExport;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace RiseDiary.WebUI.Pages.Export
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class IndexModel : PageModel
     {
-        private DiaryDbContext _context;
+        private readonly DiaryDbContext _context;
         public IndexModel(DiaryDbContext context)
         {
             _context = context;
@@ -37,18 +37,18 @@ namespace RiseDiary.WebUI.Pages.Export
         [BindProperty]
         public bool Themes { get; set; } = true;
 
-        public async Task<FileResult> OnPostExportAsync()
-        {
-            var records = await _context.Records.OrderByDescending(r => r.Date).Select(r => r.Id).ToListAsync();
+        //public async Task<FileResult> OnPostExportAsync()
+        //{
+        //    var records = await _context.Records.OrderByDescending(r => r.Date).Select(r => r.Id).ToListAsync();
 
-            var basePath = Request.Scheme + Uri.SchemeDelimiter + Request.Host;
+        //    var basePath = Request.Scheme + Uri.SchemeDelimiter + Request.Host;
 
-            var str = await _context.SerializeDiaryRecords(records, basePath, Themes, Images);
+        //    var str = await _context.SerializeDiaryRecords(records, basePath, Themes, Images);
 
-            var fileType = @"text/xml";
-            var fileName = $@"Export_{DateTime.Now.ToString("yyyy.MM.dd_hh.mm.ss")}.xml";
+        //    var fileType = @"text/xml";
+        //    var fileName = $@"Export_{DateTime.Now.ToString("yyyy.MM.dd_hh.mm.ss")}.xml";
 
-            return File(Encoding.UTF8.GetBytes(str), fileType, fileName);
-        }
+        //    return File(Encoding.UTF8.GetBytes(str), fileType, fileName);
+        //}
     }
 }

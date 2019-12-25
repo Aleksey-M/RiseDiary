@@ -15,8 +15,7 @@ namespace RiseDiary.WebUI.Pages.Dates
         private Guid _datesScopeId = default;
         private int _daysDisplayRange;
         private readonly DiaryDbContext _context;
-
-        public List<DateItem> Dates;
+        
         public bool IsScopeSelected => _datesScopeId == default;
 
         public IndexModel(DiaryDbContext context)
@@ -24,25 +23,30 @@ namespace RiseDiary.WebUI.Pages.Dates
             _context = context;
         }
 
+        public IEnumerable<DateItem> Dates { get; private set; } = Enumerable.Empty<DateItem>();
+
         private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
 
         private async Task UpdateViewModel()
         {
             var stringId = await _context.GetAppSetting(AppSettingsKeys.DatesScopeId);
-            Guid.TryParse(stringId, out var _datesScopeId);
+            if(!Guid.TryParse(stringId, out var _datesScopeId)) 
+            {
+                _datesScopeId = default;
+            }
 
             if (IsScopeSelected)
             {
                 _daysDisplayRange = (await _context.GetAppSettingInt(AppSettingsKeys.DatesDisplayRange)) ?? 7;
                 var datesRange = new DatesRange(DateTime.Now, _daysDisplayRange);
 
-                Dates = await _context.FetchDateItems(_datesScopeId, datesRange, LocalHostAndPort);
+                var dates = await _context.FetchDateItems(_datesScopeId, datesRange, LocalHostAndPort);
 
                 var weekdays = datesRange.AllRangeDates
                     .Where(di => !Dates.Any(d => d.TransferredDate == di.TransferredDate));
 
-                Dates.AddRange(weekdays);
-                Dates = Dates.OrderByDescending(d => d.TransferredDate).ToList();
+                dates.AddRange(weekdays);
+                Dates = dates.OrderByDescending(d => d.TransferredDate).ToList();
             }
         }
 

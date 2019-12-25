@@ -15,7 +15,7 @@ namespace RiseDiary.Model
         public string ScopeName { get; set; } = string.Empty;
         public bool Deleted { get; set; }
 
-        public ICollection<DiaryTheme>? Themes { get; private set; } = new List<DiaryTheme>();
+        public ICollection<DiaryTheme> Themes { get; private set; } = new List<DiaryTheme>();
     }
 
     public class DiaryTheme : IDeletedEntity
@@ -27,7 +27,7 @@ namespace RiseDiary.Model
         public bool Deleted { get; set; }
 
         public DiaryScope? Scope { get; set; }
-        public ICollection<DiaryRecordTheme>? RecordsRefs { get; private set; } = new List<DiaryRecordTheme>();
+        public ICollection<DiaryRecordTheme> RecordsRefs { get; private set; } = new List<DiaryRecordTheme>();
     }
 
     public class DiaryRecordTheme : IDeletedEntity

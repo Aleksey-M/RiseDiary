@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace RiseDiary.IntegratedTests
 {
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+#pragma warning disable CA1812
     [TestFixture]
     internal class ThemeTests : TestFixtureBase
     {

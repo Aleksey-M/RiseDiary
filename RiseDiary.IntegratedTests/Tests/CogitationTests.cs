@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 namespace RiseDiary.IntegratedTests
 {
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+#pragma warning disable CA1812
+#pragma warning disable CA1303
     [TestFixture]
     internal class CogitationTests : TestFixtureBase
     {
@@ -27,7 +29,7 @@ namespace RiseDiary.IntegratedTests
         {
             var context = CreateContext();
 
-            Assert.ThrowsAsync<ArgumentNullException>(async () => _ = await context.AddCogitation(null, ""));
+            Assert.ThrowsAsync<ArgumentNullException>(async () => _ = await context.AddCogitation(null!, ""));
         }
 
         [Test]
@@ -57,7 +59,7 @@ namespace RiseDiary.IntegratedTests
             var cog = await context.FetchCogitationById(cogId, "");
 
             Assert.IsNotNull(cog);
-            Assert.AreEqual(recId, cog.RecordId);
+            Assert.AreEqual(recId, cog?.RecordId);
         }
 
         [Test]

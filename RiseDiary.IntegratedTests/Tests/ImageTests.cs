@@ -10,6 +10,7 @@ using System.Collections.Generic;
 namespace RiseDiary.IntegratedTests
 {
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+#pragma warning disable CA1812
     [TestFixture]
     class ImageTests : TestFixtureBase
     {

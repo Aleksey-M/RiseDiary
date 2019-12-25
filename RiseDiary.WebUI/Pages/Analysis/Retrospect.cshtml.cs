@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages
@@ -12,30 +12,26 @@ namespace RiseDiary.WebUI.Pages
     public class RetrospectModel : PageModel
     {
         private readonly DiaryDbContext _context;
-        private readonly ILogger<RetrospectModel> _logger;
-        public RetrospectModel(DiaryDbContext context, ILogger<RetrospectModel> logger)
+        public RetrospectModel(DiaryDbContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
-        public Dictionary<DiaryRecord, List<Cogitation>> Records { get; private set; }
-        public RecordsFilter Filters { get; private set; }
+        public Dictionary<DiaryRecord, List<Cogitation>> Records { get; private set; } = new Dictionary<DiaryRecord, List<Cogitation>>();
+        public RecordsFilter Filters { get; private set; } = RecordsFilter.Empty;
         public int RecordsCount { get; private set; }
         public int PagesCount { get; private set; }
         public int CurrenPage { get; private set; }
-        public List<DiaryScope> AllScopes { get; private set; }
-        public Guid[] SelectedThemes { get; private set; } = new Guid[0];
+        public IEnumerable<DiaryScope> AllScopes { get; private set; } = Enumerable.Empty<DiaryScope>();
+#pragma warning disable CA1819 // Properties should not return arrays
+        public Guid[] SelectedThemes { get; private set; } = Array.Empty<Guid>();
+#pragma warning restore CA1819 // Properties should not return arrays
 
         private const int _pageSize = 20;
         private const string _first = "Первая";
         private const string _previous = "Предыдущая";
         private const string _next = "Следующая";
         private const string _last = "Последняя";
-        public string First => _first;
-        public string Previous => _previous;
-        public string Next => _next;
-        public string Last => _last;
 
         private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
 
@@ -83,14 +79,14 @@ namespace RiseDiary.WebUI.Pages
                 CurrenPage = currentPage >= 0 ? currentPage : 1;
                 CurrenPage = CurrenPage >= PagesCount ? PagesCount - 1 : CurrenPage;
 
-                switch (navTo)
+                CurrenPage = navTo switch
                 {
-                    case _first: CurrenPage = 0; break;
-                    case _previous: CurrenPage = currentPage - 1; break;
-                    case _next: CurrenPage = currentPage + 1; break;
-                    case _last: CurrenPage = PagesCount; break;
-                    default: CurrenPage = 0; break;
-                }
+                    _first => 0,
+                    _previous => currentPage - 1,
+                    _next => currentPage + 1,
+                    _last => PagesCount,
+                    _ => 0,
+                };
                 CurrenPage = CurrenPage >= 0 ? CurrenPage : 0;
                 CurrenPage = CurrenPage >= PagesCount ? PagesCount - 1 : CurrenPage;
 

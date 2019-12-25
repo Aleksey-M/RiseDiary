@@ -18,7 +18,9 @@ namespace RiseDiary.WebUI.Pages.Images
         private const int MaxScaledHeight = 600;
         public Guid ImageId { get; private set; }
         public Guid RecordId { get; private set; }
-        public byte[] ScaledImage { get; private set; }
+#pragma warning disable CA1819 // Properties should not return arrays
+        public byte[] ScaledImage { get; private set; } = Array.Empty<byte>();
+#pragma warning restore CA1819 // Properties should not return arrays
         public double Coefficient { get; private set; }
         public string ScaledImageString => Convert.ToBase64String(ScaledImage);
         public async Task<ActionResult> OnGetAsync(Guid? imageId, Guid? recordId)

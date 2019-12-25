@@ -15,7 +15,7 @@ namespace RiseDiary.WebUI
         }
 
         public IConfiguration Configuration { get; }
-        private string _dataBaseFileName;
+        private string _dataBaseFileName = string.Empty;
         private bool _needFileBackup;
 
         public void ConfigureServices(IServiceCollection services)
@@ -55,7 +55,7 @@ namespace RiseDiary.WebUI
                 endpoints.MapBlazorHub();
             });
 
-            if (_needFileBackup)
+            if (_needFileBackup && applicationLifetime != null)
             {
                 applicationLifetime.ApplicationStopped.Register(() => SqliteFileBackup.BackupFile(_dataBaseFileName));
             }

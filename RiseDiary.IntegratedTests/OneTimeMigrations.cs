@@ -6,6 +6,7 @@ using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace Migrations
     public class OneTimeMigrations
     {
         [Test, Ignore("Special test")]
-        public async Task MigrateDatabase_ToNewIdFormat()
+        public async Task MigrateDatabaseToNewIdFormat()
         {
             var sourceSqlite = @"D:\Projects\RiseDiary\DB\MigrateDatabaseToNewId\Source.db";
             var migratedSqlite = @"D:\Projects\RiseDiary\DB\MigrateDatabaseToNewId\RiseDiary.db";
@@ -44,18 +45,18 @@ namespace Migrations
             using var command = connection.CreateCommand();
             command.CommandText = "SELECT * FROM Scopes";
 
-            var scopes = new List<(string Id, string Name, bool Deleted)>();
+            var scopes = new List<(string? Id, string? Name, bool Deleted)>();
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
                 scopes.Add((
                     reader["Id"].ToString(),
                     reader["ScopeName"].ToString(),
-                    Convert.ToBoolean(reader["Deleted"])));
+                    Convert.ToBoolean(reader["Deleted"], CultureInfo.InvariantCulture)));
             }
             reader.Close();
 
-            var themes = new List<(string Id, string ScopeId, string ThemeName, bool Deleted, bool Actual)>();
+            var themes = new List<(string? Id, string? ScopeId, string? ThemeName, bool Deleted, bool Actual)>();
             using var c2 = connection.CreateCommand();
             c2.CommandText = "SELECT * FROM Themes";
             using var r2 = c2.ExecuteReader();
@@ -65,8 +66,8 @@ namespace Migrations
                     r2["Id"].ToString(),
                     r2["ScopeId"].ToString(),
                     r2["ThemeName"].ToString(),
-                    Convert.ToBoolean(r2["Deleted"]),
-                    Convert.ToBoolean(r2["Actual"]))
+                    Convert.ToBoolean(r2["Deleted"], CultureInfo.InvariantCulture),
+                    Convert.ToBoolean(r2["Actual"], CultureInfo.InvariantCulture))
                     );
             }
             r2.Close();
@@ -77,18 +78,18 @@ namespace Migrations
 
             // write Scopes
             var sList = new List<DiaryScope>();
-            foreach (var scope in scopes)
+            foreach (var (Id, Name, Deleted) in scopes)
             {
                 var s = new DiaryScope
                 {
                     Id = Guid.NewGuid(),
-                    ScopeName = scope.Name,
-                    Deleted = scope.Deleted
+                    ScopeName = Name ?? string.Empty,
+                    Deleted = Deleted
                 };
 
-                scopesMap[scope.Id] = s.Id;
+                scopesMap[Id ?? string.Empty] = s.Id;
 
-                foreach (var theme in themes.Where(t => t.ScopeId == scope.Id))
+                foreach (var theme in themes.Where(t => t.ScopeId == Id))
                 {
                     var t = new DiaryTheme
                     {
@@ -111,7 +112,7 @@ namespace Migrations
             await context.SaveChangesAsync();
 
             // read images
-            var images = new List<(string Id, string Name, string CreateDate, string ModifyDate, byte[] Thumbnail, int Width, int Height, int SizeByte, bool Deleted)>();
+            var images = new List<(string? Id, string? Name, string? CreateDate, string? ModifyDate, byte[] Thumbnail, int Width, int Height, int SizeByte, bool Deleted)>();
             using var c3 = connection.CreateCommand();
             c3.CommandText = "SELECT * FROM Images";
             using var r3 = c3.ExecuteReader();
@@ -123,15 +124,15 @@ namespace Migrations
                     r3["CreateDate"].ToString(),
                     r3["ModifyDate"].ToString(),
                     (byte[])r3["Thumbnail"],
-                    Convert.ToInt32(r3["Width"]),
-                    Convert.ToInt32(r3["Height"]),
-                    Convert.ToInt32(r3["SizeByte"]),
-                    Convert.ToBoolean(r3["Deleted"]))
+                    Convert.ToInt32(r3["Width"], CultureInfo.InvariantCulture),
+                    Convert.ToInt32(r3["Height"], CultureInfo.InvariantCulture),
+                    Convert.ToInt32(r3["SizeByte"], CultureInfo.InvariantCulture),
+                    Convert.ToBoolean(r3["Deleted"], CultureInfo.InvariantCulture))
                     );
             }
             r3.Close();
             //
-            var fullImages = new List<(string Id, string ImageId, byte[] Data)>();
+            var fullImages = new List<(string? Id, string? ImageId, byte[] Data)>();
             using var c4 = connection.CreateCommand();
             c4.CommandText = "SELECT * FROM FullSizeImages";
             using var r4 = c4.ExecuteReader();
@@ -150,28 +151,28 @@ namespace Migrations
 
             // write Images
             var imgList = new List<DiaryImageFull>();
-            foreach (var img in images)
+            foreach (var (Id, Name, CreateDate, ModifyDate, Thumbnail, Width, Height, SizeByte, Deleted) in images)
             {
                 var i = new DiaryImage
                 {
                     Id = Guid.NewGuid(),
-                    Name = img.Name,
-                    CreateDate = DateTime.Parse(img.CreateDate),
-                    ModifyDate = DateTime.Parse(img.ModifyDate),
-                    Thumbnail = img.Thumbnail,
-                    Width = img.Width,
-                    Height = img.Height,
-                    SizeByte = img.SizeByte,
-                    Deleted = img.Deleted
+                    Name = Name ?? string.Empty,
+                    CreateDate = DateTime.Parse(CreateDate ?? string.Empty, CultureInfo.InvariantCulture),
+                    ModifyDate = DateTime.Parse(ModifyDate ?? string.Empty, CultureInfo.InvariantCulture),
+                    Thumbnail = Thumbnail,
+                    Width = Width,
+                    Height = Height,
+                    SizeByte = SizeByte,
+                    Deleted = Deleted
                 };
 
-                imagesMap[img.Id] = i.Id;
+                imagesMap[Id ?? string.Empty] = i.Id;
 
                 var fi = new DiaryImageFull
                 {
                     Id = Guid.NewGuid(),
                     ImageId = i.Id,
-                    Data = fullImages.First(ffi => ffi.ImageId == img.Id).Data,
+                    Data = fullImages.First(ffi => ffi.ImageId == Id).Data,
                     DiaryImage = i
                 };
 
@@ -189,9 +190,9 @@ namespace Migrations
             {
                 var appS = new AppSetting
                 {
-                    Key = r5["Key"].ToString(),
-                    Value = r5["Key"].ToString() == "ImportantDaysScopeId" ? scopesMap[r5["Value"].ToString()].ToString() : r5["Value"].ToString(),
-                    ModifiedDate = DateTime.Parse(r5["ModifiedDate"].ToString())
+                    Key = r5["Key"].ToString() ?? string.Empty,
+                    Value = r5["Key"].ToString() == "ImportantDaysScopeId" ? scopesMap[r5["Value"].ToString() ?? string.Empty].ToString() ?? string.Empty : r5["Value"].ToString() ?? string.Empty,
+                    ModifiedDate = DateTime.Parse(r5["ModifiedDate"].ToString() ?? string.Empty, CultureInfo.InvariantCulture)
                 };
 
                 context.AppSettings.Add(appS);
@@ -204,7 +205,7 @@ namespace Migrations
             var recordsMap = new Dictionary<string, Guid>();
 
             // Read records
-            var records = new List<(string Id, string Date, string CreateDate, string ModifyDate, string Name, string Text, bool Deleted)>();
+            var records = new List<(string? Id, string? Date, string? CreateDate, string? ModifyDate, string? Name, string? Text, bool Deleted)>();
             using var c6 = connection.CreateCommand();
             c6.CommandText = "SELECT * FROM Records";
             using var r6 = c6.ExecuteReader();
@@ -217,27 +218,27 @@ namespace Migrations
                     r6["ModifyDate"].ToString(),
                     r6["Name"].ToString(),
                     r6["Text"].ToString(),
-                    Convert.ToBoolean(r6["Deleted"]))
+                    Convert.ToBoolean(r6["Deleted"], CultureInfo.InvariantCulture))
                     );
             }
             r6.Close();
 
             // create records instances
             var recordsInstances = new List<DiaryRecord>();
-            foreach (var rec in records)
+            foreach (var (Id, Date, CreateDate, ModifyDate, Name, Text, Deleted) in records)
             {
                 var r = new DiaryRecord
                 {
                     Id = Guid.NewGuid(),
-                    Date = DateTime.Parse(rec.Date),
-                    CreateDate = DateTime.Parse(rec.CreateDate),
-                    ModifyDate = DateTime.Parse(rec.ModifyDate),
-                    Name = rec.Name,
-                    Text = rec.Text,
-                    Deleted = rec.Deleted
+                    Date = DateTime.Parse(Date ?? string.Empty, CultureInfo.InvariantCulture),
+                    CreateDate = DateTime.Parse(CreateDate ?? string.Empty, CultureInfo.InvariantCulture),
+                    ModifyDate = DateTime.Parse(ModifyDate ?? string.Empty, CultureInfo.InvariantCulture),
+                    Name = Name ?? string.Empty,
+                    Text = Text ?? string.Empty,
+                    Deleted = Deleted
                 };
 
-                recordsMap[rec.Id] = r.Id;
+                recordsMap[Id ?? string.Empty] = r.Id;
                 recordsInstances.Add(r);
             }
 
@@ -254,7 +255,7 @@ namespace Migrations
                     end = srcText.IndexOf('"', current);
                     link = srcText[current..end];
 
-                    newLink = link.Replace(host, "[HOST_AND_PORT]");
+                    newLink = link.Replace(host, "[HOST_AND_PORT]", StringComparison.OrdinalIgnoreCase);
 
                     // local links to records
                     int rCurrent = link.IndexOf("recordId=", 0, StringComparison.OrdinalIgnoreCase);
@@ -262,9 +263,9 @@ namespace Migrations
                     {
                         var recId = link.Substring(rCurrent + 9);
                         var newRecId = recordsMap[recId];
-                        newLink = newLink.Replace(recId, newRecId.ToString());
+                        newLink = newLink.Replace(recId, newRecId.ToString(), StringComparison.OrdinalIgnoreCase);
 
-                        srcText = srcText.Replace(link, newLink);
+                        srcText = srcText.Replace(link, newLink, StringComparison.OrdinalIgnoreCase);
                     }
 
                     // local inks to images
@@ -273,9 +274,9 @@ namespace Migrations
                     {
                         var imgId = link.Substring(iCurrent + 10);
                         var newImgId = imagesMap[imgId];
-                        newLink = newLink.Replace(imgId, newImgId.ToString());
+                        newLink = newLink.Replace(imgId, newImgId.ToString(), StringComparison.OrdinalIgnoreCase);
 
-                        srcText = srcText.Replace(link, newLink);
+                        srcText = srcText.Replace(link, newLink, StringComparison.OrdinalIgnoreCase);
                     }
 
                     start = current + link.Length;
@@ -296,7 +297,7 @@ namespace Migrations
             await context.SaveChangesAsync();
 
             // read Cogitations
-            var cogitations = new List<(string Id, string RecordId, string Date, string Text, bool Deleted)>();
+            var cogitations = new List<(string? Id, string? RecordId, string? Date, string? Text, bool Deleted)>();
             using var c7 = connection.CreateCommand();
             c7.CommandText = "SELECT * FROM Cogitations";
             using var r7 = c7.ExecuteReader();
@@ -307,22 +308,22 @@ namespace Migrations
                     r7["RecordId"].ToString(),
                     r7["Date"].ToString(),
                     r7["Text"].ToString(),
-                    Convert.ToBoolean(r7["Deleted"]))
+                    Convert.ToBoolean(r7["Deleted"], CultureInfo.InvariantCulture))
                     );
             }
             r7.Close();
 
             // write cogitations
             var cogList = new List<Cogitation>();
-            foreach (var cog in cogitations)
+            foreach (var (Id, RecordId, Date, Text, Deleted) in cogitations)
             {
                 var c = new Cogitation
                 {
                     Id = Guid.NewGuid(),
-                    Date = DateTime.Parse(cog.Date),
-                    RecordId = recordsMap[cog.RecordId],
-                    Text = ReplaceIdAndHostInText(cog.Text),
-                    Deleted = cog.Deleted
+                    Date = DateTime.Parse(Date ?? string.Empty, CultureInfo.InvariantCulture),
+                    RecordId = recordsMap[RecordId ?? string.Empty],
+                    Text = ReplaceIdAndHostInText(Text ?? string.Empty),
+                    Deleted = Deleted
                 };
 
                 cogList.Add(c);
@@ -332,7 +333,7 @@ namespace Migrations
             await context.SaveChangesAsync();
 
             // read RecortThemes
-            var recThemes = new List<(string ThemeId, string RecordId, bool Deleted)>();
+            var recThemes = new List<(string? ThemeId, string? RecordId, bool Deleted)>();
             using var c8 = connection.CreateCommand();
             c8.CommandText = "SELECT * FROM RecordThemes";
             using var r8 = c8.ExecuteReader();
@@ -341,7 +342,7 @@ namespace Migrations
                 recThemes.Add((
                     r8["ThemeId"].ToString(),
                     r8["RecordId"].ToString(),
-                    Convert.ToBoolean(r8["Deleted"]))
+                    Convert.ToBoolean(r8["Deleted"], CultureInfo.InvariantCulture))
                     );
             }
             r8.Close();
@@ -349,13 +350,13 @@ namespace Migrations
             // write RecordThemes
 
             var recThemList = new List<DiaryRecordTheme>();
-            foreach (var recThem in recThemes)
+            foreach (var (ThemeId, RecordId, Deleted) in recThemes)
             {
                 var rt = new DiaryRecordTheme
                 {
-                    ThemeId = themesMap[recThem.ThemeId],
-                    RecordId = recordsMap[recThem.RecordId],
-                    Deleted = recThem.Deleted
+                    ThemeId = themesMap[ThemeId ?? string.Empty],
+                    RecordId = recordsMap[RecordId ?? string.Empty],
+                    Deleted = Deleted
                 };
 
                 recThemList.Add(rt);
@@ -365,7 +366,7 @@ namespace Migrations
             await context.SaveChangesAsync();
 
             // read RecortImages
-            var recImages = new List<(string ImageId, string RecordId, bool Deleted)>();
+            var recImages = new List<(string? ImageId, string? RecordId, bool Deleted)>();
             using var c9 = connection.CreateCommand();
             c9.CommandText = "SELECT * FROM RecordImages";
             using var r9 = c9.ExecuteReader();
@@ -374,7 +375,7 @@ namespace Migrations
                 recImages.Add((
                     r9["ImageId"].ToString(),
                     r9["RecordId"].ToString(),
-                    Convert.ToBoolean(r9["Deleted"]))
+                    Convert.ToBoolean(r9["Deleted"], CultureInfo.InvariantCulture))
                     );
             }
             r9.Close();
@@ -382,13 +383,13 @@ namespace Migrations
             // write RecordImages
 
             var recImgList = new List<DiaryRecordImage>();
-            foreach (var recImg in recImages)
+            foreach (var (ImageId, RecordId, Deleted) in recImages)
             {
                 var ri = new DiaryRecordImage
                 {
-                    ImageId = imagesMap[recImg.ImageId],
-                    RecordId = recordsMap[recImg.RecordId],
-                    Deleted = recImg.Deleted
+                    ImageId = imagesMap[ImageId ?? string.Empty],
+                    RecordId = recordsMap[RecordId ?? string.Empty],
+                    Deleted = Deleted
                 };
 
                 recImgList.Add(ri);

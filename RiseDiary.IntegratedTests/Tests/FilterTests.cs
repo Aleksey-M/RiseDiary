@@ -7,6 +7,7 @@ using System.Linq;
 namespace RiseDiary.UnitTests
 {
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+#pragma warning disable CA1812
     [TestFixture]
     class FilterTests
     {
@@ -52,7 +53,6 @@ namespace RiseDiary.UnitTests
         {
             var recFilter = RecordsFilter.Empty;
             var itemId1 = Guid.NewGuid();
-            var itemId2 = Guid.NewGuid();
 
             recFilter.AddThemeId(itemId1);
             recFilter.AddThemeId(itemId1);// same id
@@ -71,7 +71,7 @@ namespace RiseDiary.UnitTests
             recFilter.AddThemeId(recList[0]);
             recFilter.AddThemeId(recList);
 
-            Assert.AreEqual(recList.Count(), recFilter.RecordThemeIds.Count);
+            Assert.AreEqual(recList.Length, recFilter.RecordThemeIds.Count);
             Assert.IsTrue(recFilter.RecordThemeIds.All(i => recList.Contains(i)));
             Assert.IsTrue(recList.All(i => recFilter.RecordThemeIds.Contains(i)));
         }

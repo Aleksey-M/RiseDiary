@@ -4,6 +4,7 @@ using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,6 +12,7 @@ namespace RiseDiary.IntegratedTests
 {
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
+#pragma warning disable CA1812
     [TestFixture]
     internal class RecordTests : TestFixtureBase
     {
@@ -37,11 +39,11 @@ namespace RiseDiary.IntegratedTests
             var loadedRec = await context.FetchRecordById(id, "host");
 
             Assert.NotNull(loadedRec);
-            Assert.AreEqual(rec.CreateDate, loadedRec.CreateDate);
-            Assert.AreEqual(rec.Date, loadedRec.Date);
-            Assert.AreEqual(rec.ModifyDate, loadedRec.ModifyDate);
-            Assert.AreEqual(rec.Name, loadedRec.Name);
-            Assert.AreEqual(rec.Text, loadedRec.Text);
+            Assert.AreEqual(rec.CreateDate, loadedRec?.CreateDate);
+            Assert.AreEqual(rec.Date, loadedRec?.Date);
+            Assert.AreEqual(rec.ModifyDate, loadedRec?.ModifyDate);
+            Assert.AreEqual(rec.Name, loadedRec?.Name);
+            Assert.AreEqual(rec.Text, loadedRec?.Text);
         }
 
         [Test]
@@ -65,7 +67,7 @@ namespace RiseDiary.IntegratedTests
         public async Task UpdateRecord_ShouldUpdateFields()
         {
             var context = CreateContext();
-            var rec = GetTestRecord();
+            DiaryRecord? rec = GetTestRecord();
             var updatedRec = new DiaryRecord
             {
                 CreateDate = DateTime.Now.AddDays(-5),
@@ -77,20 +79,20 @@ namespace RiseDiary.IntegratedTests
 
             updatedRec.Id = rec.Id = await context.AddRecord(rec, "host");
             await context.UpdateRecord(updatedRec, "host");
-            rec = await context.FetchRecordById(updatedRec.Id, "host");
+            rec = await context.FetchRecordById(updatedRec?.Id ?? Guid.Empty, "host");
 
             Assert.NotNull(rec);
-            Assert.AreEqual(updatedRec.CreateDate, rec.CreateDate);
-            Assert.AreEqual(updatedRec.Date, rec.Date);
-            Assert.AreEqual(updatedRec.ModifyDate, rec.ModifyDate);
-            Assert.AreEqual(updatedRec.Name, rec.Name);
-            Assert.AreEqual(updatedRec.Text, rec.Text);
+            Assert.AreEqual(updatedRec?.CreateDate, rec?.CreateDate);
+            Assert.AreEqual(updatedRec?.Date, rec?.Date);
+            Assert.AreEqual(updatedRec?.ModifyDate, rec?.ModifyDate);
+            Assert.AreEqual(updatedRec?.Name, rec?.Name);
+            Assert.AreEqual(updatedRec?.Text, rec?.Text);
         }
 
         private class DiaryRecordNameAndIdComparer : IEqualityComparer<DiaryRecord>
         {
             public bool Equals(DiaryRecord x, DiaryRecord y) => x.Id == y.Id && x.Name == y.Name;
-            public int GetHashCode(DiaryRecord obj) => obj.Id.GetHashCode() + obj.Name.GetHashCode();
+            public int GetHashCode(DiaryRecord obj) => obj.Id.GetHashCode() + obj.Name.GetHashCode(StringComparison.InvariantCulture);
             public static DiaryRecordNameAndIdComparer Instance => new DiaryRecordNameAndIdComparer();
         }
 
@@ -435,8 +437,8 @@ namespace RiseDiary.IntegratedTests
             };
             var context = CreateContext();
             Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
-            var ThemeId1 = context.Themes.ToList().First(t => int.Parse(t.ThemeName) == 10).Id;
-            var ThemeId2 = context.Themes.ToList().First(t => int.Parse(t.ThemeName) == 20).Id;
+            var ThemeId1 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 10).Id;
+            var ThemeId2 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 20).Id;
             BindRecordsWithThemes(context, recThemes);
             var filter = new RecordsFilter();
 
@@ -478,8 +480,8 @@ namespace RiseDiary.IntegratedTests
             };
             var context = CreateContext();
             Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
-            var ThemeId1 = context.Themes.ToList().First(t => int.Parse(t.ThemeName) == 10).Id;
-            var ThemeId2 = context.Themes.ToList().First(t => int.Parse(t.ThemeName) == 20).Id;
+            var ThemeId1 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 10).Id;
+            var ThemeId2 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 20).Id;
             BindRecordsWithThemes(context, recThemes);
             var filter = new RecordsFilter();
             int matchesCount1 = 5;
@@ -517,8 +519,8 @@ namespace RiseDiary.IntegratedTests
             };
             var context = CreateContext();
             Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
-            var ThemeId1 = context.Themes.ToList().First(t => int.Parse(t.ThemeName) == 10).Id;
-            var ThemeId2 = context.Themes.ToList().First(t => int.Parse(t.ThemeName) == 20).Id;
+            var ThemeId1 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 10).Id;
+            var ThemeId2 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 20).Id;
             BindRecordsWithThemes(context, recThemes);
             var dateFrom = DateTime.Now.AddDays(-10).Date;
             var dateTo = DateTime.Now.AddDays(-5).Date;
@@ -555,8 +557,8 @@ namespace RiseDiary.IntegratedTests
             };
             var context = CreateContext();
             Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
-            var ThemeId1 = context.Themes.ToList().First(t => int.Parse(t.ThemeName) == 10).Id;
-            var ThemeId2 = context.Themes.ToList().First(t => int.Parse(t.ThemeName) == 20).Id;
+            var ThemeId1 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 10).Id;
+            var ThemeId2 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 20).Id;
             BindRecordsWithThemes(context, recThemes);
             var dateFrom = DateTime.Now.AddDays(-10).Date;
             var dateTo = DateTime.Now.AddDays(-5).Date;
@@ -683,7 +685,7 @@ namespace RiseDiary.IntegratedTests
             filter.AddThemeId(Guid.NewGuid());
 
             IQueryable<DiaryRecord> result;
-            List<DiaryRecord> r = null;
+            List<DiaryRecord>? r = null;
 
             if (!filter.IsEmptyTypeFilter)
             {
@@ -706,7 +708,7 @@ namespace RiseDiary.IntegratedTests
             {
                 if (!string.IsNullOrWhiteSpace(filter.RecordNameFilter))
                 {
-                    result = result.Where(r => r.Name.Contains(filter.RecordNameFilter));
+                    result = result.Where(r => r.Name.Contains(filter.RecordNameFilter, StringComparison.OrdinalIgnoreCase));
                 }
                 if (filter.RecordDateFrom != null)
                 {

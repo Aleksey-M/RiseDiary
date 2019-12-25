@@ -110,7 +110,7 @@ V 5.1.0
 + asp core 3.1
 + Server side Blazor для разделов
 	+ Сфер и тем
-- С# 8 (nullable reference types, пофиксить что анализатор покажет)
++ С# 8 (nullable reference types, пофиксить что анализатор покажет)
 - Unit-тесты для методов db:
 	+ FetchYearsListFiltered
 	- FetchCalendarDates

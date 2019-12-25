@@ -8,6 +8,12 @@ using RiseDiary.WebUI.Data;
 
 namespace RiseDiary.WebUI.Pages.Images
 {
+    internal class ImageListOption
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class ImagesListFilteredModel : PageModel
     {
@@ -16,15 +22,11 @@ namespace RiseDiary.WebUI.Pages.Images
         {
             _context = context;
         }        
-        public class ImageListOption
-        {
-            public Guid Id { get; set; }
-            public string Name { get; set; }
-        }
+        
         public async Task<JsonResult> OnGetAsync(Guid recordId, string namePart)
         {
             var images = !string.IsNullOrWhiteSpace(namePart)
-                ? _context.Images.Where(i => !i.Deleted && i.Name.Contains(namePart))
+                ? _context.Images.Where(i => !i.Deleted && i.Name.Contains(namePart, StringComparison.OrdinalIgnoreCase))
                 : _context.Images.Where(i => !i.Deleted);
 
             images = recordId != Guid.Empty

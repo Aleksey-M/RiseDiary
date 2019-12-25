@@ -3,6 +3,7 @@ using System.IO;
 
 namespace RiseDiary.IntegratedTests
 {
+#pragma warning disable CA1812
     [TestFixture]
     internal class SQLite_DataBaseTests : TestFixtureBase
     {

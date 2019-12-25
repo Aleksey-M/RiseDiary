@@ -13,15 +13,16 @@ namespace RiseDiary.WebUI.Pages.Export
     public enum UpdateRecordAction { SkipNew, RewriteOld, RewriteIfNewest }
     public class ImportRecordsModel : PageModel
     {
-        private readonly DiaryDbContext _context;
-        public ImportRecordsModel(DiaryDbContext context)
-        {
-            _context = context;
-        }
-        public void OnGet()
-        {
+        //private readonly DiaryDbContext _context;
+        //public ImportRecordsModel(DiaryDbContext context)
+        //{
+        //    _context = context;
+        //}
 
-        }
+        //public void OnGet()
+        //{
+
+        //}
 
         //public async Task OnPostImportDataAsync(IFormFile xmlFile, UpdateRecordAction updateAction)
         //{

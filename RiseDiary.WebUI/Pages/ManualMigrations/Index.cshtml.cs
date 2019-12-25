@@ -5,19 +5,20 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using RiseDiary.Model.ImportExport;
+//using RiseDiary.Model.ImportExport;
 using RiseDiary.WebUI.Data;
 using Microsoft.AspNetCore.Http.Extensions;
 
 namespace RiseDiary.WebUI.Pages.ManualMigrations
 {
+#pragma warning disable CA1822 // Mark members as static
     public class IndexModel : PageModel
     {
-        private readonly DiaryDbContext _context;
-        public IndexModel(DiaryDbContext context)
-        {
-            _context = context;
-        }
+        //private readonly DiaryDbContext _context;
+        //public IndexModel(DiaryDbContext context)
+        //{
+        //    _context = context;
+        //}
         public void OnGet()
         {
 
