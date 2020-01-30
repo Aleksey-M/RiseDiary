@@ -979,7 +979,7 @@ namespace RiseDiary.WebUI.Data
 
             var calendarItems = await context.Records
                 .Where(r => r.Date >= firstYearDay && r.Date <= lastYearDay)
-                .Select(r => new CalendarRecordItem { Id = r.Id, Date = r.Date, Name = r.Name })
+                .Select(r => new CalendarRecordItem(r.Id, r.Name, r.Date))
                 .ToListAsync().ConfigureAwait(false);
 
             if (themes != null && themes.Length > 0)
@@ -1032,7 +1032,26 @@ namespace RiseDiary.WebUI.Data
             .ToListAsync()
             .ConfigureAwait(false) ?? throw new ArgumentNullException(nameof(context)));
 
-    }
 
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
+        public static async Task<List<DiaryImage>> FetchImagesFiltered(this DiaryDbContext context, Guid recordId, string filterPart)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            var images = !string.IsNullOrWhiteSpace(filterPart)
+                ? context.Images.Where(i => !i.Deleted && i.Name.Contains(filterPart, StringComparison.OrdinalIgnoreCase))
+                : context.Images.Where(i => !i.Deleted);
+
+            images = recordId != Guid.Empty
+                ? images.Where(i => !context.RecordImages.Where(ri => !ri.Deleted).Any(ri => ri.RecordId == recordId && ri.ImageId == i.Id))
+                : images;
+
+            var filteredImages = await images
+                .OrderByDescending(i => i.CreateDate)
+                .Take(10)                
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            return filteredImages;
+        }
+    }
 }

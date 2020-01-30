@@ -61,18 +61,6 @@ namespace RiseDiary.Model
         public ICollection<DiaryRecordImage> RecordsRefs { get; private set; } = new List<DiaryRecordImage>();
     }
 
-    //public static class FileSize
-    //{
-    //    public static string ToString(long bytesCount)
-    //    {
-    //        if (bytesCount < 1024) return bytesCount + " B";
-    //        if (bytesCount < 1024 * 1024) return Math.Round(bytesCount / 1024f, 2).ToString() + " Kb";
-    //        if (bytesCount < 1024 * 1024 * 1024) return Math.Round(bytesCount / (1024f * 1024f), 2).ToString() + " Mb";
-    //        if (bytesCount < 1024L * 1024 * 1024 * 1024) return Math.Round(bytesCount / (1024f * 1024f * 1024f), 2).ToString() + " Gb";
-    //        return "HUGE!";
-    //    }
-    //}
-
     public class DiaryImageFull
     {
         public Guid Id { get; set; }
@@ -109,13 +97,6 @@ namespace RiseDiary.Model
         public DiaryImage? Image { get; set; }
         public DiaryRecord? Record { get; set; }
     }
-
-    //public class DiaryImageEqualityComparerById : IEqualityComparer<DiaryImage>
-    //{
-    //    public bool Equals(DiaryImage x, DiaryImage y) => x.Id == y.Id;
-
-    //    public int GetHashCode(DiaryImage obj) => obj.Id.GetHashCode();
-    //}
 
     public class DiaryRecord : IDeletedEntity
     {

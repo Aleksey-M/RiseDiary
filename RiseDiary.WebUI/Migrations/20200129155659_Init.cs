@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 namespace RiseDiary.WebUI.Migrations
 {
@@ -7,14 +7,12 @@ namespace RiseDiary.WebUI.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-#pragma warning disable CA1062 // Validate arguments of public methods
             migrationBuilder.CreateTable(
-#pragma warning restore CA1062 // Validate arguments of public methods
                 name: "AppSettings",
                 columns: table => new
                 {
                     Key = table.Column<string>(nullable: false),
-                    Value = table.Column<string>(nullable: true),
+                    Value = table.Column<string>(nullable: false),
                     ModifiedDate = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
@@ -27,10 +25,10 @@ namespace RiseDiary.WebUI.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    Name = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: false),
                     CreateDate = table.Column<DateTime>(nullable: false),
                     ModifyDate = table.Column<DateTime>(nullable: false),
-                    Thumbnail = table.Column<byte[]>(nullable: true),
+                    Thumbnail = table.Column<byte[]>(nullable: false),
                     Width = table.Column<int>(nullable: false),
                     Height = table.Column<int>(nullable: false),
                     SizeByte = table.Column<int>(nullable: false),
@@ -49,8 +47,8 @@ namespace RiseDiary.WebUI.Migrations
                     Date = table.Column<DateTime>(nullable: false),
                     CreateDate = table.Column<DateTime>(nullable: false),
                     ModifyDate = table.Column<DateTime>(nullable: false),
-                    Name = table.Column<string>(nullable: true),
-                    Text = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: false),
+                    Text = table.Column<string>(nullable: false),
                     Deleted = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
@@ -63,7 +61,7 @@ namespace RiseDiary.WebUI.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    ScopeName = table.Column<string>(nullable: true),
+                    ScopeName = table.Column<string>(nullable: false),
                     Deleted = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
@@ -77,7 +75,7 @@ namespace RiseDiary.WebUI.Migrations
                 {
                     Id = table.Column<Guid>(nullable: false),
                     ImageId = table.Column<Guid>(nullable: false),
-                    Data = table.Column<byte[]>(nullable: true)
+                    Data = table.Column<byte[]>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -96,8 +94,8 @@ namespace RiseDiary.WebUI.Migrations
                 {
                     Id = table.Column<Guid>(nullable: false),
                     SourceImageId = table.Column<Guid>(nullable: false),
-                    Modification = table.Column<string>(nullable: true),
-                    Data = table.Column<byte[]>(nullable: true),
+                    Modification = table.Column<string>(nullable: false),
+                    Data = table.Column<byte[]>(nullable: false),
                     Width = table.Column<int>(nullable: false),
                     Height = table.Column<int>(nullable: false),
                     SizeByte = table.Column<int>(nullable: false)
@@ -120,7 +118,7 @@ namespace RiseDiary.WebUI.Migrations
                     Id = table.Column<Guid>(nullable: false),
                     RecordId = table.Column<Guid>(nullable: false),
                     Date = table.Column<DateTime>(nullable: false),
-                    Text = table.Column<string>(nullable: true),
+                    Text = table.Column<string>(nullable: false),
                     Deleted = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
@@ -165,7 +163,7 @@ namespace RiseDiary.WebUI.Migrations
                 {
                     Id = table.Column<Guid>(nullable: false),
                     ScopeId = table.Column<Guid>(nullable: false),
-                    ThemeName = table.Column<string>(nullable: true),
+                    ThemeName = table.Column<string>(nullable: false),
                     Actual = table.Column<bool>(nullable: false),
                     Deleted = table.Column<bool>(nullable: false)
                 },
@@ -250,9 +248,7 @@ namespace RiseDiary.WebUI.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-#pragma warning disable CA1062 // Validate arguments of public methods
             migrationBuilder.DropTable(
-#pragma warning restore CA1062 // Validate arguments of public methods
                 name: "AppSettings");
 
             migrationBuilder.DropTable(

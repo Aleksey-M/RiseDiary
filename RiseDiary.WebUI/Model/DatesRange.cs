@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 
@@ -78,14 +79,19 @@ namespace RiseDiary.Model
         
     }
 
-    public class DateItem
+    public struct DateItem : IEquatable<DateItem>
     {
         public DateItem(DatesRange datesRange, DateTime date)
         {
             if (date == null) throw new ArgumentNullException(nameof(date));
             DatesRange = datesRange ?? throw new ArgumentNullException(nameof(datesRange));
             Date = date;
+            Name = string.Empty;
+            Text = string.Empty;
+            Theme = string.Empty;
+            Id = Guid.NewGuid();
         }
+
         public DateItem(DatesRange datesRange, Guid id, string theme, DateTime date, string name, string text)
         {
             if (date == null) throw new ArgumentNullException(nameof(date));
@@ -99,11 +105,11 @@ namespace RiseDiary.Model
         }
 
         public Guid Id { get; }
-        public string Theme { get; } = string.Empty;
+        public string Theme { get; }
         public DateTime Date { get; }
         public DatesRange DatesRange { get; }
-        public string Name { get; } = string.Empty;
-        public string Text { get; } = string.Empty;
+        public string Name { get; }
+        public string Text { get; }
 
         private static string GetWeekDayName(DayOfWeek day)
         {
@@ -122,15 +128,80 @@ namespace RiseDiary.Model
 
         public DateTime TransferredDate => DatesRange.GetTransferredDate(Date);
         public string DisplayDate => TransferredDate.ToString("yyyy.MM.dd", CultureInfo.InvariantCulture) + " " + DateItem.GetWeekDayName(TransferredDate.DayOfWeek);
-        public bool IsWeekday => Name == null;
+        public bool IsWeekday => string.IsNullOrEmpty(Name);
         public bool IsToday => DatesRange.Today == TransferredDate.Date;
 
+        public override bool Equals(object? obj)
+        {
+            if (obj == null) return false;
+
+            if (obj.GetType() == typeof(DateItem))
+                return Equals((DateItem)obj);
+            else
+                return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+
+        public bool Equals([AllowNull] DateItem other)
+        {
+            return Id == other.Id;
+        }
+
+        public static bool operator ==(DateItem left, DateItem right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(DateItem left, DateItem right)
+        {
+            return !(left == right);
+        }
     }
 
-    public class CalendarRecordItem
+    public struct CalendarRecordItem : IEquatable<CalendarRecordItem>
     {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public DateTime Date { get; set; }
+        public CalendarRecordItem(Guid id, string name, DateTime date)
+        {
+            Id = id;
+            Name = name;
+            Date = date;
+        }
+        public Guid Id { get; }
+        public string Name { get; }
+        public DateTime Date { get; }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null) return false;
+
+            if (obj.GetType() == typeof(CalendarRecordItem))
+                return Equals((CalendarRecordItem)obj);
+            else
+                return false;
+        }
+
+        public bool Equals([AllowNull] CalendarRecordItem other)
+        {
+            return Id == other.Id && Name == other.Name && Date == other.Date;
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+
+        public static bool operator ==(CalendarRecordItem left, CalendarRecordItem right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(CalendarRecordItem left, CalendarRecordItem right)
+        {
+            return !(left == right);
+        }
     }
 }

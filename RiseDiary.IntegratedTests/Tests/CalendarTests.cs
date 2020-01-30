@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
@@ -60,8 +61,8 @@ namespace RiseDiary.IntegratedTests
         public async Task FetchYearsListFiltered_WithoutMatching_ShouldReturnEmptyList()
         {
             var context = CreateContext();
-            AddThemesForRecords(context, _recordsDatesThemes);
             var otherScopes = Create_3Scopes_With1ThemeForEach(context);
+            await AddThemesForRecords(context, _recordsDatesThemes);            
 
             var filter = new Guid[] { otherScopes[0].Themes.First().Id, otherScopes[2].Themes.First().Id };
             var yearsList = await context.FetchYearsListFiltered(filter);
@@ -74,7 +75,7 @@ namespace RiseDiary.IntegratedTests
         public async Task FetchYearsListFiltered_ShouldReturnFilteredListWithUniqueYearValues()
         {
             var context = CreateContext();
-            var data = AddThemesForRecords(context, _recordsDatesThemes).ToList();
+            var data = (await AddThemesForRecords(context, _recordsDatesThemes)).ToList();
 
             var filter = new Guid[] { data[0].themesIds[0], data[1].themesIds[0] };
             var yearsList = await context.FetchYearsListFiltered(filter);
@@ -90,8 +91,9 @@ namespace RiseDiary.IntegratedTests
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            var data = AddThemesForRecords(context, _recordsDatesThemes).ToList();
-            context.Records.Remove(context.Records.Single(r => r.Date == new DateTime(2018, 1, 4)));
+            var data = (await AddThemesForRecords(context, _recordsDatesThemes)).ToList();
+            var deletedDate = new DateTime(2018, 1, 4);
+            context.Records.Remove(context.Records.Single(r => r.Date == deletedDate));
             context.SaveChanges();
 
             var filter = new Guid[] { data[0].themesIds[0], data[1].themesIds[0] };
@@ -102,53 +104,116 @@ namespace RiseDiary.IntegratedTests
             Assert.Contains(2017, yearsList);
         }
 
-        //[Test]
-        //public async Task FetchCalendarDates_OnEmptyBase_ShouldReturnEmptyList()
-        //{
+        [Test]
+        public async Task FetchCalendarDates_OnEmptyBase_ShouldReturnEmptyList()
+        {
+            var context = CreateContext();
 
-        //}
+            var res = await context.FetchCalendarDates(DateTime.Now.Year, Array.Empty<Guid>());
 
-        //[Test]
-        //public async Task FetchCalendarDates_WithNoDatesToYear_ShouldReturnEmptyList()
-        //{
+            Assert.IsNotNull(res);
+            Assert.IsEmpty(res);
+        }
 
-        //}
+        [Test]
+        public async Task FetchCalendarDates_WithNoDatesToYear_ShouldReturnEmptyList()
+        {
+            var context = CreateContext();
+            await AddSetOfRecordsWithDates(context, _recordDates);
 
-        //[Test]
-        //public async Task FetchCalendarDates_OnlyByYear_ShouldReturnRecordsForYear()
-        //{
+            var res = await context.FetchCalendarDates(2020, Array.Empty<Guid>());
 
-        //}
+            Assert.IsNotNull(res);
+            Assert.IsEmpty(res);
+        }
 
-        //[Test]
-        //public async Task FetchCalendarDates_WithNoMatchesByThemes_ShouldReturnEmptyList()
-        //{
+        [Test]
+        public async Task FetchCalendarDates_OnlyByYear_ShouldReturnRecordsForYear()
+        {
+            var context = CreateContext();
+            await AddSetOfRecordsWithDates(context, _recordDates);
 
-        //}
+            var res = await context.FetchCalendarDates(2017, Array.Empty<Guid>());
 
-        //[Test]
-        //public async Task FetchCalendarDates_WithThemesAndYearMatches_ShouldReturnRecordsForYear()
-        //{
+            Assert.IsNotNull(res);
+            Assert.AreEqual(2, res.Count);
+        }
 
-        //}
+        [Test]
+        public async Task FetchCalendarDates_WithNoMatchesByThemes_ShouldReturnEmptyList()
+        {
+            var context = CreateContext();
+            var data = await AddThemesForRecords(context, _recordsDatesThemes);
+            var themesFilter = new[] { data.ElementAt(3).themesIds.First() }; // "Important Dates"
 
-        //[Test]
-        //public async Task FetchCalendarDates_WithThemesAndYearMatches_ShouldNotReturnRecordsForDeleted()
-        //{
+            var res = await context.FetchCalendarDates(2019, Array.Empty<Guid>());
 
-        //}
+            Assert.IsNotNull(res);
+            Assert.AreEqual(1, res.Count);
 
-        //[Test]
-        //public async Task FetchCalendarDates_WithThemesMatches_ShouldNotReturnRecordsForDeleted()
-        //{
+            res = await context.FetchCalendarDates(2019, themesFilter);
 
-        //}
+            Assert.IsNotNull(res);
+            Assert.IsEmpty(res);
+        }
 
-        //[Test]
-        //public async Task FetchCalendarDates_WithYearMatches_ShouldNotReturnRecordsForDeleted()
-        //{
+        [Test]
+        public async Task FetchCalendarDates_WithThemesAndYearMatches_ShouldReturnRecordsForYear()
+        {
+            var context = CreateContext();
+            var data = await AddThemesForRecords(context, _recordsDatesThemes);
+            var themesFilter = new[] { data.ElementAt(3).themesIds.First() }; // "Important Dates"
 
-        //}
+            var res = await context.FetchCalendarDates(2017, themesFilter);
 
+            Assert.IsNotNull(res);
+            Assert.AreEqual(2, res.Count);
+        }
+
+        [Test]
+        public async Task FetchCalendarDates_WithThemesAndYearMatches_ShouldNotReturnRecordsForDeleted()
+        {
+            var context = CreateContext();
+            context.SoftDeleting = true;
+            var data = await AddThemesForRecords(context, _recordsDatesThemes);
+            var themesFilter = new[] { data.ElementAt(3).themesIds.First() }; // "Important Dates"
+
+            var deletedDate = new DateTime(2017, 3, 16);
+            context.Records.Remove(context.Records.Single(r => r.Date == deletedDate));
+            context.SaveChanges();
+
+            var res = await context.FetchCalendarDates(2017, themesFilter);
+
+            Assert.IsNotNull(res);
+            Assert.AreEqual(1, res.Count);
+
+            var deletedRec = await context.Records.IgnoreQueryFilters().SingleOrDefaultAsync(r => r.Date == deletedDate);
+
+            Assert.IsNotNull(deletedRec);
+            Assert.IsTrue(deletedRec.Deleted);
+        }
+
+        [Test]
+        public async Task FetchCalendarDates_WithYearMatches_ShouldNotReturnRecordsForDeleted()
+        {
+            var context = CreateContext();
+            context.SoftDeleting = true;
+            var data = AddThemesForRecords(context, _recordsDatesThemes);
+
+            var deletedDate = new DateTime(2017, 3, 16);
+            var rec = context.Records.Single(r => r.Date == deletedDate);
+            context.Records.Remove(rec);
+            context.SaveChanges();
+
+            var res = await context.FetchCalendarDates(2017, Array.Empty<Guid>());
+
+            Assert.IsNotNull(res);
+            Assert.AreEqual(1, res.Count);
+
+            var deletedRec = await context.Records.IgnoreQueryFilters().SingleOrDefaultAsync(r => r.Date == deletedDate);
+
+            Assert.IsNotNull(deletedRec);
+            Assert.IsTrue(deletedRec.Deleted);
+        }
     }
 }

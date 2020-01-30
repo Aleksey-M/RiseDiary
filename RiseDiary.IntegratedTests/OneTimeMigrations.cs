@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using RiseDiary.Model;
+using RiseDiary.WebUI;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,13 @@ namespace Migrations
     [TestFixture]
     public class OneTimeMigrations
     {
+        [Test, Ignore("Special test")]
+        public void File2FileMigration()
+        {
+            var sourceFile = @"D:\Projects\RiseDiary\DB\MigrateDatabaseToNewId\RiseDiary.db";
+            SqliteFileBackup.File2FileMigration(sourceFile);
+        }
+
         [Test, Ignore("Special test")]
         public async Task MigrateDatabaseToNewIdFormat()
         {

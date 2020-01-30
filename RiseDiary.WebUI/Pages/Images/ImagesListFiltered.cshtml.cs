@@ -25,20 +25,10 @@ namespace RiseDiary.WebUI.Pages.Images
         
         public async Task<JsonResult> OnGetAsync(Guid recordId, string namePart)
         {
-            var images = !string.IsNullOrWhiteSpace(namePart)
-                ? _context.Images.Where(i => !i.Deleted && i.Name.Contains(namePart, StringComparison.OrdinalIgnoreCase))
-                : _context.Images.Where(i => !i.Deleted);
-
-            images = recordId != Guid.Empty
-                ? images.Where(i => !_context.RecordImages.Where(ri => !ri.Deleted).Any(ri => ri.RecordId == recordId && ri.ImageId == i.Id))
-                : images;
-            
-            var filteredImages = await images
-                .OrderByDescending(i => i.CreateDate)
-                .Take(10)
+            var filteredImages = (await _context.FetchImagesFiltered(recordId, namePart))
                 .Select(i => new ImageListOption { Id = i.Id, Name = i.Name })
-                .ToListAsync();
-            
+                .ToList();
+
             return new JsonResult(filteredImages);
         }
     }

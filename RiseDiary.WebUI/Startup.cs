@@ -44,11 +44,12 @@ namespace RiseDiary.WebUI
         public void Configure(IApplicationBuilder app, IHostApplicationLifetime applicationLifetime)
         {
             app.UseDeveloperExceptionPage();
-            app.UseStaticFiles();
-            //app.UseHttpsRedirection();
-            //app.UseAuthorization();
+            app.UseStaticFiles();           
             
             app.UseRouting();
+            //app.UseHttpsRedirection();
+            //app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();

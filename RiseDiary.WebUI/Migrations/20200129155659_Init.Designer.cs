@@ -9,22 +9,26 @@ using RiseDiary.WebUI.Data;
 namespace RiseDiary.WebUI.Migrations
 {
     [DbContext(typeof(DiaryDbContext))]
-    [Migration("20190726070702_Init")]
+    [Migration("20200129155659_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.0.0-preview7.19362.6");
+                .HasAnnotation("ProductVersion", "3.1.1");
 
             modelBuilder.Entity("RiseDiary.Model.AppSetting", b =>
                 {
-                    b.Property<string>("Key");
+                    b.Property<string>("Key")
+                        .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("ModifiedDate");
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("Value");
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Key");
 
@@ -34,15 +38,21 @@ namespace RiseDiary.WebUI.Migrations
             modelBuilder.Entity("RiseDiary.Model.Cogitation", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("Date");
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
 
-                    b.Property<bool>("Deleted");
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("RecordId");
+                    b.Property<Guid>("RecordId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("Text");
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -54,23 +64,34 @@ namespace RiseDiary.WebUI.Migrations
             modelBuilder.Entity("RiseDiary.Model.DiaryImage", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CreateDate");
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("TEXT");
 
-                    b.Property<bool>("Deleted");
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<int>("Height");
+                    b.Property<int>("Height")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("ModifyDate");
+                    b.Property<DateTime>("ModifyDate")
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("SizeByte");
+                    b.Property<int>("SizeByte")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<byte[]>("Thumbnail");
+                    b.Property<byte[]>("Thumbnail")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
 
-                    b.Property<int>("Width");
+                    b.Property<int>("Width")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -80,11 +101,15 @@ namespace RiseDiary.WebUI.Migrations
             modelBuilder.Entity("RiseDiary.Model.DiaryImageFull", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
 
-                    b.Property<byte[]>("Data");
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
 
-                    b.Property<Guid>("ImageId");
+                    b.Property<Guid>("ImageId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -97,19 +122,28 @@ namespace RiseDiary.WebUI.Migrations
             modelBuilder.Entity("RiseDiary.Model.DiaryRecord", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CreateDate");
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("Date");
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
 
-                    b.Property<bool>("Deleted");
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("ModifyDate");
+                    b.Property<DateTime>("ModifyDate")
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("Text");
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -118,11 +152,14 @@ namespace RiseDiary.WebUI.Migrations
 
             modelBuilder.Entity("RiseDiary.Model.DiaryRecordImage", b =>
                 {
-                    b.Property<Guid>("RecordId");
+                    b.Property<Guid>("RecordId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ImageId");
+                    b.Property<Guid>("ImageId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<bool>("Deleted");
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("RecordId", "ImageId");
 
@@ -135,11 +172,14 @@ namespace RiseDiary.WebUI.Migrations
 
             modelBuilder.Entity("RiseDiary.Model.DiaryRecordTheme", b =>
                 {
-                    b.Property<Guid>("RecordId");
+                    b.Property<Guid>("RecordId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ThemeId");
+                    b.Property<Guid>("ThemeId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<bool>("Deleted");
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("RecordId", "ThemeId");
 
@@ -153,11 +193,15 @@ namespace RiseDiary.WebUI.Migrations
             modelBuilder.Entity("RiseDiary.Model.DiaryScope", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
 
-                    b.Property<bool>("Deleted");
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<string>("ScopeName");
+                    b.Property<string>("ScopeName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -167,15 +211,21 @@ namespace RiseDiary.WebUI.Migrations
             modelBuilder.Entity("RiseDiary.Model.DiaryTheme", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
 
-                    b.Property<bool>("Actual");
+                    b.Property<bool>("Actual")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<bool>("Deleted");
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("ScopeId");
+                    b.Property<Guid>("ScopeId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("ThemeName");
+                    b.Property<string>("ThemeName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -187,19 +237,28 @@ namespace RiseDiary.WebUI.Migrations
             modelBuilder.Entity("RiseDiary.Model.TempImage", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
 
-                    b.Property<byte[]>("Data");
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
 
-                    b.Property<int>("Height");
+                    b.Property<int>("Height")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<string>("Modification");
+                    b.Property<string>("Modification")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("SizeByte");
+                    b.Property<int>("SizeByte")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("SourceImageId");
+                    b.Property<Guid>("SourceImageId")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("Width");
+                    b.Property<int>("Width")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

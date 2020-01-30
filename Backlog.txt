@@ -111,22 +111,33 @@ V 5.1.0
 + Server side Blazor для разделов
 	+ Сфер и тем
 + С# 8 (nullable reference types, пофиксить что анализатор покажет)
-- Unit-тесты для методов db:
-	+ FetchYearsListFiltered
-	- FetchCalendarDates
++ Unit-тесты для методов db:
 	+ ChangeThemeActuality
-	- DeleteTempImage
-	- ApplyChangesFromTempImage
-	- AddUnsavedTempImage
-	- FetchTempImage
-	- FetchRecordsForImage
-	- SearchRecordsByText
-	- FetchDateItems
-	- FetchAllDateItems
-	- UpdateCogitationText
+	+ FetchYearsListFiltered
+	+ FetchCalendarDates
+	+ Миграция из файла в файл (File2File). Для решения неподдерживаемых видов миграции базы SQLite и уменьшения размеров файла
 
 
 V 5.2.0
+ -  Server side Blazor для разделов
+	- Картинок
+	- Дат
+	- Поиска записей по тексту
+	- Записей
+	- Ретроспективы
+- добавить настройку для значения сжатия jpeg-изображений (используется при сжатии и обрезке изображений)
+- сортировка картинок для записи
+- вывод картинок в виде Thumbnails на форме просмотра записи и в Ретроспективе. Попап с полноразмерной картинкой по клику
+- удобная форма выбора картинок для записи
+- кастомная первая страница 
+- два типа фильтрации по нескольким темам: по правилу "И" или по правилу "ИЛИ"
+- добавить поле Taken для фотографий - дата фотографии
+
+
+
+
+vNext
+
 - Добавить тесты на проверку замены хоста во внутренних ссылках (на записи и картинки)
 	- FetchCogitationById
 	- FetchAllCogitationsOfRecord
@@ -154,29 +165,23 @@ V 5.2.0
 - Страница выбора записей по темам для экспорта в xml (Blazor)
 - Страница выбора записей по тексту и по диапазону дат (фильтрация) для экспорта в xml (Blazor)
 
+- Unit-тесты для методов db:
+	- DatesRange class (5 methods + 2 ctor)
+	- FetchDateItems
+	- FetchAllDateItems
+	- FetchImagesFiltered	
+	- DeleteTempImage
+	- ApplyChangesFromTempImage
+	- AddUnsavedTempImage
+	- FetchTempImage
+	- FetchRecordsForImage
+	- SearchRecordsByText	
+	- UpdateCogitationText
 
-vNext
 
 - API GraphQL or OData
 - тесты для API
 - Swagger UI
-
-- UI smoke тесты (F#, WebDriver, canopy, NUnit, FsTest) 
-
-- Server side Blazor для разделов
-	- Кртинок
-	- Дат
-	- Поиска записей по тексту
-	- Записей
-	- Ретроспективы
-
-- добавить настройку для значения сжатия jpeg-изображений (используется при сжатии и обрезке изображений)
-- сортировка картинок для записи
-- вывод картинок в виде Thumbnails на форме просмотра записи и в Ретроспективе. Попап с полноразмерной картинкой по клику
-- удобная форма выбора картинок для записи
-- кастомная первая страница 
-- два типа фильтрации по нескольким темам: по правилу "И" или по правилу "ИЛИ"
-- добавить поле Taken для фотографий - дата фотографии
 
 - ? возможность добавлять к записям аудиозаписи
 - ? HTTPS

@@ -301,9 +301,9 @@ namespace RiseDiary.IntegratedTests
             return recs;
         }
 
-        protected static IEnumerable<(DateTime date, List<Guid> themesIds)> AddThemesForRecords(DiaryDbContext context, Dictionary<DateTime, List<string>> themesByDate)
+        protected async static Task<List<(DateTime date, List<Guid> themesIds)>> AddThemesForRecords(DiaryDbContext context, Dictionary<DateTime, List<string>> themesByDate)
         {
-            _ = AddSetOfRecordsWithDates(context, themesByDate.Select(tbd => tbd.Key).ToList());
+            _ = await AddSetOfRecordsWithDates(context, themesByDate.Select(tbd => tbd.Key).ToList());
 
             var addedThemes = new List<DiaryTheme>();
 
@@ -346,10 +346,13 @@ namespace RiseDiary.IntegratedTests
 
             var res = context.RecordThemes.Include(rt => rt.Record).ToList();
 
+            var retRes = new List<(DateTime date, List<Guid> themesIds)>();
             foreach (var kv in themesByDate)
             {
-                yield return (kv.Key, res.Where(r => r.Record!.Date == kv.Key).Select(rt => rt.ThemeId).ToList());
-            }            
+                retRes.Add((kv.Key, res.Where(r => r.Record!.Date == kv.Key).Select(rt => rt.ThemeId).ToList()));
+            }
+
+            return retRes;
         }
 
     }
