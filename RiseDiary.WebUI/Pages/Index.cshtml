@@ -1,63 +1,21 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Настройка";
-    ViewData["TitlePart"] = "Настройка на работу с дневником";
+    ViewData["Title"] = "Дневник";
+    ViewData["TitlePart"] = "Стартовая страница";
 }
 
-<div class="row">
-    <div class="col-sm-10 col-sm-offset-1">
-        <h2>Дневник</h2>
-        <p>
-            Для плодотворной и качественной работы с дневником необходимо быть в особом настроении.
-        </p>
-        <p>
-            Необходимо очистить ум от второстепенных мыслей, успокоиться и расслабиться.
-        </p>
-        <p>
-            Поможет сделать это следующая практика: Нужно ни о чем не думая сосредоточиться на своем дыхании 60 секунд.
-        </p>        
-            <div style="text-align:center">
-                <div id="counter" style="font-size:7em; font-family:Calibri; color:blueviolet">60</div>
-                <br />
-                <button class="btn btn-lg btn-primary" id="btnStart" onclick="start(this);">Старт</button>
-            </div>        
+@if (Model.StartPageRecord != null)
+{
+    @Html.Raw(Model.StartPageRecord.Text)
+    <br />
+    <h6><a asp-page="Records/View" asp-route-recordId="@Model.StartPageRecord.Id.ToString()">Открыть запись</a></h6>
+}
+else
+{
+    <div class="row">
+        <div class="col-sm-10 col-sm-offset-1">
+            <h3 style="color:silver">Стартовая страница не выбрана</h3>
+        </div>
     </div>
-</div>
-
-@section Scripts { 
-    <script type="text/javascript">
-        let _counter = 60;
-        let _label = null;
-        let intervalId = null;
-
-        function start(btn) {
-            if (intervalId === null) {
-                _counter = 60;
-                btn.innerText = 'Стоп';
-                intervalId = setInterval(function () { 
-                    _counter--;
-                    if (_counter < 0) {                        
-                        clearInterval(intervalId);
-                        intervalId = null;
-                        btn.innerText = 'Старт';
-                        _label.innerText = '60';
-                    }
-                    else {
-                        _label.innerText = _counter;
-                    }
-                }, 1000);
-            } 
-            else {
-                clearInterval(intervalId);
-                intervalId = null;
-                btn.innerText = 'Старт';
-                _label.innerText = '60';
-            }
-        }
-
-        $(function () {
-            _label = document.getElementById('counter');                       
-        });
-    </script>
 }

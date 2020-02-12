@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using RiseDiary.WebUI.Data;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using RiseDiary.WebUI.Data;
 
 namespace RiseDiary.WebUI.Pages.Images
 {
@@ -21,8 +20,8 @@ namespace RiseDiary.WebUI.Pages.Images
         public ImagesListFilteredModel(DiaryDbContext context)
         {
             _context = context;
-        }        
-        
+        }
+
         public async Task<JsonResult> OnGetAsync(Guid recordId, string namePart)
         {
             var filteredImages = (await _context.FetchImagesFiltered(recordId, namePart))

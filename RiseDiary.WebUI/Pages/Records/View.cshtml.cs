@@ -12,10 +12,10 @@ namespace RiseDiary.WebUI.Pages
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class RecordViewModel : PageModel
     {
-        private readonly DiaryDbContext _context;
+        public DiaryDbContext DbContext { get; }
         public RecordViewModel(DiaryDbContext context)
         {
-            _context = context;
+            DbContext = context;
         }
 
         public Guid RecordId { get; set; }
@@ -26,7 +26,7 @@ namespace RiseDiary.WebUI.Pages
         private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
         private async Task UpdatePageState()
         {
-            Record = await _context.FetchRecordByIdWithData(RecordId, LocalHostAndPort) ?? throw new ArgumentException($"Record with Id = '{RecordId}' is not exists");
+            Record = await DbContext.FetchRecordByIdWithData(RecordId, LocalHostAndPort) ?? throw new ArgumentException($"Record with Id = '{RecordId}' is not exists");
             RecordThemes = Record.ThemesRefs.Select(tr => tr.Theme?.ThemeName ?? string.Empty).ToList();
             RecordImages = Record.ImagesRefs.Select(ir => (ir.ImageId, ir.Image.Name)).ToList();
             Cogitations = Record.Cogitations.OrderBy(c => c.Date).ToList();
@@ -43,7 +43,7 @@ namespace RiseDiary.WebUI.Pages
         {
             if (!string.IsNullOrWhiteSpace(newCogText) && recordId != Guid.Empty)
             {
-                await _context.AddCogitation(new Cogitation
+                await DbContext.AddCogitation(new Cogitation
                 {
                     Date = DateTime.Now,
                     RecordId = recordId,
@@ -62,7 +62,7 @@ namespace RiseDiary.WebUI.Pages
         {
             if (cogitationId != Guid.Empty)
             {
-                await _context.DeleteCogitation(cogitationId);
+                await DbContext.DeleteCogitation(cogitationId);
             }
             if (recordId != Guid.Empty)
             {
@@ -75,7 +75,7 @@ namespace RiseDiary.WebUI.Pages
         {
             if (cogitationId != Guid.Empty && !string.IsNullOrWhiteSpace(cogText))
             {
-                await _context.UpdateCogitationText(cogitationId, cogText, LocalHostAndPort);
+                await DbContext.UpdateCogitationText(cogitationId, cogText, LocalHostAndPort);
             }
             if (recordId != Guid.Empty)
             {
@@ -89,7 +89,7 @@ namespace RiseDiary.WebUI.Pages
             if (recordId != Guid.Empty) RecordId = recordId;
             if (imageId != Guid.Empty)
             {
-                await _context.RemoveRecordImage(recordId, imageId);
+                await DbContext.RemoveRecordImage(recordId, imageId);
             }
             await UpdatePageState();
         }
@@ -99,7 +99,7 @@ namespace RiseDiary.WebUI.Pages
             if (recordId != Guid.Empty) RecordId = recordId;
             if (imageId != Guid.Empty)
             {
-                await _context.AddRecordImage(recordId, imageId);
+                await DbContext.AddRecordImage(recordId, imageId);
             }
             await UpdatePageState();
         }

@@ -39,7 +39,10 @@
     <tbody>
         <tr class="record-head">
             <td colspan="4">
-                <h4><b>@Model.Record.Date.ToString("yyyy.MM.dd")</b>&nbsp;:&nbsp;@Model.Record.RecordNameDisplay</h4>
+                <h4>
+                    <b>@Model.Record.Date.ToString("yyyy.MM.dd")</b>&nbsp;:&nbsp;@Model.Record.RecordNameDisplay
+                    <component type="typeof(SetStartRecordComponent)" render-mode="ServerPrerendered" param-RecordId="@Model.RecordId" />
+                </h4>
             </td>
         </tr>
         <tr class="record-head">

@@ -1,8 +1,4 @@
-﻿@using Data
-@using Model
-
-@namespace RiseDiary.WebUI.Pages
-@inject DiaryDbContext DiaryDbContext
+﻿@namespace RiseDiary.WebUI.Pages
 
 <div class="panel panel-success">    
     <div class="panel-heading">
@@ -23,38 +19,5 @@
 
 @foreach (var sc in Scopes)
 {
-    <ScopeComponent Scope="sc" DeleteScopeCallback="DeleteScopeCallback" @key="sc"></ScopeComponent>
-}
-
-@code {
-    private List<DiaryScope> Scopes { get; set; } = null!;
-    private string? NewScopeName { get; set; }
-    private string? ErrorMessage { get; set; }
-
-    private async Task CreateNewScope()
-    {
-        if (string.IsNullOrWhiteSpace(NewScopeName))
-        {
-            ErrorMessage = "Название области не введено";
-        }
-        else
-        {
-            await DiaryDbContext.AddScope(NewScopeName.Trim());
-            NewScopeName = null;
-            Scopes = await DiaryDbContext.FetchScopesWithThemes();
-            ErrorMessage = null;
-        }
-    }
-
-    private async Task DeleteScopeCallback(Guid scopeId)
-    {
-        await DiaryDbContext.DeleteScope(scopeId);
-        Scopes = await DiaryDbContext.FetchScopesWithThemes();
-        this.StateHasChanged();
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        Scopes = await DiaryDbContext.FetchScopesWithThemes();
-    }
+    <ScopeComponent DbContext="DbContext" Scope="sc" UpdateParentState="UpdateState" @key="sc"></ScopeComponent>
 }

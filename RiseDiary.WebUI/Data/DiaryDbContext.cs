@@ -289,7 +289,7 @@ namespace RiseDiary.WebUI.Data
         public static async Task<List<DiaryScope>> FetchScopesWithThemes(this DiaryDbContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
-            return await context.Scopes.Include(s => s.Themes).AsNoTracking().ToListAsync().ConfigureAwait(false);
+            return await context.Scopes.Include(s => s.Themes).AsNoTracking().OrderBy(s => s.ScopeName).ToListAsync().ConfigureAwait(false);
         }
 
         public static Task<int> GetScopesCount(this DiaryDbContext context)
@@ -764,7 +764,7 @@ namespace RiseDiary.WebUI.Data
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException("Key should not be null or empty");
-            if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Value should not be null or empty");
+            if (value == null) throw new ArgumentException("Value should not be null or empty");
 
             var appSetting = await context.AppSettings.FirstOrDefaultAsync(s => s.Key == key).ConfigureAwait(false);
 

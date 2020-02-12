@@ -1,0 +1,21 @@
+﻿@namespace RiseDiary.WebUI.Pages.Records
+
+@if (StartRecordId == null)
+{
+    <button type="button" @onclick="@(e => SetOnStartPage())" class="btn btn-sm btn-link" style="float:right" title="Поместить на стартовую страницу">
+        <span class="glyphicon @(GliphIconName)" aria-hidden="true"></span>
+    </button>
+}
+else if (RecordId == StartRecordId)
+{
+<button type="button" @onclick="@(e =>RemoveFromStartPage())" class="btn btn-sm btn-link" style="float:right" title="Удалить со стартовой страницы">
+    <span class="glyphicon @(GliphIconName)" aria-hidden="true"></span>
+</button>
+}
+else
+{
+<button type="button" @onclick="@(e => SetOnStartPage())" class="btn btn-sm btn-link" style="float:right" title="Заменить другую запись на стартовой странице">
+    <span class="glyphicon @(GliphIconName)" aria-hidden="true"></span>
+</button>
+}
+
