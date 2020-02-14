@@ -141,6 +141,7 @@ namespace RiseDiary.Model
         public static string DatesScopeId => "ImportantDaysScopeId";
         public static string DatesDisplayRange => "ImportantDaysDisplayRange";
         public static string StartPageRecordId => "StartPageRecordId";
+        public static string ImageQuality => "ImageQuality";
     }
 
     public class AppSetting

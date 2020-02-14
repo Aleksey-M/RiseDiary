@@ -1,0 +1,35 @@
+﻿@page
+@model RiseDiary.WebUI.ImageQualityModel
+@{
+    ViewData["Title"] = "Config";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Image Quality</title>
+    <style>
+        .line-form-control {
+            margin-right:10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="row">
+        <div class="col-sm-6 col-sm-offset-3" style="margin-top:10px">
+            <form method="post" asp-page-handler="UpdateImageQuality">
+                <div class="form-group form-inline">
+                    <label for="imageQuality" class="line-form-control">Качество Jpeg картинок:</label>
+                    <input type="number" name="imageQuality" id="imageQuality" class="form-control line-form-control" style="width:60px" value="@Model.ImageQuality" />
+                    <button type="submit" class="btn btn-success btn-sm form-control">Сохранить</button>
+                </div>
+                
+            </form>            
+        </div>
+    </div>
+
+</body>
+</html>

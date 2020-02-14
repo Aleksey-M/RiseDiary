@@ -91,7 +91,8 @@ namespace RiseDiary.WebUI.Pages.Images
             RecordId = recordId;
             ImageId = imageId;
             var tmpImage = await _context.FetchTempImage(ImageId);
-            await _context.ApplyChangesFromTempImage(tmpImage);
+            int imageQuality = await _context.GetAppSettingInt(AppSettingsKeys.ImageQuality) ?? 75;
+            await _context.ApplyChangesFromTempImage(tmpImage, imageQuality);
             await UpdateModel();
         }
 
@@ -99,7 +100,8 @@ namespace RiseDiary.WebUI.Pages.Images
         {
             var tmpImage = await _context.FetchTempImage(imageId);
             var image = await _context.FetchImageById(imageId);
-            ImageId = await _context.AddImage($"{image.Name} ({tmpImage.Modification})", tmpImage.Data);
+            int imageQuality = await _context.GetAppSettingInt(AppSettingsKeys.ImageQuality) ?? 75;
+            ImageId = await _context.AddImage($"{image.Name} ({tmpImage.Modification})", tmpImage.Data, imageQuality);
             await _context.DeleteTempImage(imageId);
             RecordId = recordId;
             if (RecordId != null && RecordId.Value != Guid.Empty)
@@ -117,7 +119,8 @@ namespace RiseDiary.WebUI.Pages.Images
             {
                 var image = await _context.FetchImageById(imageId);
                 var sourceImage = await _context.FetchFullImageById(imageId);
-                var tmpImage = ImageHelper.ScaleImage(image, sourceImage, imageSize);
+                int imageQuality = await _context.GetAppSettingInt(AppSettingsKeys.ImageQuality) ?? 75;
+                var tmpImage = ImageHelper.ScaleImage(image, sourceImage, imageSize, imageQuality);
                 await _context.AddUnsavedTempImage(tmpImage);
             }
             await UpdateModel();

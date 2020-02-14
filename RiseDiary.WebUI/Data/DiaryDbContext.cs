@@ -408,7 +408,7 @@ namespace RiseDiary.WebUI.Data
                 .ToListAsync().ConfigureAwait(false);
         }
 
-        public static async Task<Guid> AddImage(this DiaryDbContext context, string imageName, byte[] fullSizeImageData)
+        public static async Task<Guid> AddImage(this DiaryDbContext context, string imageName, byte[] fullSizeImageData, int imageQuality)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (imageName == null) throw new ArgumentNullException(nameof(imageName));
@@ -420,7 +420,7 @@ namespace RiseDiary.WebUI.Data
                 CreateDate = DateTime.Now,
                 ModifyDate = DateTime.Now,
                 SizeByte = fullSizeImageData.Length,
-                Thumbnail = ImageHelper.ScaleImage(fullSizeImageData)
+                Thumbnail = ImageHelper.ScaleImage(fullSizeImageData, imageQuality)
             };
             (image.Width, image.Height) = ImageHelper.ImageSize(fullSizeImageData);
             await context.Images.AddAsync(image);
@@ -921,7 +921,7 @@ namespace RiseDiary.WebUI.Data
             await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public static async Task ApplyChangesFromTempImage(this DiaryDbContext context, TempImage tempImage)
+        public static async Task ApplyChangesFromTempImage(this DiaryDbContext context, TempImage tempImage, int imageQuality)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (tempImage == null) throw new ArgumentNullException(nameof(tempImage));
@@ -934,7 +934,7 @@ namespace RiseDiary.WebUI.Data
 
             if (image.Deleted) throw new ArgumentException("Image is deleted. Can't update deleted image");
 
-            image.Thumbnail = ImageHelper.ScaleImage(tempImage.Data);
+            image.Thumbnail = ImageHelper.ScaleImage(tempImage.Data, imageQuality);
             image.ModifyDate = DateTime.Now;
             image.SizeByte = tempImage.Data.Length;
             (image.Width, image.Height) = ImageHelper.ImageSize(tempImage.Data);

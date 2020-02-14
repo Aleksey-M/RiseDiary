@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 
 namespace RiseDiary.WebUI.Pages.Images
@@ -56,8 +57,8 @@ namespace RiseDiary.WebUI.Pages.Images
                 {
                     imageData = binaryReader.ReadBytes((int)newImages[i].Length);
                 }
-
-                imageId = await _context.AddImage(imageName, imageData);
+                int imageQuality = await _context.GetAppSettingInt(AppSettingsKeys.ImageQuality) ?? 75;
+                imageId = await _context.AddImage(imageName, imageData, imageQuality);
                 if(TargetRecordId != null && TargetRecordId != Guid.Empty)
                 {
                     await _context.AddRecordImage(TargetRecordId.Value, imageId);

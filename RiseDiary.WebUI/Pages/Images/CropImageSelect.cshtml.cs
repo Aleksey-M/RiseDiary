@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 
 namespace RiseDiary.WebUI.Pages.Images
@@ -37,13 +38,15 @@ namespace RiseDiary.WebUI.Pages.Images
                 return Redirect("Images");
             }
 
+            int imageQuality = await _context.GetAppSettingInt(AppSettingsKeys.ImageQuality) ?? 75;
+
             (int fullImageWidth, int fullImageHeight) = ImageHelper.ImageSize(imageData);
             if(fullImageWidth > fullImageHeight)
             {
                 if (fullImageWidth > MaxScaledWidth)
                 {
                     Coefficient = fullImageWidth / (double)MaxScaledWidth;
-                    ScaledImage = ImageHelper.ScaleImage(imageData, MaxScaledWidth);
+                    ScaledImage = ImageHelper.ScaleImage(imageData, imageQuality, MaxScaledWidth);
                 }
                 else
                 {
@@ -56,7 +59,7 @@ namespace RiseDiary.WebUI.Pages.Images
                 if (fullImageHeight > MaxScaledHeight)
                 {
                     Coefficient = fullImageHeight / (double)MaxScaledHeight;
-                    ScaledImage = ImageHelper.ScaleImage(imageData, MaxScaledHeight);
+                    ScaledImage = ImageHelper.ScaleImage(imageData, imageQuality, MaxScaledHeight);
                 }
                 else
                 {
@@ -81,7 +84,8 @@ namespace RiseDiary.WebUI.Pages.Images
                 int realWidth = Convert.ToInt32(selWidth * coefficient);
                 int realHeight = Convert.ToInt32(selHeight * coefficient);
 
-                var tmpImage = ImageHelper.CropImage(image, sourceImage, realLeft, realTop, realWidth, realHeight);
+                int imageQuality = await _context.GetAppSettingInt(AppSettingsKeys.ImageQuality) ?? 75;
+                var tmpImage = ImageHelper.CropImage(image, sourceImage, realLeft, realTop, realWidth, realHeight, imageQuality);
                 await _context.AddUnsavedTempImage(tmpImage);
             }
             return RedirectToPage("Edit", new { ImageId, RecordId });

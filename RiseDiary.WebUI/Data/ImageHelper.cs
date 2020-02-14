@@ -9,7 +9,7 @@ namespace RiseDiary.WebUI.Data
     {
         public const int ThumbnailSize = 150;
 
-        public static byte[] ScaleImage(byte[] data, int maxSizePx = ThumbnailSize)
+        public static byte[] ScaleImage(byte[] data, int imageQuality, int maxSizePx = ThumbnailSize)
         {
             using var bitmap = SKBitmap.Decode(data);
             if (bitmap.ColorType != SKImageInfo.PlatformColorType)
@@ -30,13 +30,13 @@ namespace RiseDiary.WebUI.Data
             var imageInfo = new SKImageInfo(width, height);
             using var thumbnail = bitmap.Resize(imageInfo, SKFilterQuality.Medium);
             using var img = SKImage.FromBitmap(thumbnail);
-            using var jpeg = img.Encode(SKEncodedImageFormat.Jpeg, 90);
+            using var jpeg = img.Encode(SKEncodedImageFormat.Jpeg, imageQuality);
             using var memoryStream = new MemoryStream();
             jpeg.AsStream().CopyTo(memoryStream);
             return memoryStream.ToArray();
         }
 
-        public static byte[] CropImage(byte[] data, int left, int top, int width, int height)
+        public static byte[] CropImage(byte[] data, int left, int top, int width, int height, int imageQuality)
         {
             (int actualWidth, int actualHeight) = ImageSize(data);
             width = width > actualWidth ? actualWidth : width;
@@ -49,7 +49,7 @@ namespace RiseDiary.WebUI.Data
             using var bitmap = SKBitmap.Decode(data);
             using var img = SKImage.FromBitmap(bitmap);
             using var cropped = img.Subset(SKRectI.Create(left, top, width, height));
-            using var jpeg = cropped.Encode(SKEncodedImageFormat.Jpeg, 90);
+            using var jpeg = cropped.Encode(SKEncodedImageFormat.Jpeg, imageQuality);
             using var memoryStream = new MemoryStream();
             jpeg.AsStream().CopyTo(memoryStream);
             return memoryStream.ToArray();
@@ -61,11 +61,11 @@ namespace RiseDiary.WebUI.Data
             return (bitmap.Width, bitmap.Height);
         }
 
-        public static TempImage ScaleImage(DiaryImage image, byte[] fullImage, int maxSizePx)
+        public static TempImage ScaleImage(DiaryImage image, byte[] fullImage, int maxSizePx, int imageQuality)
         {
             if (image == null) throw new ArgumentNullException(nameof(image));
 
-            var result = ScaleImage(fullImage, maxSizePx);
+            var result = ScaleImage(fullImage, imageQuality, maxSizePx);
             var temp = new TempImage
             {
                 SourceImageId = image.Id,
@@ -77,11 +77,11 @@ namespace RiseDiary.WebUI.Data
             return temp;
         }
 
-        public static TempImage CropImage(DiaryImage image, byte[] fullImage, int left, int top, int width, int height)
+        public static TempImage CropImage(DiaryImage image, byte[] fullImage, int left, int top, int width, int height, int imageQuality)
         {
             if (image == null) throw new ArgumentNullException(nameof(image));
 
-            var result = CropImage(fullImage, left, top, width, height);
+            var result = CropImage(fullImage, left, top, width, height, imageQuality);
             var temp = new TempImage
             {
                 SourceImageId = image.Id,
