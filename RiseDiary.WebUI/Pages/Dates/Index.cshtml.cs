@@ -12,11 +12,11 @@ namespace RiseDiary.WebUI.Pages.Dates
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class IndexModel : PageModel
     {
-        private Guid _datesScopeId = default;
+        private Guid _datesScopeId = Guid.Empty;
         private int _daysDisplayRange;
         private readonly DiaryDbContext _context;
         
-        public bool IsScopeSelected => _datesScopeId == default;
+        public bool IsScopeSelected => _datesScopeId != Guid.Empty;
 
         public IndexModel(DiaryDbContext context)
         {
@@ -30,9 +30,9 @@ namespace RiseDiary.WebUI.Pages.Dates
         private async Task UpdateViewModel()
         {
             var stringId = await _context.GetAppSetting(AppSettingsKeys.DatesScopeId);
-            if(!Guid.TryParse(stringId, out var _datesScopeId)) 
+            if(!Guid.TryParse(stringId, out _datesScopeId)) 
             {
-                _datesScopeId = default;
+                _datesScopeId = Guid.Empty;
             }
 
             if (IsScopeSelected)
@@ -43,7 +43,7 @@ namespace RiseDiary.WebUI.Pages.Dates
                 var dates = await _context.FetchDateItems(_datesScopeId, datesRange, LocalHostAndPort);
 
                 var weekdays = datesRange.AllRangeDates
-                    .Where(di => !Dates.Any(d => d.TransferredDate == di.TransferredDate));
+                    .Where(di => !dates.Any(d => d.TransferredDate == di.TransferredDate));
 
                 dates.AddRange(weekdays);
                 Dates = dates.OrderByDescending(d => d.TransferredDate).ToList();
