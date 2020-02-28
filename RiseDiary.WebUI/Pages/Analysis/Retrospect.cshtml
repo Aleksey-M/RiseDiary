@@ -41,6 +41,10 @@
             margin-bottom: 7px;
             padding: 15px;
         }
+
+        .thumbnail-image {
+            height: 160px;
+        }
     </style>
 }
 
@@ -73,7 +77,7 @@
             <thead>
                 <tr>
                     <th style="padding:2px;">
-                        <input type="text" class="form-control" style="margin:0px;" placeholder="От" id="filterFromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? string.Empty)" />
+                        <input type="text" class="form-control" style="margin: 0px;" placeholder="От" id="filterFromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? string.Empty)" />
                         <input type="text" class="form-control" placeholder="До" id="filterToDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? string.Empty)" />
                     </th>
                     <th style="padding:2px;vertical-align: middle;">
@@ -115,22 +119,51 @@
                             {
                                 <div class="col-sm-12 record-group">
                                     <div class="col-sm-10 col-sm-offset-1 record">
-                                        <p><b><i><a href="~/Records/Edit?recordId=@recWithCogs.Key.Id">@recWithCogs.Key.Date.ToString("yyyy.MM.dd")</a></i>&nbsp;&nbsp;&nbsp;@recWithCogs.Key.Name</b></p>
+                                        <p><b><i><a href="~/Records/Edit?recordId=@recWithCogs.record.Id">@recWithCogs.record.Date.ToString("yyyy.MM.dd")</a></i>&nbsp;&nbsp;&nbsp;@recWithCogs.record.Name</b></p>
                                         <div>
-                                            @Html.Raw(@recWithCogs.Key.Text)
+                                            @Html.Raw(@recWithCogs.record.Text)
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                @foreach (var image in @recWithCogs.images)
+                                                {
+                                                    <div id="@("fullImage-" + image.ImageId)" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+                                                        <div class="modal-dialog modal-lg">
+                                                            <div class="modal-content">
+                                                                <div class="modal-body">
+                                                                    <img src="/Images/ImageFile/@image.ImageId" class="img-responsive" style="height:90vh;max-height:100%;margin:auto">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-sm-3 center-text">
+                                                        <div class="panel panel-default">
+                                                           
+                                                            <div class="panel-body">
+                                                                <a data-toggle="modal" data-target="@("#fullImage-" + image.ImageId)" style="cursor:pointer">
+                                                                    <img src="/Images/imagethumbnail/@image.ImageId" class="img-thumbnail center-block thumbnail-image" />
+                                                                </a>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                }
+                                                </div>
                                         </div>
                                     </div>
-                                    @foreach (var cog in recWithCogs.Value)
+                                                
+                                    @foreach (var cog in recWithCogs.cogitations)
                                     {
                                         <div class="col-sm-9 col-sm-offset-2 cogitation">
-                                            <p><b><i><a href="~/Records/View?recordId=@recWithCogs.Key.Id">@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")</a></i></b></p>
+                                            <p><b><i><a href="~/Records/View?recordId=@recWithCogs.record.Id">@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")</a></i></b></p>
                                             <div>
                                                 @Html.Raw(@cog.Text)
                                             </div>
                                         </div>
                                     }
                                 </div>
-                            }
+                            }                            
                         </div>
                     </td>
                 </tr>
@@ -143,6 +176,7 @@
         </table>
     </div>
 </div>
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 

@@ -31,6 +31,18 @@
         .record-cogitations {
             background-color: #e5e5ff;
         }
+
+        .thumbnail-head {
+            height: 60px;
+        }
+
+        .thumbnail-image {
+            height: 160px;
+        }
+
+        .center-text {
+            text-align: center;
+        }
     </style>
 }
 
@@ -78,26 +90,46 @@
         </tr>
     </tbody>
 </table>
-<table class="table">
-    <tbody>
+
+<div class="row">
+    <div class="col-sm-12">
         @foreach (var image in Model.RecordImages)
         {
-            <tr class="record-images">
-                <td width="150">
-                    <a href="/Images/Edit?recordId=@Model.RecordId&imageId=@image.ImageId">@image.ImageName</a>
-                    <br />
-                    <br />
-                    <form method="post" asp-page-handler="DeleteImage">
-                        <input type="hidden" name="imageId" value="@image.ImageId" />
-                        <input type="hidden" name="recordId" value="@Model.RecordId" />
-                        <input type="submit" class="btn btn-default btn-sm" value="Открепить" />
-                    </form>
-                </td>
-                <td colspan="3"><img src="/Images/imagefile/@image.ImageId" class="img-thumbnail" alt="Изображение" style="max-height:600px;" /></td>
-            </tr>
+            <div id="@("fullImage-" + image.ImageId)" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <img src="/Images/ImageFile/@image.ImageId" class="img-responsive" style="height:90vh;max-height:100%;margin:auto">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-3 center-text">
+                <div class="panel panel-default">
+                    <div class="panel-heading thumbnail-head" style="word-wrap:break-word">
+                        <a asp-page="/Images/Edit" asp-route-recordId="@Model.RecordId" asp-route-imageId="@image.ImageId">@image.ImageName</a>
+                    </div>
+
+                    <div class="panel-body">
+                        <a data-toggle="modal" data-target="@("#fullImage-" + image.ImageId)" style="cursor:pointer">
+                            <img src="/Images/imagethumbnail/@image.ImageId" class="img-thumbnail center-block thumbnail-image" />
+                        </a>
+                    </div>
+
+                    <div class="panel-footer">
+                        <form method="post" asp-page-handler="DeleteImage">
+                            <input type="hidden" name="imageId" value="@image.ImageId" />
+                            <input type="hidden" name="recordId" value="@Model.RecordId" />
+                            <input type="submit" class="btn btn-default btn-sm" value="Открепить" />
+                        </form>
+                    </div>
+                </div>
+            </div>
         }
-    </tbody>
-</table>
+    </div>
+</div>
+
 <table class="table">
     <tbody>
         <tr>
@@ -186,6 +218,6 @@
                 });
             });
         });
-        
+
     </script>
 }

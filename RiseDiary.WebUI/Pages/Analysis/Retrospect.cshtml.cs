@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
@@ -17,7 +18,7 @@ namespace RiseDiary.WebUI.Pages
             _context = context;
         }
 
-        public Dictionary<DiaryRecord, List<Cogitation>> Records { get; private set; } = new Dictionary<DiaryRecord, List<Cogitation>>();
+        public List<(DiaryRecord record, List<Cogitation> cogitations, List<DiaryRecordImage> images)> Records { get; private set; } = null!;
         public RecordsFilter Filters { get; private set; } = RecordsFilter.Empty;
         public int RecordsCount { get; private set; }
         public int PagesCount { get; private set; }
@@ -34,6 +35,18 @@ namespace RiseDiary.WebUI.Pages
         private const string _last = "Последняя";
 
         private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
+
+        private async Task LoadRecords()
+        {
+            Records = new List<(DiaryRecord record, List<Cogitation> cogitations, List<DiaryRecordImage> images)>();
+            foreach (var rec in await _context.FetchRecordsListFiltered(Filters, LocalHostAndPort))
+            {
+                var images = await _context.RecordImages.Where(ri => ri.RecordId == rec.Id).ToListAsync();
+                var cogitations = await _context.FetchAllCogitationsOfRecord(rec.Id, LocalHostAndPort);
+                Records.Add((rec, cogitations, images));
+            }
+            AllScopes = await _context.FetchScopesWithThemes();
+        }
 
         public async Task OnGetSearchAsync(DateTime? fromDate, DateTime? toDate, Guid[] themes, string searchName)
         {
@@ -54,12 +67,7 @@ namespace RiseDiary.WebUI.Pages
             PagesCount = Convert.ToInt32(Math.Ceiling((float)RecordsCount / Filters.PageSize));
             CurrenPage = 0;
 
-            Records = new Dictionary<DiaryRecord, List<Cogitation>>();
-            foreach (var rec in await _context.FetchRecordsListFiltered(Filters, LocalHostAndPort))
-            {
-                Records.Add(rec, await _context.FetchAllCogitationsOfRecord(rec.Id, LocalHostAndPort));
-            }
-            AllScopes = await _context.FetchScopesWithThemes();
+            await LoadRecords();
         }
 
         public async Task OnGetAsync(DateTime? fromDate, DateTime? toDate, Guid[] themes, string searchName, int recordsCount, int currentPage, int pagesCount, string navTo)
@@ -105,12 +113,7 @@ namespace RiseDiary.WebUI.Pages
                 }
             }
 
-            Records = new Dictionary<DiaryRecord, List<Cogitation>>();
-            foreach (var rec in await _context.FetchRecordsListFiltered(Filters, LocalHostAndPort))
-            {
-                Records.Add(rec, await _context.FetchAllCogitationsOfRecord(rec.Id, LocalHostAndPort));
-            }
-            AllScopes = await _context.FetchScopesWithThemes();
+            await LoadRecords();
         }
     }
 }
