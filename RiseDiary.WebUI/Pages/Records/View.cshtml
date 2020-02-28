@@ -100,20 +100,13 @@
 </table>
 <table class="table">
     <tbody>
-        <tr class="record-images">
-            <td colspan="3" style="text-align:left; width:70%">
-                <div class="form-inline">
-                    <form asp-page-handler="AddImage">
-                        <input type="hidden" name="recordId" value="@Model.RecordId" />
-                        <input type="text" id="imagesFilter" class="form-control" placeholder="Поиск по названию" style="width:170px;" />
-                        <select name="imageId" id="imageId" class="form-control" style="width:250px;"></select>
-                        <button type="submit" class="btn btn-default form-control">Добавить изображение</button>
-                    </form>
-                </div>
-            </td>
+        <tr>
             <td>
-                <a href="/images/upload?targetRecordId=@Model.RecordId" class="btn btn-info btn-sm" style="float:right">Загрузить и прикрепить изображение</a>
+                <a asp-page="/Images/SelectImages" asp-route-recordId="@Model.RecordId" class="btn btn-info btn-sm">Прикрепить изображение</a>
+                &nbsp;&nbsp;
+                <a asp-page="/images/upload" asp-route-targetRecordId="@Model.RecordId" class="btn btn-info btn-sm">Загрузить и прикрепить изображение</a>
             </td>
+            <td></td>
         </tr>
     </tbody>
 </table>
@@ -180,7 +173,6 @@
                 focus: false
             });
             $(document).on('click', '.btn-edit', function () {
-                console.log('start');
                 let vid = '#' + $(this).data('view-form-id'); console.log(vid);
                 let eid = '#' + $(this).data('edit-form-id'); console.log(eid);
                 let bid = '#' + $(this).data('btn-save-id'); console.log(bid);
@@ -194,27 +186,6 @@
                 });
             });
         });
-
-        function updateSelectedList(recordId, inputStr) {
-            let uri = "/Images/ImagesListFiltered/" + recordId + "/" + inputStr;
-            let selectElement = $("#imageId");
-            $.getJSON(uri)
-                .done(function (data) {
-                    $(selectElement).empty();
-                    $.each(data,
-                        function (key, value) {
-                            $(selectElement).append($("<option></option>")
-                                .attr("value", value.id)
-                                .text(value.name));
-                        });
-                });
-        }
-
-        $("#imagesFilter").on('keyup',
-            function (e) {
-                updateSelectedList($("#recordId").val(), $(this).val());
-            });
-
-        updateSelectedList($("#recordId").val(), '');
+        
     </script>
 }
