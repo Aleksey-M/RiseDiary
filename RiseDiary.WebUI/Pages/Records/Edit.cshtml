@@ -61,7 +61,7 @@
                         {
                         <div class="custom-control custom-checkbox">
                             <label class="custom-control-label">
-                                <input type="checkbox" class="custom-control-input" name="themeId" value="@theme.themeId" @(Model.RecordThemesIds.Contains(theme.themeId) ? "checked='checked'" : "") />
+                                <input type="checkbox" class="custom-control-input" name="themeId" value="@theme.themeId" @(Model.RecordThemesIds.Contains(theme.themeId) ? "checked=checked" : "") />
                                 @theme.scopeName&nbsp;-&nbsp;@theme.themeName
                             </label>
                         </div>
@@ -74,7 +74,7 @@
                                 {
                                 <div class="custom-control custom-checkbox">
                                     <label class="custom-control-label">
-                                        <input type="checkbox" class="custom-control-input" name="themeId" value="@theme.themeId" @(Model.RecordThemesIds.Contains(theme.themeId) ? "checked='checked'" : "") />
+                                        <input type="checkbox" class="custom-control-input" name="themeId" value="@theme.themeId" @(Model.RecordThemesIds.Contains(theme.themeId) ? "checked=checked" : "") />
                                         @theme.scopeName&nbsp;-&nbsp;@theme.themeName
                                     </label>
                                 </div>
@@ -87,7 +87,7 @@
         </tr>
         <tr>
             <td>
-                <button type="submit" class="btn btn-success form-control">Сохранить запись</button>
+                <button type="submit" class="btn btn-success form-control" onclick="return saveClick();">Сохранить запись</button>
             </td>
             <td colspan="3">
                 @if (Model.RecordId != null)
@@ -107,7 +107,7 @@
                 <td>
                     <input type="hidden" name="recordId" value="@Model.RecordId" />
                     <button type="submit" class="btn btn-danger form-control" style="width:155px"
-                            onclick="if (confirm('Удалить запись?')) { return true; } else { return false; }">
+                            onclick="return deleteClick();">
                         Удалить запись
                     </button>
                 </td>
@@ -123,12 +123,50 @@
     <script src="~/lib/summernote/summernote.js"></script>
 
     <script type="text/javascript">
+
+        var isDataChanged = false;
+
+        function onChangeData() {
+            if (!isDataChanged) {
+                isDataChanged = true;
+                window.onbeforeunload = function () {
+                    return 'Are you sure you want to leave?';
+                };
+            }
+        }
+
+        function saveClick() {
+            if (isDataChanged) {
+                window.onbeforeunload = null;
+                return true;
+            }        
+        }
+
+        function deleteClick() {
+            if (confirm('Удалить запись?')) {
+                if (isDataChanged) window.onbeforeunload = null;
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
         $(function () {
             $("#recordDate").datepicker({ dateFormat: 'yy.mm.dd' });
             $('#recordText').summernote({
-                height: 400,                    
-                focus: true  
+                height: 400,
+                focus: true,
+                callbacks: {
+                    onChange: onChangeData
+                }
             });
+
+            $("#recordDate").change(onChangeData);
+            $('#recordText').change(onChangeData);
+            $("#recordName").change(onChangeData);
+            $("[name='themeId']").change(onChangeData);
+
         });
 
         function showAllThemes() {
