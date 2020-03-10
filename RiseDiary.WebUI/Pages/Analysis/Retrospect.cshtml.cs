@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
@@ -18,7 +17,7 @@ namespace RiseDiary.WebUI.Pages
             _context = context;
         }
 
-        public List<(DiaryRecord record, List<Cogitation> cogitations, List<DiaryRecordImage> images)> Records { get; private set; } = null!;
+        public List<DiaryRecord> Records { get; private set; } = null!;
         public RecordsFilter Filters { get; private set; } = RecordsFilter.Empty;
         public int RecordsCount { get; private set; }
         public int PagesCount { get; private set; }
@@ -34,13 +33,7 @@ namespace RiseDiary.WebUI.Pages
         public bool CombineThemes { get; private set; }
         private async Task LoadRecords()
         {
-            Records = new List<(DiaryRecord record, List<Cogitation> cogitations, List<DiaryRecordImage> images)>();
-            foreach (var rec in await _context.FetchRecordsListFiltered(Filters, LocalHostAndPort))
-            {
-                var images = await _context.RecordImages.Where(ri => ri.RecordId == rec.Id).ToListAsync();
-                var cogitations = await _context.FetchAllCogitationsOfRecord(rec.Id, LocalHostAndPort);
-                Records.Add((rec, cogitations, images));
-            }
+            Records = await _context.FetchRecordsListFiltered(Filters, LocalHostAndPort, true);
             AllScopes = await _context.FetchScopesWithThemes();
         }
 

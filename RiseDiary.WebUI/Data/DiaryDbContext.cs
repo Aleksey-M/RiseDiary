@@ -219,7 +219,6 @@ namespace RiseDiary.WebUI.Data
         public bool IsEmptyTypeFilter => RecordThemeIds.Count == 0;
 
         public bool CombineThemes { get; set; }
-        //public bool LoadAllData { get; set; }
     }
 
     public static class DiaryDbContextExtensions
@@ -542,10 +541,10 @@ namespace RiseDiary.WebUI.Data
             if (context == null) throw new ArgumentNullException(nameof(context));
 
             var c = await context.Cogitations.SingleOrDefaultAsync(c => c.Id == cogitationId).ConfigureAwait(false);
-            if(c != null && c.Text != null) c.Text = c.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase);
+            if (c != null && c.Text != null) c.Text = c.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase);
             return c;
         }
-            
+
         public static async Task<List<Cogitation>> FetchAllCogitationsOfRecord(this DiaryDbContext context, Guid recordId, string localHostAndPort)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
@@ -553,7 +552,7 @@ namespace RiseDiary.WebUI.Data
             var cList = await context.Cogitations.Where(c => c.RecordId == recordId).ToListAsync().ConfigureAwait(false);
             cList.ForEach(c => c.Text = c.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase));
             return cList;
-        }            
+        }
 
         public static async Task<Guid> AddCogitation(this DiaryDbContext context, Cogitation cogitation, string localHostAndPort)
         {
@@ -620,7 +619,7 @@ namespace RiseDiary.WebUI.Data
             if (context == null) throw new ArgumentNullException(nameof(context));
 
             var r = await context.Records.SingleOrDefaultAsync(r => r.Id == recordId).ConfigureAwait(false);
-            if(r != null && r.Text != null) r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase);
+            if (r != null && r.Text != null) r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase);
             return r;
         }
 
@@ -638,43 +637,55 @@ namespace RiseDiary.WebUI.Data
                 .SingleOrDefaultAsync(r => r.Id == recordId)
                 .ConfigureAwait(false);
 
-            if(r != null && r.Text != null) r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase);
+            if (r != null && r.Text != null) r.Text = r.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase);
             r?.Cogitations?.ToList()?.ForEach(c => c.Text = c.Text.Replace(hostAndPortPlaceholder, localHostAndPort, StringComparison.OrdinalIgnoreCase));
-            
+
             return r;
         }
 
-        private static IQueryable<DiaryRecord> FetchRecordsListFilteredQuery(DiaryDbContext context, RecordsFilter filter)
+        private static IQueryable<DiaryRecord> FetchRecordsListFilteredQuery(DiaryDbContext context, RecordsFilter filter, bool loadAllData)
         {
             IQueryable<DiaryRecord> result;
 
+            if (loadAllData)
+            {
+                // for 'Retrospective'
+                result = context.Records
+                    .Include(r => r.Cogitations)
+                    //.Include(r => r.ThemesRefs)
+                    //.ThenInclude(rt => rt.Theme)
+                    .Include(r => r.ImagesRefs)
+                    //.ThenInclude(ri => ri.Image)
+                    .AsQueryable();
+            }
+            else
+            {
+                result = context.Records.AsQueryable();
+            }
+
             if (!filter.IsEmptyTypeFilter)
             {
+                IEnumerable<Guid> temp;
+
                 if (filter.CombineThemes)
                 {
-                    var temp = context.RecordThemes
+                    temp = context.RecordThemes
                         .Where(rt => filter.RecordThemeIds.Contains(rt.ThemeId))
                         .Select(rt => rt.RecordId)
                         .Distinct();
-
-                    result = context.Records.Where(r => temp.Contains(r.Id));
                 }
                 else
                 {
-                    var temp = context.RecordThemes
+                    temp = context.RecordThemes
                         .Where(rt => filter.RecordThemeIds.Contains(rt.ThemeId))
                         .Select(r => new { r.RecordId, r.ThemeId })
                         .ToList()
                         .GroupBy(r => r.RecordId)
                         .Where(g => filter.RecordThemeIds.All(id => g.Select(r => r.ThemeId).Contains(id)))
                         .Select(g => g.Key);
-
-                    result = context.Records.Where(r => temp.Contains(r.Id));
                 }
-            }
-            else
-            {
-                result = context.Records.AsQueryable();
+
+                result = result.Where(r => temp.Contains(r.Id));
             }
 
             if (!RecordsFilter.IsEmpty(filter))
@@ -698,12 +709,12 @@ namespace RiseDiary.WebUI.Data
             return result;
         }
 
-        public static async Task<List<DiaryRecord>> FetchRecordsListFiltered(this DiaryDbContext context, RecordsFilter filter, string localHostAndPort)
+        public static async Task<List<DiaryRecord>> FetchRecordsListFiltered(this DiaryDbContext context, RecordsFilter filter, string localHostAndPort, bool loadAllData = false)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (filter == null) throw new ArgumentNullException(nameof(filter));
 
-            var rList = await FetchRecordsListFilteredQuery(context, filter)
+            var rList = await FetchRecordsListFilteredQuery(context, filter, loadAllData)
                 .OrderByDescending(r => r.Date)
                 .Skip(filter.PageNo * filter.PageSize)
                 .Take(filter.PageSize)
@@ -717,7 +728,7 @@ namespace RiseDiary.WebUI.Data
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (filter == null) throw new ArgumentNullException(nameof(filter));
-            return FetchRecordsListFilteredQuery(context, filter).CountAsync();
+            return FetchRecordsListFilteredQuery(context, filter, false).CountAsync();
         }
 
         public static async Task<Guid> UpdateRecord(this DiaryDbContext context, DiaryRecord record, string localHostAndPort)
@@ -834,8 +845,10 @@ namespace RiseDiary.WebUI.Data
             return dateItems;
         }
 
-        public static Task<List<DateItem>> FetchAllDateItems(this DiaryDbContext context, Guid scopeId, string localHostAndPort) =>
-            context.FetchDateItems(scopeId, DatesRange.ForAllYear(), localHostAndPort);
+        public static Task<List<DateItem>> FetchAllDateItems(this DiaryDbContext context, Guid scopeId, string localHostAndPort)
+        {
+            return context.FetchDateItems(scopeId, DatesRange.ForAllYear(), localHostAndPort);
+        }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1307:Specify StringComparison", Justification = "<Pending>")]
         private static IQueryable<DiaryRecord> SearchRecords(this DiaryDbContext context, string searchText)
@@ -944,7 +957,7 @@ namespace RiseDiary.WebUI.Data
             var image = await context.Images.FindAsync(tempImage.SourceImageId) ?? throw new ArgumentException($"Image with Id ={tempImage.SourceImageId} is not found");
             var fullImage = await context.FullSizeImages
                 .SingleOrDefaultAsync(fi => fi.ImageId == tempImage.SourceImageId)
-                .ConfigureAwait(false) ?? 
+                .ConfigureAwait(false) ??
                 throw new ArgumentException($"Full image with Id ={tempImage.SourceImageId} is not found! Database is inconsist");
 
             if (image.Deleted) throw new ArgumentException("Image is deleted. Can't update deleted image");
@@ -1005,7 +1018,7 @@ namespace RiseDiary.WebUI.Data
                 calendarItems = await context.Records
                     .Select(r => new CalendarRecordItem(r.Id, r.Name, r.Date))
                     .ToListAsync().ConfigureAwait(false);
-            }            
+            }
 
             if (themes != null && themes.Length > 0)
             {
@@ -1024,19 +1037,20 @@ namespace RiseDiary.WebUI.Data
                                 .Where(rt => rt.RecordId == ci.Id)
                                 .Select(rt => rt.ThemeId).Contains(id)))
                         .ToList();
-                }                
+                }
             }
 
             return calendarItems;
         }
 
-        public static async Task<List<DiaryScope>> GetAllScopes(this DiaryDbContext context) =>
-            await (context?.Scopes
-            .AsNoTracking()
-            .Include(s => s.Themes)
-            .ToListAsync()
-            .ConfigureAwait(false) ?? throw new ArgumentNullException(nameof(context)));
-
+        public static async Task<List<DiaryScope>> GetAllScopes(this DiaryDbContext context)
+        {
+            return await (context?.Scopes
+                .AsNoTracking()
+                .Include(s => s.Themes)
+                .ToListAsync()
+                .ConfigureAwait(false) ?? throw new ArgumentNullException(nameof(context)));
+        }
 
         public static async Task<List<DiaryImage>> FetchImagesFiltered(this DiaryDbContext context, Guid recordId, string filterPart)
         {
@@ -1052,7 +1066,7 @@ namespace RiseDiary.WebUI.Data
 
             var filteredImages = await images
                 .OrderByDescending(i => i.CreateDate)
-                .Take(10)                
+                .Take(10)
                 .ToListAsync()
                 .ConfigureAwait(false);
 

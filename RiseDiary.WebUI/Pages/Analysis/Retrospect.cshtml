@@ -119,17 +119,17 @@
                 <tr>
                     <td colspan="7">
                         <div class="row">
-                            @foreach (var recWithCogs in Model.Records)
+                            @foreach (var rec in Model.Records)
                             {
                                 <div class="col-sm-12 record-group">
                                     <div class="col-sm-10 col-sm-offset-1 record">
-                                        <p><b><i><a href="~/Records/Edit?recordId=@recWithCogs.record.Id">@recWithCogs.record.Date.ToString("yyyy.MM.dd")</a></i>&nbsp;&nbsp;&nbsp;@recWithCogs.record.Name</b></p>
+                                        <p><b><i><a href="~/Records/Edit?recordId=@rec.Id">@rec.Date.ToString("yyyy.MM.dd")</a></i>&nbsp;&nbsp;&nbsp;@rec.Name</b></p>
                                         <div>
-                                            @Html.Raw(@recWithCogs.record.Text)
+                                            @Html.Raw(rec.Text)
                                         </div>
                                         <div class="row">
                                             <div class="col-sm-12">
-                                                @foreach (var image in @recWithCogs.images)
+                                                @foreach (var image in rec.ImagesRefs)
                                                 {
                                                     <div id="@("fullImage-" + image.ImageId)" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
                                                         <div class="modal-dialog modal-lg">
@@ -157,10 +157,10 @@
                                         </div>
                                     </div>
                                                 
-                                    @foreach (var cog in recWithCogs.cogitations)
+                                    @foreach (var cog in rec.Cogitations)
                                     {
                                         <div class="col-sm-9 col-sm-offset-2 cogitation">
-                                            <p><b><i><a href="~/Records/View?recordId=@recWithCogs.record.Id">@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")</a></i></b></p>
+                                            <p><b><i><a href="~/Records/View?recordId=@rec.Id">@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")</a></i></b></p>
                                             <div>
                                                 @Html.Raw(@cog.Text)
                                             </div>
