@@ -217,6 +217,9 @@ namespace RiseDiary.WebUI.Data
             }
         }
         public bool IsEmptyTypeFilter => RecordThemeIds.Count == 0;
+
+        public bool CombineThemes { get; set; }
+        //public bool LoadAllData { get; set; }
     }
 
     public static class DiaryDbContextExtensions
@@ -647,15 +650,27 @@ namespace RiseDiary.WebUI.Data
 
             if (!filter.IsEmptyTypeFilter)
             {
-                var temp = context.RecordThemes
-                    .Where(rt => filter.RecordThemeIds.Contains(rt.ThemeId))
-                    .Select(r => new { r.RecordId, r.ThemeId })
-                    .ToList()
-                    .GroupBy(r => r.RecordId)
-                    .Where(g => filter.RecordThemeIds.All(id => g.Select(r => r.ThemeId).Contains(id)))
-                    .Select(g => g.Key);
+                if (filter.CombineThemes)
+                {
+                    var temp = context.RecordThemes
+                        .Where(rt => filter.RecordThemeIds.Contains(rt.ThemeId))
+                        .Select(rt => rt.RecordId)
+                        .Distinct();
 
-                result = context.Records.Where(r => temp.Contains(r.Id));
+                    result = context.Records.Where(r => temp.Contains(r.Id));
+                }
+                else
+                {
+                    var temp = context.RecordThemes
+                        .Where(rt => filter.RecordThemeIds.Contains(rt.ThemeId))
+                        .Select(r => new { r.RecordId, r.ThemeId })
+                        .ToList()
+                        .GroupBy(r => r.RecordId)
+                        .Where(g => filter.RecordThemeIds.All(id => g.Select(r => r.ThemeId).Contains(id)))
+                        .Select(g => g.Key);
+
+                    result = context.Records.Where(r => temp.Contains(r.Id));
+                }
             }
             else
             {
@@ -970,59 +985,49 @@ namespace RiseDiary.WebUI.Data
             }
         }
 
-        public static async Task<List<CalendarRecordItem>> FetchCalendarDates(this DiaryDbContext context, int year, Guid[] themes)
+        public static async Task<List<CalendarRecordItem>> FetchCalendarDates(this DiaryDbContext context, int? year, Guid[] themes, bool combineThemes)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
-            var firstYearDay = new DateTime(year, 01, 01);
-            var lastYearDay = new DateTime(year, 12, 31);
+            var calendarItems = new List<CalendarRecordItem>();
+            if (year != null)
+            {
+                var firstYearDay = new DateTime(year.Value, 01, 01);
+                var lastYearDay = new DateTime(year.Value, 12, 31);
 
-            var calendarItems = await context.Records
-                .Where(r => r.Date >= firstYearDay && r.Date <= lastYearDay)
-                .Select(r => new CalendarRecordItem(r.Id, r.Name, r.Date))
-                .ToListAsync().ConfigureAwait(false);
+                calendarItems = await context.Records
+                    .Where(r => r.Date >= firstYearDay && r.Date <= lastYearDay)
+                    .Select(r => new CalendarRecordItem(r.Id, r.Name, r.Date))
+                    .ToListAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                calendarItems = await context.Records
+                    .Select(r => new CalendarRecordItem(r.Id, r.Name, r.Date))
+                    .ToListAsync().ConfigureAwait(false);
+            }            
 
             if (themes != null && themes.Length > 0)
             {
                 var recordThemes = await context.RecordThemes.ToListAsync().ConfigureAwait(false);
 
-                return calendarItems
-                    .Where(ci =>
-                        themes.All(id => recordThemes
-                            .Where(rt => rt.RecordId == ci.Id)
-                            .Select(rt => rt.ThemeId).Contains(id)))
-                    .ToList();
+                if (combineThemes)
+                {
+                    return calendarItems
+                        .Where(ci => recordThemes.Any(rt => rt.RecordId == ci.Id && themes.Contains(rt.ThemeId))).ToList();
+                }
+                else
+                {
+                    return calendarItems
+                        .Where(ci =>
+                            themes.All(id => recordThemes
+                                .Where(rt => rt.RecordId == ci.Id)
+                                .Select(rt => rt.ThemeId).Contains(id)))
+                        .ToList();
+                }                
             }
+
             return calendarItems;
-        }
-
-        public static async Task<List<int>> FetchYearsListFiltered(this DiaryDbContext context, Guid[] themes)
-        {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-
-            themes ??= Array.Empty<Guid>();
-            if (themes.Length == 0)
-                return await context.Records
-                    .Select(r => r.Date.Year)
-                    .Distinct()
-                    .OrderBy(y => y)
-                    .ToListAsync().ConfigureAwait(false);
-
-            var recordDates = await context.Records
-                .Select(r => new KeyValuePair<Guid, DateTime>(r.Id, r.Date))
-                .ToListAsync().ConfigureAwait(false);
-
-            var recordThemes = await context.RecordThemes.ToListAsync().ConfigureAwait(false);
-
-            return recordDates
-                .Where(r => themes.All(id => recordThemes
-                    .Where(rt => rt.RecordId == r.Key)
-                    .Select(rt => rt.ThemeId)
-                    .Contains(id)))
-                .Select(r => r.Value.Year)
-                .Distinct()
-                .OrderBy(y => y)
-                .ToList();
         }
 
         public static async Task<List<DiaryScope>> GetAllScopes(this DiaryDbContext context) =>

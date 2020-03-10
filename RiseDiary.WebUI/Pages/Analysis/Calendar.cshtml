@@ -23,20 +23,26 @@
                     @foreach (var st in Model.SelectedThemes)
                     {
                         <input type="hidden" name="themes" value="@st" />
-                    }                    
-                    @if(Model.YearsListFiltered.Count() > 0)
+                    }
+
+                    <input type="hidden" name="combineThemes" value="@Model.CombineThemes.ToString()" />
+
+                    @if (Model.YearsListFiltered.Count() > 0)
                     {
                         <input type="submit" class="btn btn-link" name="year" value="@Model.YearsListFiltered.First()" />
-                        @for(int i=1; i< Model.YearsListFiltered.Count(); i++)
+                        @for (int i = 1; i < Model.YearsListFiltered.Count(); i++)
                         {
-                            @:| <input type = "submit" class="btn btn-link" name="year" value="@Model.YearsListFiltered.ElementAt(i)" />
+                            @:| <input type="submit" class="btn btn-link" name="year" value="@Model.YearsListFiltered.ElementAt(i)" />
                         }
                     }
                 </form>
             </div>
         </div>
     </div>
-    <div class="col-sm-4 col-sm-offset-3">
+    <div class="col-sm-1 col-sm-offset-2" style="vertical-align:middle;height:31px;padding-right:0px">
+        <input type="checkbox" style="float:right" @(Model.CombineThemes ? "checked=checked" : "") id="combineThemes" title="Выводить записи, которые относятся к любой выбранной теме (но не ко всем)" />
+    </div>
+    <div class="col-sm-4" style="vertical-align:middle">        
         <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="form-control multiselect" style="width:380px; height:30px;">
             @foreach (var scope in Model.AllScopes)
             {
@@ -95,7 +101,8 @@
             }
 
             window.location.href =
-                'Calendar?year=' + encodeURIComponent(year) + themesParam;
+                'Analysis/Calendar?year=' + encodeURIComponent(year) + themesParam +
+                '&combineThemes=' + $('#combineThemes').prop('checked');
         }
 
         function getIdByStartDate(startDate) {

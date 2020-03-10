@@ -103,12 +103,12 @@ namespace Migrations
                     {
                         Id = Guid.NewGuid(),
                         ScopeId = s.Id,
-                        ThemeName = theme.ThemeName,
+                        ThemeName = theme.ThemeName!,
                         Deleted = theme.Deleted,
                         Actual = theme.Actual
                     };
 
-                    themesMap[theme.Id] = t.Id;
+                    themesMap[theme.Id!] = t.Id;
 
                     s.Themes.Add(t);
                 }

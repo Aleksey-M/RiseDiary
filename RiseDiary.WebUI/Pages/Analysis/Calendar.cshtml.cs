@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
@@ -25,14 +24,17 @@ namespace RiseDiary.WebUI.Pages
         public Guid[] SelectedThemes { get; private set; } = Array.Empty<Guid>();
 #pragma warning restore CA1819 // Properties should not return arrays
         public IEnumerable<int> YearsListFiltered { get; private set; } = Enumerable.Empty<int>();
+        public bool CombineThemes { get; private set; }
 
-        public async Task OnGetAsync(int? year, Guid[] themes)
+        public async Task OnGetAsync(int? year, Guid[] themes, bool? combineThemes)
         {
+            CombineThemes = combineThemes ?? false;
             SelectedThemes = themes ?? Array.Empty<Guid>();
             CurrentYear = year ?? DateTime.Now.Year;
             AllScopes = await _context.FetchScopesWithThemes();
-            YearsListFiltered = await _context.FetchYearsListFiltered(SelectedThemes);
-            Records = await _context.FetchCalendarDates(CurrentYear, SelectedThemes);
+            YearsListFiltered = (await _context.FetchCalendarDates(null, SelectedThemes, this.CombineThemes))
+                .Select(d => d.Date.Year).Distinct();
+            Records = await _context.FetchCalendarDates(CurrentYear, SelectedThemes, this.CombineThemes);
         }
     }
 }

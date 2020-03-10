@@ -109,12 +109,39 @@ namespace RiseDiary.IntegratedTests
         }
 
         [Test]
+        public async Task FetchRecordsListFiltered_WithEmptyFilterCriterias_And_CombineThemesTrue_ShouldReturnAllPageRecords()
+        {
+            var context = CreateContext();
+            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            var filters = RecordsFilter.Empty;
+            filters.CombineThemes = true;
+
+            var pageList = await context.FetchRecordsListFiltered(filters, "host");
+
+            Assert.AreEqual(20, pageList.Count);
+            Assert.True(pageList.All(rec => context.Records.ToList().Contains(rec, DiaryRecordNameAndIdComparer.Instance)));
+        }
+
+        [Test]
         public async Task GetFilteredRecordsCount_WithEmptyFilterCriterias_ShouldReturnAllRecordsCount()
         {
             var context = CreateContext();
             Create_20Records(context, GetNumberList(20), GetDatesList(20));
 
             int recCount = await context.GetFilteredRecordsCount(RecordsFilter.Empty);
+
+            Assert.AreEqual(context.Records.Count(), recCount);
+        }
+
+        [Test]
+        public async Task GetFilteredRecordsCount_WithEmptyFilterCriterias_And_CombineThemesTrue_ShouldReturnAllRecordsCount()
+        {
+            var context = CreateContext();
+            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            var filters = RecordsFilter.Empty;
+            filters.CombineThemes = true;
+
+            int recCount = await context.GetFilteredRecordsCount(filters);
 
             Assert.AreEqual(context.Records.Count(), recCount);
         }
@@ -411,12 +438,40 @@ namespace RiseDiary.IntegratedTests
         }
 
         [Test]
+        public async Task FetchRecordsListFiltered_WithNotExistingThemeId_And_CombineThemesTrue_ShouldReturnEmptyList()
+        {
+            var context = CreateContext();
+            Create_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            var filter = new RecordsFilter();
+            filter.AddThemeId(Guid.NewGuid());
+            filter.CombineThemes = true;
+
+            var list = await context.FetchRecordsListFiltered(filter, "");
+
+            Assert.IsEmpty(list);
+        }
+
+        [Test]
         public async Task GetFilteredRecordsCount_WithNotExistingThemeId_ShouldReturn0()
         {
             var context = CreateContext();
             Create_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var filter = new RecordsFilter();
             filter.AddThemeId(Guid.NewGuid());
+
+            int count = await context.GetFilteredRecordsCount(filter);
+
+            Assert.Zero(count);
+        }
+
+        [Test]
+        public async Task GetFilteredRecordsCount_WithNotExistingThemeId_And_CombineThemesTrue_ShouldReturn0()
+        {
+            var context = CreateContext();
+            Create_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            var filter = new RecordsFilter();
+            filter.AddThemeId(Guid.NewGuid());
+            filter.CombineThemes = true;
 
             int count = await context.GetFilteredRecordsCount(filter);
 
@@ -468,6 +523,57 @@ namespace RiseDiary.IntegratedTests
         }
 
         [Test]
+        public async Task FetchRecordsListFiltered_ForExistingThemeFilter_And_CombineThemesTrue_ShouldReturnAllMatches()
+        {
+            var recThemes = new Dictionary<string, List<string>>() {
+                { "03", new List<string>() { "10" } },
+                { "05", new List<string>() { "10", "20" } },
+                { "11", new List<string>() { "10" } },
+                { "12", new List<string>() { "10" } },
+                { "13", new List<string>() { "10" } },
+                { "17", new List<string>() { "20" } },
+                { "19", new List<string>() { "10" } }
+            };
+            var context = CreateContext();
+            Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            var ThemeId1 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 10).Id;
+            var ThemeId2 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 20).Id;
+            BindRecordsWithThemes(context, recThemes);
+            var filter = new RecordsFilter();
+
+            filter.CombineThemes = true;
+
+            filter.AddThemeId(ThemeId1);
+            var result = await context.FetchRecordsListFiltered(filter, "host");
+
+            Assert.IsNotEmpty(result);
+            Assert.IsTrue(HasRecordWithIntName(result, 3));
+            Assert.IsTrue(HasRecordWithIntName(result, 5));
+            Assert.IsTrue(HasRecordWithIntName(result, 11));
+            Assert.IsTrue(HasRecordWithIntName(result, 12));
+            Assert.IsTrue(HasRecordWithIntName(result, 19));
+
+            filter.AddThemeId(ThemeId2);
+            filter.RemoveThemeId(ThemeId1);
+            result = await context.FetchRecordsListFiltered(filter, "host");
+
+            Assert.IsNotEmpty(result);
+            Assert.IsTrue(HasRecordWithIntName(result, 5));
+            Assert.IsTrue(HasRecordWithIntName(result, 17));
+
+            filter.AddThemeId(ThemeId1);
+            result = await context.FetchRecordsListFiltered(filter, "host");
+
+            Assert.IsNotEmpty(result);
+            Assert.IsTrue(HasRecordWithIntName(result, 3));
+            Assert.IsTrue(HasRecordWithIntName(result, 5));
+            Assert.IsTrue(HasRecordWithIntName(result, 11));
+            Assert.IsTrue(HasRecordWithIntName(result, 12));
+            Assert.IsTrue(HasRecordWithIntName(result, 17));
+            Assert.IsTrue(HasRecordWithIntName(result, 19));
+        }
+
+        [Test]
         public async Task GetFilteredRecordsCount_ForExistingThemeFilter_ShouldReturnAllMatchesCount()
         {
             var recThemes = new Dictionary<string, List<string>>() {
@@ -487,6 +593,47 @@ namespace RiseDiary.IntegratedTests
             int matchesCount1 = 5;
             int matchesCount2 = 2;
             int matchesCountAll = 1;
+
+            filter.AddThemeId(ThemeId1);
+            int count = await context.GetFilteredRecordsCount(filter);
+
+            Assert.AreEqual(matchesCount1, count);
+
+            filter.AddThemeId(ThemeId2);
+            filter.RemoveThemeId(ThemeId1);
+            count = await context.GetFilteredRecordsCount(filter);
+
+            Assert.AreEqual(matchesCount2, count);
+
+            filter.AddThemeId(ThemeId1);
+            count = await context.GetFilteredRecordsCount(filter);
+
+            Assert.AreEqual(matchesCountAll, count);
+        }
+
+        [Test]
+        public async Task GetFilteredRecordsCount_ForExistingThemeFilter_And_COmbineThemesTrue_ShouldReturnAllMatchesCount()
+        {
+            var recThemes = new Dictionary<string, List<string>>() {
+                { "03", new List<string>() { "10" } },
+                { "05", new List<string>() { "10", "20" } },
+                { "11", new List<string>() { "10" } },
+                { "12", new List<string>() { "10" } },
+                { "17", new List<string>() { "20" } },
+                { "19", new List<string>() { "10" } }
+            };
+            var context = CreateContext();
+            Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            var ThemeId1 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 10).Id;
+            var ThemeId2 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 20).Id;
+            BindRecordsWithThemes(context, recThemes);
+            var filter = new RecordsFilter();
+
+            filter.CombineThemes = true;
+
+            int matchesCount1 = 5;
+            int matchesCount2 = 2;
+            int matchesCountAll = 6;
 
             filter.AddThemeId(ThemeId1);
             int count = await context.GetFilteredRecordsCount(filter);

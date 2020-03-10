@@ -145,7 +145,7 @@ namespace RiseDiary.WebUI
                     {
                         Id = tId,
                         ScopeId = s.Id,
-                        ThemeName = theme.ThemeName,
+                        ThemeName = theme.ThemeName!,
                         Deleted = theme.Deleted,
                         Actual = theme.Actual
                     };

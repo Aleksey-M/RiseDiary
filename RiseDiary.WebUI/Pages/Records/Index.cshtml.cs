@@ -27,28 +27,23 @@ namespace RiseDiary.WebUI.Pages
 #pragma warning disable CA1819 // Properties should not return arrays
         public Guid[] SelectedThemes { get; private set; } = Array.Empty<Guid>();
 #pragma warning restore CA1819 // Properties should not return arrays
-
+        public bool CombineThemes { get; private set; }
         private const int _pageSize = 30;
-        private const string _first = "Первая";
-        private const string _previous = "Предыдущая";
-        private const string _next = "Следующая";
-        private const string _last = "Последняя";
-        public string First => _first;
-        public string Previous => _previous;
-        public string Next => _next;
-        public string Last => _last;
 
         private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
 
-        public async Task OnGetSearchAsync(DateTime? fromDate, DateTime? toDate, Guid[] themes, string searchName)
+        public async Task OnGetSearchAsync(DateTime? fromDate, DateTime? toDate, Guid[] themes, string searchName, bool? combineThemes)
         {
+            CombineThemes = combineThemes ?? false;
+
             Filters = new RecordsFilter
             {
                 PageSize = _pageSize,
                 RecordDateFrom = fromDate,
                 RecordDateTo = toDate,
                 RecordNameFilter = searchName?.Trim(),
-                PageNo = 0
+                PageNo = 0,
+                CombineThemes = this.CombineThemes
             };
             if (themes != null && themes.Length > 0)
             {
@@ -63,11 +58,14 @@ namespace RiseDiary.WebUI.Pages
             AllScopes = await _context.FetchScopesWithThemes();
         }
 
-        public async Task OnGetAsync(DateTime? fromDate, DateTime? toDate, Guid[] themes, string searchName, int recordsCount, int currentPage, int pagesCount, string navTo)
+        public async Task OnGetAsync(DateTime? fromDate, DateTime? toDate, Guid[] themes, string searchName, bool? combineThemes, int recordsCount, int currentPage, int pagesCount, string navTo)
         {
+            CombineThemes = combineThemes ?? false;
+
             if (recordsCount == 0)
             {
                 Filters = RecordsFilter.Empty;
+                Filters.CombineThemes = this.CombineThemes;
                 Filters.PageSize = _pageSize;
                 CurrenPage = Filters.PageNo;
                 RecordsCount = await _context.GetFilteredRecordsCount(Filters);
@@ -82,10 +80,10 @@ namespace RiseDiary.WebUI.Pages
 
                 CurrenPage = navTo switch
                 {
-                    _first => 0,
-                    _previous => currentPage - 1,
-                    _next => currentPage + 1,
-                    _last => PagesCount,
+                    "Первая" => 0,
+                    "Предыдущая" => currentPage - 1,
+                    "Следуюая" => currentPage + 1,
+                    "Последняя" => PagesCount,
                     _ => 0,
                 };
                 CurrenPage = CurrenPage >= 0 ? CurrenPage : 0;
@@ -97,7 +95,8 @@ namespace RiseDiary.WebUI.Pages
                     RecordDateFrom = fromDate,
                     RecordDateTo = toDate,
                     RecordNameFilter = searchName?.Trim(),
-                    PageNo = CurrenPage
+                    PageNo = CurrenPage,
+                    CombineThemes = this.CombineThemes
                 };
                 if (themes != null && themes.Length > 0)
                 {
