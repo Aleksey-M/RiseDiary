@@ -5,12 +5,21 @@
     ViewData["TitlePart"] = Model.Image.Name;
 }
 
+@section Styles
+    {
+    <style>
+        form{
+            display: inline;
+        }
+    </style>
+}
+
 <div class="row">
-    <div class="col-sm-10 col-sm-offset-1" style="padding-left:15px;padding-right:15px;">
+    <div class="col-sm-12" style="padding-left:15px;padding-right:15px;">
         <table class="table">
             <thead>
                 <tr>
-                    <th style="width:25%">Название изображения</th>
+                    <th>Название изображения</th>
                     <th>Ширина</th>
                     <th>Высота</th>
                     <th>Размер</th>
@@ -18,11 +27,15 @@
                         <div style="float:right;margin-right:10px;">
                             @if (Model.RecordId == null || Model.RecordId.Value == Guid.Empty)
                             {
-                                <a href="/images/index" class="btn btn-default btn-sm" style="float:right">Закрыть</a>
+                                <a href="/images/index" class="btn btn-default" style="float:right" title="Закрыть">
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>                                    
+                                </a>
                             }
                             else
                             {
-                                <a href="/records/view?recordId=@Model.RecordId.Value.ToString()" class="btn btn-default btn-sm" style="float:right">Венуться к записи</a>
+                                <a href="/records/view?recordId=@Model.RecordId.Value.ToString()" class="btn btn-default" style="float:right" title="Венуться к записи">
+                                    <span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span>                                    
+                                </a>
                             }
                         </div>
                     </th>
@@ -50,12 +63,13 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>                        
+                        </div>
                     </td>
                     <td>@Model.Image.Width&nbsp;px;</td>
                     <td>@Model.Image.Height&nbsp;px;</td>
                     <td>@Model.Image.SizeKbString</td>
-                    <td><i>@Model.Image.CreateDate.ToString("yyyy.MM.dd HH:mm:ss")&nbsp;&nbsp;|&nbsp;&nbsp;@Model.Image.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss")</i></td>
+                    <td>
+                    </td>
                 </tr>
                 @if (Model.TempImage != null)
                 {
@@ -69,9 +83,17 @@
                                 <form method="post">
                                     <input type="hidden" name="recordId" value="@Model.RecordId" />
                                     <input type="hidden" name="imageId" value="@Model.ImageId" />
-                                    <input type="submit" asp-page-handler="SaveUpdatedImage" class="btn btn-warning btn-sm" value="Сохранить изменения" />
-                                    <input type="submit" asp-page-handler="SaveUpdatedAsNewImage" class="btn btn-success btn-sm" value="Сохранить как новое" />
-                                    <input type="submit" asp-page-handler="CancelEdit" class="btn btn-success btn-sm" value="Отменить изменения" />
+                                    <div style="white-space: nowrap;">
+                                        <button type="submit" asp-page-handler="SaveUpdatedImage" class="btn btn-warning" title="Сохранить изменения">
+                                            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                                        </button>
+                                        <button type="submit" asp-page-handler="SaveUpdatedAsNewImage" class="btn btn-success" title="Сохранить как новое">
+                                            <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
+                                        </button>
+                                        <button type="submit" asp-page-handler="CancelEdit" class="btn btn-success" title="Отменить изменения">
+                                            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         </td>
@@ -80,74 +102,81 @@
                 else
                 {
                     <tr style="background-color:#ffef89">
-                        <td colspan="5">
-                            <div class="panel" style="margin:3px;padding:5px;background-color:#f3d1d1;width:300px;float:left; ">
-                                <form asp-page-handler="ReplaceImage" method="post" enctype="multipart/form-data">
-                                    <div class="form-inline">
-                                        <div class="form-group-sm">
-                                            <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                            <input type="hidden" name="imageId" value="@Model.ImageId" />
-                                            <input type="file" accept="image/*" id="newImage" name="newImage" class="form-control" style="padding:0px;border:none;width:200px;" />
-                                            <input type="submit" value="Заменить" title="Заменить изображение другим" class="btn btn-sm btn-info" style="width:80px;" />
-                                        </div>
-                                    </div>
+                        <td colspan="5" style="text-align:center">
+                            <div>
+                                <form asp-page-handler="ReplaceImage" id="uploadNewImageForm" method="post" enctype="multipart/form-data">
+                                    <input type="hidden" name="recordId" value="@Model.RecordId" />
+                                    <input type="hidden" name="imageId" value="@Model.ImageId" />
+                                    <input type="file" accept="image/*" id="newImage" name="newImage" style="display:none" onchange="newImageSelect()" />
+                                    <button type="button" class="btn btn-info" title="Заменить изображение другим" onclick="document.getElementById('newImage').click();">
+                                        <span class="glyphicon glyphicon-retweet" aria-hidden="true"></span>
+                                    </button>
                                 </form>
-                            </div>
 
-                            <div class="panel" style="margin:3px;padding:5px;background-color:#f3d1d1;width:300px;float:left; ">
                                 <form method="post" asp-page-handler="ScaleImage">
-                                    <div class="form-inline">
-                                        <div class="form-group-sm">
-                                            <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                            <input type="hidden" name="imageId" value="@Model.ImageId" />
-                                            <input type="number" style="width:200px;" class="form-control" name="imageSize" id="imageSize" max="@Model.BiggestImageDimm" value="@Model.BiggestImageDimm" />
-                                            <input type="submit" class="btn btn-info btn-sm" style="width:80px;" value="Сжать" title="Сжать изображения таким образом, чтобы большая сторона равнялась введенному значению" />
-                                        </div>
-                                    </div>
+                                    <input type="hidden" name="recordId" value="@Model.RecordId" />
+                                    <input type="hidden" name="imageId" value="@Model.ImageId" />
+                                    <input type="hidden" id="maxImageSize" value="@Model.BiggestImageDimm" />
+                                    <input type="hidden" name="imageSize" id="imageSize" value="@Model.BiggestImageDimm" />                                    
+                                    <button type="submit" class="btn btn-info" onclick="return scaleImageClick();" title="Сжать изображения таким образом, чтобы большая сторона равнялась введенному значению">
+                                        <span class="glyphicon glyphicon-resize-small" aria-hidden="true"></span>
+                                    </button>
                                 </form>
-                            </div>
 
-                            <div class="panel" style="margin:3px;padding:5px;background-color:#f3d1d1;width:90px;float:left; ">
-                                <a asp-page="CropImageSelect" asp-route-imageId="@Model.ImageId" asp-route-recordId="@Model.RecordId" class="btn btn-info btn-sm" style="width:80px;" title="Выбрать область изображения и обрезать все лишнее">Обрезать</a>
-                            </div>
+                                <a asp-page="CropImageSelect" asp-route-imageId="@Model.ImageId" asp-route-recordId="@Model.RecordId" class="btn btn-info" title="Выбрать область изображения и обрезать все лишнее">
+                                    <span class="glyphicon glyphicon-scissors" aria-hidden="true"></span>
+                                </a>
 
-                            <div class="panel" style="margin:3px;padding:5px;background-color:#ff6a00;width:90px;float:left; ">
                                 <form asp-page-handler="DeleteImage" method="post">
                                     <input type="hidden" name="imageId" value="@Model.ImageId" />
                                     <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                    <button type="submit" class="btn btn-sm btn-danger" style="width:80px;"
-                                            title="Удалить изображение"
-                                            onclick="return confirm('Удалить изображение?');">
-                                        Удалить
+                                    <button type="submit" class="btn btn-danger" title="Удалить изображение" onclick="return confirm('Удалить изображение?');">
+                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
                                     </button>
                                 </form>
                             </div>
                         </td>
                     </tr>
-                    <tr style="background-color:#ffef89">
-                        <td colspan="5">
-                            <div style="padding:5px;margin:3px">
-                                <b>URL</b> <i>@Model.ImageUrl</i>
-                                @if (Model.ImageLinks != null && (Model.ImageLinks?.Count ?? 0) > 0)
-                                {
-                                    <b>прикреплено к:</b>
-                                    foreach (var lnk in Model.ImageLinks ?? new Dictionary<Guid, string>())
-                                    {
-                                        @:|&nbsp;
-                                        <a href="/Records/View?recordId=@lnk.Key">@lnk.Value</a>
-                                    }
-                                    @:&nbsp;|
-                                }
-                            </div>
-                        </td>
-                    </tr>
+
                 }
             </tbody>
         </table>
-    </div>    
+    </div>
     <div class="col-sm-12">
-            <img id="img" name="img" src="/Images/imagefile/@Model.Image.Id" class="thumbnail center-block" style="max-height:600px;max-width:1000px;" />
-   </div>
+        <img id="img" name="img" src="/Images/imagefile/@Model.Image.Id" class="thumbnail center-block" style="max-height:600px;max-width:1000px;" />
+    </div>
+
+    <hr class="col-sm-12" />
+
+    <table class="col-sm-12">
+        <tr>
+            <td>
+                <div>
+                    <b>URL:</b> <i>@Model.ImageUrl</i>
+                </div>
+            </td>
+            <td style="text-align:right">
+                <i><b>Создано: </b>@Model.Image.CreateDate.ToString("yyyy.MM.dd HH:mm:ss")</i>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @if (Model.ImageLinks != null && (Model.ImageLinks?.Count ?? 0) > 0)
+                {
+                    <b>Прикреплено к:</b>
+                    foreach (var lnk in Model.ImageLinks ?? new Dictionary<Guid, string>())
+                    {
+                        @:|&nbsp;
+                        <a href="/Records/View?recordId=@lnk.Key">@lnk.Value</a>
+                    }
+                    @:&nbsp;|
+                }
+            </td>
+            <td style="text-align:right">
+                <i><b>Изменено: </b>@Model.Image.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss")</i>
+            </td>
+        </tr>
+    </table>
 </div>
 
 @section Scripts{
@@ -160,5 +189,28 @@
                 vid.hide();
             });
         });
+
+        function scaleImageClick() {
+
+            let size = $("#maxImageSize").val();
+            let input = prompt("Введите новый размер большей стороны картинки для сжатия", size);
+
+            if (input === null) return false;
+
+            let inputInt = parseInt(input);
+
+            if (isNaN(inputInt) || inputInt <= 0 || inputInt > size) {
+                alert("'" + input + "' - некорректное значение");
+                return false;
+            }
+
+            $("#imageSize").val(inputInt);
+            return true;
+        }
+
+        function newImageSelect() {             
+            $('#uploadNewImageForm').submit();
+        }
+
     </script>
 }

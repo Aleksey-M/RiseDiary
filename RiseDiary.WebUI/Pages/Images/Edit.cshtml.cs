@@ -115,7 +115,8 @@ namespace RiseDiary.WebUI.Pages.Images
         {
             RecordId = recordId;
             ImageId = imageId;
-            if (imageSize > 0)
+            Image = await _context.FetchImageById(ImageId);
+            if (imageSize > 0 && imageSize <= BiggestImageDimm)
             {
                 var image = await _context.FetchImageById(imageId);
                 var sourceImage = await _context.FetchFullImageById(imageId);
