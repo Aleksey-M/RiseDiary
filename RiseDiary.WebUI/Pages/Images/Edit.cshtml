@@ -44,26 +44,7 @@
             <tbody>
                 <tr style="background-color:#cdff82">
                     <td>
-                        <div id="view-form">
-                            <span style="float:left;padding:5px;">@Model.Image.Name</span>
-                            &nbsp;
-                            <button type="button" class="btn btn-link show-edit-form">
-                                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
-                            </button>
-                        </div>
-                        <div id="edit-form" style="visibility:collapse">
-                            <form method="post">
-                                <div class="form form-horizontal">
-                                    <div class="input-group">
-                                        <input type="hidden" name="imageId" value="@Model.Image.Id" />
-                                        <input type="text" name="imageName" class="form-control" value="@Model.Image.Name" />
-                                        <span class="input-group-btn">
-                                            <input type="submit" class="btn btn-success" value="Обновить" asp-page-handler="UpdateImageName" />
-                                        </span>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
+                        <component type="typeof(ImageNameComponent)" render-mode="ServerPrerendered" param-ImageId="@Model.ImageId" param-ImageName="@Model.Image.Name" />                       
                     </td>
                     <td>@Model.Image.Width&nbsp;px;</td>
                     <td>@Model.Image.Height&nbsp;px;</td>
@@ -181,14 +162,6 @@
 
 @section Scripts{
     <script type="text/javascript">
-        $(document).ready(function () {
-            $(document).on('click', '.show-edit-form', function () {
-                let vid = $("#view-form");
-                let eid = $("#edit-form");
-                eid.removeAttr('style'); // у инлайновых стилей приоритет выше. JQuery show() не сработает
-                vid.hide();
-            });
-        });
 
         function scaleImageClick() {
 

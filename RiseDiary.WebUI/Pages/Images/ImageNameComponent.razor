@@ -1,0 +1,32 @@
+﻿@namespace RiseDiary.WebUI.Pages.Images
+
+@if (EditMode)
+{
+    @if (ErrorMessage != null)
+    {
+        <p style="color:red">@ErrorMessage</p>
+    }
+
+    <div>
+        <div class="form form-horizontal">
+            <div class="input-group">
+                <input type="text" class="form-control" @bind-value="ImageName" @bind-value:event="onchange" />
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-success" title="Сохранить название" @onclick="SaveImageName">
+                        <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>
+                    </button>
+                </span>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div>
+        <span style="float:left;padding:5px;">@ImageName</span>
+        &nbsp;
+        <button type="button" class="btn btn-link show-edit-form" @onclick="ToEditMode">
+            <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+        </button>
+    </div>
+}

@@ -127,19 +127,5 @@ namespace RiseDiary.WebUI.Pages.Images
             await UpdateModel();
         }
 
-        public async Task<IActionResult> OnPostUpdateImageNameAsync(Guid imageId, string imageName)
-        {
-            if (imageId == Guid.Empty)
-            {
-                return Redirect("/Images/Index");
-            }
-            ImageId = imageId;
-            if (!string.IsNullOrWhiteSpace(imageName))
-            {
-                await _context.UpdateImageName(imageId, imageName);
-            }
-            await UpdateModel();
-            return Page();
-        }
     }
 }
