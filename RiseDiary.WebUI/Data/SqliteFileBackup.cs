@@ -160,9 +160,9 @@ namespace RiseDiary.WebUI
             context.SaveChanges();
         }
 
-        private static List<(string? Id, string? Name, string? CreateDate, string? ModifyDate, byte[] Thumbnail, int Width, int Height, int SizeByte, bool Deleted)> ReadImages(SqliteConnection connection)
+        private static List<(string? Id, string? Name, string? CreateDate, string? ModifyDate, byte[] Thumbnail, int Width, int Height, int SizeByte, bool Deleted, DateTime? Taken)> ReadImages(SqliteConnection connection)
         {
-            var images = new List<(string? Id, string? Name, string? CreateDate, string? ModifyDate, byte[] Thumbnail, int Width, int Height, int SizeByte, bool Deleted)>();
+            var images = new List<(string? Id, string? Name, string? CreateDate, string? ModifyDate, byte[] Thumbnail, int Width, int Height, int SizeByte, bool Deleted, DateTime? Taken)>();
             using var c3 = connection.CreateCommand();
             c3.CommandText = "SELECT * FROM Images";
             using var r3 = c3.ExecuteReader();
@@ -177,7 +177,8 @@ namespace RiseDiary.WebUI
                     Convert.ToInt32(r3["Width"], CultureInfo.InvariantCulture),
                     Convert.ToInt32(r3["Height"], CultureInfo.InvariantCulture),
                     Convert.ToInt32(r3["SizeByte"], CultureInfo.InvariantCulture),
-                    Convert.ToBoolean(r3["Deleted"], CultureInfo.InvariantCulture)));
+                    Convert.ToBoolean(r3["Deleted"], CultureInfo.InvariantCulture),
+                    r3["Taken"] == null ? default : Convert.ToDateTime(r3["Taken"].ToString(), CultureInfo.InvariantCulture)));
             }
             r3.Close();
 
@@ -202,10 +203,10 @@ namespace RiseDiary.WebUI
             return fullImages;
         }
 
-        private static void WriteImages(DiaryDbContext context, List<(string? Id, string? Name, string? CreateDate, string? ModifyDate, byte[] Thumbnail, int Width, int Height, int SizeByte, bool Deleted)> images, List<(string? Id, string? ImageId, byte[] Data)> fullImages)
+        private static void WriteImages(DiaryDbContext context, List<(string? Id, string? Name, string? CreateDate, string? ModifyDate, byte[] Thumbnail, int Width, int Height, int SizeByte, bool Deleted, DateTime? Taken)> images, List<(string? Id, string? ImageId, byte[] Data)> fullImages)
         {
             var imgList = new List<DiaryImageFull>();
-            foreach (var (Id, Name, CreateDate, ModifyDate, Thumbnail, Width, Height, SizeByte, Deleted) in images)
+            foreach (var (Id, Name, CreateDate, ModifyDate, Thumbnail, Width, Height, SizeByte, Deleted, Taken) in images)
             {
                 var iId = Guid.Parse(Id ?? throw new ArgumentException($"Id for Image '{Name}' is null"));
 
@@ -219,7 +220,8 @@ namespace RiseDiary.WebUI
                     Width = Width,
                     Height = Height,
                     SizeByte = SizeByte,
-                    Deleted = Deleted
+                    Deleted = Deleted,
+                    Taken = Taken
                 };
 
                 var oldFi = fullImages.Single(ffi => ffi.ImageId == Id);

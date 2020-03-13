@@ -1,7 +1,9 @@
-﻿using RiseDiary.Model;
+﻿using ExifLibrary;
+using RiseDiary.Model;
 using SkiaSharp;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace RiseDiary.WebUI.Data
 {
@@ -107,6 +109,20 @@ namespace RiseDiary.WebUI.Data
             };
             (temp.Width, temp.Height) = ImageSize(fullImage);
             return temp;
+        }
+
+        public static DateTime? GetTakenField(byte[] image)
+        {
+            using var stream = new MemoryStream(image);
+            var file = ImageFile.FromStream(stream);
+
+            var prop = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.DateTimeOriginal);
+            if (prop != null)
+            {
+                return (DateTime)prop.Value;
+            }
+
+            return null;
         }
     }
 }

@@ -101,7 +101,7 @@ namespace RiseDiary.WebUI.Pages.Images
             var tmpImage = await _context.FetchTempImage(imageId);
             var image = await _context.FetchImageById(imageId);
             int imageQuality = await _context.GetAppSettingInt(AppSettingsKeys.ImageQuality) ?? 75;
-            ImageId = await _context.AddImage($"{image.Name} ({tmpImage.Modification})", tmpImage.Data, imageQuality);
+            ImageId = await _context.AddImage($"{image.Name} ({tmpImage.Modification})", tmpImage.Data, imageQuality, taken: image.Taken);
             await _context.DeleteTempImage(imageId);
             RecordId = recordId;
             if (RecordId != null && RecordId.Value != Guid.Empty)

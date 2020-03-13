@@ -57,8 +57,11 @@ namespace RiseDiary.WebUI.Pages.Images
                 {
                     imageData = binaryReader.ReadBytes((int)newImages[i].Length);
                 }
+
                 int imageQuality = await _context.GetAppSettingInt(AppSettingsKeys.ImageQuality) ?? 75;
-                imageId = await _context.AddImage(imageName, imageData, imageQuality);
+                var taken = ImageHelper.GetTakenField(imageData);
+
+                imageId = await _context.AddImage(imageName, imageData, imageQuality, taken: taken);
                 if(TargetRecordId != null && TargetRecordId != Guid.Empty)
                 {
                     await _context.AddRecordImage(TargetRecordId.Value, imageId);

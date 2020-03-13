@@ -8,7 +8,7 @@
 @section Styles
     {
     <style>
-        form{
+        form {
             display: inline;
         }
     </style>
@@ -24,17 +24,17 @@
                     <th>Высота</th>
                     <th>Размер</th>
                     <th>
-                        <div style="float:right;margin-right:10px;">
+                        <div style="float:right;">
                             @if (Model.RecordId == null || Model.RecordId.Value == Guid.Empty)
                             {
                                 <a href="/images/index" class="btn btn-default" style="float:right" title="Закрыть">
-                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>                                    
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                                 </a>
                             }
                             else
                             {
                                 <a href="/records/view?recordId=@Model.RecordId.Value.ToString()" class="btn btn-default" style="float:right" title="Венуться к записи">
-                                    <span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span>                                    
+                                    <span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span>
                                 </a>
                             }
                         </div>
@@ -44,12 +44,47 @@
             <tbody>
                 <tr style="background-color:#cdff82">
                     <td>
-                        <component type="typeof(ImageNameComponent)" render-mode="ServerPrerendered" param-ImageId="@Model.ImageId" param-ImageName="@Model.Image.Name" />                       
+                        <component type="typeof(ImageNameComponent)" render-mode="ServerPrerendered" param-ImageId="@Model.ImageId" param-ImageName="@Model.Image.Name" />
                     </td>
                     <td>@Model.Image.Width&nbsp;px;</td>
                     <td>@Model.Image.Height&nbsp;px;</td>
                     <td>@Model.Image.SizeKbString</td>
                     <td>
+                        @if (Model.TempImage == null)
+                        {
+                            <div style="white-space: nowrap;float:right">
+                                <form asp-page-handler="ReplaceImage" id="uploadNewImageForm" method="post" enctype="multipart/form-data">
+                                    <input type="hidden" name="recordId" value="@Model.RecordId" />
+                                    <input type="hidden" name="imageId" value="@Model.ImageId" />
+                                    <input type="file" accept="image/*" id="newImage" name="newImage" style="display:none" onchange="newImageSelect()" />
+                                    <button type="button" class="btn btn-info" title="Заменить изображение другим" onclick="document.getElementById('newImage').click();">
+                                        <span class="glyphicon glyphicon-retweet" aria-hidden="true"></span>
+                                    </button>
+                                </form>
+
+                                <form method="post" asp-page-handler="ScaleImage">
+                                    <input type="hidden" name="recordId" value="@Model.RecordId" />
+                                    <input type="hidden" name="imageId" value="@Model.ImageId" />
+                                    <input type="hidden" id="maxImageSize" value="@Model.BiggestImageDimm" />
+                                    <input type="hidden" name="imageSize" id="imageSize" value="@Model.BiggestImageDimm" />
+                                    <button type="submit" class="btn btn-info" onclick="return scaleImageClick();" title="Сжать изображения таким образом, чтобы большая сторона равнялась введенному значению">
+                                        <span class="glyphicon glyphicon-resize-small" aria-hidden="true"></span>
+                                    </button>
+                                </form>
+
+                                <a asp-page="CropImageSelect" asp-route-imageId="@Model.ImageId" asp-route-recordId="@Model.RecordId" class="btn btn-info" title="Выбрать область изображения и обрезать все лишнее">
+                                    <span class="glyphicon glyphicon-scissors" aria-hidden="true"></span>
+                                </a>
+
+                                <form asp-page-handler="DeleteImage" method="post">
+                                    <input type="hidden" name="imageId" value="@Model.ImageId" />
+                                    <input type="hidden" name="recordId" value="@Model.RecordId" />
+                                    <button type="submit" class="btn btn-danger" title="Удалить изображение" onclick="return confirm('Удалить изображение?');">
+                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                                    </button>
+                                </form>
+                            </div>
+                        }
                     </td>
                 </tr>
                 @if (Model.TempImage != null)
@@ -79,46 +114,6 @@
                             </div>
                         </td>
                     </tr>
-                }
-                else
-                {
-                    <tr style="background-color:#ffef89">
-                        <td colspan="5" style="text-align:center">
-                            <div>
-                                <form asp-page-handler="ReplaceImage" id="uploadNewImageForm" method="post" enctype="multipart/form-data">
-                                    <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                    <input type="hidden" name="imageId" value="@Model.ImageId" />
-                                    <input type="file" accept="image/*" id="newImage" name="newImage" style="display:none" onchange="newImageSelect()" />
-                                    <button type="button" class="btn btn-info" title="Заменить изображение другим" onclick="document.getElementById('newImage').click();">
-                                        <span class="glyphicon glyphicon-retweet" aria-hidden="true"></span>
-                                    </button>
-                                </form>
-
-                                <form method="post" asp-page-handler="ScaleImage">
-                                    <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                    <input type="hidden" name="imageId" value="@Model.ImageId" />
-                                    <input type="hidden" id="maxImageSize" value="@Model.BiggestImageDimm" />
-                                    <input type="hidden" name="imageSize" id="imageSize" value="@Model.BiggestImageDimm" />                                    
-                                    <button type="submit" class="btn btn-info" onclick="return scaleImageClick();" title="Сжать изображения таким образом, чтобы большая сторона равнялась введенному значению">
-                                        <span class="glyphicon glyphicon-resize-small" aria-hidden="true"></span>
-                                    </button>
-                                </form>
-
-                                <a asp-page="CropImageSelect" asp-route-imageId="@Model.ImageId" asp-route-recordId="@Model.RecordId" class="btn btn-info" title="Выбрать область изображения и обрезать все лишнее">
-                                    <span class="glyphicon glyphicon-scissors" aria-hidden="true"></span>
-                                </a>
-
-                                <form asp-page-handler="DeleteImage" method="post">
-                                    <input type="hidden" name="imageId" value="@Model.ImageId" />
-                                    <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                    <button type="submit" class="btn btn-danger" title="Удалить изображение" onclick="return confirm('Удалить изображение?');">
-                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-
                 }
             </tbody>
         </table>
@@ -157,6 +152,10 @@
                 <i><b>Изменено: </b>@Model.Image.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss")</i>
             </td>
         </tr>
+        <tr>
+            <td></td>
+            <td style="text-align:right"><i><b>Дата съемки: </b>@(Model.Image.Taken?.ToString("yyyy.MM.dd HH:mm:ss") ?? "[НЕТ]")</i></td>
+        </tr>
     </table>
 </div>
 
@@ -181,7 +180,7 @@
             return true;
         }
 
-        function newImageSelect() {             
+        function newImageSelect() {
             $('#uploadNewImageForm').submit();
         }
 
