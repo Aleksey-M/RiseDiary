@@ -19,7 +19,7 @@ namespace RiseDiary.IntegratedTests
         {
             var context = CreateContext();
 
-            var id = await context.AddImage(UniqueString, ImageBytes, 75);
+            var id = await context.AddImage(UniqueString, ImageBytes, 75, null, null);
 
             Assert.AreNotEqual(0, id);
         }
@@ -40,7 +40,7 @@ namespace RiseDiary.IntegratedTests
             var context = CreateContext();
             var img = GetTestImage();
 
-            var id = await context.AddImage(img.Name, img.Thumbnail, 75);
+            var id = await context.AddImage(img.Name, img.Thumbnail, 75, null, null);
             var imgSaved = await context.FetchImageById(id);
 
             Assert.IsNotNull(imgSaved);
@@ -55,7 +55,7 @@ namespace RiseDiary.IntegratedTests
             var img = GetTestImage();
             var fullImage = img.Thumbnail;
 
-            var id = await context.AddImage(img.Name, img.Thumbnail, 75);
+            var id = await context.AddImage(img.Name, img.Thumbnail, 75, null, null);
             var imgDataSaved = await context.FetchFullImageById(id);
 
             Assert.IsNotNull(imgDataSaved);
@@ -79,7 +79,7 @@ namespace RiseDiary.IntegratedTests
             var context = CreateContext();
             for (int i = 0; i < 3; i++)
             {
-                await context.AddImage(GetTestImage().Name, GetTestImage().Thumbnail, 75);
+                await context.AddImage(GetTestImage().Name, GetTestImage().Thumbnail, 75, null, null);
             }
 
             int count = await context.GetImagesCount();
@@ -94,7 +94,7 @@ namespace RiseDiary.IntegratedTests
             var imagesId = new List<Guid>();
             for (int i = 0; i < 3; i++)
             {
-                imagesId.Add(await context.AddImage(UniqueString, ImageBytes, 75));
+                imagesId.Add(await context.AddImage(UniqueString, ImageBytes, 75, null, null));
             }
 
             await context.DeleteImage(imagesId[1]);
@@ -111,7 +111,7 @@ namespace RiseDiary.IntegratedTests
         public async Task UpdateImageName_ShouldUpdateImageName()
         {
             var context = CreateContext();
-            var id = await context.AddImage(UniqueString, ImageBytes, 75);
+            var id = await context.AddImage(UniqueString, ImageBytes, 75, null, null);
             string newName = Guid.NewGuid().ToString();
 
             await context.UpdateImageName(id, newName);
@@ -127,7 +127,7 @@ namespace RiseDiary.IntegratedTests
             var context = CreateContext();
             for (int i = 0; i < 10; i++)
             {
-                await context.AddImage(UniqueString, ImageBytes, 75);
+                await context.AddImage(UniqueString, ImageBytes, 75, null, null);
             }
 
             var page = await context.FetchImageSet(7, 5);

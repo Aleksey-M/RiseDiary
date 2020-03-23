@@ -59,9 +59,9 @@ namespace RiseDiary.WebUI.Pages.Images
                 }
 
                 int imageQuality = await _context.GetAppSettingInt(AppSettingsKeys.ImageQuality) ?? 75;
-                var taken = ImageHelper.GetTakenField(imageData);
+                var (taken, cameraModel) = ImageHelper.GetMetadataFromPhoto(imageData);
 
-                imageId = await _context.AddImage(imageName, imageData, imageQuality, taken: taken);
+                imageId = await _context.AddImage(imageName, imageData, imageQuality, taken: taken, cameraModel: cameraModel);
                 if(TargetRecordId != null && TargetRecordId != Guid.Empty)
                 {
                     await _context.AddRecordImage(TargetRecordId.Value, imageId);

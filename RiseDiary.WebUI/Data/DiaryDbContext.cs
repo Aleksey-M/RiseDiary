@@ -410,7 +410,7 @@ namespace RiseDiary.WebUI.Data
                 .ToListAsync().ConfigureAwait(false);
         }
 
-        public static async Task<Guid> AddImage(this DiaryDbContext context, string imageName, byte[] fullSizeImageData, int imageQuality, DateTime? taken)
+        public static async Task<Guid> AddImage(this DiaryDbContext context, string imageName, byte[] fullSizeImageData, int imageQuality, DateTime? taken, string? cameraModel)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (imageName == null) throw new ArgumentNullException(nameof(imageName));
@@ -423,7 +423,8 @@ namespace RiseDiary.WebUI.Data
                 ModifyDate = DateTime.Now,
                 SizeByte = fullSizeImageData.Length,
                 Thumbnail = ImageHelper.ScaleImage(fullSizeImageData, imageQuality),
-                Taken = taken
+                Taken = taken,
+                CameraModel = cameraModel
             };
             (image.Width, image.Height) = ImageHelper.ImageSize(fullSizeImageData);
             await context.Images.AddAsync(image);

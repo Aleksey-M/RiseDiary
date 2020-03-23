@@ -56,7 +56,7 @@ namespace RiseDiary.Model
         public int SizeByte { get; set; }
         public bool Deleted { get; set; }
         public DateTime? Taken { get; set; }
-
+        public string? CameraModel { get; set; }
         public DiaryImageFull? FullImage { get; set; }
         public TempImage? TempImage { get; set; }
         public ICollection<DiaryRecordImage> RecordsRefs { get; private set; } = new List<DiaryRecordImage>();

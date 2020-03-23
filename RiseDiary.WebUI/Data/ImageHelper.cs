@@ -2,6 +2,7 @@
 using RiseDiary.Model;
 using SkiaSharp;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -111,18 +112,20 @@ namespace RiseDiary.WebUI.Data
             return temp;
         }
 
-        public static DateTime? GetTakenField(byte[] image)
+        public static (DateTime? taken, string? cameraModel) GetMetadataFromPhoto(byte[] image)
         {
             using var stream = new MemoryStream(image);
             var file = ImageFile.FromStream(stream);
 
             var prop = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.DateTimeOriginal);
-            if (prop != null)
-            {
-                return (DateTime)prop.Value;
-            }
+            DateTime? taken = prop != null ? (DateTime)prop.Value : (DateTime?)null;
 
-            return null;
+            var model = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.Model)?.Value?.ToString() ?? "";
+            var make = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.Make)?.Value.ToString() ?? "";
+            string? cameraModel = model.Contains(make, StringComparison.OrdinalIgnoreCase) ? model : make + " " + model;
+            cameraModel = string.IsNullOrWhiteSpace(cameraModel) ? null : cameraModel.Trim();
+
+            return (taken, cameraModel);
         }
     }
 }
