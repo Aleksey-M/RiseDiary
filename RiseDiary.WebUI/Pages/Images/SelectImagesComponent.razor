@@ -15,14 +15,7 @@
         <tr>
             <td style="white-space: nowrap">
                 <label>
-                    @if (CheckedAttribute(img.Id))
-                    {
-                        <input type="checkbox" id="@img.Id" style="vertical-align:middle" checked="checked" @onchange="@(e => ToggleSelection(img.Id))" />
-                    }
-                    else
-                    {
-                        <input type="checkbox" id="@img.Id" style="vertical-align:middle" @onchange="@(e => ToggleSelection(img.Id))" />
-                    }
+                    <input disabled="@Disabled" type="checkbox" id="@img.Id" style="vertical-align:middle" checked="@(CheckedAttribute(img.Id))" @onchange="@(e => ToggleSelection(img.Id))" />
                     <img src="/Images/imagethumbnail/@img.Id" style="vertical-align:middle" />
                 </label>
             </td>            
@@ -37,14 +30,14 @@
             <td colspan="4" style="text-align:center">
                 @if(HiddenImagesExists()) 
                 {
-                    <button type="button" @onclick="@(async e => await LoadListPart())" class="btn btn-link">Показать еще <span class="glyphicon glyphicon-refresh"></span></button>
+                    <button disabled="@Disabled" type="button" @onclick="@(async e => await LoadListPart())" class="btn btn-link">Показать еще <span class="glyphicon glyphicon-refresh"></span></button>
                 }
             </td>
         </tr>
         <tr>
             <td colspan="4">
-                <a href="Records/View?recordId=@RecordId" class="btn btn-default">вернуться к записи</a>&nbsp;&nbsp;
-                <button type="button" class="btn btn-success" @onclick="@(async e => await Save())">Сохранить</button>
+                <a disabled="@Disabled" href="Records/View?recordId=@RecordId" class="btn btn-default">вернуться к записи</a>&nbsp;&nbsp;
+                <button disabled="@Disabled" type="button" class="btn btn-success" @onclick="@(async e => await Save())">Сохранить</button>
             </td>
         </tr>
     </tfoot>

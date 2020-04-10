@@ -114,9 +114,18 @@ namespace RiseDiary.WebUI.Data
 
         public static (DateTime? taken, string? cameraModel) GetMetadataFromPhoto(byte[] image)
         {
+            ImageFile file;
             using var stream = new MemoryStream(image);
-            var file = ImageFile.FromStream(stream);
-
+            try
+            {
+                file = ImageFile.FromStream(stream);
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                return (null, null);
+            }
             var prop = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.DateTimeOriginal);
             DateTime? taken = prop != null ? (DateTime)prop.Value : (DateTime?)null;
 

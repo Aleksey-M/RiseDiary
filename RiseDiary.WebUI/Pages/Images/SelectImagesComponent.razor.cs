@@ -21,7 +21,7 @@ namespace RiseDiary.WebUI.Pages.Images
         private List<DiaryImage> Images { get; set; } = new List<DiaryImage>();
         private int AllImagesCount { get; set; }
         private HashSet<Guid> RecordImages { get; set; } = null!;
-
+        public bool Disabled { get; set; }
         private async Task LoadListPart()
         {
             int nextCount = 15;
@@ -36,6 +36,8 @@ namespace RiseDiary.WebUI.Pages.Images
 
         private async Task Save()
         {
+            Disabled = true;
+
             var addedImages = new HashSet<Guid>(await DbContext.RecordImages
                 .AsNoTracking()
                 .Where(ri => ri.RecordId == RecordId)
@@ -55,6 +57,8 @@ namespace RiseDiary.WebUI.Pages.Images
             }
 
             await JSRuntime.InvokeVoidAsync("showSaveMessage");
+
+            Disabled = false;
         }
 
         private bool CheckedAttribute(Guid imgId) => RecordImages.Any(id => id == imgId);
