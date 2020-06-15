@@ -176,3 +176,13 @@ V 5.4.0
 	- FetchRecordsForImage
 	- SearchRecordsByText	
 	- UpdateCogitationText
+
+- REST API
+- WebUI Automation Framework + тесты для API
+- UI тесты
+Требования к фреймворку:
+	1. Многопоточность
+	2. SpecFlow
+	3. Отчет в Allure (или ExtentTest)
+	4. Тестирование REST API
+	5. Тестирование в браузерах: Firefox, Chrome и Edge
