@@ -229,7 +229,7 @@ namespace RiseDiary.WebUI.Data
             if (string.IsNullOrWhiteSpace(scopeName)) throw new ArgumentException($"Parameter {nameof(scopeName)} should not be null or empty");
             var scope = new DiaryScope
             {
-                ScopeName = scopeName
+                ScopeName = scopeName.Trim()
             };
             await context.Scopes.AddAsync(scope);
             await context.SaveChangesAsync().ConfigureAwait(false);
@@ -270,7 +270,7 @@ namespace RiseDiary.WebUI.Data
             if (targetScope == null) throw new ArgumentException($"Scope with id = {scope.Id} is not exists");
             if (targetScope.Deleted) throw new ArgumentException($"Scope with id = {scope.Id} is deleted");
 
-            targetScope.ScopeName = scope.ScopeName;
+            targetScope.ScopeName = scope.ScopeName.Trim();
             await context.SaveChangesAsync().ConfigureAwait(false);
 
             return targetScope.Id;
@@ -307,7 +307,7 @@ namespace RiseDiary.WebUI.Data
             if (string.IsNullOrWhiteSpace(themeName))
                 throw new ArgumentException($"Parameter {nameof(themeName)} should not be null or empty");
 
-            var theme = new DiaryTheme { ScopeId = scopeId, ThemeName = themeName };
+            var theme = new DiaryTheme { ScopeId = scopeId, ThemeName = themeName.Trim() };
             await context.Themes.AddAsync(theme);
             await context.SaveChangesAsync().ConfigureAwait(false);
 

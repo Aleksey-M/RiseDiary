@@ -30,6 +30,9 @@ namespace RiseDiary.WebUI
             services.AddRazorPages();
             services.AddDbContext<DiaryDbContext>(options => options.UseSqlite($"Data Source={_dataBaseFileName};"));
             services.AddServerSideBlazor();
+                        
+            services.AddSwaggerDocument();
+            services.AddMvcCore().AddApiExplorer();
 
             int needMigration = Configuration.GetValue<int>("needMigration");
             if (needMigration > 0)
@@ -48,13 +51,17 @@ namespace RiseDiary.WebUI
             
             app.UseRouting();
             //app.UseHttpsRedirection();
-            //app.UseAuthorization();
+            //app.UseAuthorization();           
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapControllers();
                 endpoints.MapRazorPages();
                 endpoints.MapBlazorHub();
             });
+
+            app.UseOpenApi();
+            app.UseSwaggerUi3();
 
             if (_needFileBackup && applicationLifetime != null)
             {
