@@ -82,7 +82,7 @@ namespace RiseDiary.WebUI.Pages
                 {
                     "Первая" => 0,
                     "Предыдущая" => currentPage - 1,
-                    "Следуюая" => currentPage + 1,
+                    "Следующая" => currentPage + 1,
                     "Последняя" => PagesCount,
                     _ => 0,
                 };
