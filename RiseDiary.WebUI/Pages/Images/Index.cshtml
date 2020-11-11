@@ -1,5 +1,6 @@
 ﻿@page "{pageNo?}"
 @model RiseDiary.WebUI.Pages.Images.IndexModel
+@using RiseDiary.Model
 @{
     ViewData["Title"] = "Фотографии и рисунки";
     ViewData["TitlePart"] = "Фотографии и рисунки";
@@ -59,7 +60,7 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-body">
-                        <img src="/Images/ImageFile/@image.Id" class="img-responsive" style="height:90vh;max-height:100%;margin:auto">
+                        <img src="/api/v1.0/image-file/@image.Id" class="img-responsive" style="height:90vh;max-height:100%;margin:auto">
                     </div>
                 </div>
             </div>
@@ -73,12 +74,12 @@
 
                 <div class="panel-body">
                     <a data-toggle="modal" data-target="@("#fullImage-" + image.Id)" style="cursor:pointer">
-                        <img src="/Images/imagethumbnail/@image.Id" class="img-thumbnail center-block thumbnail-image" />
+                        <img src="/api/v1.0/image-thumbnail/@image.Id" class="img-thumbnail center-block thumbnail-image" />
                     </a>
                 </div>
 
                 <div class="panel-footer">
-                    @image.Width&nbsp;/&nbsp;@image.Height&nbsp;&nbsp;<b>@image.SizeKbString</b>
+                    @image.Width&nbsp;/&nbsp;@image.Height&nbsp;&nbsp;<b>@image.GetSizeKbString()</b>
                 </div>
             </div>
         </div>

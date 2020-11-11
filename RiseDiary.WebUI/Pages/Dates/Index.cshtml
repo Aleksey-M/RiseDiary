@@ -23,84 +23,29 @@
         <a href="~/Dates/calendar" class="btn-link">Даты на календаре</a>
     </div>
 </div>
+
 <table class="table">
     <tbody>
         @foreach (var date in Model.Dates)
         {
-            @* Важный день, сегодня *@
-            @if (!date.IsWeekday && date.IsToday)
-            {
-                <tr style="background-color:#fe9393">
-                    <td>
-                        @date.DisplayDate
-                    </td>
-                    <td>
-                        @date.Theme
-                    </td>
-                    <td>
-                        @date.Date.ToString("yyyy.MM.dd")
-                    </td>
-                    <td>
-                        <a href="~/Records/View?recordId=@date.Id">@date.Name</a>
-                    </td>
-                    <td>
-                        @Html.Raw(date.Text)
-                    </td>
-                </tr>
 
-            }
-            @* Важный день, не сегодня *@
-            @if (!date.IsWeekday && !date.IsToday)
-            {
-                <tr style="background-color:#ebfb78">
-                    <td>
-                        @date.DisplayDate
-                    </td>
-                    <td>
-                        @date.Theme
-                    </td>
-                    <td>
-                        @date.Date.ToString("yyyy.MM.dd")
-                    </td>
-                    <td>
-                        <a href="~/Records/View?recordId=@date.Id">@date.Name</a>
-                    </td>
-                    <td>
-                        @Html.Raw(date.Text)
-                    </td>
-                </tr>
-            }
-            @* Обычный день, сегодня *@
-            @if (date.IsWeekday && date.IsToday)
-            {
-                <tr style="background-color:#ffb98a">
-                    <td>
-                        @date.DisplayDate
-                    </td>
-                    <td colspan="2">
-                        Нет событий (сегодня)
-                    </td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            }
-            @* Обычный день, не сегодня  *@
-            @if (date.IsWeekday && !date.IsToday)
-            {
-                <tr style="background-color:#b0f8c4">
-                    <td>
-                        @date.DisplayDate
-                    </td>
-                    <td>
-                        Нет событий
-                    </td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            }
-
-        }
+<tr style=@Html.Raw(Model.GetRowStyle(date))>
+    <td>
+        @date.TransferredDate.ToString("yyyy.MM.dd ddd", System.Globalization.CultureInfo.CurrentCulture)
+    </td>
+    <td>
+        @date.Themes
+    </td>
+    <td>
+        @date.Date.ToString("yyyy.MM.dd")
+    </td>
+    <td>
+        <a href="~/Records/View?recordId=@date.Id">@date.Name</a>
+    </td>
+    <td>
+        @Html.Raw(date.Text)
+    </td>
+</tr>}
     </tbody>
 </table>
 

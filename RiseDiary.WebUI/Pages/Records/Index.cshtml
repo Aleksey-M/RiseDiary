@@ -1,5 +1,6 @@
 ﻿@page
 @model RiseDiary.WebUI.Pages.RecordsViewModel
+@using RiseDiary.Model
 @{
     ViewData["Title"] = "Поиск записей";
     ViewData["TitlePart"] = "Поиск записей";
@@ -31,8 +32,8 @@
                     {
                         <input type="hidden" name="themes" value="@st" />
                     }
-                    <input type="hidden" name="fromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? string.Empty)" />
-                    <input type="hidden" name="toDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? string.Empty)" />
+                    <input type="hidden" name="fromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? "")" />
+                    <input type="hidden" name="toDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? "")" />
                     <input type="hidden" name="searchName" value="@Model.Filters.RecordNameFilter" />
                     <input type="hidden" name="currentPage" value="@Model.CurrenPage" />
                     <input type="hidden" name="pagesCount" value="@Model.PagesCount" />
@@ -52,11 +53,11 @@
             <thead>
                 <tr>
                     <th style="padding:2px;">
-                        <input type="text" class="form-control" style="margin:0px;" placeholder="От" id="filterFromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? string.Empty)" />
-                        <input type="text" class="form-control" placeholder="До" id="filterToDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? string.Empty)" />
+                        <input type="text" class="form-control" style="margin:0px;" placeholder="От" id="filterFromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? "")" />
+                        <input type="text" class="form-control" placeholder="До" id="filterToDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? "")" />
                     </th>
                     <th style="padding:2px;vertical-align: middle;">
-                        <input type="text" class="form-control" placeholder="Название  (с учетом регистра)" id="filterName" value="@Model.Filters.RecordNameFilter" />
+                        <input type="text" class="form-control" placeholder="Фильтр по названию" id="filterName" value="@Model.Filters.RecordNameFilter" />
                     </th>
                     <th style="vertical-align:middle; text-align:center">
                         <input type="checkbox" @(Model.CombineThemes ? "checked=checked" : "")  id="combineThemes" title="Выводить записи, которые относятся к любой выбранной теме (но не ко всем)" />
@@ -93,7 +94,7 @@
                 {
                     <tr>
                         <td class="main-date-column">@rec.Date.ToString("yyyy.MM.dd")</td>
-                        <td><a href="~/Records/View?recordId=@rec.Id">@rec.RecordNameDisplay</a></td>
+                        <td><a href="~/Records/View?recordId=@rec.Id">@rec.GetRecordNameDisplay()</a></td>
                         <td class="date-column">@rec.CreateDate.ToString("G")</td>
                         <td class="date-column">@rec.ModifyDate.ToString("G")</td>
                         <td style="width:30px"><a href="~/Records/Edit?recordId=@rec.Id"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a></td>

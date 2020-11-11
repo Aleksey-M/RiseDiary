@@ -80,10 +80,10 @@
             {
                 id: "@Model.Records.ElementAt(i).Id",
                 name: "@Model.Records.ElementAt(i).Name",
-                startDate: new Date("@Model.Records.ElementAt(i).Date.Year", "@(Model.Records.ElementAt(i).Date.Month-1)", "@Model.Records.ElementAt(i).Date.Day"),
-                endDate: new Date("@Model.Records.ElementAt(i).Date.Year", "@(Model.Records.ElementAt(i).Date.Month-1)", "@Model.Records.ElementAt(i).Date.Day")
+                startDate: new Date("@Model.Records.ElementAt(i).StartDate.Year", "@(Model.Records.ElementAt(i).StartDate.Month-1)", "@Model.Records.ElementAt(i).StartDate.Day"),
+                endDate: new Date("@Model.Records.ElementAt(i).StartDate.Year", "@(Model.Records.ElementAt(i).StartDate.Month-1)", "@Model.Records.ElementAt(i).StartDate.Day")
 
-            }@(i != count - 1 ? "," : string.Empty)
+            }@(i != count - 1 ? "," : "")
                 </text>
             }
         ];

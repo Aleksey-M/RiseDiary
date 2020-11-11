@@ -1,4 +1,8 @@
-﻿@namespace RiseDiary.WebUI.Pages.Images
+﻿@using RiseDiary.Model
+
+@namespace RiseDiary.WebUI.Pages.Images
+
+@inject IImagesService ImagesService
 
 @if (EditMode)
 {
@@ -29,4 +33,41 @@ else
             <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
         </button>
     </div>
+}
+
+@code{
+    [Parameter]
+    public string ImageName { get; set; } = null!;
+    [Parameter]
+    public Guid ImageId { get; set; }
+    public bool EditMode { get; set; }
+    public string? ErrorMessage { get; set; }
+
+    public void ToEditMode()
+    {
+        EditMode = true;
+    }
+
+    public async Task SaveImageName()
+    {
+        var imageName = ImageName.Trim();
+
+        if (imageName.Length == 0)
+        {
+            ErrorMessage = "Новое название не введено!";
+            return;
+        }
+
+        if (imageName.Length > 250)
+        {
+            ErrorMessage = "Длина названия не должна превышать 250 символов";
+            return;
+        }
+
+        await ImagesService.UpdateImage(ImageId, imageName).ConfigureAwait(false);
+        ImageName = imageName;
+        ErrorMessage = null;
+        EditMode = false;
+    }
+
 }

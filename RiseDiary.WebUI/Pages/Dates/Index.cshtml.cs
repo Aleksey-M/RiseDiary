@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
-using RiseDiary.WebUI.Data;
+using RiseDiary.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,56 +9,37 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Dates
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class IndexModel : PageModel
     {
-        private Guid _datesScopeId = Guid.Empty;
-        private int _daysDisplayRange;
-        private readonly DiaryDbContext _context;
-        
-        public bool IsScopeSelected => _datesScopeId != Guid.Empty;
+        private readonly IDatesService _datesService;
+        private readonly IAppSettingsService _settingsSvc;
 
-        public IndexModel(DiaryDbContext context)
+        public IndexModel(IDatesService datesService, IAppSettingsService settingsSvc)
         {
-            _context = context;
+            _datesService = datesService;
+            _settingsSvc = settingsSvc;
         }
 
-        public IEnumerable<DateItem> Dates { get; private set; } = Enumerable.Empty<DateItem>();
-
-        private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
-
-        private async Task UpdateViewModel()
-        {
-            var stringId = await _context.GetAppSetting(AppSettingsKeys.DatesScopeId);
-            if(!Guid.TryParse(stringId, out _datesScopeId)) 
-            {
-                _datesScopeId = Guid.Empty;
-            }
-
-            if (IsScopeSelected)
-            {
-                _daysDisplayRange = (await _context.GetAppSettingInt(AppSettingsKeys.DatesDisplayRange)) ?? 7;
-                var datesRange = new DatesRange(DateTime.Now, _daysDisplayRange);
-
-                var dates = await _context.FetchDateItems(_datesScopeId, datesRange, LocalHostAndPort);
-
-                var weekdays = datesRange.AllRangeDates
-                    .Where(di => !dates.Any(d => d.TransferredDate == di.TransferredDate));
-
-                dates.AddRange(weekdays);
-                Dates = dates.OrderByDescending(d => d.TransferredDate).ToList();
-            }
-        }
+        public DateTime Today { get; } = DateTime.Now.Date;
+        public IEnumerable<DateListItem> Dates { get; private set; } = Enumerable.Empty<DateListItem>();
 
         public async Task<IActionResult> OnGetAsync()
         {
-            await UpdateViewModel();
-            if (!IsScopeSelected)
-            {
-                return Redirect("~/Dates/Setup");
-            }
+            var (stringId, _) = await _settingsSvc.GetAppSetting(AppSettingsKey.ImportantDaysScopeId);
+            var range = await _settingsSvc.GetAppSettingInt(AppSettingsKey.ImportantDaysDisplayRange);
 
+            if (!Guid.TryParse(stringId, out _) || range == null) return Redirect("~/Dates/Setup");
+
+            Dates = await _datesService.GetDatesFromRange(Today, true);
             return Page();
         }
+
+        public string GetRowStyle(DateListItem date) => (!string.IsNullOrEmpty(date.Themes), date.TransferredDate == Today) switch
+        {
+            (true, true) => "background-color:#fe9393",
+            (true, false) => "background-color:#ebfb78",
+            (false, true) => "background-color:#ffb98a",
+            (false, false) => "background-color:#b0f8c4"
+        };
     }
 }

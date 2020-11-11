@@ -57,8 +57,8 @@
                     {
                         <input type="hidden" name="themes" value="@st" />
                     }
-                    <input type="hidden" name="fromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? string.Empty)" />
-                    <input type="hidden" name="toDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? string.Empty)" />
+                    <input type="hidden" name="fromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? "")" />
+                    <input type="hidden" name="toDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? "")" />
                     <input type="hidden" name="searchName" value="@Model.Filters.RecordNameFilter" />
                     <input type="hidden" name="currentPage" value="@Model.CurrenPage" />
                     <input type="hidden" name="pagesCount" value="@Model.PagesCount" />
@@ -78,8 +78,8 @@
             <thead>
                 <tr>
                     <th style="padding:2px;">
-                        <input type="text" class="form-control" style="margin: 0px;" placeholder="От" id="filterFromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? string.Empty)" />
-                        <input type="text" class="form-control" placeholder="До" id="filterToDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? string.Empty)" />
+                        <input type="text" class="form-control" style="margin: 0px;" placeholder="От" id="filterFromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? "")" />
+                        <input type="text" class="form-control" placeholder="До" id="filterToDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? "")" />
                     </th>
                     <th style="padding:2px;vertical-align: middle;">
                         <input type="text" class="form-control" placeholder="Фильтр по названию" id="filterName" value="@Model.Filters.RecordNameFilter" />
@@ -135,7 +135,7 @@
                                                         <div class="modal-dialog modal-lg">
                                                             <div class="modal-content">
                                                                 <div class="modal-body">
-                                                                    <img src="/Images/ImageFile/@image.ImageId" class="img-responsive" style="height:90vh;max-height:100%;margin:auto">
+                                                                    <img src="/api/v1.0/image-file/@image.ImageId" class="img-responsive" style="height:90vh;max-height:100%;margin:auto">
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -146,7 +146,7 @@
                                                            
                                                             <div class="panel-body">
                                                                 <a data-toggle="modal" data-target="@("#fullImage-" + image.ImageId)" style="cursor:pointer">
-                                                                    <img src="/Images/imagethumbnail/@image.ImageId" class="img-thumbnail center-block thumbnail-image" />
+                                                                    <img src="/api/v1.0/image-thumbnail/@image.ImageId" class="img-thumbnail center-block thumbnail-image" />
                                                                 </a>
                                                             </div>
 

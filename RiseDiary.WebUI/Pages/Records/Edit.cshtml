@@ -27,7 +27,7 @@
         <tr>
             <td style="vertical-align:middle; width:15%"><b>Дата:</b></td>
             <td style="width:20%">
-                <input type="text" name="recordDate" id="recordDate" class="form-control" value="@(Model.RecordDate == null ? string.Empty : Model.RecordDate.Value.ToString("yyyy.MM.dd"))" />
+                <input type="text" name="recordDate" id="recordDate" class="form-control" value="@(Model.RecordDate == null ? "" : Model.RecordDate.Value.ToString("yyyy.MM.dd"))" />
             </td>
             <td style="vertical-align:middle">
                 @if (Model.RecordCreateDate != null)

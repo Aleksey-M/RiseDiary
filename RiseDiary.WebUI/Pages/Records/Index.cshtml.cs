@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
-using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages
 {
-#pragma warning disable CA1822 // Mark members as static
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class RecordsViewModel : PageModel
     {
-        private readonly DiaryDbContext _context;
-        public RecordsViewModel(DiaryDbContext context)
+        private readonly IRecordsSearchService _searchRecordsService;
+        private readonly IScopesService _scopesSvc;
+        public RecordsViewModel(IRecordsSearchService searchRecordsService, IScopesService scopesSvc)
         {
-            _context = context;
+            _searchRecordsService = searchRecordsService;
+            _scopesSvc = scopesSvc;
         }
 
         public IEnumerable<DiaryRecord> Records { get; private set; } = Enumerable.Empty<DiaryRecord>();
@@ -24,13 +23,9 @@ namespace RiseDiary.WebUI.Pages
         public int PagesCount { get; private set; }
         public int CurrenPage { get; private set; }
         public IEnumerable<DiaryScope> AllScopes { get; private set; } = Enumerable.Empty<DiaryScope>();
-#pragma warning disable CA1819 // Properties should not return arrays
         public Guid[] SelectedThemes { get; private set; } = Array.Empty<Guid>();
-#pragma warning restore CA1819 // Properties should not return arrays
         public bool CombineThemes { get; private set; }
         private const int _pageSize = 30;
-
-        private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
 
         public async Task OnGetSearchAsync(DateTime? fromDate, DateTime? toDate, Guid[] themes, string searchName, bool? combineThemes)
         {
@@ -50,12 +45,12 @@ namespace RiseDiary.WebUI.Pages
                 Filters.AddThemeId(themes);
                 SelectedThemes = themes;
             }
-            RecordsCount = await _context.GetFilteredRecordsCount(Filters);
+            RecordsCount = await _searchRecordsService.GetRecordsCount(Filters);
             PagesCount = Convert.ToInt32(Math.Ceiling((float)RecordsCount / Filters.PageSize));
             CurrenPage = 0;
 
-            Records = await _context.FetchRecordsListFiltered(Filters, LocalHostAndPort);
-            AllScopes = await _context.FetchScopesWithThemes();
+            Records = await _searchRecordsService.GetRecordsList(Filters);
+            AllScopes = await _scopesSvc.GetScopes();
         }
 
         public async Task OnGetAsync(DateTime? fromDate, DateTime? toDate, Guid[] themes, string searchName, bool? combineThemes, int recordsCount, int currentPage, int pagesCount, string navTo)
@@ -68,7 +63,7 @@ namespace RiseDiary.WebUI.Pages
                 Filters.CombineThemes = this.CombineThemes;
                 Filters.PageSize = _pageSize;
                 CurrenPage = Filters.PageNo;
-                RecordsCount = await _context.GetFilteredRecordsCount(Filters);
+                RecordsCount = await _searchRecordsService.GetRecordsCount(Filters);
                 PagesCount = Convert.ToInt32(Math.Ceiling((float)RecordsCount / Filters.PageSize));
             }
             else
@@ -105,8 +100,8 @@ namespace RiseDiary.WebUI.Pages
                 }
             }
 
-            Records = await _context.FetchRecordsListFiltered(Filters, LocalHostAndPort);
-            AllScopes = await _context.FetchScopesWithThemes();
+            Records = await _searchRecordsService.GetRecordsList(Filters);
+            AllScopes = await _scopesSvc.GetScopes();
         }
     }
 }

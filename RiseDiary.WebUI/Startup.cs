@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RiseDiary.Model;
+using RiseDiary.Model.Services;
 using RiseDiary.WebUI.Data;
 
 namespace RiseDiary.WebUI
@@ -11,30 +14,47 @@ namespace RiseDiary.WebUI
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            _configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-        private string _dataBaseFileName = string.Empty;
+        private readonly IConfiguration _configuration;
+        private string _dataBaseFileName = "";
         private bool _needFileBackup;
 
         public void ConfigureServices(IServiceCollection services)
         {
-            _dataBaseFileName = Configuration.GetValue<string>("dbFile");
-            _needFileBackup = Configuration.GetValue<int>("needFileBackup") > 0;
+            _dataBaseFileName = _configuration.GetValue<string>("dbFile");
+            _needFileBackup = _configuration.GetValue<int>("needFileBackup") > 0;
             if (_needFileBackup)
             {
                 SqliteFileBackup.BackupFile(_dataBaseFileName);
             }
 
             services.AddRazorPages();
+
+            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+
             services.AddDbContext<DiaryDbContext>(options => options.UseSqlite($"Data Source={_dataBaseFileName};"));
+            services.AddTransient<IScopesService, ScopesService>();
+            services.AddTransient<IAppSettingsService, AppSettingsService>();
+            services.AddTransient<IRecordsThemesService, RecordsThemesService>();
+            services.AddTransient<IImagesService, ImagesService>();
+            services.AddTransient<IRecordsImagesService, RecordsImagesService>();
+            services.AddTransient<IImagesEditService, ImagesEditService>();
+            services.AddTransient<ICropImageService, CropImageService>();
+            services.AddTransient<IHostAndPortService, HostAndPortService>();
+            services.AddTransient<IRecordsService, RecordsService>();
+            services.AddTransient<IRecordsSearchService, RecordsSearchService>();
+            services.AddTransient<IRecordsSearchTextService, RecordsSearchTextService>();
+            services.AddTransient<IDatesService, DatesService>();
+            services.AddTransient<ICalendarService, CalendarService>();
+            services.AddTransient<ISqliteDatabase, SqliteDatabase>();
+
             services.AddServerSideBlazor();
-                        
             services.AddSwaggerDocument();
             services.AddMvcCore().AddApiExplorer();
 
-            int needMigration = Configuration.GetValue<int>("needMigration");
+            int needMigration = _configuration.GetValue<int>("needMigration");
             if (needMigration > 0)
             {
                 var builder = new DbContextOptionsBuilder<DiaryDbContext>();
@@ -47,11 +67,12 @@ namespace RiseDiary.WebUI
         public void Configure(IApplicationBuilder app, IHostApplicationLifetime applicationLifetime)
         {
             app.UseDeveloperExceptionPage();
-            app.UseStaticFiles();           
-            
+            app.UseHsts();
+            app.UseStaticFiles();
+
             app.UseRouting();
-            //app.UseHttpsRedirection();
-            //app.UseAuthorization();           
+            app.UseHttpsRedirection();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

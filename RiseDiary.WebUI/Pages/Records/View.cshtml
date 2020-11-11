@@ -1,5 +1,6 @@
 ﻿@page "{handler?}"
 @model RiseDiary.WebUI.Pages.RecordViewModel
+@using RiseDiary.Model
 @{
     ViewData["Title"] = "Просмотр записи";
     ViewData["TitlePart"] = Model.Record.Date.ToString("yyyy.MM.dd") + " (" + Model.Record.Name + ")";
@@ -52,7 +53,7 @@
         <tr class="record-head">
             <td colspan="4">
                 <h4>
-                    <b>@Model.Record.Date.ToString("yyyy.MM.dd")</b>&nbsp;:&nbsp;@Model.Record.RecordNameDisplay
+                    <b>@Model.Record.Date.ToString("yyyy.MM.dd")</b>&nbsp;:&nbsp;@Model.Record.GetRecordNameDisplay()
                     <component type="typeof(SetStartRecordComponent)" render-mode="ServerPrerendered" param-RecordId="@Model.RecordId" />
                 </h4>
             </td>
@@ -99,7 +100,7 @@
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-body">
-                            <img src="/Images/ImageFile/@image.ImageId" class="img-responsive" style="height:90vh;max-height:100%;margin:auto">
+                            <img src="/api/v1.0/image-file/@image.ImageId" class="img-responsive" style="height:90vh;max-height:100%;margin:auto">
                         </div>
                     </div>
                 </div>
@@ -113,7 +114,7 @@
 
                     <div class="panel-body">
                         <a data-toggle="modal" data-target="@("#fullImage-" + image.ImageId)" style="cursor:pointer">
-                            <img src="/Images/imagethumbnail/@image.ImageId" class="img-thumbnail center-block thumbnail-image" />
+                            <img src="/api/v1.0/image-thumbnail/@image.ImageId" class="img-thumbnail center-block thumbnail-image" />
                         </a>
                     </div>
 

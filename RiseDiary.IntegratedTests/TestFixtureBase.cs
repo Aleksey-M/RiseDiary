@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using RiseDiary.Model;
@@ -10,11 +11,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
+#pragma warning disable CA1822 // Mark members as static
+
 namespace RiseDiary.IntegratedTests
 {
-#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
-    // tests for DbContext
     internal class TestFixtureBase
     {
         [OneTimeTearDown]
@@ -23,13 +23,27 @@ namespace RiseDiary.IntegratedTests
             RemoveTmpDbFiles();
         }
 
-        protected const string FullImageName = @"D:\Projects\RiseDiary\RiseDiary.IntegratedTests\TestImage.jpg";
-        private readonly static List<string> _dbFileNames = new List<string>();
-#pragma warning disable CA2208 // Instantiate argument exceptions correctly
-        protected static string DirNameFull => AppDomain.CurrentDomain.BaseDirectory ?? throw new ArgumentNullException(nameof(AppDomain.CurrentDomain.BaseDirectory));
-#pragma warning restore CA2208 // Instantiate argument exceptions correctly
+        protected const string FullImage_1280X814 = @"images/TestImage.jpg";
+        protected const string FullImage_512X341 = @"images/TestImage2.jpg";
+        protected const string FullImage_341X512 = @"images/TestImage3.jpg";
+        protected const string FullImage_597X1300 = @"images/TestImage4.jpg";
+        protected const string FullImage_1587X544 = @"images/TestImage5.jpg";
 
-        protected DiaryDbContext CreateContext()
+        protected static IFormFile TestFile
+        {
+            get
+            {
+                var bytes = File.ReadAllBytes(FullImage_1280X814);
+                var s = new MemoryStream(bytes);
+                return new FormFile(s, 0, s.Length, "UploadImage", FullImage_1280X814);
+            }
+        }
+
+        private readonly static List<string> _dbFileNames = new List<string>();
+
+        protected static string DirNameFull => AppDomain.CurrentDomain.BaseDirectory ?? throw new ArgumentNullException(nameof(AppDomain.CurrentDomain.BaseDirectory));
+
+        protected static DiaryDbContext CreateContext()
         {
             var (context, _) = GetContextWithFileName();
             return context;
@@ -88,19 +102,38 @@ namespace RiseDiary.IntegratedTests
             return rec.Id;
         }
 
-        protected static DiaryImage GetTestImage() => new DiaryImage
+        protected static DiaryImage GetTestImage(string fileName)
         {
-            CreateDate = DateTime.Now,
-            Name = Guid.NewGuid().ToString(),
-            Thumbnail = File.ReadAllBytes(FullImageName)
-        };
+            var data = File.ReadAllBytes(fileName);
+            var (w, h) = ImageHelper.GetImageSize(data);
+
+            return new DiaryImage
+            {
+                Name = Guid.NewGuid().ToString(),
+                Thumbnail = File.ReadAllBytes(FullImage_1280X814),
+                CameraModel = "Some model",
+                Taken = DateTime.Now.AddDays(-2),
+                Deleted = false,
+                Height = h,
+                Width = w,
+                CreateDate = DateTime.Now.AddHours(-3),
+                ModifyDate = DateTime.Now.AddHours(-2),
+                SizeByte = 120000,
+                Id = Guid.NewGuid(),
+                FullImage = new DiaryImageFull
+                {
+                    Id = Guid.NewGuid(),
+                    Data = data
+                }
+            };
+        }
 
         protected static string UniqueString => Guid.NewGuid().ToString();
-        protected static byte[] ImageBytes => File.ReadAllBytes(FullImageName);
+        protected static byte[] ImageBytes => File.ReadAllBytes(FullImage_1280X814);
 
-        protected static Guid Create_Image(DiaryDbContext context)
+        protected static Guid Create_Image(DiaryDbContext context, string imageName = FullImage_512X341)
         {
-            var img = GetTestImage();
+            var img = GetTestImage(imageName);
             context.Images.Add(img);
             context.SaveChanges();
             return img.Id;
@@ -142,16 +175,25 @@ namespace RiseDiary.IntegratedTests
             return (recId, cogitation.Id);
         }
 
-        protected static IEnumerable<string> GetNumberList(int count) => Enumerable.Range(1, count).Select(i => i.ToString("00", CultureInfo.InvariantCulture));
+        protected static IEnumerable<string> GetNumberList(int count, string? prefix = null) => Enumerable.Range(1, count).Select(i => prefix ?? "" + i.ToString("00", CultureInfo.InvariantCulture));
         protected static IEnumerable<DateTime> GetDatesList(int count) => Enumerable.Range(1, count).Select(i => DateTime.Now.AddDays(-i).Date);
         protected static IEnumerable<DateTime> GetDatesListWithTwoSameDatesWeekAgo(int count) => Enumerable.Range(1, count).Select(i => i == 2 ? DateTime.Now.AddDays(-7).Date : DateTime.Now.AddDays(-i).Date);
 
-        protected static void Create_20Records(DiaryDbContext context, IEnumerable<string> _20recordNames, IEnumerable<DateTime> _20recordDates)
+        protected static void Create_20Records(DiaryDbContext context, IEnumerable<string> _20recordNames, IEnumerable<DateTime> _20recordDates, List<string>? _20recordsText = null)
         {
             if (_20recordDates.Count() != 20) throw new ArgumentOutOfRangeException(nameof(_20recordDates));
             if (_20recordNames.Count() != 20) throw new ArgumentOutOfRangeException(nameof(_20recordNames));
 
-            var recList = _20recordNames.Select((n, i) => new DiaryRecord { Name = n, Date = _20recordDates.ElementAt(i) });
+            var recList = _20recordNames.Select((n, i) => new DiaryRecord { Name = n, Date = _20recordDates.ElementAt(i) }).ToList();
+
+            if(_20recordsText != null)
+            {
+                for(int i = 0; i<20; i++)
+                {
+                    recList[i].Text = _20recordsText[i];
+                }
+            }
+
             context.Records.AddRange(recList);
             context.SaveChanges();
         }
@@ -222,17 +264,38 @@ namespace RiseDiary.IntegratedTests
             return themes.Select(t => t.Id).ToList();
         }
 
-        protected static Guid Create_Theme(DiaryDbContext context, string themeName, Guid? scopeId = null)
+        protected static (Guid scopeId, Guid themeId) CreateThemeWithScope(DiaryDbContext context, string themeName)
         {
-            if(scopeId == null)
-            {
-                scopeId = Create_Scope(context);
-            }
+            var scopeId = Create_Scope(context);
             var theme = new DiaryTheme
             {
-                ScopeId = (Guid)scopeId,
-                ThemeName = themeName
+                Id = Guid.NewGuid(),
+                ScopeId = scopeId,
+                ThemeName = themeName,
+                Actual = true
             };
+
+            context.Themes.Add(theme);
+            context.SaveChanges();
+            return (scopeId, theme.Id);
+        }
+
+        protected static Guid Create_Theme(DiaryDbContext context, string themeName, Guid? scopeId = null)
+        {
+            if (scopeId == null)
+            {
+                var (_, tId) = CreateThemeWithScope(context, themeName);
+                return tId;
+            }
+
+            var theme = new DiaryTheme
+            {
+                Id = Guid.NewGuid(),
+                ScopeId = scopeId.Value,
+                ThemeName = themeName,
+                Actual = true
+            };
+
             context.Themes.Add(theme);
             context.SaveChanges();
             return theme.Id;
@@ -252,22 +315,23 @@ namespace RiseDiary.IntegratedTests
                         ScopeName = $"Scope {i + 1}"
                     }
                 };
-                context.Themes.Add(theme);              
+                context.Themes.Add(theme);
             }
             context.SaveChanges();
             return context.Scopes.ToList();
-        }     
+        }
 
         protected static (DiaryRecord record, DiaryScope scope, DiaryImage image) CreateEntities(DiaryDbContext context)
         {
             var rec = GetTestRecord();
-            var theme = new DiaryTheme { 
-                ThemeName = "Some Theme", 
-                Actual = true, 
+            var theme = new DiaryTheme
+            {
+                ThemeName = "Some Theme",
+                Actual = true,
                 Scope = new DiaryScope { ScopeName = $"Some Scope" }
             };
-            
-            var img = GetTestImage();
+
+            var img = GetTestImage(FullImage_512X341);
 
             context.Add(rec);
             context.Add(theme);
@@ -279,7 +343,7 @@ namespace RiseDiary.IntegratedTests
             context.Add(new DiaryRecordTheme { Record = rec, Theme = theme });
             context.Add(new Cogitation { Record = rec, Date = DateTime.Now, Text = "Some Cogitation text" });
             context.SaveChanges();
-            
+
             return (rec, theme.Scope, img);
         }
 
@@ -292,7 +356,7 @@ namespace RiseDiary.IntegratedTests
                 ModifyDate = d,
                 Id = Guid.NewGuid(),
                 Name = "Record for date " + d.ToString("yyyy.MM.dd", CultureInfo.InvariantCulture),
-                Text = "Record for date " + d.ToString("yyyy.MM.dd", CultureInfo.InvariantCulture)                
+                Text = "Record for date " + d.ToString("yyyy.MM.dd", CultureInfo.InvariantCulture)
             }).ToList();
 
             context.Records.AddRange(recs);
@@ -311,7 +375,7 @@ namespace RiseDiary.IntegratedTests
             {
                 var rec = context.Records.Single(r => r.Date == kv.Key);
 
-                foreach(var tn in kv.Value)
+                foreach (var tn in kv.Value)
                 {
                     var themeAdded = addedThemes.Any(t => t.ThemeName == tn);
                     if (!themeAdded)
@@ -325,20 +389,20 @@ namespace RiseDiary.IntegratedTests
                                 Id = Guid.NewGuid(),
                                 ScopeName = "Scope For " + kv.Value
                             }
-                        };                       
+                        };
 
                         context.Themes.Add(theme);
                         context.SaveChanges();
 
                         addedThemes.Add(theme);
-                    }                    
-                }    
-                
-                foreach(var tn in kv.Value)
+                    }
+                }
+
+                foreach (var tn in kv.Value)
                 {
                     var t = addedThemes.Single(tt => tt.ThemeName == tn);
 
-                    context.RecordThemes.Add(new DiaryRecordTheme { RecordId = rec.Id, ThemeId = t.Id });                   
+                    context.RecordThemes.Add(new DiaryRecordTheme { RecordId = rec.Id, ThemeId = t.Id });
                 }
 
                 context.SaveChanges();
@@ -355,5 +419,338 @@ namespace RiseDiary.IntegratedTests
             return retRes;
         }
 
+        protected static async Task<DiaryImage> CreateImageWithTempImage(DiaryDbContext context)
+        {
+            var imgData = File.ReadAllBytes(FullImage_1280X814);
+            var imgData2 = File.ReadAllBytes(FullImage_512X341);
+            var (w, h) = ImageHelper.GetImageSize(imgData2);
+
+            var image = new DiaryImage
+            {
+                Id = Guid.NewGuid(),
+                Name = "new image " + Guid.NewGuid().ToString(),
+                CreateDate = DateTime.Now,
+                FullImage = new DiaryImageFull
+                {
+                    Id = Guid.NewGuid(),
+                    Data = imgData
+                },
+                Height = 3000,
+                Width = 4000,
+                CameraModel = "camera model",
+                Taken = DateTime.Now.AddDays(-1),
+                SizeByte = imgData.Length,
+                ModifyDate = DateTime.Now,
+                TempImage = new TempImage
+                {
+                    Id = Guid.NewGuid(),
+                    Data = imgData2,
+                    Modification = "Some modification",
+                    Height = h,
+                    Width = w,
+                    SizeByte = imgData2.Length
+                }
+            };
+
+            await context.Images.AddAsync(image);
+            await context.SaveChangesAsync();
+
+            return image;
+        }
+
+        protected async Task Add3ImagesForEachRecord(DiaryDbContext context)
+        {
+            await foreach (var rec in context.Records.Include(r => r.ImagesRefs).AsAsyncEnumerable())
+            {
+                var recordImages = Enumerable.Range(1, 3)
+                    .Select(_ => GetTestImage(FullImage_512X341))
+                    .Select(img => new DiaryRecordImage { Image = img, Record = rec })
+                    .ToList();
+
+                await context.RecordImages.AddRangeAsync(recordImages);
+            }
+
+            await context.SaveChangesAsync();
+        }
+
+        protected async Task<(Guid, Guid)> For2RecordsRemoveImagesAndGetThousIds(DiaryDbContext context)
+        {
+            int count = await context.Records.CountAsync();
+            var rnd = new Random();
+
+            int ind1 = rnd.Next(0, count / 2);
+            var rec = (await context.Records.Include(r => r.ImagesRefs).ToListAsync()).ElementAt(ind1);
+            rec.ImagesRefs.First().Deleted = true;
+            var imgId1 = rec.ImagesRefs.First().ImageId;
+
+            int ind2 = rnd.Next(count / 2, count - 1);
+            rec = (await context.Records.Include(r => r.ImagesRefs).ToListAsync()).ElementAt(ind2);
+            rec.ImagesRefs.First().Deleted = true;
+            var imgId2 = rec.ImagesRefs.First().ImageId;
+
+            await context.SaveChangesAsync();
+
+            return (imgId1, imgId2);
+        }
+
+        protected async Task Add3ThemesForEachRecord(DiaryDbContext context)
+        {
+            await foreach (var rec in context.Records.Include(r => r.ThemesRefs).AsAsyncEnumerable())
+            {
+                var themesList = Enumerable.Range(1, 3)
+                    .Select(c => new DiaryTheme
+                    {
+                        Id = Guid.NewGuid(),
+                        ThemeName = $"Theme {c}",
+                        Scope = new DiaryScope
+                        {
+                            Id = Guid.NewGuid(),
+                            ScopeName = $"Scope {Guid.NewGuid()} {c}"
+                        }
+                    });
+
+                await context.Themes.AddRangeAsync(themesList);
+                await context.RecordThemes.AddRangeAsync(themesList.Select(t => new DiaryRecordTheme { Record = rec, Theme = t }));
+            }
+
+            await context.SaveChangesAsync();
+        }
+
+        protected async Task<(Guid, Guid)> For2RecordsRemoveThemesAndGetThousIds(DiaryDbContext context)
+        {
+            int count = await context.Records.CountAsync();
+            var rnd = new Random();
+
+            int ind1 = rnd.Next(0, count / 2);
+            var rec = (await context.Records.Include(r => r.ThemesRefs).ToListAsync()).ElementAt(ind1);
+            rec.ThemesRefs.First().Deleted = true;
+            var themId1 = rec.ThemesRefs.First().ThemeId;
+
+            int ind2 = rnd.Next(count / 2, count - 1);
+            rec = (await context.Records.Include(r => r.ThemesRefs).ToListAsync()).ElementAt(ind2);
+            rec.ThemesRefs.First().Deleted = true;
+            var themId2 = rec.ThemesRefs.First().ThemeId;
+
+            await context.SaveChangesAsync();
+
+            return (themId1, themId2);
+        }
+
+        protected async Task Add3CogitationsForEachRecord(DiaryDbContext context, string? prefix = null, IEnumerable<string>? additionalCogitationsText = null)
+        {
+            await foreach (var rec in context.Records.Include(r => r.Cogitations).AsAsyncEnumerable())
+            {
+                Enumerable.Range(1, 3)
+                    .Select(i => new Cogitation { Id = Guid.NewGuid(), Record = rec, Text = prefix ?? "" + Guid.NewGuid().ToString() })
+                    .ToList()
+                    .ForEach(c => context.Cogitations.Add(c));
+            }
+
+            if(additionalCogitationsText != null)
+            {
+                context.Records
+                    .ToList()
+                    .Zip(additionalCogitationsText, (rec, cogText) => new Cogitation{ Id = Guid.NewGuid(), Record = rec, Text = cogText })
+                    .ToList()
+                    .ForEach(c => context.Cogitations.Add(c));
+            }
+
+            await context.SaveChangesAsync();
+        }
+
+        protected async Task<(Guid, Guid)> For2RecordsRemoveCogitationsAndGetThousIds(DiaryDbContext context)
+        {
+            int count = await context.Records.CountAsync();
+            var rnd = new Random();
+
+            int ind1 = rnd.Next(0, count / 2);
+            var rec = (await context.Records.Include(r => r.Cogitations).ToListAsync()).ElementAt(ind1);
+            rec.Cogitations.First().Deleted = true;
+            var cogId1 = rec.Cogitations.First().Id;
+
+            int ind2 = rnd.Next(count / 2, count - 1);
+            rec = (await context.Records.Include(r => r.Cogitations).ToListAsync()).ElementAt(ind2);
+            rec.Cogitations.First().Deleted = true;
+            var cogId2 = rec.Cogitations.First().Id;
+
+            await context.SaveChangesAsync();
+
+            return (cogId1, cogId2);
+        }
+
+        protected async Task<(Guid, Guid)> For2RecordsAddLinkToName(DiaryDbContext context, IHostAndPortService hostAndPortService)
+        {
+            int count = await context.Records.CountAsync();
+            var rnd = new Random();
+
+            int ind1 = rnd.Next(0, count / 2);
+            var rec = (await context.Records.ToListAsync()).ElementAt(ind1);
+            rec.Name += $@"Link: <a href=""{hostAndPortService.GetHostAndPortPlaceholder()}/images/123"">Some Image</a>";
+            var rec1 = rec.Id;
+
+            int ind2 = rnd.Next(count / 2, count - 1);
+            rec = (await context.Records.ToListAsync()).ElementAt(ind2);
+            rec.Name += $@"Link: <a href=""{hostAndPortService.GetHostAndPortPlaceholder()}/records/987987987"">Some record</a>";
+            var rec2 = rec.Id;
+
+            await context.SaveChangesAsync();
+
+            return (rec1, rec2);
+        }
+
+        protected async Task<(Guid, Guid)> For2RecordsAddLinkToText(DiaryDbContext context, IHostAndPortService hostAndPortService)
+        {
+            int count = await context.Records.CountAsync();
+            var rnd = new Random();
+
+            int ind1 = rnd.Next(0, count / 2);
+            var rec = (await context.Records.ToListAsync()).ElementAt(ind1);
+            rec.Text += $@"Link: <a href=""{hostAndPortService.GetHostAndPortPlaceholder()}/images/123"">Some Image</a>";
+            var rec1 = rec.Id;
+
+            int ind2 = rnd.Next(count / 2, count - 1);
+            rec = (await context.Records.ToListAsync()).ElementAt(ind2);
+            rec.Text += $@"Link: <a href=""{hostAndPortService.GetHostAndPortPlaceholder()}/records/987987987"">Some record</a>";
+            var rec2 = rec.Id;
+
+            await context.SaveChangesAsync();
+
+            return (rec1, rec2);
+        }
+
+        protected async Task<(Guid, Guid)> For2RecordsAddLinkToCogitations(DiaryDbContext context, IHostAndPortService hostAndPortService)
+        {
+            int count = await context.Records.CountAsync();
+            var rnd = new Random();
+
+            int ind1 = rnd.Next(0, count / 2);
+            var rec = (await context.Records.Include(r => r.Cogitations).ToListAsync()).ElementAt(ind1);
+            rec.Cogitations.Skip(1).First().Text += $@"Link: <a href=""{hostAndPortService.GetHostAndPortPlaceholder()}/images/123"">Some Image</a>";
+            var cog1 = rec.Cogitations.Skip(1).First().Id;
+
+            int ind2 = rnd.Next(count / 2, count - 1);
+            rec = (await context.Records.Include(r => r.Cogitations).ToListAsync()).ElementAt(ind2);
+            rec.Cogitations.Skip(2).First().Text += $@"Link: <a href=""{hostAndPortService.GetHostAndPortPlaceholder()}/records/987987987"">Some record</a>";
+            var cog2 = rec.Cogitations.Skip(2).First().Id;
+
+            await context.SaveChangesAsync();
+
+            return (cog1, cog2);
+        }
+
+        protected enum ThemesTestDataSet { ThemesOnly, DatesAndThemesRec, DatesAndThemesCount }
+
+        protected (Guid themeId1, List<string> recordsNamesForTheme1, Guid themeId2, List<string> recordsNamesForTheme2) BindRecordsWithThemes(DiaryDbContext context, ThemesTestDataSet dataSetType)
+        {
+            var recThemes = (dataSetType) switch
+            {
+                ThemesTestDataSet.ThemesOnly => new Dictionary<string, List<string>>() {
+                { "03", new List<string>() { "10" } },
+                { "05", new List<string>() { "10", "20" } },
+                { "11", new List<string>() { "10" } },
+                { "12", new List<string>() { "10" } },
+                { "17", new List<string>() { "20" } },
+                { "19", new List<string>() { "10" } }
+            },
+                ThemesTestDataSet.DatesAndThemesRec => new Dictionary<string, List<string>>() {
+                { "04", new List<string>() { "10" } },
+                { "05", new List<string>() { "10", "20" } },
+                { "07", new List<string>() { "10" } },
+                { "09", new List<string>() { "10" } },
+                { "10", new List<string>() { "10" } },
+                { "17", new List<string>() { "20" } },
+                { "19", new List<string>() { "10" } }
+            },
+                ThemesTestDataSet.DatesAndThemesCount => new Dictionary<string, List<string>>() {
+                { "04", new List<string>() { "10" } },
+                { "05", new List<string>() { "10", "20" } },
+                { "07", new List<string>() { "10" } },
+                { "08", new List<string>() { "20" } },
+                { "10", new List<string>() { "10" } },
+                { "11", new List<string>() { "10" } },
+                { "19", new List<string>() { "10" } }
+            },
+                _ => throw new Exception()
+            };
+
+            BindRecordsWithThemes(context, recThemes);
+
+            var themeId1 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 10).Id;
+            var themeId2 = context.Themes.ToList().First(t => int.Parse(t.ThemeName, CultureInfo.InvariantCulture) == 20).Id;
+
+            return (themeId1, new List<string> { "03", "05", "11", "12", "19" }, themeId2, new List<string> { "05", "17" });
+        }
+
+        protected string SearchSubstring4 => "SearchТекстІї*01";
+
+        protected IEnumerable<string> SearchResult4 => GetNamesList().Where(s => s.ToUpper().Contains(SearchSubstring4.ToUpper()));
+
+        protected IEnumerable<string> GetNamesList()
+        {
+            yield return "ghorgh";
+            yield return "893472983 SearchТекстІї*01";
+            yield return "_)+_)+_)JK";
+            yield return "kjgh  afkgj lsfg g sjg";
+            yield return "прлапрыл";
+            yield return "іїхїхїхїх'їїхїхаїіхмава";
+            yield return "fgsgsfgs";
+            yield return "56";
+            yield return "* /*SearchтекстІї*01/*";
+            yield return "врлпываорпыра";
+            yield return "_SearchТекстІї*011АРРОПРОлрффлвыа";
+            yield return "РЛРОРЛолврфылваоф";
+            yield return "жлажфлывлаДЛДЛО";
+            yield return "321321230";
+            yield return ",0,0,0,4уыы";
+            yield return "название";
+            yield return "фвафыа";
+            yield return "№%№SearCHТекстІї*01%№!::!;%№:%; ";
+            yield return "ывп  ыапыап   папы ап ыап ыа";
+            yield return ".юб.б.юбс.б";
+        }
+
+        protected async Task<(Guid, Guid, List<string>)> CreateRecordsWithNamesAndThemes(DiaryDbContext context)
+        {
+            var namesList = new Dictionary<int, string> {
+                { 0, "ghorgh"},
+                { 1, "893472983 SearchТекстІї*01"},
+                { 2, "_)+_)+_)JK"},
+                { 3, "kjgh  afkgj lsfg g sjg"},
+                { 4, "прлапрыл"},
+                { 5, "іїхїхїхїх'їїхїхаїіхмава"},
+                { 6, "fgsgsfgs"},
+                { 7, "56SearchТекстІї*01"},
+                { 8, "* /*SearchТекстІї*01/*"},//<--
+                { 9, "врлпываорпыра"},
+                { 10, "_SearchТекстІї*011АРРОПРОлрффлвыа"}, //<--
+                { 11, "РЛРОРЛолврфылваоф SearchТекстІї*01"},
+                { 12, "жлажфлывлаДЛДЛО"},
+                { 13, "321321230"},
+                { 14, ",0,0,0,4уыы"},
+                { 15, "название"},
+                { 16, "фвафыа"},
+                { 17, "№%№SearchТекстІї*01%№!::!;%№:%; "},
+                { 18, "ывп  ыапыап   папы ап ыап ыа"},
+                { 19,  ".юб.б.юбс.б" } };
+
+            Guid GetRecordIdByNameIndex(int index) => context.Records.First(r => r.Name == namesList[index]).Id;
+            Create_30Themes_20Records(context, namesList.Values.ToArray(), GetDatesList(20));
+            var themeId1 = context.Themes.ToList().ElementAt(10).Id;
+            var themeId2 = context.Themes.ToList().ElementAt(22).Id;
+            var recordsThemes = new List<DiaryRecordTheme> {
+                new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(4),  ThemeId = themeId1},
+                new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(7),  ThemeId = themeId1},
+                new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(8),  ThemeId = themeId2},
+                new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(10), ThemeId = themeId1},
+                new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(11), ThemeId = themeId2},
+                new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(17), ThemeId = themeId2},
+                new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(19), ThemeId = themeId1},
+                new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(7),  ThemeId = themeId2}
+            };
+            context.RecordThemes.AddRange(recordsThemes);
+            await context.SaveChangesAsync();
+
+            return (themeId1, themeId2, new List<string> { "* /*searchтекстІї*01/*", "_SearchТекстІї*011АРРОПРОлрффлвыа" });
+        }
     }
 }

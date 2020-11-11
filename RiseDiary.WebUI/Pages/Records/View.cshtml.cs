@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
-using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,13 +8,15 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class RecordViewModel : PageModel
     {
-        public DiaryDbContext DbContext { get; }
-        public RecordViewModel(DiaryDbContext context)
+        private readonly IRecordsService _recordsService;
+        private readonly IRecordsImagesService _recordsImagesService;
+
+        public RecordViewModel(IRecordsService recordsService, IRecordsImagesService recordsImagesService)
         {
-            DbContext = context;
+            _recordsService = recordsService;
+            _recordsImagesService = recordsImagesService;
         }
 
         public Guid RecordId { get; set; }
@@ -23,12 +24,11 @@ namespace RiseDiary.WebUI.Pages
         public IEnumerable<string> RecordThemes { get; set; } = Enumerable.Empty<string>();
         public IEnumerable<(Guid ImageId, string ImageName)> RecordImages { get; private set; } = Enumerable.Empty<(Guid ImageId, string ImageName)>();
         public IEnumerable<Cogitation> Cogitations { get; private set; } = Enumerable.Empty<Cogitation>();
-        private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
         private async Task UpdatePageState()
         {
-            Record = await DbContext.FetchRecordByIdWithData(RecordId, LocalHostAndPort) ?? throw new ArgumentException($"Record with Id = '{RecordId}' is not exists");
-            RecordThemes = Record.ThemesRefs.Select(tr => tr.Theme?.ThemeName ?? string.Empty).ToList();
-            RecordImages = Record.ImagesRefs.Select(ir => (ir.ImageId, ir.Image.Name)).ToList();
+            Record = await _recordsService.FetchRecordById(RecordId) ?? throw new ArgumentException($"Record with Id = '{RecordId}' is not exists");
+            RecordThemes = Record.ThemesRefs.Select(tr => tr.Theme?.ThemeName ?? "").ToList();
+            RecordImages = Record.ImagesRefs.Select(ir => (ir.ImageId, ir.Image?.Name ?? "")).ToList();
             Cogitations = Record.Cogitations.OrderBy(c => c.Date).ToList();
         }
 
@@ -43,14 +43,9 @@ namespace RiseDiary.WebUI.Pages
         {
             if (!string.IsNullOrWhiteSpace(newCogText) && recordId != Guid.Empty)
             {
-                await DbContext.AddCogitation(new Cogitation
-                {
-                    Date = DateTime.Now,
-                    RecordId = recordId,
-                    Text = newCogText
-                },
-                LocalHostAndPort);
+                await _recordsService.AddCogitation(recordId, newCogText);
             }
+
             if (recordId != Guid.Empty)
             {
                 RecordId = recordId;
@@ -62,21 +57,23 @@ namespace RiseDiary.WebUI.Pages
         {
             if (cogitationId != Guid.Empty)
             {
-                await DbContext.DeleteCogitation(cogitationId);
+                await _recordsService.DeleteCogitation(cogitationId);
             }
+
             if (recordId != Guid.Empty)
             {
                 RecordId = recordId;
                 await UpdatePageState();
             }
         }
-                
+
         public async Task OnPostSaveCogitationAsync(Guid recordId, Guid cogitationId, string cogText)
         {
             if (cogitationId != Guid.Empty && !string.IsNullOrWhiteSpace(cogText))
             {
-                await DbContext.UpdateCogitationText(cogitationId, cogText, LocalHostAndPort);
+                await _recordsService.UpdateCogitationText(cogitationId, cogText);
             }
+
             if (recordId != Guid.Empty)
             {
                 RecordId = recordId;
@@ -89,7 +86,7 @@ namespace RiseDiary.WebUI.Pages
             if (recordId != Guid.Empty) RecordId = recordId;
             if (imageId != Guid.Empty)
             {
-                await DbContext.RemoveRecordImage(recordId, imageId);
+                await _recordsImagesService.RemoveRecordImage(recordId, imageId);
             }
             await UpdatePageState();
         }
@@ -99,7 +96,7 @@ namespace RiseDiary.WebUI.Pages
             if (recordId != Guid.Empty) RecordId = recordId;
             if (imageId != Guid.Empty)
             {
-                await DbContext.AddRecordImage(recordId, imageId);
+                await _recordsImagesService.AddRecordImage(recordId, imageId);
             }
             await UpdatePageState();
         }

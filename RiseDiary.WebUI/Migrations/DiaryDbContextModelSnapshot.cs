@@ -14,7 +14,7 @@ namespace RiseDiary.WebUI.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.1");
+                .HasAnnotation("ProductVersion", "5.0.0-rc.2.20475.6");
 
             modelBuilder.Entity("RiseDiary.Model.AppSetting", b =>
                 {
@@ -279,11 +279,13 @@ namespace RiseDiary.WebUI.Migrations
                         .HasForeignKey("RecordId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Record");
                 });
 
             modelBuilder.Entity("RiseDiary.Model.DiaryImageFull", b =>
                 {
-                    b.HasOne("RiseDiary.Model.DiaryImage", "DiaryImage")
+                    b.HasOne("RiseDiary.Model.DiaryImage", null)
                         .WithOne("FullImage")
                         .HasForeignKey("RiseDiary.Model.DiaryImageFull", "ImageId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -303,6 +305,10 @@ namespace RiseDiary.WebUI.Migrations
                         .HasForeignKey("RecordId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Image");
+
+                    b.Navigation("Record");
                 });
 
             modelBuilder.Entity("RiseDiary.Model.DiaryRecordTheme", b =>
@@ -318,6 +324,10 @@ namespace RiseDiary.WebUI.Migrations
                         .HasForeignKey("ThemeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Record");
+
+                    b.Navigation("Theme");
                 });
 
             modelBuilder.Entity("RiseDiary.Model.DiaryTheme", b =>
@@ -327,15 +337,45 @@ namespace RiseDiary.WebUI.Migrations
                         .HasForeignKey("ScopeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Scope");
                 });
 
             modelBuilder.Entity("RiseDiary.Model.TempImage", b =>
                 {
-                    b.HasOne("RiseDiary.Model.DiaryImage", "DiaryImage")
+                    b.HasOne("RiseDiary.Model.DiaryImage", null)
                         .WithOne("TempImage")
                         .HasForeignKey("RiseDiary.Model.TempImage", "SourceImageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("RiseDiary.Model.DiaryImage", b =>
+                {
+                    b.Navigation("FullImage");
+
+                    b.Navigation("RecordsRefs");
+
+                    b.Navigation("TempImage");
+                });
+
+            modelBuilder.Entity("RiseDiary.Model.DiaryRecord", b =>
+                {
+                    b.Navigation("Cogitations");
+
+                    b.Navigation("ImagesRefs");
+
+                    b.Navigation("ThemesRefs");
+                });
+
+            modelBuilder.Entity("RiseDiary.Model.DiaryScope", b =>
+                {
+                    b.Navigation("Themes");
+                });
+
+            modelBuilder.Entity("RiseDiary.Model.DiaryTheme", b =>
+                {
+                    b.Navigation("RecordsRefs");
                 });
 #pragma warning restore 612, 618
         }

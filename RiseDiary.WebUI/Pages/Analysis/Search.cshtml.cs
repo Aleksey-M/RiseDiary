@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
-using RiseDiary.WebUI.Data;
+using RiseDiary.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,11 +8,10 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Analysis
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class IndexModel : PageModel
     {
-        private readonly DiaryDbContext _context;
-        public string SearchString { get; private set; } = string.Empty;
+        private readonly IRecordsSearchTextService _recordsSearchTextService;
+        public string SearchString { get; private set; } = "";
         public IEnumerable<DiaryRecord> Records { get; private set; } = Enumerable.Empty<DiaryRecord>();
         public int RecordsCount { get; private set; }
         public int PagesCount { get; private set; }
@@ -24,18 +23,16 @@ namespace RiseDiary.WebUI.Pages.Analysis
         private const string _next = "Следующая";
         private const string _last = "Последняя";
 
-        public IndexModel(DiaryDbContext context)
+        public IndexModel(IRecordsSearchTextService recordsSearchTextService)
         {
-            _context = context;
+            _recordsSearchTextService = recordsSearchTextService;
         }
-
-        private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
 
         public async Task OnGetAsync(int currentPage, int pagesCount, string navTo, string searchString)
         {
             if (string.IsNullOrWhiteSpace(searchString))
             {
-                SearchString = string.Empty;
+                SearchString = "";
                 Records = new List<DiaryRecord>();
                 RecordsCount = 0;
                 PagesCount = 0;
@@ -44,7 +41,8 @@ namespace RiseDiary.WebUI.Pages.Analysis
             else
             {
                 SearchString = searchString;
-                RecordsCount = await _context.SearchRecordsByTextCount(SearchString);
+                RecordsCount = await _recordsSearchTextService.GetRecordsCount(SearchString);
+
                 if (pagesCount == 0)
                 {
                     PagesCount = Convert.ToInt32(Math.Ceiling((float)RecordsCount / _pageSize));
@@ -67,7 +65,8 @@ namespace RiseDiary.WebUI.Pages.Analysis
                 CurrenPage = CurrenPage >= 0 ? CurrenPage : 0;
                 CurrenPage = CurrenPage >= PagesCount ? PagesCount - 1 : CurrenPage;
 
-                Records = await _context.SearchRecordsByText(SearchString, CurrenPage * _pageSize, LocalHostAndPort, _pageSize);
+                var pInfo = PagesInfo.GetPagesInfo(RecordsCount, CurrenPage, _pageSize);
+                Records = await _recordsSearchTextService.GetRecordsList(new RecordsTextFilter { SearchText = SearchString, PageNo = pInfo.CurrentPage-1, PageSize = pInfo.PageSize });
             }
         }
     }

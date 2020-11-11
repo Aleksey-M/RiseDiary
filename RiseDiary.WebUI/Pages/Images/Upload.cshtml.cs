@@ -1,22 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
-using RiseDiary.WebUI.Data;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Images
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class UploadModel : PageModel
     {
-        private readonly DiaryDbContext _context;
-        public UploadModel(DiaryDbContext context)
+        private readonly IRecordsImagesService _recordImagesService;
+        private readonly IImagesService _imagesService;
+
+        public UploadModel(IImagesService imagesService, IRecordsImagesService recordImagesService)
         {
-            _context = context;
+            _recordImagesService = recordImagesService;
+            _imagesService = imagesService;
         }
 
         public Guid? TargetRecordId { get; private set; }
@@ -38,49 +39,38 @@ namespace RiseDiary.WebUI.Pages.Images
                 return Page();
             }
 
-            string imageName = string.Empty;
-            byte[] imageData = Array.Empty<byte>();
-            Guid imageId = Guid.Empty;
+            Guid newImageId = Guid.Empty;
 
             for (int i = 0; i < newImages?.Count; i++)
             {
-                if(newImages.Count == 1)
-                    imageName = string.IsNullOrWhiteSpace(newImageName) ?
-                    Path.GetFileNameWithoutExtension(newImages[i].FileName) :
-                    newImageName;
-                else
-                    imageName = string.IsNullOrWhiteSpace(newImageName) ? 
-                    Path.GetFileNameWithoutExtension(newImages[i].FileName) : 
-                    $"{newImageName} ({i + 1})";
-
-                using (var binaryReader = new BinaryReader(newImages[i].OpenReadStream()))
+                string newImgName = (string.IsNullOrWhiteSpace(newImageName), newImages.Count > 1) switch
                 {
-                    imageData = binaryReader.ReadBytes((int)newImages[i].Length);
+                    (true, _) => "",
+                    (false, true) => $"{newImageName} ({i + 1})",
+                    (false, false) => newImageName
+                };
+
+                newImageId = await _imagesService.AddImage(newImages[i], newImgName);
+
+                if (TargetRecordId != null && TargetRecordId != Guid.Empty)
+                {
+                    await _recordImagesService.AddRecordImage(TargetRecordId.Value, newImageId);
                 }
-
-                int imageQuality = await _context.GetAppSettingInt(AppSettingsKeys.ImageQuality) ?? 75;
-                var (taken, cameraModel) = ImageHelper.GetMetadataFromPhoto(imageData);
-
-                imageId = await _context.AddImage(imageName, imageData, imageQuality, taken: taken, cameraModel: cameraModel);
-                if(TargetRecordId != null && TargetRecordId != Guid.Empty)
-                {
-                    await _context.AddRecordImage(TargetRecordId.Value, imageId);
-                }                
             }
 
-            if(newImages?.Count == 1)
+            if (newImages?.Count == 1)
             {
                 if (TargetRecordId != null && TargetRecordId != Guid.Empty)
-                    return Redirect($"/Images/Edit?recordId={TargetRecordId.Value}&imageId={imageId}");
+                    return Redirect($"/Images/Edit?recordId={TargetRecordId.Value}&imageId={newImageId}");
                 else
-                    return Redirect($"/Images/Edit?recordId=0&imageId={imageId}");                
+                    return Redirect($"/Images/Edit?recordId=0&imageId={newImageId}");
             }
 
 
             if (TargetRecordId != null && TargetRecordId != Guid.Empty)
                 return Redirect($"/Records/View?recordId={TargetRecordId.Value}");
             else
-                return Redirect($"/Images");            
+                return Redirect($"/Images");
         }
     }
 }

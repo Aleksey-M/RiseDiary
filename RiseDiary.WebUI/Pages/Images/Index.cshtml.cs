@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
-using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +10,7 @@ namespace RiseDiary.WebUI.Pages.Images
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class IndexModel : PageModel
     {
-        private readonly DiaryDbContext _context;
+        private readonly IImagesService _imagesService;
         public IEnumerable<DiaryImage> Images { get; private set; } = Enumerable.Empty<DiaryImage>();
         private const int _pageSize = 32;
         public int CurrenPage { get; private set; }
@@ -19,14 +18,14 @@ namespace RiseDiary.WebUI.Pages.Images
         public int PrevPage { get; private set; }
         public int PagesCount { get; private set; }
         public int ImagesCount { get; private set; }
-        public IndexModel(DiaryDbContext context)
+        public IndexModel(IImagesService imagesService)
         {
-            _context = context;
+            _imagesService = imagesService;
         }
 
         public async Task OnGetAsync(int pageNo)
         {
-            ImagesCount = await _context.GetImagesCount();
+            ImagesCount = await _imagesService.GetImagesCount();
             PagesCount = Convert.ToInt32(Math.Ceiling(ImagesCount / (double)_pageSize));
 
             CurrenPage = pageNo;
@@ -34,7 +33,7 @@ namespace RiseDiary.WebUI.Pages.Images
 
             NextPage = CurrenPage >= PagesCount - 1 ? CurrenPage : CurrenPage + 1;
             PrevPage = CurrenPage == 0 ? 0 : CurrenPage - 1;
-            Images = await _context.FetchImageSet(CurrenPage * _pageSize, _pageSize);
+            Images = await _imagesService.FetchImageSet(CurrenPage * _pageSize, _pageSize);
         }
     }
 }

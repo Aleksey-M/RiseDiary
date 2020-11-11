@@ -1,0 +1,91 @@
+﻿@page
+@model RiseDiary.WebUI.Pages.Settings.DbActionsModel
+@{
+    ViewData["Title"] = "Файл базы данных";
+    ViewData["TitlePart"] = "Общая информация о базе";
+}
+
+<div class="row">
+    <div class="col-sm-8 col-sm-offset-2">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th colspan="2">Информация о файле базы данных</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Файл базы данных:</td>
+                    <td><i>@Model.DatabaseInfo.FileName</i></td>
+                </tr>
+                <tr>
+                    <td>Размер базы данных:</td>
+                    <td><i>@Model.DatabaseInfo.FileSize</i></td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2">
+                        <form method="post">
+                            <input type="submit" class="btn btn-success btn-sm" value="Создать бекап" asp-page-handler="File2FileMigration" />
+                        </form>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <br />
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th colspan="2">Удаленные данные, хранящиеся в базе</th>
+                </tr>
+                <tr>
+                    <th>Данные</th>
+                    <th>Количество</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Записи</td>
+                    <td><i>@Model.DeletedEntities.Records</i></td>
+                </tr>
+                <tr>
+                    <td>Осмысления (комментарии)</td>
+                    <td><i>@Model.DeletedEntities.Cogitations</i></td>
+                </tr>
+                <tr>
+                    <td>Области интересов</td>
+                    <td><i>@Model.DeletedEntities.Scopes</i></td>
+                </tr>
+                <tr>
+                    <td>Темы</td>
+                    <td><i>@Model.DeletedEntities.Themes</i></td>
+                </tr>
+                <tr>
+                    <td>Изображения</td>
+                    <td><i>@Model.DeletedEntities.Images</i></td>
+                </tr>
+                <tr>
+                    <td>Связи запись-тема</td>
+                    <td><i>@Model.DeletedEntities.RecordThemes</i></td>
+                </tr>
+                <tr>
+                    <td>Связи запись-изображение</td>
+                    <td><i>@Model.DeletedEntities.RecordImages</i></td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2">
+                        <form method="post">
+                            <input type="submit" class="btn btn-danger btn-sm" value="!!! Очистить базу !!!" asp-page-handler="ClearBase" onclick="return confirm('ВНИМАНИЕ!!! После выполнения очистки восстановить удаленные данные будет невозможно. Продолжить?');" />
+                        </form>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+
+    </div>
+</div>

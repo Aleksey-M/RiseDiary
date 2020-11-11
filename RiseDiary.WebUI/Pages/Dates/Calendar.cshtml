@@ -29,23 +29,21 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
-    <script type="text/javascript">
-
-        const dates = [
-            @for(int i=0, count = Model.Dates.Count(); i<count; i++)
+<script type="text/javascript">
+    const dates = [
+    @for(int i=0, count = Model.Dates.Count(); i<count; i++)
             {
                 <text>
             {
                 id: "@Model.Dates.ElementAt(i).Id",
-                name: "@Model.Dates.ElementAt(i).Theme: "+"@Model.Dates.ElementAt(i).Name",
-                startDate: new Date(@Model.Dates.ElementAt(i).TransferredDate.Year, @Model.Dates.ElementAt(i).TransferredDate.Month-1, @Model.Dates.ElementAt(i).TransferredDate.Day),
-                endDate: new Date(@Model.Dates.ElementAt(i).TransferredDate.Year, @Model.Dates.ElementAt(i).TransferredDate.Month-1, @Model.Dates.ElementAt(i).TransferredDate.Day)
+                name: "@Model.Dates.ElementAt(i).Themes: "+"@Model.Dates.ElementAt(i).Name",
+                startDate: new Date(@Model.Dates.ElementAt(i).TransferredDate.Year, @(Model.Dates.ElementAt(i).TransferredDate.Month-1), @Model.Dates.ElementAt(i).TransferredDate.Day),
+                endDate: new Date(@Model.Dates.ElementAt(i).TransferredDate.Year, @(Model.Dates.ElementAt(i).TransferredDate.Month-1), @Model.Dates.ElementAt(i).TransferredDate.Day)
 
-            }@(i != count - 1 ? "," : string.Empty)
+            }@(i != count - 1 ? "," : "")
                 </text>
-            }
-        ];
-    </script>
+            }];
+</script>
 
     <script src="~/lib/bootstrap-year-calendar/js/bootstrap-year-calendar.js"></script>
     <script type="text/javascript">
@@ -60,10 +58,8 @@
             return null;
         }
 
-        let currentYear = @DateTime.Now.Year;
-
         $(function () {
-            $('#calendar').calendar({
+            var calendar = $('#calendar').calendar({
                 style: 'background',
                 enableRangeSelection: true,
                 mouseOnDay: function (e) {
@@ -91,26 +87,23 @@
                         $(e.element).popover('hide');
                     }
                 },
-                selectRange: function (e) {
+                selectRange: function (e) {                    
                     let id = getIdByStartDate(e.startDate);
                     if (id !== null) {
                         window.location.href = '/Records/View?recordId=' + encodeURIComponent(id);
                     }
                 },
-                startYear: @DateTime.Now.Year,
-                maxDate: new Date(@DateTime.Now.Year, 11, 31),
-                minDate: new Date(@DateTime.Now.Year, 0, 1),
+                startYear: @Model.Today.Year,
+                maxDate: new Date(@Model.Today.Year, 11, 31),
+                minDate: new Date(@Model.Today.Year, 0, 1),
                 renderEnd: function (e) {
-                    if (e.currentYear !== currentYear) {
+                    if (e.currentYear !== @Model.Today.Year) {
                         updateCalendar(e.currentYear, $('.multiselect').val());
                     }
                 },
-                dataSource: dates
+                dataSource: dates               
             });
-
-            $("#btnSearch").on('click', function () {
-                updateCalendar($('#calendar').data('calendar').getYear(), $('.multiselect').val());
-            });
+           
         });
     </script>
 }

@@ -1,11 +1,14 @@
 ﻿@namespace RiseDiary.WebUI.Pages
 
-<div class="panel panel-success">    
+@using RiseDiary.Model;
+
+@inject IScopesService ScopesSvc
+
+<div class="panel panel-success">
     <div class="panel-heading">
         @if (!string.IsNullOrWhiteSpace(ErrorMessage))
         {
-            <p style="color:red;">@ErrorMessage</p>
-        }
+<p style="color:red;">@ErrorMessage</p>}
         <div class="form form-horizontal">
             <div class="input-group">
                 <input type="text" @bind-value="NewScopeName" @bind-value:event="onchange" class="form-control" placeholder="Введите название новой области интересов" />
@@ -19,5 +22,45 @@
 
 @foreach (var sc in Scopes)
 {
-    <ScopeComponent DbContext="DbContext" Scope="sc" UpdateParentState="UpdateState" @key="sc"></ScopeComponent>
+<ScopeComponent Scope="sc" UpdateParentState="UpdateState" @key="sc"></ScopeComponent>
+}
+
+@code{ 
+    
+    private List<DiaryScope> Scopes { get; set; } = null!;
+    private string? NewScopeName { get; set; }
+    private string? ErrorMessage { get; set; }
+
+    private async Task CreateNewScope()
+    {
+        if (string.IsNullOrWhiteSpace(NewScopeName))
+        {
+            ErrorMessage = "Название области не введено";
+        }
+        else
+        {
+            try
+            {
+                await ScopesSvc.AddScope(NewScopeName.Trim());
+                NewScopeName = null;
+                Scopes = await ScopesSvc.GetScopes();
+                ErrorMessage = null;
+            }
+            catch (Exception exc)
+            {
+                ErrorMessage = exc.Message;
+            }
+        }
+    }
+
+    private async Task UpdateState()
+    {
+        Scopes = await ScopesSvc.GetScopes();
+        this.StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Scopes = await ScopesSvc.GetScopes();
+    } 
 }

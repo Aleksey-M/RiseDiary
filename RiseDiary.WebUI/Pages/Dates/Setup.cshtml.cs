@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
-using RiseDiary.WebUI.Data;
+using RiseDiary.Shared;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,33 +9,33 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Dates
 {
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class SetupModel : PageModel
     {
-        private readonly DiaryDbContext _context;        
+        private readonly IScopesService _scopesSvc;
+        private readonly IAppSettingsService _settingsSvc;
 
-        public SetupModel(DiaryDbContext context)
+        public SetupModel(IScopesService scopesSvc, IAppSettingsService settingsSvc)
         {
-            _context = context;
+            _scopesSvc = scopesSvc;
+            _settingsSvc = settingsSvc;
         }
 
         public IEnumerable<DiaryScope> Scopes { get; private set; } = Enumerable.Empty<DiaryScope>();
         public Guid SelectedScopeId { get; private set; }
         public int DaysDisplayRange { get; private set; }
-        public string Message { get; private set; } = string.Empty;
+        public string Message { get; private set; } = "";
 
         public async Task UpdateViewModel()
         {
-            Scopes = await _context.FetchScopesWithThemes();
-            var setting = await _context.GetAppSetting(AppSettingsKeys.DatesScopeId);
+            Scopes = await _scopesSvc.GetScopes();
+            var (setting, _) = await _settingsSvc.GetAppSetting(AppSettingsKey.ImportantDaysScopeId);
             if (setting != null && Guid.TryParse(setting, out Guid id))
             {
                 SelectedScopeId = id;
             }
             else
                 SelectedScopeId = Guid.Empty;
-            DaysDisplayRange = await _context.GetAppSettingInt(AppSettingsKeys.DatesDisplayRange) ?? 20;
+            DaysDisplayRange = await _settingsSvc.GetAppSettingInt(AppSettingsKey.ImportantDaysDisplayRange) ?? 20;
         }
 
         public async Task OnGetAsync()
@@ -45,7 +45,7 @@ namespace RiseDiary.WebUI.Pages.Dates
 
         public async Task OnPostAsync(Guid scopeId, int displayRange)
         {
-            if (scopeId  == default)
+            if (scopeId == default)
             {
                 Message = "Некорректная область";
                 return;
@@ -57,8 +57,8 @@ namespace RiseDiary.WebUI.Pages.Dates
                 return;
             }
 
-            await _context.UpdateAppSetting(AppSettingsKeys.DatesScopeId, scopeId.ToString());
-            await _context.UpdateAppSetting(AppSettingsKeys.DatesDisplayRange, displayRange.ToString(CultureInfo.InvariantCulture));
+            await _settingsSvc.UpdateAppSetting(AppSettingsKey.ImportantDaysScopeId, scopeId.ToString());
+            await _settingsSvc.UpdateAppSetting(AppSettingsKey.ImportantDaysDisplayRange, displayRange.ToString(CultureInfo.InvariantCulture));
             Message = "Данные обновлены";
             await UpdateViewModel();
         }

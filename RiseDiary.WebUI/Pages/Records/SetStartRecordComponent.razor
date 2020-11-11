@@ -1,21 +1,65 @@
 ﻿@namespace RiseDiary.WebUI.Pages.Records
 
+@using RiseDiary.Model
+@using RiseDiary.Shared
+
+@inject IAppSettingsService SettingsSvc
+
 @if (StartRecordId == null)
 {
-    <button type="button" @onclick="@(e => SetOnStartPage())" class="btn btn-sm btn-link" style="float:right" title="Поместить на стартовую страницу">
-        <span class="glyphicon @(GliphIconName)" aria-hidden="true"></span>
-    </button>
-}
+<button type="button" @onclick="@(e => SetOnStartPage())" class="btn btn-sm btn-link" style="float:right" title="Поместить на стартовую страницу">
+    <span class="glyphicon @(GliphIconName)" aria-hidden="true"></span>
+</button> }
 else if (RecordId == StartRecordId)
 {
 <button type="button" @onclick="@(e =>RemoveFromStartPage())" class="btn btn-sm btn-link" style="float:right" title="Удалить со стартовой страницы">
     <span class="glyphicon @(GliphIconName)" aria-hidden="true"></span>
-</button>
-}
+</button> }
 else
 {
 <button type="button" @onclick="@(e => SetOnStartPage())" class="btn btn-sm btn-link" style="float:right" title="Заменить другую запись на стартовой странице">
     <span class="glyphicon @(GliphIconName)" aria-hidden="true"></span>
-</button>
-}
+</button>}
 
+@code{ 
+    [Parameter]
+    public Guid RecordId { get; set; }
+    private Guid? StartRecordId { get; set; }
+    private string GliphIconName
+    {
+        get
+        {
+            if (StartRecordId == null) return "glyphicon-plus";
+            if (StartRecordId == RecordId) return "glyphicon-remove";
+            return "glyphicon-refresh";
+        }
+    }
+
+    private async Task SetOnStartPage()
+    {
+        await SettingsSvc.UpdateAppSetting(AppSettingsKey.StartPageRecordId, RecordId.ToString()).ConfigureAwait(false);
+        await ReadStartPageId().ConfigureAwait(false);
+    }
+
+    private async Task RemoveFromStartPage()
+    {
+        await SettingsSvc.UpdateAppSetting(AppSettingsKey.StartPageRecordId, "").ConfigureAwait(false);
+        StartRecordId = null;
+        await ReadStartPageId().ConfigureAwait(false);
+    }
+
+    private async Task ReadStartPageId()
+    {
+        var s = (await SettingsSvc.GetAppSetting(AppSettingsKey.StartPageRecordId).ConfigureAwait(false)).value ?? "";
+        if (Guid.TryParse(s, out var id))
+        {
+            StartRecordId = id;
+        }
+        await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReadStartPageId().ConfigureAwait(false);
+    } 
+}

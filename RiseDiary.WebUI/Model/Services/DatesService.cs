@@ -1,0 +1,90 @@
+﻿using Microsoft.EntityFrameworkCore;
+using RiseDiary.Shared;
+using RiseDiary.WebUI.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace RiseDiary.Model.Services
+{
+    public class DatesService : IDatesService
+    {
+        protected readonly DiaryDbContext _context;
+        protected readonly IHostAndPortService _hostAndPortService;
+        protected readonly IAppSettingsService _appSettingsService;
+
+        public DatesService(DiaryDbContext context, IAppSettingsService appSettingsService, IHostAndPortService hostAndPortService)
+        {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _hostAndPortService = hostAndPortService ?? throw new ArgumentNullException(nameof(hostAndPortService));
+            _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
+        }
+
+        public async Task<List<DateListItem>> GetAllDates(DateTime today)
+        {
+            var sId = (await _appSettingsService.GetAppSetting(AppSettingsKey.ImportantDaysScopeId)).value ?? throw new Exception("Setting 'ImportantDaysScopeId' does not exists");
+            var scopeId = Guid.Parse(sId);
+            var placeholder = _hostAndPortService.GetHostAndPortPlaceholder();
+            var currentHostAndPort = _hostAndPortService.GetHostAndPort();
+
+            var allRecordsIds = _context.Scopes
+                .AsNoTracking()
+                .Where(s => s.Id == scopeId)
+                .SelectMany(s => s.Themes.SelectMany(t => t.RecordsRefs).Select(rr => rr.RecordId))
+                .AsEnumerable();
+
+            var records = await _context.Records
+                .AsNoTracking()
+                .Include(r => r.ThemesRefs)
+                .ThenInclude(tr => tr.Theme)
+                .Where(r => allRecordsIds.Contains(r.Id))
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            var items = records
+                .Select(r => new DateListItem(
+                    r.Id,
+                    r.Date,
+                    new DateTime(today.Year, r.Date.Month, r.Date.Day),
+                    r.Name?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "",
+                    r.Text?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "",
+                    string.Join(", ", r.ThemesRefs.Select(tr => tr.Theme!.ThemeName))))
+                .OrderBy(r => r.TransferredDate)
+                .ToList();
+
+            return items;
+        }
+
+        public async Task<List<DateListItem>> GetDatesFromRange(DateTime today, bool withEmptyDates)
+        {
+            var daysCount = (await _appSettingsService.GetAppSettingInt(AppSettingsKey.ImportantDaysDisplayRange)) ?? throw new Exception("Setting 'ImportantDaysDisplayRange' does not exists");
+            var allRecords = await GetAllDates(today);
+
+            var startDate = today.Date.AddDays(-daysCount);
+            var datesRange = Enumerable.Range(0, daysCount * 2)
+                .Select(i => startDate.AddDays(i))
+                .Select(d => new DateListItem(Guid.Empty, d, d, "", "", ""))
+                .ToList();
+
+            var datesFromRange = new List<DateListItem>();
+            var emptyDates = new HashSet<DateListItem>();
+
+            foreach(var rec in allRecords)
+            {
+                var emptyDate = datesRange.SingleOrDefault(d => d.TransferredDate.Month == rec.TransferredDate.Month && d.TransferredDate.Day == rec.TransferredDate.Day);
+                if (emptyDate == null) continue;
+
+                datesFromRange.Add(rec with { TransferredDate = emptyDate.TransferredDate });
+                if (!emptyDates.Contains(emptyDate)) emptyDates.Add(emptyDate);
+            }
+
+            if (!withEmptyDates) return datesFromRange.OrderBy(d => d.TransferredDate).ToList();
+
+            datesRange = datesRange.Except(emptyDates).ToList();
+            datesRange.AddRange(datesFromRange);
+
+            return datesRange.OrderBy(d => d.TransferredDate).ToList();
+        }
+    }
+}

@@ -16,20 +16,20 @@ namespace RiseDiary.WebUI
         internal static (string path, string backupsPath) GetPathAndBackupFolder(string fileNameFull)
         {
             if (fileNameFull == null) throw new ArgumentNullException(nameof(fileNameFull));
-            return (Path.GetDirectoryName(fileNameFull) ?? string.Empty, Path.Combine(Path.GetDirectoryName(fileNameFull) ?? string.Empty, "backup"));
+            return (Path.GetDirectoryName(fileNameFull) ?? "", Path.Combine(Path.GetDirectoryName(fileNameFull) ?? "", "backup"));
         }
-        
+
         internal static void BackupFile(string fileNameFull)
         {
             if (!File.Exists(fileNameFull)) return;
-            (_, string backupsPath) = GetPathAndBackupFolder(fileNameFull);                       
+            (_, string backupsPath) = GetPathAndBackupFolder(fileNameFull);
             var backupFileName = Path.Combine(backupsPath, DateTime.Now.ToString("yyyy.MM.dd - hh_mm_ss", CultureInfo.InvariantCulture) + ".bak");
-                        
+
             if (!Directory.Exists(backupsPath))
             {
                 Directory.CreateDirectory(backupsPath);
             }
-                        
+
             if (!File.Exists(backupFileName))
             {
                 File.Copy(fileNameFull, backupFileName);
@@ -37,7 +37,7 @@ namespace RiseDiary.WebUI
         }
 
         private static DiaryDbContext CreateCurrentContext(string migratedSqlite)
-        {            
+        {
             var connStrMigrated = $@"Data Source={migratedSqlite};";
 
             IConfigurationRoot configuration = new ConfigurationBuilder().Build();
@@ -134,7 +134,7 @@ namespace RiseDiary.WebUI
                 var s = new DiaryScope
                 {
                     Id = sId,
-                    ScopeName = Name ?? string.Empty,
+                    ScopeName = Name ?? "",
                     Deleted = Deleted
                 };
 
@@ -206,7 +206,7 @@ namespace RiseDiary.WebUI
 
         private static void WriteImages(DiaryDbContext context, List<(string? Id, string? Name, string? CreateDate, string? ModifyDate, byte[] Thumbnail, int Width, int Height, int SizeByte, bool Deleted, DateTime? Taken, string? cameraModel)> images, List<(string? Id, string? ImageId, byte[] Data)> fullImages)
         {
-            var imgList = new List<DiaryImageFull>();
+            var imgList = new List<DiaryImage>();
             foreach (var (Id, Name, CreateDate, ModifyDate, Thumbnail, Width, Height, SizeByte, Deleted, Taken, CameraModel) in images)
             {
                 var iId = Guid.Parse(Id ?? throw new ArgumentException($"Id for Image '{Name}' is null"));
@@ -214,9 +214,9 @@ namespace RiseDiary.WebUI
                 var i = new DiaryImage
                 {
                     Id = iId,
-                    Name = Name ?? string.Empty,
-                    CreateDate = DateTime.Parse(CreateDate ?? string.Empty, CultureInfo.InvariantCulture),
-                    ModifyDate = DateTime.Parse(ModifyDate ?? string.Empty, CultureInfo.InvariantCulture),
+                    Name = Name ?? "",
+                    CreateDate = DateTime.Parse(CreateDate ?? "", CultureInfo.InvariantCulture),
+                    ModifyDate = DateTime.Parse(ModifyDate ?? "", CultureInfo.InvariantCulture),
                     Thumbnail = Thumbnail,
                     Width = Width,
                     Height = Height,
@@ -229,18 +229,17 @@ namespace RiseDiary.WebUI
                 var oldFi = fullImages.Single(ffi => ffi.ImageId == Id);
                 var fiId = Guid.Parse(oldFi.Id ?? throw new ArgumentException($"Id for full Image '{Name}' is null"));
 
-                var fi = new DiaryImageFull
+                i.FullImage = new DiaryImageFull
                 {
                     Id = fiId,
                     ImageId = i.Id,
-                    Data = oldFi.Data,
-                    DiaryImage = i
+                    Data = oldFi.Data
                 };
 
-                imgList.Add(fi);
+                imgList.Add(i);
             }
 
-            context.FullSizeImages.AddRange(imgList);
+            context.Images.AddRange(imgList);
             context.SaveChanges();
         }
 
@@ -253,9 +252,9 @@ namespace RiseDiary.WebUI
             while (r5.Read())
             {
                 appSettings.Add((
-                    r5["Key"].ToString() ?? string.Empty,
-                    r5["Value"].ToString() ?? string.Empty,
-                    r5["ModifiedDate"].ToString() ?? string.Empty));                
+                    r5["Key"].ToString() ?? "",
+                    r5["Value"].ToString() ?? "",
+                    r5["ModifiedDate"].ToString() ?? ""));
             }
             r5.Close();
 
@@ -265,14 +264,14 @@ namespace RiseDiary.WebUI
         private static void WriteAppSettings(DiaryDbContext context, List<(string Key, string Value, string ModifiedDate)> appSettings)
         {
             var appSet = new List<AppSetting>();
-            foreach(var (Key, Value, ModifiedDate) in appSettings)
+            foreach (var (Key, Value, ModifiedDate) in appSettings)
             {
                 appSet.Add(new AppSetting
                 {
                     Key = Key,
                     Value = Value,
-                    ModifiedDate = DateTime.Parse(ModifiedDate ?? string.Empty, CultureInfo.InvariantCulture)
-                });                
+                    ModifiedDate = DateTime.Parse(ModifiedDate ?? "", CultureInfo.InvariantCulture)
+                });
             }
 
             context.AppSettings.AddRange(appSet);
@@ -312,11 +311,11 @@ namespace RiseDiary.WebUI
                 var r = new DiaryRecord
                 {
                     Id = id,
-                    Date = DateTime.Parse(Date ?? string.Empty, CultureInfo.InvariantCulture),
-                    CreateDate = DateTime.Parse(CreateDate ?? string.Empty, CultureInfo.InvariantCulture),
-                    ModifyDate = DateTime.Parse(ModifyDate ?? string.Empty, CultureInfo.InvariantCulture),
-                    Name = Name ?? string.Empty,
-                    Text = Text ?? string.Empty,
+                    Date = DateTime.Parse(Date ?? "", CultureInfo.InvariantCulture),
+                    CreateDate = DateTime.Parse(CreateDate ?? "", CultureInfo.InvariantCulture),
+                    ModifyDate = DateTime.Parse(ModifyDate ?? "", CultureInfo.InvariantCulture),
+                    Name = Name ?? "",
+                    Text = Text ?? "",
                     Deleted = Deleted
                 };
 
@@ -359,9 +358,9 @@ namespace RiseDiary.WebUI
                 var c = new Cogitation
                 {
                     Id = id,
-                    Date = DateTime.Parse(Date ?? string.Empty, CultureInfo.InvariantCulture),
+                    Date = DateTime.Parse(Date ?? "", CultureInfo.InvariantCulture),
                     RecordId = recId,
-                    Text = Text ?? string.Empty,
+                    Text = Text ?? "",
                     Deleted = Deleted
                 };
 
@@ -398,8 +397,8 @@ namespace RiseDiary.WebUI
             {
                 var rt = new DiaryRecordTheme
                 {
-                    ThemeId = Guid.Parse(ThemeId ?? string.Empty),
-                    RecordId = Guid.Parse(RecordId ?? string.Empty),
+                    ThemeId = Guid.Parse(ThemeId ?? ""),
+                    RecordId = Guid.Parse(RecordId ?? ""),
                     Deleted = Deleted
                 };
 
@@ -436,8 +435,8 @@ namespace RiseDiary.WebUI
             {
                 var ri = new DiaryRecordImage
                 {
-                    ImageId = Guid.Parse(ImageId ?? string.Empty),
-                    RecordId = Guid.Parse(RecordId ?? string.Empty),
+                    ImageId = Guid.Parse(ImageId ?? ""),
+                    RecordId = Guid.Parse(RecordId ?? ""),
                     Deleted = Deleted
                 };
 

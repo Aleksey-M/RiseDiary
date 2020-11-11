@@ -1,72 +1,37 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
-using RiseDiary.WebUI.Data;
+using System;
+using System.Drawing;
+using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Images
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class CropImageSelectModel : PageModel
     {
-        private readonly DiaryDbContext _context;
-        public CropImageSelectModel(DiaryDbContext context)
+        private readonly ICropImageService _cropImageService;
+        public CropImageSelectModel(ICropImageService cropImageService)
         {
-            _context = context;
+            _cropImageService = cropImageService ?? throw new ArgumentNullException(nameof(cropImageService));
         }
-        private const int MaxScaledWidth = 750;
-        private const int MaxScaledHeight = 600;
+
         public Guid ImageId { get; private set; }
         public Guid RecordId { get; private set; }
-#pragma warning disable CA1819 // Properties should not return arrays
-        public byte[] ScaledImage { get; private set; } = Array.Empty<byte>();
-#pragma warning restore CA1819 // Properties should not return arrays
-        public double Coefficient { get; private set; }
-        public string ScaledImageString => Convert.ToBase64String(ScaledImage);
+        public ScaledImagePreview ScaledImage { get; private set; } = null!;
+        public string ScaledImageString => Convert.ToBase64String(ScaledImage.Image);
+
         public async Task<ActionResult> OnGetAsync(Guid? imageId, Guid? recordId)
         {
             ImageId = imageId ?? Guid.Empty;
             RecordId = recordId ?? Guid.Empty;
-            if(imageId == Guid.Empty)
-            {
-                return Redirect("Images");
-            }
-            var imageData = await _context.FetchFullImageById(ImageId);
-            if(imageData == null)
+            if (imageId == Guid.Empty)
             {
                 return Redirect("Images");
             }
 
-            int imageQuality = await _context.GetAppSettingInt(AppSettingsKeys.ImageQuality) ?? 75;
+            ScaledImage = await _cropImageService.CreateScaledImagePreview(ImageId);
 
-            (int fullImageWidth, int fullImageHeight) = ImageHelper.ImageSize(imageData);
-            if(fullImageWidth > fullImageHeight)
-            {
-                if (fullImageWidth > MaxScaledWidth)
-                {
-                    Coefficient = fullImageWidth / (double)MaxScaledWidth;
-                    ScaledImage = ImageHelper.ScaleImage(imageData, imageQuality, MaxScaledWidth);
-                }
-                else
-                {
-                    Coefficient = 1.0;
-                    ScaledImage = imageData;
-                }
-            }
-            else
-            {
-                if (fullImageHeight > MaxScaledHeight)
-                {
-                    Coefficient = fullImageHeight / (double)MaxScaledHeight;
-                    ScaledImage = ImageHelper.ScaleImage(imageData, imageQuality, MaxScaledHeight);
-                }
-                else
-                {
-                    Coefficient = 1.0;
-                    ScaledImage = imageData;
-                }
-            }
             return Page();
         }
 
@@ -74,20 +39,13 @@ namespace RiseDiary.WebUI.Pages.Images
         {
             RecordId = recordId ?? Guid.Empty;
             ImageId = imageId ?? Guid.Empty;
+
             if (selLeft >= 0 && selTop >= 0 && selWidth > 0 && selHeight > 0 && coefficient >= 1)
             {
-                var image = await _context.FetchImageById(ImageId);
-                var sourceImage = await _context.FetchFullImageById(ImageId);
-
-                int realTop = Convert.ToInt32(selTop * coefficient);
-                int realLeft = Convert.ToInt32(selLeft * coefficient);
-                int realWidth = Convert.ToInt32(selWidth * coefficient);
-                int realHeight = Convert.ToInt32(selHeight * coefficient);
-
-                int imageQuality = await _context.GetAppSettingInt(AppSettingsKeys.ImageQuality) ?? 75;
-                var tmpImage = ImageHelper.CropImage(image, sourceImage, realLeft, realTop, realWidth, realHeight, imageQuality);
-                await _context.AddUnsavedTempImage(tmpImage);
+                var rect = new Rectangle(selLeft, selTop, selWidth, selHeight);
+                await _cropImageService.CropImage(ImageId, rect, coefficient);
             }
+
             return RedirectToPage("Edit", new { ImageId, RecordId });
         }
     }

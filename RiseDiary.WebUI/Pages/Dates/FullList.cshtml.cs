@@ -1,42 +1,35 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using RiseDiary.Model;
+using RiseDiary.Shared;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using RiseDiary.Model;
-using RiseDiary.WebUI.Data;
 
 namespace RiseDiary.WebUI.Pages.Dates
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class ListModel : PageModel
     {
-        private readonly DiaryDbContext _context;        
+        private readonly IDatesService _datesService;
+        private readonly IAppSettingsService _settingsSvc;
 
-        public ListModel(DiaryDbContext context)
+        public ListModel(IDatesService datesService, IAppSettingsService settingsSvc)
         {
-            _context = context;
+            _datesService = datesService;
+            _settingsSvc = settingsSvc;
         }
 
-        public IEnumerable<DateItem> Dates { get; private set; } = Enumerable.Empty<DateItem>();
-
-        private string LocalHostAndPort => Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
+        public IEnumerable<DateListItem> Dates { get; private set; } = Enumerable.Empty<DateListItem>();
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var scopeId = await _context.GetAppSetting(AppSettingsKeys.DatesScopeId);
-            if(scopeId == null)
-            {
-                return Redirect("~/Dates/setup");
-            }
-            if (Guid.TryParse(scopeId, out var sId))
-            {
-                Dates = await _context.FetchAllDateItems(sId, LocalHostAndPort);
-            }
-            else
-                throw new Exception($"Incorrect format of Scope ID in the AppSettings: {scopeId}");
+            var (stringId, _) = await _settingsSvc.GetAppSetting(AppSettingsKey.ImportantDaysScopeId);
+            var range = await _settingsSvc.GetAppSettingInt(AppSettingsKey.ImportantDaysDisplayRange);
 
+            if (!Guid.TryParse(stringId, out _) || range == null) return Redirect("~/Dates/Setup");
+
+            Dates = await _datesService.GetAllDates(DateTime.Now.Date);
             return Page();
         }
     }

@@ -1,5 +1,7 @@
 ﻿@page "{handler?}"
 @model RiseDiary.WebUI.Pages.Images.EditModel
+@using RiseDiary.Model 
+
 @{
     ViewData["Title"] = Model.Image.Name;
     ViewData["TitlePart"] = Model.Image.Name;
@@ -44,18 +46,18 @@
             <tbody>
                 <tr style="background-color:#cdff82">
                     <td>
-                        <component type="typeof(ImageNameComponent)" render-mode="ServerPrerendered" param-ImageId="@Model.ImageId" param-ImageName="@Model.Image.Name" />
+                        <component type="typeof(ImageNameComponent)" render-mode="ServerPrerendered" param-ImageId="@Model.Image.Id" param-ImageName="@Model.Image.Name" />
                     </td>
                     <td>@Model.Image.Width&nbsp;px;</td>
                     <td>@Model.Image.Height&nbsp;px;</td>
-                    <td>@Model.Image.SizeKbString</td>
+                    <td>@Model.Image.GetSizeKbString()</td>
                     <td>
-                        @if (Model.TempImage == null)
+                        @if (Model.Image.TempImage == null)
                         {
                             <div style="white-space: nowrap;float:right">
                                 <form asp-page-handler="ReplaceImage" id="uploadNewImageForm" method="post" enctype="multipart/form-data">
                                     <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                    <input type="hidden" name="imageId" value="@Model.ImageId" />
+                                    <input type="hidden" name="imageId" value="@Model.Image.Id" />
                                     <input type="file" accept="image/*" id="newImage" name="newImage" style="display:none" onchange="newImageSelect()" />
                                     <button type="button" class="btn btn-info" title="Заменить изображение другим" onclick="document.getElementById('newImage').click();">
                                         <span class="glyphicon glyphicon-retweet" aria-hidden="true"></span>
@@ -64,20 +66,20 @@
 
                                 <form method="post" asp-page-handler="ScaleImage">
                                     <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                    <input type="hidden" name="imageId" value="@Model.ImageId" />
-                                    <input type="hidden" id="maxImageSize" value="@Model.BiggestImageDimm" />
-                                    <input type="hidden" name="imageSize" id="imageSize" value="@Model.BiggestImageDimm" />
+                                    <input type="hidden" name="imageId" value="@Model.Image.Id" />
+                                    <input type="hidden" id="maxImageSize" value="@Model.Image.GetBiggestImageDimm()" />
+                                    <input type="hidden" name="imageSize" id="imageSize" value="@Model.Image.GetBiggestImageDimm()" />
                                     <button type="submit" class="btn btn-info" onclick="return scaleImageClick();" title="Сжать изображения таким образом, чтобы большая сторона равнялась введенному значению">
                                         <span class="glyphicon glyphicon-resize-small" aria-hidden="true"></span>
                                     </button>
                                 </form>
 
-                                <a asp-page="CropImageSelect" asp-route-imageId="@Model.ImageId" asp-route-recordId="@Model.RecordId" class="btn btn-info" title="Выбрать область изображения и обрезать все лишнее">
+                                <a asp-page="CropImageSelect" asp-route-imageId="@Model.Image.Id" asp-route-recordId="@Model.RecordId" class="btn btn-info" title="Выбрать область изображения и обрезать все лишнее">
                                     <span class="glyphicon glyphicon-scissors" aria-hidden="true"></span>
                                 </a>
 
                                 <form asp-page-handler="DeleteImage" method="post">
-                                    <input type="hidden" name="imageId" value="@Model.ImageId" />
+                                    <input type="hidden" name="imageId" value="@Model.Image.Id" />
                                     <input type="hidden" name="recordId" value="@Model.RecordId" />
                                     <button type="submit" class="btn btn-danger" title="Удалить изображение" onclick="return confirm('Удалить изображение?');">
                                         <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
@@ -87,18 +89,18 @@
                         }
                     </td>
                 </tr>
-                @if (Model.TempImage != null)
+                @if (Model.Image.TempImage != null)
                 {
                     <tr style="background-color:#fcb17c">
-                        <td><b style="color:brown">@Model.TempImage.Modification</b></td>
-                        <td>@Model.TempImage.Width&nbsp;px;</td>
-                        <td>@Model.TempImage.Height&nbsp;px;</td>
-                        <td>@Model.TempImage.SizeKbString</td>
+                        <td><b style="color:brown">@Model.Image.TempImage.Modification</b></td>
+                        <td>@Model.Image.TempImage.Width&nbsp;px;</td>
+                        <td>@Model.Image.TempImage.Height&nbsp;px;</td>
+                        <td>@Model.Image.TempImage.GetSizeKbString()</td>
                         <td>
                             <div class="form-inline" style="float:right;">
                                 <form method="post">
                                     <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                    <input type="hidden" name="imageId" value="@Model.ImageId" />
+                                    <input type="hidden" name="imageId" value="@Model.Image.Id" />
                                     <div style="white-space: nowrap;">
                                         <button type="submit" asp-page-handler="SaveUpdatedImage" class="btn btn-warning" title="Сохранить изменения">
                                             <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
@@ -119,7 +121,7 @@
         </table>
     </div>
     <div class="col-sm-12">
-        <img id="img" name="img" src="/Images/imagefile/@Model.Image.Id" class="thumbnail center-block" style="max-height:600px;max-width:1000px;" />
+        <img id="img" name="img" src="/api/v1.0/image-file/@Model.Image.Id" class="thumbnail center-block" style="max-height:600px;max-width:1000px;" />
     </div>
 
     <hr class="col-sm-12" />

@@ -1,5 +1,6 @@
 ﻿@page
 @model RiseDiary.WebUI.Pages.Analysis.IndexModel
+@using RiseDiary.Model
 @{
     ViewData["Title"] = "Поиск записей по фрагменту названия или текста";
     ViewData["TitlePart"] = "Поиск записей по фрагменту названия или текста";
@@ -47,7 +48,7 @@
                         <form method="get">
                             <div class="form-horizontal row">
                                 <div class="form-inline col-md-6 col-md-offset-3">
-                                    <input type="text" placeholder="Строка поиска (с учетом регистра)" name="searchString" id="searchString" value="@Model.SearchString" class="form-control" style="width:80%" />
+                                    <input type="text" placeholder="Строка поиска" name="searchString" id="searchString" value="@Model.SearchString" class="form-control" style="width:80%" />
                                     &nbsp;&nbsp;
                                     <input type="submit" value="Поиск" class="btn btn-default" />
                                 </div>
@@ -71,7 +72,7 @@
                     {
                         <tr>
                             <td class="main-date-column">@rec.Date.ToString("yyyy.MM.dd")</td>
-                            <td><a href="~/Records/View?recordId=@rec.Id">@rec.RecordNameDisplay</a></td>
+                            <td><a href="~/Records/View?recordId=@rec.Id">@rec.GetRecordNameDisplay()</a></td>
                             <td class="date-column">@rec.CreateDate.ToString("G")</td>
                             <td class="date-column">@rec.ModifyDate.ToString("G")</td>
                             <td style="width:30px"><a href="~/Records/Edit?recordId=@rec.Id"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a></td>

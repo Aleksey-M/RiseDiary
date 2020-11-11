@@ -1,17 +1,193 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using RiseDiary.WebUI.Data;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using RiseDiary.Model;
+using RiseDiary.Shared;
+using RiseDiary.Shared.Dto;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Api
 {
     [ApiController]
     public class ImagesController : ControllerBase
     {
-        private readonly DiaryDbContext _context;
-        public ImagesController(DiaryDbContext context)
+        private readonly IImagesService _imagesService;
+        private readonly IRecordsImagesService _recordsImagesService;
+        private readonly IHostAndPortService _hostAndPortService;
+
+        public ImagesController(IImagesService imagesService, IRecordsImagesService recordsImagesService, IHostAndPortService hostAndPortService)
         {
-            _context = context;
+            _imagesService = imagesService;
+            _recordsImagesService = recordsImagesService;
+            _hostAndPortService = hostAndPortService;
         }
 
+        [HttpGet, Route("api/v1.0/image-file/{id}")]
+        [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetImageFile(Guid id)
+        {
+            if (id == Guid.Empty) return BadRequest();
 
+            try
+            {
+                var image = await _imagesService.FetchFullImageById(id);
+                return File(image, "image/jpeg");
+            }
+            catch (ArgumentException)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet, Route("api/v1.0/image-thumbnail/{id}")]
+        [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetImageThumbnail(Guid id)
+        {
+            if (id == Guid.Empty) return BadRequest();
+
+            try
+            {
+                var image = await _imagesService.FetchImageById(id);
+                return File(image.Thumbnail, "image/jpeg");
+            }
+            catch (ArgumentException)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost, Route("api/v1.0/images")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UploadImages([FromForm] UploadImageDto imageDto)
+        {
+            if (imageDto.Image == null) return BadRequest("Image file should be selected");
+
+            try
+            {
+                var newImageId = await _imagesService.AddImage(imageDto.Image, imageDto.ImageName);
+
+                if (imageDto.TargetRecordId != null && imageDto.TargetRecordId != Guid.Empty)
+                {
+                    await _recordsImagesService.AddRecordImage(imageDto.TargetRecordId.Value, newImageId);
+                }
+
+                var newImageUri = $@"{_hostAndPortService.GetHostAndPort()}/api/v1.0/images/{newImageId}";
+
+                return Created(newImageUri, newImageId);
+            }
+            catch (ArgumentException exc)
+            {
+                return BadRequest(exc.Message);
+            }
+        }
+
+        [HttpDelete, Route("api/v1.0/images/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> DeleteImage(Guid id)
+        {
+            await _imagesService.DeleteImage(id);
+            return NoContent();
+        }
+
+        [HttpPut, Route("api/v1.0/images/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateImage(Guid id, UpdateImageDto updateImageDto)
+        {
+            if (id != updateImageDto.ImageId) return BadRequest("Not consistent request");
+
+            try
+            {
+                await _imagesService.UpdateImage(updateImageDto.ImageId, updateImageDto.ImageNewName);
+                return NoContent();
+            }
+            catch (ArgumentException exc)
+            {
+                return BadRequest(exc.Message);
+            }
+        }
+
+        [HttpGet, Route("api/v1.0/images/{id}")]
+        [ProducesResponseType(typeof(ImageDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<ImageDto>> GetImage(Guid id)
+        {
+            try
+            {
+                var img = await _imagesService.FetchImageById(id);
+                var fullImg = await _imagesService.FetchFullImageById(id);
+
+                var dto = new ImageDto
+                {
+                    Id = img.Id,
+                    Name = img.Name,
+                    CreateDate = img.CreateDate,
+                    ModifyDate = img.ModifyDate,
+                    Width = img.Width,
+                    Height = img.Height,
+                    CameraModel = img.CameraModel ?? "",
+                    Taken = img.Taken,
+                    SizeKb = img.GetSizeKbString(),
+                    Base64Image = Convert.ToBase64String(fullImg),
+                    TempImage = img.TempImage == null ? null : new TempImageDto
+                    {
+                        Id = img.TempImage.Id,
+                        Modification = img.TempImage.Modification,
+                        Width = img.TempImage.Width,
+                        Height = img.TempImage.Height,
+                        SizeKb = img.TempImage.GetSizeKbString()
+                    }
+                };
+
+                return Ok(dto);
+            }
+            catch (ArgumentException exc)
+            {
+                return BadRequest(exc.Message);
+            }
+        }
+
+        [HttpGet, Route("api/v1.0/images")]
+        [ProducesResponseType(typeof(ImagesPageDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<ImagesPageDto>> GetImagesPage([FromQuery] int? pageSize, [FromQuery] int? pageNo)
+        {
+            try
+            {
+                pageSize ??= 20;
+                pageNo ??= 1;
+                var count = await _imagesService.GetImagesCount();
+                pageSize = pageSize > 100 ? 100 : pageSize;
+
+                var pagesInfo = PagesInfo.GetPagesInfo(count, pageNo.Value, pageSize.Value);
+                var images = await _imagesService.FetchImageSet(pagesInfo.StartIndex, pagesInfo.PageSize);
+
+                var dto = new ImagesPageDto
+                {
+                    PagesInfo = pagesInfo,
+                    Images = images.Select(i => new ImageListItemDto
+                    {
+                        Id = i.Id,
+                        Name = i.Name,
+                        Width = i.Width,
+                        Height = i.Height,
+                        SizeKb = i.GetSizeKbString(),
+                        Base64Thumbnail = i.GetBase64Thumbnail()
+                    }).ToList()
+                };
+
+                return Ok(dto);
+            }
+            catch (ArgumentException exc)
+            {
+                return BadRequest(exc.Message);
+            }
+        }
     }
 }
