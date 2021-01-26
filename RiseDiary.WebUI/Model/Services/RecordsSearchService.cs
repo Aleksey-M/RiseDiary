@@ -71,7 +71,7 @@ namespace RiseDiary.Model.Services
                 {
                     preliminaryRecordsList = _context.RecordThemes
                         .AsNoTracking()
-                        .Where(rt => filter.RecordThemeIds.Contains(rt.ThemeId))
+                        .Where(rt => filter.Themes.Contains(rt.ThemeId))
                         .Select(rt => rt.RecordId)
                         .Distinct();
                 }
@@ -79,11 +79,11 @@ namespace RiseDiary.Model.Services
                 {
                     preliminaryRecordsList = _context.RecordThemes
                         .AsNoTracking()
-                        .Where(rt => filter.RecordThemeIds.Contains(rt.ThemeId))
+                        .Where(rt => filter.Themes.Contains(rt.ThemeId))
                         .Select(r => new { r.RecordId, r.ThemeId })
                         .ToList()
                         .GroupBy(r => r.RecordId)
-                        .Where(g => filter.RecordThemeIds.All(id => g.Select(r => r.ThemeId).Contains(id)))
+                        .Where(g => filter.Themes.All(id => g.Select(r => r.ThemeId).Contains(id)))
                         .Select(g => g.Key);
                 }
 
@@ -92,26 +92,26 @@ namespace RiseDiary.Model.Services
 
             if (!RecordsFilter.IsEmpty(filter))
             {
-                if (!string.IsNullOrWhiteSpace(filter.RecordNameFilter))
+                if (!string.IsNullOrWhiteSpace(filter.FilterName))
                 {
                     IEnumerable<Guid> recordsWithMatchedNames = _context.Records
                         .AsNoTracking()
                         .Select(r => new { r.Id, r.Name })
                         .ToList()
-                        .Where(r => r.Name.ToUpper().Contains(filter.RecordNameFilter.ToUpper()))
+                        .Where(r => r.Name.ToUpper().Contains(filter.FilterName.ToUpper()))
                         .Select(r => r.Id);
 
                     result = result.Where(r => recordsWithMatchedNames.Contains(r.Id));
                 }
 
-                if (filter.RecordDateFrom != null)
+                if (filter.FromDate != null)
                 {
-                    result = result.Where(r => r.Date >= filter.RecordDateFrom);
+                    result = result.Where(r => r.Date >= filter.FromDate);
                 }
 
-                if (filter.RecordDateTo != null)
+                if (filter.ToDate != null)
                 {
-                    result = result.Where(r => r.Date <= filter.RecordDateTo);
+                    result = result.Where(r => r.Date <= filter.ToDate);
                 }
             }
 

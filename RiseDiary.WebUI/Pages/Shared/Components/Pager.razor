@@ -1,0 +1,58 @@
+﻿@using RiseDiary.Shared
+@using Microsoft.AspNetCore.WebUtilities
+
+@namespace RiseDiary.WebUI.Pages
+
+<nav aria-label="navigation" style="@(FloatRight ? "float:right" : "")">
+    @if (Pages is { TotalPages: > 0 })
+    {
+    <ul class="pagination mb-1">
+        @foreach (var (c, h, p) in LinksList)
+        {
+            <li class="@c">
+                <a href="@h" class="page-link">@p</a>
+            </li>
+        }        
+    </ul>
+    }
+    else
+    {
+        <i>Список пуст</i>
+    }
+</nav>
+
+@code{
+    [Parameter]
+    public PagesInfo? Pages { get; set; }
+
+    [Parameter]
+    public bool FloatRight { get; set; }
+
+    [Parameter]
+    public string AreaName { get; set; } = "";
+
+    [Parameter]
+    public Dictionary<string, string?>? GetParametersList { get; set; }
+
+    private IEnumerable<(string classes, string href, int page)> LinksList
+    {
+        get
+        {
+            var getParams = GetParametersList ?? new Dictionary<string, string?>();
+
+            foreach (var p in Pages?.Pages ?? Enumerable.Empty<int>())
+            {
+                getParams["pageNo"] = p.ToString();
+
+                if(p == (Pages?.CurrentPage ?? 1))
+                {
+                    yield return ("page-item disabled", "#", p);
+                }
+                else
+                {
+                    yield return ("page-item", QueryHelpers.AddQueryString($"/{AreaName}", getParams), p);
+                }
+            }
+        }
+    }
+}

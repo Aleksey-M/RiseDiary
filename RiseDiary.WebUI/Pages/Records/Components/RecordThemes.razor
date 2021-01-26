@@ -1,0 +1,149 @@
+﻿@using RiseDiary.Model
+
+@namespace RiseDiary.WebUI.Pages.Records
+
+@inject IJSRuntime _JSRuntime
+
+<div>
+    <h6 style="display:inline"><i>@AllThemes</i></h6>
+
+    <button type="button" class="btn btn-link p-0" title="Фильтр по темам" data-bs-toggle="modal" data-bs-target="#themesFilter">
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-pen" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M13.498.795l.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001zm-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708l-1.585-1.585z" />
+        </svg>
+    </button>
+</div>
+
+<div style="text-align:left" class="modal fade" id="themesFilter" tabindex="-1" aria-labelledby="themesFilterLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+
+                <h5 class="modal-title" id="exampleModalLabel">Фильтр по темам</h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    <h6>Актуальные темы</h6>
+                    <ul>
+                        @foreach (var scope in AllScopes)
+                        {
+                            @if (scope.Themes.Count(t => t.Actual) > 0)
+                            {
+                                <li>
+                                    <h6 style="color:blue">@scope.ScopeName</h6>
+                                    <ul>
+                                        @foreach (var theme in scope.Themes.Where(t => t.Actual))
+                                        {
+                                            <li>
+                                                <label>
+                                                    @if (SelectedThemes.Any(t => t.ThemeId == theme.Id))
+                                                    {
+                                                        <input @onchange="_ => CheckboxChange(theme.Id)" type="checkbox" checked="checked" value="@theme.Id" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <input @onchange="_ => CheckboxChange(theme.Id)" type="checkbox" value="@theme.Id" />
+                                                    }
+                                                    &nbsp;@theme.ThemeName
+                                                </label>
+                                            </li>
+                                        }
+                                    </ul>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </p>
+                <hr />
+                <p>
+                    <button class="btn btn-link text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#notActualThemes" aria-expanded="false" aria-controls="notActualThemes">
+                        Остальные темы
+                    </button>
+
+                    <div class="collapse" id="notActualThemes">
+                        <ul>
+                            @foreach (var scope in AllScopes)
+                            {
+                                @if (scope.Themes.Count(t => !t.Actual) > 0)
+                                {
+                                    <li>
+                                        <h6 style="color:blue">@scope.ScopeName</h6>
+                                        <ul>
+                                            @foreach (var theme in scope.Themes.Where(t => !t.Actual))
+                                            {
+                                                <li>
+                                                    <label>
+                                                        @if (SelectedThemes.Any(t => t.ThemeId == theme.Id))
+                                                        {
+                                                            <input @onchange="_ => CheckboxChange(theme.Id)" type="checkbox" checked="checked" value="@theme.Id" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <input @onchange="_ => CheckboxChange(theme.Id)" type="checkbox" value="@theme.Id" />
+                                                        }
+                                                        &nbsp;@theme.ThemeName
+                                                    </label>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" @onclick="async _ => await UpdateThemes()" class="btn btn-outline-success">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public List<DiaryScope> AllScopes { get; set; } = new List<DiaryScope>();
+
+    [Parameter]
+    public List<DiaryRecordTheme> SelectedThemes { get; set; } = new List<DiaryRecordTheme>();
+
+    [Parameter]
+    public Func<IEnumerable<Guid>, Task>? UpdateRecordThemes { get; set; }
+
+    private List<string> ThemesList => SelectedThemes?.Select(tr => tr.Theme?.ThemeName ?? "")?.ToList() ?? new List<string>();
+    private string AllThemes => string.Join(" | ", ThemesList);
+
+    private List<Guid> _changedThemesList = new List<Guid>();
+
+    protected override void OnParametersSet()
+    {
+        _changedThemesList = SelectedThemes.Select(st => st.ThemeId).ToList();
+        base.OnParametersSet();
+    }
+
+    private void CheckboxChange(Guid themeId)
+    {
+        if (_changedThemesList.Contains(themeId))
+        {
+            _changedThemesList.Remove(themeId);
+        }
+        else
+        {
+            _changedThemesList.Add(themeId);
+        }
+    }
+
+    private async Task UpdateThemes()
+    {
+        await _JSRuntime.InvokeVoidAsync("eval", "bootstrap.Modal.getInstance(document.getElementById('themesFilter')).hide()");
+
+        if (UpdateRecordThemes != null)
+        {
+            await UpdateRecordThemes(_changedThemesList);
+        }
+    }
+}

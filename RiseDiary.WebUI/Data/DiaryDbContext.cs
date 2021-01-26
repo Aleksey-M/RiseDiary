@@ -128,6 +128,12 @@ namespace RiseDiary.WebUI.Data
                     case EntityState.Deleted when entry.Entity is DiaryImage image:
                         // !!! this should be loaded by Include()
                         foreach (var rr in image.RecordsRefs) rr.Deleted = true;
+                        Entry(image.FullImage).State = EntityState.Unchanged;
+
+                        if(image.TempImage != null)
+                        {
+                            Entry(image.TempImage).State = EntityState.Unchanged;
+                        }
 
                         entry.State = EntityState.Modified;
                         entry.Entity.Deleted = true;

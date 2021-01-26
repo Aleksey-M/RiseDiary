@@ -2,23 +2,11 @@
 @model RiseDiary.WebUI.Pages.CalendarModel
 @{
     ViewData["Title"] = "Календарь";
-    ViewData["TitlePart"] = "Календарь";
 }
 
-@section Styles
-    {
-    <style>
-        #navigationPanel {
-            background-color: #d1fffe;
-            text-align: center;
-        }
-    </style>
-}
-
-<div class="row">
-    <div class="col-sm-12">
-        <div class=" panel panel-default">
-            <div class="form-horizontal" id="navigationPanel">
+    <div class="col-12">
+        <div class="row">
+            <div class="col-lg-10 col-sm-12">
                 <form method="get">
                     @foreach (var st in Model.SelectedThemes)
                     {
@@ -27,146 +15,244 @@
 
                     <input type="hidden" name="combineThemes" value="@Model.CombineThemes.ToString()" />
 
-                    @if (Model.YearsListFiltered.Count() > 0)
+                    @foreach(int y in Model.YearsListFiltered)
                     {
-                        <input type="submit" class="btn btn-link" name="year" value="@Model.YearsListFiltered.First()" />
-                        @for (int i = 1; i < Model.YearsListFiltered.Count(); i++)
+                        @if(y == Model.CurrentYear)
                         {
-                            @:| <input type="submit" class="btn btn-link" name="year" value="@Model.YearsListFiltered.ElementAt(i)" />
-                        }
-                    }
-                </form>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-1 col-sm-offset-2" style="vertical-align:middle;height:31px;padding-right:0px">
-        <input type="checkbox" style="float:right" @(Model.CombineThemes ? "checked=checked" : "") id="combineThemes" title="Выводить записи, которые относятся к любой выбранной теме (но не ко всем)" />
-    </div>
-    <div class="col-sm-4" style="vertical-align:middle">        
-        <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="form-control multiselect" style="width:380px; height:30px;">
-            @foreach (var scope in Model.AllScopes)
-            {
-                <optgroup label="@scope.ScopeName">
-                    @foreach (var theme in scope.Themes)
-                    {
-                        @if (Model.SelectedThemes.Contains(theme.Id))
-                        {
-                            <option selected="selected" value="@theme.Id">@theme.ThemeName</option>
+                            <input type="submit" class="btn btn-link text-decoration-none disabled" name="year" value="@y" />
                         }
                         else
                         {
-                            <option value="@theme.Id">@theme.ThemeName</option>
+                            <input type="submit" class="btn btn-link text-decoration-none" name="year" value="@y" />
                         }
-                    }
-                </optgroup>
-            }
-        </select>
+                    }                   
+                </form>
+            </div>
+
+            <div class="col-lg-2 col-sm-6 my-2">
+        <form method="get">
+
+        <input type="hidden" name="year" value="@Model.CurrentYear" />
+
+        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#themesFilter">
+            Фильтр по темам
+        </button>
+
+        <div class="modal fade" id="themesFilter" tabindex="-1" aria-labelledby="themesFilterLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+
+                        <h5 class="modal-title" id="exampleModalLabel">Фильтр по темам</h5>
+
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            <label>
+                                @if (Model.CombineThemes)
+                                {
+                                    <input type="checkbox" name="combineThemes" checked="checked" value="true" title="Выводить записи, которые относятся к любой выбранной теме (по правилу 'ИЛИ')" />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" name="combineThemes" value="true" title="Выводить записи, которые относятся к любой выбранной теме (по правилу 'ИЛИ')" />
+                                }
+                                Выводить записи, которые относятся к любой выбранной теме (по правилу 'ИЛИ')
+                            </label>
+                        </p>
+                        <hr />
+                        <p>
+                            <h6>Актуальные темы</h6>
+                            <ul>
+                                @foreach (var scope in Model.AllScopes)
+                                {
+                                    @if (scope.Themes.Count(t => t.Actual) > 0)
+                                    {
+                                        <li>
+                                            <h6 style="color:blue">@scope.ScopeName</h6>
+                                            <ul>
+                                                @foreach (var theme in scope.Themes.Where(t => t.Actual))
+                                                {
+                                                    <li>
+                                                        <label>
+                                                            @if (Model.SelectedThemes.Contains(theme.Id))
+                                                            {
+                                                                <input type="checkbox" name="themes" checked="checked" value="@theme.Id" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="checkbox" name="themes" value="@theme.Id" />
+                                                            }
+                                                            &nbsp;@theme.ThemeName
+                                                        </label>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </p>
+                        <hr />
+                        <p>
+                            <button class="btn btn-link text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#notActualThemes" aria-expanded="false" aria-controls="notActualThemes">
+                                Остальные темы
+                            </button>
+
+                            <div class="collapse" id="notActualThemes">
+                                <ul>
+                                    @foreach (var scope in Model.AllScopes)
+                                    {
+                                        @if (scope.Themes.Count(t => !t.Actual) > 0)
+                                        {
+                                            <li>
+                                                <h6 style="color:blue">@scope.ScopeName</h6>
+                                                <ul>
+                                                    @foreach (var theme in scope.Themes.Where(t => !t.Actual))
+                                                    {
+                                                        <li>
+                                                            <label>
+                                                                @if (Model.SelectedThemes.Contains(theme.Id))
+                                                                {
+                                                                    <input type="checkbox" name="themes" checked="checked" value="@theme.Id" />
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input type="checkbox" name="themes" value="@theme.Id" />
+                                                                }
+                                                                &nbsp;@theme.ThemeName
+                                                            </label>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </li>
+                                        }
+                                    }
+                                </ul>
+                            </div>
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-outline-info">Применить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+       </form>
     </div>
-    <div class="col-sm-1">
-        <a class="btn btn-default" id="btnSearch">Поиск</a>
+        </div>
+    </div>
+    
+    
+    <div class="col-12">
+        <div id="calendar"></div>
+    </div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-modal="true"
+     role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalHeader">Записи </h5>
+                <button type="button" class="btn-close" aria-label="Close" onclick="closeModal()"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+
+            </div>
+        </div>
     </div>
 </div>
-<div id="calendar"></div>
+
+<div class="modal-backdrop fade show" id="backdrop" style="display: none;"></div>
+
+
+@section Styles {
+    <link href="~/lib/calendar/dist/js-year-calendar.min.css" rel="stylesheet" />
+}
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script src="~/lib/calendar/dist/js-year-calendar.min.js"></script>
 
     <script type="text/javascript">
 
-        const dates = [
-            @for(int i=0, count = Model.Records.Count(); i<count; i++)
-            {
-                <text>
-            {
-                id: "@Model.Records.ElementAt(i).Id",
-                name: "@Model.Records.ElementAt(i).Name",
-                startDate: new Date("@Model.Records.ElementAt(i).StartDate.Year", "@(Model.Records.ElementAt(i).StartDate.Month-1)", "@Model.Records.ElementAt(i).StartDate.Day"),
-                endDate: new Date("@Model.Records.ElementAt(i).StartDate.Year", "@(Model.Records.ElementAt(i).StartDate.Month-1)", "@Model.Records.ElementAt(i).StartDate.Day")
+        const dates = @Html.Raw(Model.RecordsJsObjectsList);
 
-            }@(i != count - 1 ? "," : "")
-                </text>
-            }
-        ];
-    </script>
 
-    <script src="~/lib/bootstrap-year-calendar/js/bootstrap-year-calendar.js"></script>
-    <script type="text/javascript">
+        let modal = document.getElementById('exampleModal');
 
-        function updateCalendar(year, themesArr) {
-            let themesParam = "";
-            if (themesArr !== null) {
-                for (let i = 0; i < themesArr.length; i++) {
-                    themesParam = themesParam + "&themes=" + themesArr[i];
-                }
-            }
+        function openModal() {
+            if (!datesExists) return;
 
-            window.location.href =
-                'Analysis/Calendar?year=' + encodeURIComponent(year) + themesParam +
-                '&combineThemes=' + $('#combineThemes').prop('checked');
+            document.getElementById("backdrop").style.display = "block"
+            document.getElementById("exampleModal").style.display = "block"
+            document.getElementById("exampleModal").classList.add("show");
         }
 
-        function getIdByStartDate(startDate) {
+        function closeModal() {
+            document.getElementById("backdrop").style.display = "none"
+            document.getElementById("exampleModal").style.display = "none"
+            document.getElementById("exampleModal").classList.remove("show");
+        }
+
+        let datesExists = false;
+
+        function updateLinksList(startDate) {
+
+            let currentDates = new Array();
             let _date = startDate.getTime();
             for (let i = 0; i < dates.length; i++) {
                 if (dates[i].startDate.getTime() === _date) {
-                    return dates[i].id;
+                    currentDates.push(dates[i]);
                 }
             }
-            return null;
+
+            document.getElementById("modalBody").innerHTML = "";
+
+            if (currentDates.length > 0) {
+                let ul = document.createElement("ul");
+
+                for (let i = 0; i < currentDates.length; i++) {
+                    let a = document.createElement("a");
+                    a.style.textDecoration = "none";
+                    a.setAttribute("href", "/Records/View?recordId=" + encodeURIComponent(currentDates[i].id));
+                    a.innerHTML = currentDates[i].name;
+
+                    let li = document.createElement("li");
+                    li.appendChild(a);
+                    li.classList.add("mb-3")
+                    ul.appendChild(li);
+                }
+
+                document.getElementById("modalBody").appendChild(ul);
+                document.getElementById("modalHeader").innerHTML =
+                    "Записи " + startDate.getFullYear() + "." +
+                    ("0" + (startDate.getMonth() + 1)).slice(-2) + "." +
+                    ("0" + startDate.getDate()).slice(-2);
+
+                datesExists = true;
+            }
         }
 
         let currentYear = parseInt("@Model.CurrentYear");
 
-        $(function () {
-            $('.multiselect').SumoSelect({ csvDispCount: 7 });
-            $('.SumoSelect').width('500px');
-
-            $('#calendar').calendar({
-                style: 'background',
-                enableRangeSelection: true,
-                mouseOnDay: function (e) {
-                    if (e.events.length > 0) {
-                        var content = '';
-
-                        for (var i in e.events) {
-                            content += '<div class="event-tooltip-content">'
-                                + '<div class="event-name" style="color:' + e.events[i].color + '">' + e.events[i].name + '</div>'
-                                + '</div>';
-                        }
-
-                        $(e.element).popover({
-                            trigger: 'manual',
-                            container: 'body',
-                            html: true,
-                            content: content
-                        });
-
-                        $(e.element).popover('show');
-                    }
-                },
-                mouseOutDay: function (e) {
-                    if (e.events.length > 0) {
-                        $(e.element).popover('hide');
-                    }
-                },
-                selectRange: function (e) {
-                    let id = getIdByStartDate(e.startDate);
-                    if (id !== null) {
-                        window.location.href = '/Records/View?recordId=' + encodeURIComponent(id);
-                    }
-                },
-                startYear: parseInt("@Model.CurrentYear"),
-                renderEnd: function (e) {
-                    if (e.currentYear !== currentYear) {
-                        updateCalendar(e.currentYear, $('.multiselect').val());
-                    }
-                },
-                dataSource: dates
-            });
-
-            $("#btnSearch").on('click', function () {
-                updateCalendar($('#calendar').data('calendar').getYear(), $('.multiselect').val());
-            });
+        new Calendar('#calendar', {
+            style: 'background',
+            enableRangeSelection: true,
+            displayHeader: false,
+            mouseOnDay: function (e) {
+                updateLinksList(e.date);
+            },
+            mouseOutDay: function (e) {
+                datesExists = false;
+            },
+            selectRange: function (e) {
+                openModal();
+            },
+            startYear: currentYear,
+            dataSource: dates
         });
+
     </script>
 }

@@ -16,9 +16,9 @@ namespace RiseDiary.UnitTests
             var recFilter = RecordsFilter.Empty;
             var date = DateTime.Now;
 
-            recFilter.RecordDateTo = date;
+            recFilter.ToDate = date;
 
-            Assert.AreEqual(recFilter.RecordDateTo, date.Date);
+            Assert.AreEqual(recFilter.ToDate, date.Date);
         }
 
         [Test]
@@ -27,9 +27,9 @@ namespace RiseDiary.UnitTests
             var recFilter = RecordsFilter.Empty;
             var date = DateTime.Now;
 
-            recFilter.RecordDateFrom = date;
+            recFilter.FromDate = date;
 
-            Assert.AreEqual(recFilter.RecordDateFrom, date.Date);
+            Assert.AreEqual(recFilter.FromDate, date.Date);
         }
 
         [Test]
@@ -42,9 +42,9 @@ namespace RiseDiary.UnitTests
             recFilter.AddThemeId(itemId1);
             recFilter.AddThemeId(itemId2);
 
-            Assert.AreEqual(2, recFilter.RecordThemeIds.Count);
-            Assert.IsTrue(recFilter.RecordThemeIds.Contains(itemId1));
-            Assert.IsTrue(recFilter.RecordThemeIds.Contains(itemId2));
+            Assert.AreEqual(2, recFilter.Themes.Count);
+            Assert.IsTrue(recFilter.Themes.Contains(itemId1));
+            Assert.IsTrue(recFilter.Themes.Contains(itemId2));
         }
 
         [Test]
@@ -56,8 +56,8 @@ namespace RiseDiary.UnitTests
             recFilter.AddThemeId(itemId1);
             recFilter.AddThemeId(itemId1);// same id
 
-            Assert.AreEqual(1, recFilter.RecordThemeIds.Count);
-            Assert.AreEqual(itemId1, recFilter.RecordThemeIds[0]);
+            Assert.AreEqual(1, recFilter.Themes.Count);
+            Assert.AreEqual(itemId1, recFilter.Themes[0]);
         }
 
         [Test]
@@ -70,9 +70,9 @@ namespace RiseDiary.UnitTests
             recFilter.AddThemeId(recList[0]);
             recFilter.AddThemeId(recList);
 
-            Assert.AreEqual(recList.Length, recFilter.RecordThemeIds.Count);
-            Assert.IsTrue(recFilter.RecordThemeIds.All(i => recList.Contains(i)));
-            Assert.IsTrue(recList.All(i => recFilter.RecordThemeIds.Contains(i)));
+            Assert.AreEqual(recList.Length, recFilter.Themes.Count);
+            Assert.IsTrue(recFilter.Themes.All(i => recList.Contains(i)));
+            Assert.IsTrue(recList.All(i => recFilter.Themes.Contains(i)));
         }
 
         [Test]
@@ -85,8 +85,8 @@ namespace RiseDiary.UnitTests
 
             recFilter.RemoveThemeId(Guid.NewGuid());
 
-            Assert.AreEqual(1, recFilter.RecordThemeIds.Count);
-            Assert.AreEqual(id, recFilter.RecordThemeIds[0]);
+            Assert.AreEqual(1, recFilter.Themes.Count);
+            Assert.AreEqual(id, recFilter.Themes[0]);
         }
 
         [Test]
@@ -99,7 +99,7 @@ namespace RiseDiary.UnitTests
 
             recFilter.RemoveThemeId(id);
 
-            Assert.AreEqual(0, recFilter.RecordThemeIds.Count);
+            Assert.AreEqual(0, recFilter.Themes.Count);
         }
 
         [Test]
@@ -120,10 +120,10 @@ namespace RiseDiary.UnitTests
             recList.Add(id3);
             recFilter.RemoveThemeId(recList);
 
-            Assert.AreEqual(3, recFilter.RecordThemeIds.Count);
-            Assert.IsTrue(recFilter.RecordThemeIds.Contains(id4));
-            Assert.IsTrue(recFilter.RecordThemeIds.Contains(id1));
-            Assert.IsTrue(recFilter.RecordThemeIds.Contains(id2));
+            Assert.AreEqual(3, recFilter.Themes.Count);
+            Assert.IsTrue(recFilter.Themes.Contains(id4));
+            Assert.IsTrue(recFilter.Themes.Contains(id1));
+            Assert.IsTrue(recFilter.Themes.Contains(id2));
         }
 
         [Test]
@@ -132,10 +132,10 @@ namespace RiseDiary.UnitTests
             var filter = RecordsFilter.Empty;
             var date = DateTime.Now.AddDays(-3);
 
-            filter.RecordDateTo = date;
-            Assert.AreEqual(filter.RecordDateTo, date.Date);
-            filter.RecordDateTo = null;
-            Assert.IsNull(filter.RecordDateTo);
+            filter.ToDate = date;
+            Assert.AreEqual(filter.ToDate, date.Date);
+            filter.ToDate = null;
+            Assert.IsNull(filter.ToDate);
         }
 
         [Test]
@@ -144,10 +144,10 @@ namespace RiseDiary.UnitTests
             var filter = RecordsFilter.Empty;
             var date = DateTime.Now.AddDays(-7);
 
-            filter.RecordDateFrom = date;
-            Assert.AreEqual(filter.RecordDateFrom, date.Date);
-            filter.RecordDateFrom = null;
-            Assert.IsNull(filter.RecordDateFrom);
+            filter.FromDate = date;
+            Assert.AreEqual(filter.FromDate, date.Date);
+            filter.FromDate = null;
+            Assert.IsNull(filter.FromDate);
         }
 
         [Test]
@@ -155,15 +155,15 @@ namespace RiseDiary.UnitTests
         {
             var date = DateTime.Now.AddDays(-7);
 
-            var filter = new RecordsFilter { RecordDateFrom = date, RecordDateTo = date };
+            var filter = new RecordsFilter { FromDate = date, ToDate = date };
 
-            Assert.AreEqual(filter.RecordDateFrom, date.Date);
-            Assert.AreEqual(filter.RecordDateTo, date.Date);
-            Assert.AreEqual(filter.RecordDateTo, filter.RecordDateFrom);
-            filter.RecordDateFrom = null;
-            filter.RecordDateTo = null;
-            Assert.IsNull(filter.RecordDateFrom);
-            Assert.IsNull(filter.RecordDateTo);
+            Assert.AreEqual(filter.FromDate, date.Date);
+            Assert.AreEqual(filter.ToDate, date.Date);
+            Assert.AreEqual(filter.ToDate, filter.FromDate);
+            filter.FromDate = null;
+            filter.ToDate = null;
+            Assert.IsNull(filter.FromDate);
+            Assert.IsNull(filter.ToDate);
         }
 
         [Test]
@@ -173,11 +173,11 @@ namespace RiseDiary.UnitTests
             var dateTo = DateTime.Now.AddDays(-7);
             var dateFrom = DateTime.Now.AddDays(-3);
 
-            filter.RecordDateFrom = dateFrom;
-            filter.RecordDateTo = dateTo;
+            filter.FromDate = dateFrom;
+            filter.ToDate = dateTo;
 
-            Assert.AreEqual(filter.RecordDateFrom, dateFrom.Date);
-            Assert.IsNull(filter.RecordDateTo);
+            Assert.AreEqual(filter.FromDate, dateFrom.Date);
+            Assert.IsNull(filter.ToDate);
         }
 
         [Test]
@@ -187,11 +187,11 @@ namespace RiseDiary.UnitTests
             var dateTo = DateTime.Now.AddDays(-7);
             var dateFrom = DateTime.Now.AddDays(-3);
 
-            filter.RecordDateTo = dateTo;
-            filter.RecordDateFrom = dateFrom;
+            filter.ToDate = dateTo;
+            filter.FromDate = dateFrom;
 
-            Assert.AreEqual(filter.RecordDateTo, dateTo.Date);
-            Assert.IsNull(filter.RecordDateFrom);
+            Assert.AreEqual(filter.ToDate, dateTo.Date);
+            Assert.IsNull(filter.FromDate);
         }
     }
 }

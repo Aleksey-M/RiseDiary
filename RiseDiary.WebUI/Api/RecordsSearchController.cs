@@ -35,9 +35,9 @@ namespace RiseDiary.WebUI.Api
                     CombineThemes = combinedThemes ?? false,
                     PageSize = pageSize.Value,
                     PageNo = pageNo.Value,
-                    RecordDateFrom = from,
-                    RecordDateTo = to,
-                    RecordNameFilter = name
+                    FromDate = from,
+                    ToDate = to,
+                    FilterName = name
                 };
 
                 if (themeId != null && themeId.Length > 0)
@@ -88,9 +88,9 @@ namespace RiseDiary.WebUI.Api
                     CombineThemes = combinedThemes ?? false,
                     PageSize = pageSize.Value,
                     PageNo = pageNo.Value,
-                    RecordDateFrom = from,
-                    RecordDateTo = to,
-                    RecordNameFilter = name
+                    FromDate = from,
+                    ToDate = to,
+                    FilterName = name
                 };
 
                 if (themeId != null && themeId.Length > 0)

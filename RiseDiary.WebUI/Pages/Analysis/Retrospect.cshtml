@@ -2,170 +2,93 @@
 @model RiseDiary.WebUI.Pages.RetrospectModel
 @{
     ViewData["Title"] = "Ретроспектива";
-    ViewData["TitlePart"] = "Ретроспектива";
 }
 
 @section Styles
     {
     <style>
-        #navigationPanel {
-            background-color: #d1fffe;
-            text-align: center;
-        }
-
-        .date-column {
-            width: 170px;
-        }
-
         .record-group {
             margin-bottom: 20px;
-            border: 1px solid #b6ff00;
-            background-color: #e7ffd7;
-            border-radius: 20px;
-            padding: 20px 0 20px 0;
-            font-size:larger;
+            border: 1px solid #e1ff95;
+            background-color: #f1f9ec;
+            border-radius: 10px;
         }
 
         .record {
-            border: 1px solid #66FF00;
+            border: 1px solid #b6ff85;
             background-color: #cefff9;
-            border-radius: 20px;
-            margin-bottom: 7px;
-            padding: 15px;
+            border-radius: 10px;
         }
 
         .cogitation {
             border: 1px solid #33CCCC;
             background-color: #e3ffff;
-            border-radius: 20px;
-            margin-bottom: 7px;
-            padding: 15px;
-        }
-
-        .thumbnail-image {
-            height: 160px;
+            border-radius: 10px;
         }
     </style>
 }
 
-<div class="row">
-    <div class="col-sm-12">
-        <div class=" panel panel-default">
-            <div class="form-horizontal" id="navigationPanel">
-                <form method="get">
-                    @foreach (var st in Model.SelectedThemes)
-                    {
-                        <input type="hidden" name="themes" value="@st" />
-                    }
-                    <input type="hidden" name="fromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? "")" />
-                    <input type="hidden" name="toDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? "")" />
-                    <input type="hidden" name="searchName" value="@Model.Filters.RecordNameFilter" />
-                    <input type="hidden" name="currentPage" value="@Model.CurrenPage" />
-                    <input type="hidden" name="pagesCount" value="@Model.PagesCount" />
-                    <input type="hidden" name="recordsCount" value="@Model.RecordsCount" />
-                    <input type="hidden" name="combineThemes" value="@Model.CombineThemes.ToString()" />
-
-                    <input type="submit" name="navTo" value="Первая" class="btn btn-link" />
-                    |<input type="submit" name="navTo" value="Предыдущая" class="btn btn-link" />
-                    |<span><b> Страница @(Model.CurrenPage + 1) из @Model.PagesCount </b></span>
-                    |<input type="submit" name="navTo" value="Следующая" class="btn btn-link" />
-                    |<input type="submit" name="navTo" value="Последняя" class="btn btn-link" />
-                </form>
-            </div>
+    <div class="col-12">
+        <div class="my-3 px-3">
+            <component type="typeof(Pager)" render-mode="Static" param-areaName="@("analysis/retrospect")" param-pages="@Model.Pages" param-getParametersList="@Model.Filters.GetValuesDict()" />
         </div>
+    </div>
 
+    <div class="col-12">
+        <div class="my-3 px-3">
+            <component type="typeof(RecordsFilters)" render-mode="Static" param-areaName="@("analysis/retrospect")" param-allScopes="@Model.AllScopes" param-selectedThemes="@Model.SelectedThemes" param-pagesInfo="@Model.Pages" param-recordsFilter="@Model.Filters" />
+        </div>
+    </div>
+
+    <div class="offset-lg-2 col-lg-8 col-md-12">
         <table class="table">
-            <thead>
-                <tr>
-                    <th style="padding:2px;">
-                        <input type="text" class="form-control" style="margin: 0px;" placeholder="От" id="filterFromDate" value="@(Model.Filters.RecordDateFrom?.ToString("yyyy.MM.dd") ?? "")" />
-                        <input type="text" class="form-control" placeholder="До" id="filterToDate" value="@(Model.Filters.RecordDateTo?.ToString("yyyy.MM.dd") ?? "")" />
-                    </th>
-                    <th style="padding:2px;vertical-align: middle;">
-                        <input type="text" class="form-control" placeholder="Фильтр по названию" id="filterName" value="@Model.Filters.RecordNameFilter" />
-                    </th>
-                    <th style="vertical-align:middle; text-align:center">
-                        <input type="checkbox" @(Model.CombineThemes ? "checked=checked" : "") id="combineThemes" title="Выводить записи, которые относятся к любой выбранной теме (но не ко всем)" />
-                    </th>
-                    <th style="vertical-align: middle;">
-                        <select multiple="multiple" name="themes[]" id="themes" placeholder="Темы" class="form-control themes-select" style="width:350px; height:30px;">
-                            @foreach (var scope in Model.AllScopes)
-                            {
-                                <optgroup label="@scope.ScopeName">
-                                    @foreach (var theme in scope.Themes)
-                                    {
-                                        @if (Model.SelectedThemes.Contains(theme.Id))
-                                        {
-                                            <option selected="selected" value="@theme.Id">@theme.ThemeName</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@theme.Id">@theme.ThemeName</option>
-                                        }
-                                    }
-                                </optgroup>
-                            }
-                        </select>
-                    </th>
-                    <th colspan="2" style="vertical-align: middle;text-align:center">
-                        <a class="btn btn-default" id="btnSearch">Применить фильтр</a>
-                    </th>
-                </tr>
-            </thead>
-        </table>
-
-        <table class="table" style="table-layout:fixed">
             <tbody>
                 <tr>
-                    <td colspan="7">
+                    <td colspan="5">
                         <div class="row">
                             @foreach (var rec in Model.Records)
                             {
-                                <div class="col-sm-12 record-group">
-                                    <div class="col-sm-10 col-sm-offset-1 record">
-                                        <p><b><i><a href="~/Records/Edit?recordId=@rec.Id">@rec.Date.ToString("yyyy.MM.dd")</a></i>&nbsp;&nbsp;&nbsp;@rec.Name</b></p>
-                                        <div>
+                                <div class="col-12 p-3 record-group">
+                                    <div class="record p-4">
+
+                                        <p>
+                                            <b>
+                                            <i><a href="~/Records/View?recordId=@rec.Id">@rec.Date.ToString("yyyy.MM.dd")</a></i>
+                                            &nbsp;@rec.Name
+                                            </b>
+                                        </p>
+                                        
+                                        <p>
                                             @Html.Raw(rec.Text)
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-sm-12">
-                                                @foreach (var image in rec.ImagesRefs)
-                                                {
-                                                    <div id="@("fullImage-" + image.ImageId)" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
-                                                        <div class="modal-dialog modal-lg">
-                                                            <div class="modal-content">
-                                                                <div class="modal-body">
-                                                                    <img src="/api/v1.0/image-file/@image.ImageId" class="img-responsive" style="height:90vh;max-height:100%;margin:auto">
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                        </p>
 
-                                                    <div class="col-sm-3 center-text">
-                                                        <div class="panel panel-default">
-                                                           
-                                                            <div class="panel-body">
-                                                                <a data-toggle="modal" data-target="@("#fullImage-" + image.ImageId)" style="cursor:pointer">
-                                                                    <img src="/api/v1.0/image-thumbnail/@image.ImageId" class="img-thumbnail center-block thumbnail-image" />
-                                                                </a>
-                                                            </div>
-
-                                                        </div>
-                                                    </div>
-                                                }
+                                        <div class="row">                                            
+                                            @foreach (var image in rec.ImagesRefs)
+                                            {
+                                                <div class="col-lg-2 col-md-4 col-sm-6 p-3">
+                                                    <component type="typeof(Thumbnail)" render-mode="Static" param-imageId="image.ImageId" param-imageName="@("")" param-onlyImage="true" />
                                                 </div>
+                                            }                                               
                                         </div>
                                     </div>
                                                 
+                                    <div class="row p-3">
                                     @foreach (var cog in rec.Cogitations)
                                     {
-                                        <div class="col-sm-9 col-sm-offset-2 cogitation">
-                                            <p><b><i><a href="~/Records/View?recordId=@rec.Id">@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")</a></i></b></p>
-                                            <div>
+                                        <div class="offset-2 col-10 cogitation mt-2">
+                                            
+                                            <p>
+                                                <b>
+                                                <i><a href="~/Records/View?recordId=@rec.Id">@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")</a></i>
+                                                </b>
+                                            </p>
+                                            
+                                            <p>
                                                 @Html.Raw(@cog.Text)
-                                            </div>
+                                            </p>
                                         </div>
                                     }
+                                    </div>
                                 </div>
                             }                            
                         </div>
@@ -174,44 +97,15 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="7"><b><i>Записей отфильтровано : @Model.RecordsCount </i></b></td>
+                    <td colspan="5"><b><i>Записей отфильтровано : @Model.Pages.TotalItems </i></b></td>
                 </tr>
             </tfoot>
         </table>
     </div>
-</div>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <div class="col-12">
+        <div class="my-3 px-3">
+            <component type="typeof(Pager)" render-mode="Static" param-areaName="@("analysis/retrospect")" param-pages="@Model.Pages" param-getParametersList="@Model.Filters.GetValuesDict()" />
+        </div>
+    </div>
 
-    <script type="text/javascript">
-
-        function getThemesUri(themes) {
-            if (themes === null) return "";
-            let res = "";
-            for (let i = 0; i < themes.length; i++) {
-                res = res + "&themes=" + themes[i];
-            }
-            return res;
-        }
-
-        $(function () {
-            $("#filterFromDate").datepicker({ dateFormat: 'yy.mm.dd' });
-            $("#filterToDate").datepicker({ dateFormat: 'yy.mm.dd' });
-
-            $("#btnSearch").on('click', function () {
-                window.location.replace(
-                    'Analysis/Retrospect?handler=Search' +
-                    '&fromDate=' + encodeURIComponent($("#filterFromDate").val()) +
-                    '&toDate=' + encodeURIComponent($("#filterToDate").val()) +
-                    '&combineThemes=' + $('#combineThemes').prop('checked') +
-                    getThemesUri($('.themes-select').val()) +
-                    '&searchName=' + encodeURIComponent($("#filterName").val()));
-            });
-
-            $('.themes-select').SumoSelect({ csvDispCount: 7 });
-            $('.SumoSelect').width('350px');
-        });
-
-    </script>
-}

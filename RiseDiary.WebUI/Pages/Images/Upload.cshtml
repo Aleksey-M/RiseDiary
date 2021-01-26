@@ -2,35 +2,30 @@
 @model RiseDiary.WebUI.Pages.Images.UploadModel
 @{
     ViewData["Title"] = "Загрузка файла";
-    ViewData["TitlePart"] = "Загрузка файла";
 }
 
-<div class="row">
-    <div class="col-sm-10 col-sm-offset-1">
+    <div class="col-md-10 offset-md-1 col-sm-12 mt-3">
 
         @if (!Model.ModelState.IsValid)
         {
-            <div class="panel panel-danger">
-                <div class="panel-heading">
-                    <div style="color:red;">
-                        <h4>Ошибка валидации:</h4>
-                        @Html.ValidationSummary()
-                    </div>
-                </div>
+            <div style="color:red">
+                <h4>Ошибка валидации:</h4>
+                @Html.ValidationSummary()
             </div>
         }
 
         <form asp-page-handler="AddNewImage" method="post" enctype="multipart/form-data">
             <input type="hidden" name="targetRecordId" id="targetRecordId" value="@(Model.TargetRecordId ?? Guid.Empty)" />
-            <table class="table">
-                <tr>
-                    <td colspan="2"><input type="file" accept="image/*" multiple="multiple" id="newImages" name="newImages" class="form-control-file" style="width:80%" /></td>
-                </tr>
-                <tr>
-                    <td style="width:80%"><input type="text" placeholder="Название нового изображения" id="newImageName" name="newImageName" class="form-control" /></td>
-                    <td><input type="submit" value="Добавить" class="btn btn-sm btn-success form-control" /></td>
-                </tr>
-            </table>
+            <div class="row">
+                <div class="col-lg-4 col-md-3 col-sm-12 p-2">
+                    <input type="file" accept="image/*" multiple="multiple" id="newImages" name="newImages" class="form-control-file" />
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 p-2">
+                    <input type="text" placeholder="Название нового изображения" id="newImageName" name="newImageName" class="form-control" />
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-12 p-2">
+                    <input type="submit" value="Добавить" class="btn btn-outline-success form-control" />
+                </div>
+            </div>
         </form>
     </div>
-</div>

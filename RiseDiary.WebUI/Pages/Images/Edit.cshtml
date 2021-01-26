@@ -4,142 +4,144 @@
 
 @{
     ViewData["Title"] = Model.Image.Name;
-    ViewData["TitlePart"] = Model.Image.Name;
 }
 
-@section Styles
-    {
-    <style>
-        form {
-            display: inline;
-        }
-    </style>
-}
+    <div class="col-12">
+        <div class="row">
+            <div class="col-7 pt-1">
+                <component type="typeof(ImageName)" render-mode="ServerPrerendered" param-ImageId="@Model.Image.Id" param-CurrentImageName="@Model.Image.Name" />
+            </div>
 
-<div class="row">
-    <div class="col-sm-12" style="padding-left:15px;padding-right:15px;">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Название изображения</th>
-                    <th>Ширина</th>
-                    <th>Высота</th>
-                    <th>Размер</th>
-                    <th>
-                        <div style="float:right;">
-                            @if (Model.RecordId == null || Model.RecordId.Value == Guid.Empty)
-                            {
-                                <a href="/images/index" class="btn btn-default" style="float:right" title="Закрыть">
-                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                                </a>
-                            }
-                            else
-                            {
-                                <a href="/records/view?recordId=@Model.RecordId.Value.ToString()" class="btn btn-default" style="float:right" title="Венуться к записи">
-                                    <span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span>
-                                </a>
-                            }
-                        </div>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr style="background-color:#cdff82">
-                    <td>
-                        <component type="typeof(ImageNameComponent)" render-mode="ServerPrerendered" param-ImageId="@Model.Image.Id" param-ImageName="@Model.Image.Name" />
-                    </td>
-                    <td>@Model.Image.Width&nbsp;px;</td>
-                    <td>@Model.Image.Height&nbsp;px;</td>
-                    <td>@Model.Image.GetSizeKbString()</td>
-                    <td>
-                        @if (Model.Image.TempImage == null)
-                        {
-                            <div style="white-space: nowrap;float:right">
+            <div class="col-3">
+                <div class="pt-2">
+                    <i>@Model.Image.Width / @Model.Image.Height (@Model.Image.GetSizeKbString())</i>
+                </div>
+            </div>
+
+            <div class="col-2">
+                <div style="float:right;">
+                    @if (Model.RecordId == null || Model.RecordId.Value == Guid.Empty)
+                    {
+                        <a href="/images/index" class="btn btn-close pt-3" title="Закрыть"></a>
+                    }
+                    else
+                    {
+                        <a href="/records/view?recordId=@Model.RecordId.Value.ToString()" class="btn btn-link btn-lg" title="Венуться к записи">
+                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-return-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z" />
+                            </svg>
+                        </a>
+                    }
+                </div>
+            </div>
+
+            @if (Model.Image.TempImage == null)
+                {
+                <div class="col-12">
+                        <div class="pagination mt-2 mb-3">
+                            <div class="me-2">
                                 <form asp-page-handler="ReplaceImage" id="uploadNewImageForm" method="post" enctype="multipart/form-data">
                                     <input type="hidden" name="recordId" value="@Model.RecordId" />
                                     <input type="hidden" name="imageId" value="@Model.Image.Id" />
                                     <input type="file" accept="image/*" id="newImage" name="newImage" style="display:none" onchange="newImageSelect()" />
-                                    <button type="button" class="btn btn-info" title="Заменить изображение другим" onclick="document.getElementById('newImage').click();">
-                                        <span class="glyphicon glyphicon-retweet" aria-hidden="true"></span>
+                                    <button type="button" class="btn btn-outline-info" title="Заменить изображение другим" onclick="document.getElementById('newImage').click();">
+                                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-repeat" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z" />
+                                            <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z" />
+                                        </svg>
                                     </button>
                                 </form>
+                            </div>
 
+                            <div class="mx-2">
                                 <form method="post" asp-page-handler="ScaleImage">
                                     <input type="hidden" name="recordId" value="@Model.RecordId" />
                                     <input type="hidden" name="imageId" value="@Model.Image.Id" />
-                                    <input type="hidden" id="maxImageSize" value="@Model.Image.GetBiggestImageDimm()" />
                                     <input type="hidden" name="imageSize" id="imageSize" value="@Model.Image.GetBiggestImageDimm()" />
-                                    <button type="submit" class="btn btn-info" onclick="return scaleImageClick();" title="Сжать изображения таким образом, чтобы большая сторона равнялась введенному значению">
-                                        <span class="glyphicon glyphicon-resize-small" aria-hidden="true"></span>
+                                    <button type="submit" class="btn btn-outline-info" onclick="return scaleImageClick();" title="Сжать изображения таким образом, чтобы большая сторона равнялась введенному значению">
+                                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrows-angle-contract" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M.172 15.828a.5.5 0 0 0 .707 0l4.096-4.096V14.5a.5.5 0 1 0 1 0v-3.975a.5.5 0 0 0-.5-.5H1.5a.5.5 0 0 0 0 1h2.768L.172 15.121a.5.5 0 0 0 0 .707zM15.828.172a.5.5 0 0 0-.707 0l-4.096 4.096V1.5a.5.5 0 1 0-1 0v3.975a.5.5 0 0 0 .5.5H14.5a.5.5 0 0 0 0-1h-2.768L15.828.879a.5.5 0 0 0 0-.707z" />
+                                        </svg>
                                     </button>
                                 </form>
+                            </div>
 
-                                <a asp-page="CropImageSelect" asp-route-imageId="@Model.Image.Id" asp-route-recordId="@Model.RecordId" class="btn btn-info" title="Выбрать область изображения и обрезать все лишнее">
-                                    <span class="glyphicon glyphicon-scissors" aria-hidden="true"></span>
+                            <div class="mx-2">
+                                <a asp-page="CropImageSelect" asp-route-imageId="@Model.Image.Id" asp-route-recordId="@Model.RecordId" class="btn btn-outline-info" title="Выбрать область изображения и обрезать все лишнее">
+                                    <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-scissors" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M3.5 3.5c-.614-.884-.074-1.962.858-2.5L8 7.226 11.642 1c.932.538 1.472 1.616.858 2.5L8.81 8.61l1.556 2.661a2.5 2.5 0 1 1-.794.637L8 9.73l-1.572 2.177a2.5 2.5 0 1 1-.794-.637L7.19 8.61 3.5 3.5zm2.5 10a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm7 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+                                    </svg>
                                 </a>
+                            </div>
 
+                            <div class="mx-2">
                                 <form asp-page-handler="DeleteImage" method="post">
                                     <input type="hidden" name="imageId" value="@Model.Image.Id" />
                                     <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                    <button type="submit" class="btn btn-danger" title="Удалить изображение" onclick="return confirm('Удалить изображение?');">
-                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                                    <button type="submit" class="btn btn-outline-danger" title="Удалить изображение" onclick="return confirm('Удалить изображение?');">
+                                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                                        </svg>
                                     </button>
                                 </form>
                             </div>
-                        }
-                    </td>
-                </tr>
-                @if (Model.Image.TempImage != null)
-                {
-                    <tr style="background-color:#fcb17c">
-                        <td><b style="color:brown">@Model.Image.TempImage.Modification</b></td>
-                        <td>@Model.Image.TempImage.Width&nbsp;px;</td>
-                        <td>@Model.Image.TempImage.Height&nbsp;px;</td>
-                        <td>@Model.Image.TempImage.GetSizeKbString()</td>
-                        <td>
-                            <div class="form-inline" style="float:right;">
-                                <form method="post">
-                                    <input type="hidden" name="recordId" value="@Model.RecordId" />
-                                    <input type="hidden" name="imageId" value="@Model.Image.Id" />
-                                    <div style="white-space: nowrap;">
-                                        <button type="submit" asp-page-handler="SaveUpdatedImage" class="btn btn-warning" title="Сохранить изменения">
-                                            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
-                                        </button>
-                                        <button type="submit" asp-page-handler="SaveUpdatedAsNewImage" class="btn btn-success" title="Сохранить как новое">
-                                            <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
-                                        </button>
-                                        <button type="submit" asp-page-handler="CancelEdit" class="btn btn-success" title="Отменить изменения">
-                                            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <div class="col-sm-12">
-        <img id="img" name="img" src="/api/v1.0/image-file/@Model.Image.Id" class="thumbnail center-block" style="max-height:600px;max-width:1000px;" />
-    </div>
-
-    <hr class="col-sm-12" />
-
-    <table class="col-sm-12">
-        <tr>
-            <td>
-                <div>
-                    <b>URL:</b> <i>@Model.ImageUrl</i>
+                        </div>
                 </div>
-            </td>
-            <td style="text-align:right">
-                <i><b>Создано: </b>@Model.Image.CreateDate.ToString("yyyy.MM.dd HH:mm:ss")</i>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                @if (Model.ImageLinks != null && (Model.ImageLinks?.Count ?? 0) > 0)
+            }
+            else
+            {
+                <div class="col-7">
+                    Редактирование: <b style="color:brown">@Model.Image.TempImage.Modification</b>
+                </div>
+
+                <div class="col-3">
+                    <i>@Model.Image.TempImage.Width / @Model.Image.TempImage.Height (@Model.Image.TempImage.GetSizeKbString())</i>
+                </div>
+
+                <div class="col-12 m-2">
+                    <div class="pagination">
+                        <form method="post">
+                            <input type="hidden" name="recordId" value="@Model.RecordId" />
+                            <input type="hidden" name="imageId" value="@Model.Image.Id" />
+
+                             <button type="submit" asp-page-handler="SaveUpdatedImage" class="btn btn-outline-warning me-1" title="Сохранить изменения">
+                                 <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-check2" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                     <path fill-rule="evenodd" d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z" />
+                                 </svg>
+                             </button>
+
+                             <button type="submit" asp-page-handler="SaveUpdatedAsNewImage" class="btn btn-outline-success mx-1" title="Сохранить как новое">
+                                 <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-front" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                     <path fill-rule="evenodd" d="M0 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2H2a2 2 0 0 1-2-2V2zm5 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2v5a2 2 0 0 1-2 2H5z" />
+                                 </svg>
+                             </button>
+
+                             <button type="submit" asp-page-handler="CancelEdit" class="btn btn-outline-success mx-1" title="Отменить изменения">
+                                 <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                                     <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                                 </svg>
+                             </button>
+                        </form>
+                    </div>
+                </div>            
+            }
+        </div>        
+    </div>
+
+    <div class="offset-lg-3 col-lg-6 offset-md-2 col-md-8 col-sm-12 text-center mb-3">
+        <img id="img" name="img" src="/api/v1.0/image-file/@Model.Image.Id" class="img-fluid" />
+    </div>
+
+    <div class="col-lg-6 col-md-12">
+        <ul class="list-group">
+            <li class="list-group-item">
+                <b>URL:</b> <i>@Model.ImageUrl</i>
+            </li>
+
+            <li class="list-group-item">
+                 @if (Model.ImageLinks != null && (Model.ImageLinks?.Count ?? 0) > 0)
                 {
                     <b>Прикреплено к:</b>
                     foreach (var lnk in Model.ImageLinks ?? new Dictionary<Guid, string>())
@@ -149,24 +151,37 @@
                     }
                     @:&nbsp;|
                 }
-            </td>
-            <td style="text-align:right">
+            </li>
+
+            <li class="list-group-item">
+                <i><b>Камера:</b> @(string.IsNullOrEmpty(Model.Image.CameraModel) ? "[НЕТ]" : Model.Image.CameraModel)</i>
+            </li>
+        </ul>
+    </div>
+
+    <div class="col-lg-6 col-md-12">
+        <ul class="list-group">
+            <li class="list-group-item">
+                <i><b>Создано: </b>@Model.Image.CreateDate.ToString("yyyy.MM.dd HH:mm:ss")</i>
+            </li>
+
+            <li class="list-group-item">
                 <i><b>Изменено: </b>@Model.Image.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss")</i>
-            </td>
-        </tr>
-        <tr>
-            <td><i><b>Камера:</b> @(string.IsNullOrEmpty(Model.Image.CameraModel) ? "[НЕТ]" : Model.Image.CameraModel)</i></td>
-            <td style="text-align:right"><i><b>Дата съемки: </b>@(Model.Image.Taken?.ToString("yyyy.MM.dd HH:mm:ss") ?? "[НЕТ]")</i></td>
-        </tr>
-    </table>
-</div>
+            </li>
+
+            <li class="list-group-item">
+                <i><b>Дата съемки: </b>@(Model.Image.Taken?.ToString("yyyy.MM.dd HH:mm:ss") ?? "[НЕТ]")</i>
+            </li>
+        </ul>
+    </div>    
+
 
 @section Scripts{
     <script type="text/javascript">
 
         function scaleImageClick() {
 
-            let size = $("#maxImageSize").val();
+            let size = document.getElementById("imageSize").value;
             let input = prompt("Введите новый размер большей стороны картинки для сжатия", size);
 
             if (input === null) return false;
@@ -178,12 +193,12 @@
                 return false;
             }
 
-            $("#imageSize").val(inputInt);
+            document.getElementById("imageSize").value = inputInt;
             return true;
         }
 
         function newImageSelect() {
-            $('#uploadNewImageForm').submit();
+            document.getElementById("uploadNewImageForm").submit();
         }
 
     </script>

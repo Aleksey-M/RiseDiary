@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Images
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class UploadModel : PageModel
     {
         private readonly IRecordsImagesService _recordImagesService;
@@ -22,12 +21,12 @@ namespace RiseDiary.WebUI.Pages.Images
 
         public Guid? TargetRecordId { get; private set; }
 
-        public void OnGet(Guid? targetRecordId)
+        public void OnGet(Guid? recordId)
         {
-            TargetRecordId = targetRecordId;
+            TargetRecordId = recordId;
         }
 
-        public async Task<IActionResult> OnPostAddNewImageAsync(List<IFormFile> newImages, string newImageName, Guid? targetRecordId)
+        public async Task<IActionResult> OnPostAddNewImageAsync(List<IFormFile> newImages, string? newImageName, Guid? targetRecordId)
         {
             TargetRecordId = targetRecordId;
             var validationErrors = new List<string>();
@@ -46,8 +45,8 @@ namespace RiseDiary.WebUI.Pages.Images
                 string newImgName = (string.IsNullOrWhiteSpace(newImageName), newImages.Count > 1) switch
                 {
                     (true, _) => "",
-                    (false, true) => $"{newImageName} ({i + 1})",
-                    (false, false) => newImageName
+                    (false, true) => $"{newImageName!} ({i + 1})",
+                    (false, false) => newImageName!
                 };
 
                 newImageId = await _imagesService.AddImage(newImages[i], newImgName);

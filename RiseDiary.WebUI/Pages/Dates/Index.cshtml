@@ -2,52 +2,36 @@
 @model RiseDiary.WebUI.Pages.Dates.IndexModel
 @{
     ViewData["Title"] = "Ближайшие даты";
-    ViewData["TitlePart"] = "Ближайшие даты";
 }
-@section Styles
-    {
-    <style>
-        #navigationPanel {
-            background-color: #d1fffe;
-            text-align: center;
-            padding: 5px;
-        }
-    </style>
-}
-<div class="panel panel-default">
-    <div class="form-horizontal" id="navigationPanel">
-        <a href="~/Dates/setup" class="btn-link">Настройки</a>
-        &nbsp;|&nbsp;
-        <a href="~/Dates/fulllist" class="btn-link">Все даты года</a>
-        &nbsp;|&nbsp;
-        <a href="~/Dates/calendar" class="btn-link">Даты на календаре</a>
-    </div>
+
+<component type="typeof(DatesSubmenu)" render-mode="Static" param-currentPage="@("index")" />
+
+<div class="col-12">
+    <table class="table">
+        <tbody>
+            @foreach (var date in Model.Dates)
+            {
+                <tr style=@Html.Raw(Model.GetRowStyle(date))>
+                    <td>
+                        @date.TransferredDate.ToString("yyyy.MM.dd ddd", System.Globalization.CultureInfo.CurrentCulture)
+                    </td>
+                    <td>
+                        @date.Themes
+                    </td>
+                    <td>
+                        @date.Date.ToString("yyyy.MM.dd")
+                    </td>
+                    <td>
+                        <a href="~/Records/View?recordId=@date.Id">@date.Name</a>
+                    </td>
+                    <td style="word-break:break-word">
+                        @Html.Raw(date.Text)
+                    </td>
+                </tr>
+             }
+        </tbody>
+    </table>
 </div>
-
-<table class="table">
-    <tbody>
-        @foreach (var date in Model.Dates)
-        {
-
-<tr style=@Html.Raw(Model.GetRowStyle(date))>
-    <td>
-        @date.TransferredDate.ToString("yyyy.MM.dd ddd", System.Globalization.CultureInfo.CurrentCulture)
-    </td>
-    <td>
-        @date.Themes
-    </td>
-    <td>
-        @date.Date.ToString("yyyy.MM.dd")
-    </td>
-    <td>
-        <a href="~/Records/View?recordId=@date.Id">@date.Name</a>
-    </td>
-    <td>
-        @Html.Raw(date.Text)
-    </td>
-</tr>}
-    </tbody>
-</table>
 
 
 

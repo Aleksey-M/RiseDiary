@@ -2,108 +2,117 @@
 @model RiseDiary.WebUI.Pages.Dates.CalendarModel
 @{
     ViewData["Title"] = "Даты на календаре";
-    ViewData["TitlePart"] = "Даты на календаре";
 }
-@section Styles
-    {
-    <style>
-        #navigationPanel {
-            background-color: #d1fffe;
-            text-align: center;
-            padding: 5px;
-        }
-    </style>
-}
-    <div class="panel panel-default">
-        <div class="form-horizontal" id="navigationPanel">
-            <a href="~/Dates/setup" class="btn-link">Настройки</a>
-            &nbsp;|&nbsp;
-            <a href="~/Dates/index" class="btn-link">Ближайшие даты</a>
-            &nbsp;|&nbsp;
-            <a href="~/Dates/fulllist" class="btn-link">Все даты года</a>
+
+<component type="typeof(DatesSubmenu)" render-mode="Static" param-currentPage="@("calendar")" />
+
+<div class="col-12">
+    <div id="calendar" style="height:100%"></div>
+</div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-modal="true"
+     role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalHeader">События </h5>
+                <button type="button" class="btn-close" aria-label="Close" onclick="closeModal()"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+
+            </div>
         </div>
     </div>
+</div>
 
-<div id="calendar"></div>
+<div class="modal-backdrop fade show" id="backdrop" style="display: none;"></div>
+
+@section Styles {
+    <link href="~/lib/calendar/dist/js-year-calendar.min.css" rel="stylesheet" />
+}
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
-<script type="text/javascript">
-    const dates = [
-    @for(int i=0, count = Model.Dates.Count(); i<count; i++)
-            {
-                <text>
-            {
-                id: "@Model.Dates.ElementAt(i).Id",
-                name: "@Model.Dates.ElementAt(i).Themes: "+"@Model.Dates.ElementAt(i).Name",
-                startDate: new Date(@Model.Dates.ElementAt(i).TransferredDate.Year, @(Model.Dates.ElementAt(i).TransferredDate.Month-1), @Model.Dates.ElementAt(i).TransferredDate.Day),
-                endDate: new Date(@Model.Dates.ElementAt(i).TransferredDate.Year, @(Model.Dates.ElementAt(i).TransferredDate.Month-1), @Model.Dates.ElementAt(i).TransferredDate.Day)
+    <script src="~/lib/calendar/dist/js-year-calendar.min.js"></script>
 
-            }@(i != count - 1 ? "," : "")
-                </text>
-            }];
-</script>
-
-    <script src="~/lib/bootstrap-year-calendar/js/bootstrap-year-calendar.js"></script>
     <script type="text/javascript">
 
-        function getIdByStartDate(startDate) {
+        const dates = @Html.Raw(Model.RecordsJsObjectsList);
+
+
+        let modal = document.getElementById('exampleModal');
+
+        function openModal() {
+
+            if (!datesExists) return;
+
+            document.getElementById("backdrop").style.display = "block"
+            document.getElementById("exampleModal").style.display = "block"
+            document.getElementById("exampleModal").classList.add("show");
+        }
+
+        function closeModal() {
+            document.getElementById("backdrop").style.display = "none"
+            document.getElementById("exampleModal").style.display = "none"
+            document.getElementById("exampleModal").classList.remove("show");
+        }
+
+        let datesExists = false;
+
+        function updateLinksList(startDate) {
+
+            let currentDates = new Array();
             let _date = startDate.getTime();
             for (let i = 0; i < dates.length; i++) {
                 if (dates[i].startDate.getTime() === _date) {
-                    return dates[i].id;
+                    currentDates.push(dates[i]);
                 }
             }
-            return null;
+
+            document.getElementById("modalBody").innerHTML = "";
+
+            if (currentDates.length > 0) {
+                let ul = document.createElement("ul");
+
+                for (let i = 0; i < currentDates.length; i++) {
+                    let a = document.createElement("a");
+                    a.style.textDecoration = "none";
+                    a.setAttribute("href", "/Records/View?recordId=" + encodeURIComponent(currentDates[i].id));
+                    a.innerHTML = currentDates[i].name;
+
+                    let li = document.createElement("li");
+                    li.appendChild(a);
+                    li.classList.add("mb-3")
+                    ul.appendChild(li);
+                }
+
+                document.getElementById("modalBody").appendChild(ul);
+                document.getElementById("modalHeader").innerHTML =
+                    "События " + startDate.getFullYear() + "." +
+                    ("0" + (startDate.getMonth() + 1)).slice(-2) + "." +
+                    ("0" + startDate.getDate()).slice(-2);
+
+                datesExists = true;
+            }
         }
 
-        $(function () {
-            var calendar = $('#calendar').calendar({
-                style: 'background',
-                enableRangeSelection: true,
-                mouseOnDay: function (e) {
-                    if (e.events.length > 0) {
-                        var content = '';
-
-                        for (var i in e.events) {
-                            content += '<div class="event-tooltip-content">'
-                                + '<div class="event-name" style="color:' + e.events[i].color + '">' + e.events[i].name + '</div>'
-                                + '</div>';
-                        }
-
-                        $(e.element).popover({
-                            trigger: 'manual',
-                            container: 'body',
-                            html: true,
-                            content: content
-                        });
-
-                        $(e.element).popover('show');
-                    }
-                },
-                mouseOutDay: function (e) {
-                    if (e.events.length > 0) {
-                        $(e.element).popover('hide');
-                    }
-                },
-                selectRange: function (e) {                    
-                    let id = getIdByStartDate(e.startDate);
-                    if (id !== null) {
-                        window.location.href = '/Records/View?recordId=' + encodeURIComponent(id);
-                    }
-                },
-                startYear: @Model.Today.Year,
-                maxDate: new Date(@Model.Today.Year, 11, 31),
-                minDate: new Date(@Model.Today.Year, 0, 1),
-                renderEnd: function (e) {
-                    if (e.currentYear !== @Model.Today.Year) {
-                        updateCalendar(e.currentYear, $('.multiselect').val());
-                    }
-                },
-                dataSource: dates               
-            });
-           
+        new Calendar('#calendar', {
+            style: 'background',
+            enableRangeSelection: true,
+            displayHeader: false,
+            mouseOnDay: function (e) {
+                updateLinksList(e.date);
+            },
+            mouseOutDay: function (e) {
+                datesExists = false;
+            },
+            selectRange: function (e) {
+                openModal();
+            },
+            startYear: @Model.Today.Year,
+            maxDate: new Date(@Model.Today.Year, 11, 31),
+            minDate: new Date(@Model.Today.Year, 0, 1),
+            dataSource: dates
         });
     </script>
 }

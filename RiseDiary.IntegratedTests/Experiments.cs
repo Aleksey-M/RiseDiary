@@ -25,11 +25,11 @@ namespace RiseDiary.IntegratedTests
             if (!filter.IsEmptyTypeFilter)
             {
                 var temp = context.RecordThemes
-                    .Where(rt => filter.RecordThemeIds.Contains(rt.ThemeId))
+                    .Where(rt => filter.Themes.Contains(rt.ThemeId))
                     .Select(r => new { r.RecordId, r.ThemeId })
                     .ToList()
                     .GroupBy(r => r.RecordId)
-                    .Where(g => filter.RecordThemeIds.All(id => g.Select(r => r.ThemeId).Contains(id)))
+                    .Where(g => filter.Themes.All(id => g.Select(r => r.ThemeId).Contains(id)))
                     .Select(g => g.Key);
 
                 result = context.Records.Where(r => temp.Contains(r.Id));
@@ -41,17 +41,17 @@ namespace RiseDiary.IntegratedTests
 
             if (!RecordsFilter.IsEmpty(filter))
             {
-                if (!string.IsNullOrWhiteSpace(filter.RecordNameFilter))
+                if (!string.IsNullOrWhiteSpace(filter.FilterName))
                 {
-                    result = result.Where(r => r.Name.Contains(filter.RecordNameFilter, StringComparison.OrdinalIgnoreCase));
+                    result = result.Where(r => r.Name.Contains(filter.FilterName, StringComparison.OrdinalIgnoreCase));
                 }
-                if (filter.RecordDateFrom != null)
+                if (filter.FromDate != null)
                 {
-                    result = result.Where(r => r.Date >= filter.RecordDateFrom);
+                    result = result.Where(r => r.Date >= filter.FromDate);
                 }
-                if (filter.RecordDateTo != null)
+                if (filter.ToDate != null)
                 {
-                    result = result.Where(r => r.Date <= filter.RecordDateTo);
+                    result = result.Where(r => r.Date <= filter.ToDate);
                 }
             }
 

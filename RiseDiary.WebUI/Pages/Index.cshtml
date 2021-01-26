@@ -2,7 +2,6 @@
 @model IndexModel
 @{
     ViewData["Title"] = "Дневник";
-    ViewData["TitlePart"] = "Стартовая страница";
 }
 
 @if (Model.StartPageRecord != null)
@@ -13,9 +12,8 @@
 }
 else
 {
-    <div class="row">
-        <div class="col-sm-10 col-sm-offset-1">
-            <h3 style="color:silver">Стартовая страница не выбрана</h3>
-        </div>
+    <div class="col-12 p-5">
+        <h3 style="color:silver">Стартовая страница не выбрана</h3>
     </div>
+
 }

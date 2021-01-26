@@ -23,7 +23,8 @@ namespace RiseDiary.WebUI.Pages.Dates
         public IEnumerable<DiaryScope> Scopes { get; private set; } = Enumerable.Empty<DiaryScope>();
         public Guid SelectedScopeId { get; private set; }
         public int DaysDisplayRange { get; private set; }
-        public string Message { get; private set; } = "";
+        public string Message { get; private set; } = "Выберите источник дат и периоды отображения";
+        public string? ErrorMessage { get; private set; }
 
         public async Task UpdateViewModel()
         {
@@ -34,7 +35,9 @@ namespace RiseDiary.WebUI.Pages.Dates
                 SelectedScopeId = id;
             }
             else
+            {
                 SelectedScopeId = Guid.Empty;
+            }
             DaysDisplayRange = await _settingsSvc.GetAppSettingInt(AppSettingsKey.ImportantDaysDisplayRange) ?? 20;
         }
 
@@ -45,21 +48,28 @@ namespace RiseDiary.WebUI.Pages.Dates
 
         public async Task OnPostAsync(Guid scopeId, int displayRange)
         {
+            bool validInput = true;
+
             if (scopeId == default)
             {
-                Message = "Некорректная область";
-                return;
+                ErrorMessage = "Некорректная область";
+                validInput = false;
             }
 
             if (displayRange <= 0 || displayRange >= 35)
             {
-                Message = "Некорректное значение диапазона";
-                return;
+                ErrorMessage = "Некорректное значение диапазона";
+                validInput = false;
             }
 
-            await _settingsSvc.UpdateAppSetting(AppSettingsKey.ImportantDaysScopeId, scopeId.ToString());
-            await _settingsSvc.UpdateAppSetting(AppSettingsKey.ImportantDaysDisplayRange, displayRange.ToString(CultureInfo.InvariantCulture));
-            Message = "Данные обновлены";
+            if (validInput)
+            {
+                await _settingsSvc.UpdateAppSetting(AppSettingsKey.ImportantDaysScopeId, scopeId.ToString());
+                await _settingsSvc.UpdateAppSetting(AppSettingsKey.ImportantDaysDisplayRange, displayRange.ToString(CultureInfo.InvariantCulture));
+                Message = "Данные обновлены";
+                ErrorMessage = null;
+            }
+
             await UpdateViewModel();
         }
 

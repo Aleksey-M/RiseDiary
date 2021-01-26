@@ -6,46 +6,65 @@
     <base href="~/" />
     <title>@ViewData["Title"] - RiseDiary</title>
     <link href="~/css/site.css" rel="stylesheet" />
-    <link href="~/lib/bootstrap/css/bootstrap.css" rel="stylesheet" />
-    <link href="~/lib/jquery-ui/jquery-ui.css" rel="stylesheet" />
-    <link href="~/lib/sumoselect/sumoselect.css" rel="stylesheet" />
-    <link href="~/lib/bootstrap-year-calendar/css/bootstrap-year-calendar.css" rel="stylesheet" />
-    <script src="~/lib/jquery/jquery.js"></script>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
 
     @RenderSection("Styles", required: false)
 
+    <style>
+        a{
+            text-decoration: none !important;
+        }
+
+        ul {
+            list-style:none;
+        }
+    </style>
+
 </head>
 <body>
-    <div class="container alert-info" style="margin-bottom:10px">
-        <h3 class="col-sm-10"> <a asp-page="Index">Дневник:</a> <span style="font-size:smaller">@ViewData["TitlePart"]</span></h3>
-        <a class="btn btn-info" href="~/Records/Edit" style="float:right;margin-top:10px;">Создать запись</a>
-    </div>
-    <nav class="container">
-        <div class="btn-group btn-group-justified">
-            <a href="~/Scopes" class="btn btn-info">Темы</a>
-            <a href="~/Images" class="btn btn-info">Изображения</a>
-            <a href="~/Dates" class="btn btn-info">Даты</a>
-            <a href="~/Records" class="btn btn-info">Все записи</a>
-            <a href="~/Analysis/Search" class="btn btn-info">Поиск по тексту</a>
-            <a href="~/Analysis/Retrospect" class="btn btn-info">Ретроспектива</a>
-            <a href="~/Analysis/Calendar" class="btn btn-info">Календарь</a>
+    <div class="container">
+        <div class="row">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light col-12">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="~/Records/Create">Создать запись</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                        <div class="navbar-nav">
+                            <a href="~/Scopes" class="nav-link">Темы</a>
+                            <a href="~/Images" class="nav-link">Изображения</a>
+                            <a href="~/Dates" class="nav-link">Даты</a>
+                            <a href="~/Records" class="nav-link">Все записи</a>
+                            <a href="~/Analysis/Search" class="nav-link">Поиск по тексту</a>
+                            <a href="~/Analysis/Retrospect" class="nav-link">Ретроспектива</a>
+                            <a href="~/Analysis/Calendar" class="nav-link">Календарь</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
         </div>
-    </nav>
 
-    <div class="container body-content">
-        <hr style="margin-top:5px;margin-bottom:5px;" />
-        @RenderBody()
+        <hr class="my-2" />
+
+        <div class="row">
+            @RenderBody()
+        </div>
+
         <hr />
-        <h6>Rise Diary V 6.0.0&nbsp;&nbsp;<a href="/config"><i class="glyphicon glyphicon-wrench"></i></a></h6>
-
+        
+        <h6>
+            Rise Diary V 7.0.0
+            <a href="/config">
+                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-wrench" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M.102 2.223A3.004 3.004 0 0 0 3.78 5.897l6.341 6.252A3.003 3.003 0 0 0 13 16a3 3 0 1 0-.851-5.878L5.897 3.781A3.004 3.004 0 0 0 2.223.1l2.141 2.142L4 4l-1.757.364L.102 2.223zm13.37 9.019L13 11l-.471.242-.529.026-.287.445-.445.287-.026.529L11 13l.242.471.026.529.445.287.287.445.529.026L13 15l.471-.242.529-.026.287-.445.445-.287.026-.529L15 13l-.242-.471-.026-.529-.445-.287-.287-.445-.529-.026z" />
+                </svg>
+            </a>
+        </h6>
     </div>
 
-    <script src="~/lib/bootstrap/js/bootstrap.js"></script>
-    <script src="~/lib/jquery-ui/jquery-ui.js"></script>
-    <script src="~/lib/sumoselect/jquery.sumoselect.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/_framework/blazor.server.js"></script>
-
-    <partial name="_ValidationScriptsPartial" />
 
     @RenderSection("Scripts", required: false)
 </body>

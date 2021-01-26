@@ -1,0 +1,92 @@
+﻿@namespace RiseDiary.WebUI.Pages.Records
+
+@inject IJSRuntime jsRuntime 
+
+@if (_editMode)
+{
+    <div class="row">
+        <div class="col-lg-2 col-md-3 col-sm-12 mb-1">
+            <input type="date" required="required" @bind="_recordDate" @bind:event="oninput" @bind:format="yyyy-MM-dd" class="form-control" />
+        </div>
+        <div class="col-lg-10 col-md-9 col-sm-12 mb-1">
+            <div class="input-group">
+                <input type="text" required="required" @bind="_recordName" @bind:event="oninput" class="form-control" />
+
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-link" title="Сохранить изменения" @onclick="UpdateNameAndDate">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                            <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z" />
+                        </svg>
+                    </button>
+
+                    <button type="button" class="btn btn-link" title="Закрыть" @onclick="e => { _editMode = false; }">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>        
+    </div>
+}
+else
+{
+    <h5 style="color:darkblue;display:inline">
+        <b>@RecordDate</b> <i>@RecordName</i>
+    </h5>
+
+    <button type="button" class="btn btn-link pt-0" title="Редактировать заголовок и дату" @onclick="e => SwitchToEditMode()">
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-pen" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M13.498.795l.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001zm-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708l-1.585-1.585z" />
+        </svg>
+    </button>
+
+}
+
+@code {
+
+    private bool _editMode;
+
+    [Parameter]
+    public string RecordName { get; set; } = "";
+
+    [Parameter]
+    public string RecordDate { get; set; } = "";
+
+    [Parameter]
+    public Func<DateTime, string, Task>? SaveRecordHeader { get; set; } = null;
+
+    private DateTime _recordDate;
+    private string _recordName = "";
+
+    private async Task UpdateNameAndDate()
+    {
+        if(_recordDate.Date == DateTime.Parse(RecordDate) && _recordName.Trim() == (RecordName == "[ПУСТО]" ? "" : RecordName))
+        {
+            _editMode = false;
+            return;
+        }
+
+        if(_recordDate == default)
+        {
+            await jsRuntime.InvokeVoidAsync("alert", "Дата не введена");
+            return;
+        }
+
+        _editMode = false;
+
+        if (SaveRecordHeader == null) throw new ArgumentNullException(nameof(SaveRecordHeader));
+
+        await SaveRecordHeader(_recordDate, _recordName.Trim());
+    }
+
+    private void SwitchToEditMode()
+    {
+        _recordName = RecordName == "[ПУСТО]" ? "" : RecordName;
+        _recordDate = DateTime.Parse(RecordDate);
+        _editMode = true;
+    }
+}
+

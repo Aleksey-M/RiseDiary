@@ -1,43 +1,27 @@
 {
   "version": "1.0",
-  "defaultProvider": "cdnjs",
+  "defaultProvider": "unpkg",
   "defaultDestination": "wwwroot/lib/",
-  "libraries": [
+  "libraries": [    
     {
-      "library": "jquery-validate@1.17.0",
-      "destination": "wwwroot/lib/jquery-validate"
-    },
-    {
-      "library": "jquery-validation-unobtrusive@3.2.10",
-      "destination": "wwwroot/lib/jquery-validation-unobtrusive"
-    },
-    {
-      "library": "twitter-bootstrap@3.3.5",
+      "library": "bootstrap@5.0.0-beta1",
+      "files": [ "dist/css/bootstrap.min.css", "dist/js/bootstrap.bundle.min.js" ],
       "destination": "wwwroot/lib/bootstrap"
     },
     {
-      "library": "bootstrap-year-calendar@1.1.1",
-      "destination": "wwwroot/lib/bootstrap-year-calendar"
+      "library": "jcrop@3.0.1",
+      "files": [ "dist/jcrop.js", "dist/jcrop.css" ],
+      "destination": "wwwroot/lib/jcrop"
     },
     {
-      "library": "jquery@3.3.1",
-      "destination": "wwwroot/lib/jquery"
+      "library": "js-year-calendar@1.0.2",
+      "files": [ "dist/js-year-calendar.min.css", "dist/js-year-calendar.min.js" ],
+      "destination": "wwwroot/lib/calendar"
     },
     {
-      "library": "jqueryui@1.12.1",
-      "destination": "wwwroot/lib/jquery-ui"
-    },
-    {
-      "library": "jquery.sumoselect@3.0.2",
-      "destination": "wwwroot/lib/sumoselect"
-    },
-    {
-      "library": "jquery-jcrop@2.0.4",
-      "destination": "wwwroot/lib/jquery-jcrop"
-    },
-    {
-      "library": "summernote@0.8.10",
-      "destination": "wwwroot/lib/summernote"
+      "library": "quill@1.3.7",
+      "files": ["dist/*"],
+      "destination": "wwwroot/lib/quilljs"
     }
   ]
 }

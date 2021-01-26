@@ -1,0 +1,97 @@
+﻿@page
+@model RiseDiary.WebUI.Pages.Records.CreateModel
+@{
+    ViewData["Title"] = "Создание новой записи";
+}
+
+@section Styles{
+    <link href="~/lib/quilljs/dist/quill.snow.css" rel="stylesheet" />
+ }
+
+<div class="col-12">
+    <form method="post" id="createRecordForm">
+        <div class="row">
+
+            <div class="offset-lg-1 col-lg-2 col-md-4 col-sm-12 my-2">
+                <input type="date" required="required" value="@DateTime.Now.ToString("yyyy-MM-dd")" name="recordDate" id="recordDate" class="form-control" />
+            </div>
+
+            <div class="col-lg-8 col-md-8 col-sm-12 my-2">
+                <input type="text" placeholder="Название" name="recordName" id="recordName" class="form-control" />
+            </div>
+
+            <input type="hidden" value="" name="recordText" id="recordText" />
+
+            <div class="offset-lg-1 col-lg-10 col-md-12 col-sm-12 mt-2 mb-5" style="height:50vh">
+                <div id='toolbar'>
+                    <select class="ql-header">
+                        <option selected=""></option>
+                        <option value="1"></option>
+                        <option value="2"></option>
+                        <option value="3"></option>
+                        <option value="4"></option>
+                        <option value="5"></option>
+                    </select>
+                    <span class="ql-formats">
+                        <select class="ql-font"></select>
+                        <button class="ql-bold"></button>
+                        <button class="ql-italic"></button>
+                        <button class="ql-underline"></button>
+                        <button class="ql-strike"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-list" value="ordered"></button>
+                        <button class="ql-list" value="bullet"></button>
+                        <button class="ql-indent" value="-1"></button>
+                        <button class="ql-indent" value="+1"></button>
+                        <select class="ql-align ql-picker ql-icon-picker"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <select class="ql-color"></select>
+                        <select class="ql-background"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-script" value="sub"></button>
+                        <button class="ql-script" value="super"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-link"></button>
+                        <button class="ql-image"></button>
+                        <button class="ql-video"></button>
+                    </span>
+                </div>
+
+                <div id="editor-container">
+                </div>
+            </div>
+
+            <div class="col-12 my-2 text-center">
+                <button type="button" onclick="submitForm()" class="btn btn-outline-success" value="Создать">Создать</button>
+                <a href="~/records" class="btn btn-link">Все записи</a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@section Scripts{
+
+    <script src="~/lib/quilljs/dist/quill.js"></script>
+
+    <script type="text/javascript">
+        var quill = new Quill('#editor-container', {
+            modules: {
+                toolbar: '#toolbar'
+            },
+            placeholder: 'Текст записи',
+            theme: 'snow'  
+        });
+
+        function submitForm() {
+            let html = quill.root.innerHTML;
+            document.getElementById('recordText').value = html;
+            document.getElementById('createRecordForm').submit();
+        }
+
+    </script>
+}

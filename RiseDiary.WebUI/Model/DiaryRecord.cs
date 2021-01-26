@@ -23,6 +23,8 @@ namespace RiseDiary.Model
     {
         public static string GetRecordNameDisplay(this DiaryRecord rec) => string.IsNullOrWhiteSpace(rec.Name) ? "[ПУСТО]" : rec.Name;
 
+        public static string GetRecordNameDisplay(this string recName) => string.IsNullOrWhiteSpace(recName) ? "[ПУСТО]" : recName;
+
         public static string GetRecordTextShort(this DiaryRecord rec)
         {
             if (string.IsNullOrEmpty(rec.Text)) return "[ПУСТО]";

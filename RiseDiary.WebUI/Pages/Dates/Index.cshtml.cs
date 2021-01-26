@@ -36,10 +36,10 @@ namespace RiseDiary.WebUI.Pages.Dates
 
         public string GetRowStyle(DateListItem date) => (!string.IsNullOrEmpty(date.Themes), date.TransferredDate == Today) switch
         {
-            (true, true) => "background-color:#fe9393",
-            (true, false) => "background-color:#ebfb78",
-            (false, true) => "background-color:#ffb98a",
-            (false, false) => "background-color:#b0f8c4"
+            (true, true) => "background-color:#fbc1c1",
+            (true, false) => "background-color:#f5face",
+            (false, true) => "background-color:#ffeadc",
+            (false, false) => "background-color:#cef5d9"
         };
     }
 }

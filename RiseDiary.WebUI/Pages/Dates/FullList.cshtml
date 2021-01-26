@@ -1,53 +1,35 @@
 ﻿@page
 @model RiseDiary.WebUI.Pages.Dates.ListModel
-@using RiseDiary.Model
 
 @{
     ViewData["Title"] = "Все даты";
-    ViewData["TitlePart"] = "Все даты";
+}
 
-}
-@section Styles
-    {
-    <style>
-        #navigationPanel {
-            background-color: #d1fffe;
-            text-align: center;
-            padding: 5px;
-        }
-    </style>
-}
-<div class="panel panel-default">
-    <div class="form-horizontal" id="navigationPanel">
-        <a href="~/Dates/setup" class="btn-link">Настройки</a>
-        &nbsp;|&nbsp;
-        <a href="~/Dates/index" class="btn-link">Ближайшие даты</a>
-        &nbsp;|&nbsp;
-        <a href="~/Dates/calendar" class="btn-link">Даты на календаре</a>
-    </div>
+<component type="typeof(DatesSubmenu)" render-mode="Static" param-currentPage="@("fulllist")" />
+
+<div class="col-12">
+    <table class="table table-striped">
+        <tbody>
+            @foreach (var date in Model.Dates)
+            {
+            <tr>
+                <td>
+                    @date.TransferredDate.ToString("yyyy.MM.dd ddd", System.Globalization.CultureInfo.CurrentCulture)
+                </td>
+                <td>
+                    @date.Themes
+                </td>
+                <td>
+                    @date.Name
+                </td>
+                <td>
+                    @date.Date.ToString("yyyy.MM.dd")
+                </td>
+                <td>
+                    <a href="~/Records/View?recordId=@date.Id">@date.Name</a>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
 </div>
-<table class="table table-striped">
-    <tbody>
-        @foreach (var date in Model.Dates)
-        {
-        <tr>
-            <td>
-                @date.TransferredDate.ToString("yyyy.MM.dd ddd", System.Globalization.CultureInfo.CurrentCulture)
-            </td>
-            <td>
-                @date.Themes
-            </td>
-            <td>
-                @date.Name
-            </td>
-            <td>
-                @date.Date.ToString("yyyy.MM.dd")
-            </td>
-            <td>
-                <a href="~/Records/View?recordId=@date.Id">@date.Name</a>
-            </td>
-        </tr>
-        }
-    </tbody>
-</table>
-

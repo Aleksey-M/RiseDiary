@@ -3,71 +3,40 @@
 @using RiseDiary.Model
 @{
     ViewData["Title"] = "Поиск записей по фрагменту названия или текста";
-    ViewData["TitlePart"] = "Поиск записей по фрагменту названия или текста";
-
 }
 
-@section Styles
-    {
-    <style>
-        #navigationPanel {
-            background-color: #d1fffe;
-            text-align: center;
-        }
-
-        .date-column {
-            width: 170px;
-        }
-
-        .main-date-column {
-            width: 100px;
-        }
-    </style>
-}
-
-<div class="row">
-    <div class="col-sm-12">
-        <div class=" panel panel-default">
-            <div class="form-horizontal" id="navigationPanel">
-                <form method="get">
-                    <input type="hidden" name="currentPage" value="@Model.CurrenPage" />
-                    <input type="hidden" name="pagesCount" value="@Model.PagesCount" />
-                    <input type="hidden" name="searchString" value="@Model.SearchString" />
-                    <input type="submit" name="navTo" value="Первая" class="btn btn-link" />
-                    |<input type="submit" name="navTo" value="Предыдущая" class="btn btn-link" />
-                    |<span><b> Страница @(Model.CurrenPage + 1) из @Model.PagesCount </b></span>
-                    |<input type="submit" name="navTo" value="Следующая" class="btn btn-link" />
-                    |<input type="submit" name="navTo" value="Последняя" class="btn btn-link" />
-                </form>
-            </div>
+    <div class="col-12">
+        <div class="my-3 px-3">
+            <component type="typeof(Pager)" render-mode="Static" param-areaName="@("analysis/search")" param-pages="@Model.Pages" param-getParametersList="@Model.SearchParams" />
         </div>
+    </div>
+    
+    <div class="col-12">
         <table class="table">
             <thead>
                 <tr>
-                    <th colspan="6">
+                    <th>
                         <form method="get">
-                            <div class="form-horizontal row">
-                                <div class="form-inline col-md-6 col-md-offset-3">
-                                    <input type="text" placeholder="Строка поиска" name="searchString" id="searchString" value="@Model.SearchString" class="form-control" style="width:80%" />
-                                    &nbsp;&nbsp;
-                                    <input type="submit" value="Поиск" class="btn btn-default" />
+                            <div class="row px-2">
+
+                                <input type="hidden" name="pageNo" value="1" />
+
+                                <div class="offset-lg-2 col-lg-6 col-md-10 mb-2">
+                                    <input type="text" placeholder="Строка поиска" name="searchString" id="searchString" value="@Model.SearchString" class="form-control" />
                                 </div>
+
+                                <div class="col-lg-2 col-md-2 mb-2">
+                                    <input type="submit" value="Поиск" class="btn btn-outline-info" />
+                                </div>
+
                             </div>
                         </form>
                     </th>
-                </tr>
+                </tr>               
             </thead>
         </table>
-        <table class="table table-striped" style="table-layout:fixed">
+        <table class="table table-striped">
             <tbody>
-                @if (Model.Records.Count() == 0)
-                {
-                    <tr>
-                        <td colspan="6"><b>Соответствий нет</b></td>
-                    </tr>
-                }
-                else
-                {
                     @foreach (var rec in Model.Records)
                     {
                         <tr>
@@ -75,17 +44,26 @@
                             <td><a href="~/Records/View?recordId=@rec.Id">@rec.GetRecordNameDisplay()</a></td>
                             <td class="date-column">@rec.CreateDate.ToString("G")</td>
                             <td class="date-column">@rec.ModifyDate.ToString("G")</td>
-                            <td style="width:30px"><a href="~/Records/Edit?recordId=@rec.Id"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a></td>
+                            <td style="width:30px">
+                                <a href="~/Records/View?recordId=@rec.Id">
+                                    <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-pen" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M13.498.795l.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001zm-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708l-1.585-1.585z" />
+                                    </svg>
+                                </a>
+                            </td>
                         </tr>
                     }
-                }
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="5"><b><i>Записей отфильтровано : @Model.RecordsCount </i></b></td>
+                    <td colspan="5"><b><i>Записей отфильтровано : @Model.Pages.TotalItems </i></b></td>
                 </tr>
             </tfoot>
         </table>
-
     </div>
-</div>
+
+    <div class="col-12">
+        <div class="my-3 px-3">
+            <component type="typeof(Pager)" render-mode="Static" param-areaName="@("analysis/search")" param-pages="@Model.Pages" param-getParametersList="@Model.SearchParams" />
+        </div>
+    </div>

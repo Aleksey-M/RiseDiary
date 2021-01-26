@@ -229,9 +229,9 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             Create_20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
-            var filterWithWhiteSpace = new RecordsFilter { RecordNameFilter = "       " };
-            var filterWithNull = new RecordsFilter { RecordNameFilter = null };
-            var filterWithRmRf = new RecordsFilter { RecordNameFilter = "\r\r\n\r\n  \r  \n\n " };
+            var filterWithWhiteSpace = new RecordsFilter { FilterName = "       " };
+            var filterWithNull = new RecordsFilter { FilterName = null };
+            var filterWithRmRf = new RecordsFilter { FilterName = "\r\r\n\r\n  \r  \n\n " };
 
             var pageList1 = await svc.GetRecordsList(filterWithWhiteSpace);
             var pageList2 = await svc.GetRecordsList(filterWithNull);
@@ -263,9 +263,9 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             Create_20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
-            var filterWithWhiteSpace = new RecordsFilter { RecordNameFilter = "       " };
-            var filterWithNull = new RecordsFilter { RecordNameFilter = null };
-            var filterWithRmRf = new RecordsFilter { RecordNameFilter = "\r\r\n\r\n  \r  \n\n " };
+            var filterWithWhiteSpace = new RecordsFilter { FilterName = "       " };
+            var filterWithNull = new RecordsFilter { FilterName = null };
+            var filterWithRmRf = new RecordsFilter { FilterName = "\r\r\n\r\n  \r  \n\n " };
 
             int recCount1 = await svc.GetRecordsCount(filterWithWhiteSpace);
             int recCount2 = await svc.GetRecordsCount(filterWithNull);
@@ -284,7 +284,7 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             Create_20Records(context, GetNamesList(), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
-            var filters = new RecordsFilter { RecordNameFilter = searchName };
+            var filters = new RecordsFilter { FilterName = searchName };
 
             var resPage = await svc.GetRecordsList(filters);
 
@@ -304,7 +304,7 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             Create_20Records(context, GetNamesList(), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
-            var filters = new RecordsFilter { RecordNameFilter = searchName };
+            var filters = new RecordsFilter { FilterName = searchName };
 
             int matchesFound = await svc.GetRecordsCount(filters);
 
@@ -318,7 +318,7 @@ namespace RiseDiary.IntegratedTests.Services
             Create_20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var dateTo = DateTime.Now.AddDays(-8);
-            var filters = new RecordsFilter { RecordDateTo = dateTo };
+            var filters = new RecordsFilter { ToDate = dateTo };
 
             var resList = await svc.GetRecordsList(filters);
 
@@ -334,7 +334,7 @@ namespace RiseDiary.IntegratedTests.Services
             var svc = GetRecordsSearchService(context);
             var dateTo = DateTime.Now.AddDays(-7);
             int testCount = 20 - 6; // 20 days except last week (Today date is not added)
-            var filters = new RecordsFilter { RecordDateTo = dateTo };
+            var filters = new RecordsFilter { ToDate = dateTo };
 
             int count = await svc.GetRecordsCount(filters);
 
@@ -348,7 +348,7 @@ namespace RiseDiary.IntegratedTests.Services
             Create_20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var dateFrom = DateTime.Now.AddDays(-7);
-            var filters = new RecordsFilter { RecordDateFrom = dateFrom };
+            var filters = new RecordsFilter { FromDate = dateFrom };
 
             var resList = await svc.GetRecordsList(filters);
 
@@ -363,7 +363,7 @@ namespace RiseDiary.IntegratedTests.Services
             var svc = GetRecordsSearchService(context);
             var dateFrom = DateTime.Now.AddDays(-6);
             int testCount = 6; // all records for last week, except today
-            var filters = new RecordsFilter { RecordDateFrom = dateFrom };
+            var filters = new RecordsFilter { FromDate = dateFrom };
 
             int count = await svc.GetRecordsCount(filters);
 
@@ -377,7 +377,7 @@ namespace RiseDiary.IntegratedTests.Services
             Create_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var svc = GetRecordsSearchService(context);
             var concreteDate = DateTime.Now.AddDays(-7);
-            var filters = new RecordsFilter { RecordDateFrom = concreteDate, RecordDateTo = concreteDate };
+            var filters = new RecordsFilter { FromDate = concreteDate, ToDate = concreteDate };
 
             var resList = await svc.GetRecordsList(filters);
 
@@ -393,7 +393,7 @@ namespace RiseDiary.IntegratedTests.Services
             var svc = GetRecordsSearchService(context);
             var concreteDate = DateTime.Now.AddDays(-7);
             int testCount = 2;
-            var filters = new RecordsFilter { RecordDateFrom = concreteDate, RecordDateTo = concreteDate };
+            var filters = new RecordsFilter { FromDate = concreteDate, ToDate = concreteDate };
 
             int count = await svc.GetRecordsCount(filters);
 
@@ -411,9 +411,9 @@ namespace RiseDiary.IntegratedTests.Services
             var svc = GetRecordsSearchService(context);
             var filters = new RecordsFilter
             {
-                RecordNameFilter = searchName,
-                RecordDateFrom = dateFrom,
-                RecordDateTo = dateTo
+                FilterName = searchName,
+                FromDate = dateFrom,
+                ToDate = dateTo
             };
 
             var resList = await svc.GetRecordsList(filters);
@@ -436,9 +436,9 @@ namespace RiseDiary.IntegratedTests.Services
             var searchService = GetRecordsSearchService(context);
             var filters = new RecordsFilter
             {
-                RecordNameFilter = searchName,
-                RecordDateFrom = dateFrom,
-                RecordDateTo = dateTo
+                FilterName = searchName,
+                FromDate = dateFrom,
+                ToDate = dateTo
             };
 
             int count = await searchService.GetRecordsCount(filters);
@@ -639,7 +639,7 @@ namespace RiseDiary.IntegratedTests.Services
             var searchService = GetRecordsSearchService(context);
             var dateFrom = DateTime.Now.AddDays(-10).Date;
             var dateTo = DateTime.Now.AddDays(-5).Date;
-            var filter = new RecordsFilter { RecordDateFrom = dateFrom, RecordDateTo = dateTo };
+            var filter = new RecordsFilter { FromDate = dateFrom, ToDate = dateTo };
             filter.AddThemeId(themeId1);
 
             var list = context.Records.Where(r => r.Date >= dateFrom && r.Date <= dateTo);
@@ -670,7 +670,7 @@ namespace RiseDiary.IntegratedTests.Services
             var searchService = GetRecordsSearchService(context);
             var dateFrom = DateTime.Now.AddDays(-10).Date;
             var dateTo = DateTime.Now.AddDays(-5).Date;
-            var filter = new RecordsFilter { RecordDateFrom = dateFrom, RecordDateTo = dateTo };
+            var filter = new RecordsFilter { FromDate = dateFrom, ToDate = dateTo };
             filter.AddThemeId(themeId1);
 
             int count = await searchService.GetRecordsCount(filter);
@@ -685,7 +685,7 @@ namespace RiseDiary.IntegratedTests.Services
             var (themeId1, themeId2, names) = await CreateRecordsWithNamesAndThemes(context);
             var searchService = GetRecordsSearchService(context);
             string searchName = "SearchТекстІї*01";
-            var filter = new RecordsFilter { RecordNameFilter = searchName };
+            var filter = new RecordsFilter { FilterName = searchName };
             filter.AddThemeId(themeId1);
 
             var result = await searchService.GetRecordsList(filter);
@@ -703,7 +703,7 @@ namespace RiseDiary.IntegratedTests.Services
             var (themeId1, _, _) = await CreateRecordsWithNamesAndThemes(context);
             var searchService = GetRecordsSearchService(context);
             string searchName = "SearchТекстІї*01";
-            var filter = new RecordsFilter { RecordNameFilter = searchName };
+            var filter = new RecordsFilter { FilterName = searchName };
             filter.AddThemeId(themeId1);
 
             int count = await searchService.GetRecordsCount(filter);

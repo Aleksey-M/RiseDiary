@@ -1,99 +1,28 @@
 ﻿@page "{pageNo?}"
 @model RiseDiary.WebUI.Pages.Images.IndexModel
-@using RiseDiary.Model
+
 @{
     ViewData["Title"] = "Фотографии и рисунки";
-    ViewData["TitlePart"] = "Фотографии и рисунки";
 }
 
-@section Styles
-{
-    <style>
-        .thumbnail-head {
-            height: 60px;
-        }
-
-        .thumbnail-image {
-            height: 160px;
-        }
-
-        .center-text {
-            text-align: center;
-        }
-
-        #topPanel {
-            padding-left: 14px;
-            padding-right: 14px;
-            margin-bottom: 5px;
-        }
-
-        #navigationPanel {
-            background-color: #d1fffe;
-            text-align: center;
-        }
-
-    </style>
-}
-
-<div class="row">
-    <div class="col-sm-12">
-        <div class="panel panel-info" id="topPanel">
-            <h3 style="float:left;margin-top:10px;">Фотографии и рисунки (@Model.ImagesCount)</h3>
-            <a class="btn btn-default" href="/Images/Upload" style="float:right;margin-top:5px">Загрузить</a>
-            <div style="clear:both"></div>
+    <div class="col-12">
+        <div class="my-3 px-3">
+            <a class="btn btn-outline-primary" href="/Images/Upload">Загрузить</a>
+            <component type="typeof(Pager)" render-mode="Static" param-areaName="@("images")" param-pages="@Model.Pager" param-floatRight="true" />
         </div>
     </div>
-    <div class="col-sm-12">
-        <div class="panel panel-default">
-            <div class="form-horizontal" id="navigationPanel">
-                <a asp-route-pageNo="0" class="btn btn-link">Первая</a>
-                |<a asp-route-pageNo="@(Model.PrevPage)" class="btn btn-link">Предыдущая</a>
-                |<span><b> Страница @(Model.CurrenPage + 1) из @Model.PagesCount</b></span>
-                |<a asp-route-pageNo="@(Model.NextPage)" class="btn btn-link">Следующая</a>
-                |<a asp-route-pageNo="@(Model.PagesCount == 0 ? 0 : Model.PagesCount - 1)" class="btn btn-link">Последняя</a>
-            </div>
-        </div>
-    </div>
+
     @foreach (var image in Model.Images)
     {
-        <div id="@("fullImage-" + image.Id)" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <img src="/api/v1.0/image-file/@image.Id" class="img-responsive" style="height:90vh;max-height:100%;margin:auto">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-sm-3 center-text">
-            <div class="panel panel-default">
-                <div class="panel-heading thumbnail-head" style="word-wrap:break-word">
-                    <a asp-page="Edit" asp-route-imageId="@image.Id">@image.Name</a>
-                </div>
-
-                <div class="panel-body">
-                    <a data-toggle="modal" data-target="@("#fullImage-" + image.Id)" style="cursor:pointer">
-                        <img src="/api/v1.0/image-thumbnail/@image.Id" class="img-thumbnail center-block thumbnail-image" />
-                    </a>
-                </div>
-
-                <div class="panel-footer">
-                    @image.Width&nbsp;/&nbsp;@image.Height&nbsp;&nbsp;<b>@image.GetSizeKbString()</b>
-                </div>
-            </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 p-3">     
+            <component type="typeof(Thumbnail)" render-mode="Static" param-image="image" />   
         </div>
     }
-    <div class="col-sm-12">
-        <div class="panel panel-default">
-            <div class="form-horizontal" id="navigationPanel">
-                <a asp-route-pageNo="0" class="btn btn-link">Первая</a>
-                |<a asp-route-pageNo="@(Model.PrevPage)" class="btn btn-link">Предыдущая</a>
-                |<span><b> Страница @(Model.CurrenPage + 1) из @Model.PagesCount</b></span>
-                |<a asp-route-pageNo="@(Model.NextPage)" class="btn btn-link">Следующая</a>
-                |<a asp-route-pageNo="@(Model.PagesCount == 0 ? 0 : Model.PagesCount - 1)" class="btn btn-link">Последняя</a>
-            </div>
+
+    <div class="col-12">
+        <div class="my-3 px-3">
+            <i class="pt-3">Всего изображений: @(Model.Pager?.TotalItems ?? 0)</i>
+            <component type="typeof(Pager)" render-mode="Static" param-areaName="@("images")" param-pages="@Model.Pager" param-floatRight="true" />
         </div>
     </div>
-</div>
 

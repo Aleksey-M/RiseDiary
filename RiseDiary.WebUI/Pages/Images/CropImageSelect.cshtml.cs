@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Images
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public class CropImageSelectModel : PageModel
     {
         private readonly ICropImageService _cropImageService;

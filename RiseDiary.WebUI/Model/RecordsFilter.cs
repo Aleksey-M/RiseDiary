@@ -7,18 +7,18 @@ namespace RiseDiary.Model
 {
     public sealed class RecordsFilter
     {
-        public string? RecordNameFilter { get; set; }
+        public string? FilterName { get; set; }
 
         private DateTime? _recordDateFrom;
         private DateTime? _recordDateTo;
 
-        public DateTime? RecordDateFrom
+        public DateTime? FromDate
         {
             get => _recordDateFrom;
             set => _recordDateFrom = value > _recordDateTo ? null : value?.Date;
         }
 
-        public DateTime? RecordDateTo
+        public DateTime? ToDate
         {
             get => _recordDateTo;
             set => _recordDateTo = value < _recordDateFrom ? null : value?.Date;
@@ -32,53 +32,55 @@ namespace RiseDiary.Model
         {
             if (filter == null) throw new ArgumentNullException(nameof(filter));
 
-            return string.IsNullOrWhiteSpace(filter.RecordNameFilter) &&
-            filter.RecordDateFrom == null &&
-            filter.RecordDateTo == null &&
-            filter.RecordThemeIds.Count == 0;
+            return string.IsNullOrWhiteSpace(filter.FilterName) &&
+            filter.FromDate == null &&
+            filter.ToDate == null &&
+            filter.Themes.Count == 0;
         }
 
-        public ReadOnlyCollection<Guid> RecordThemeIds { get; private set; } = new ReadOnlyCollection<Guid>(new List<Guid>());
+        private List<Guid> _themes = new List<Guid>();
+
+        public ReadOnlyCollection<Guid> Themes => new ReadOnlyCollection<Guid>(_themes);
 
         public void AddThemeId(Guid rtid)
         {
-            if (!RecordThemeIds.Contains(rtid))
+            if (!_themes.Contains(rtid))
             {
-                var list = new List<Guid>(RecordThemeIds)
-                {
-                    rtid
-                };
-                RecordThemeIds = new ReadOnlyCollection<Guid>(list);
+                _themes.Add(rtid);
             }
         }
 
         public void AddThemeId(IEnumerable<Guid> idsList)
         {
-            if (idsList.Any(i => !RecordThemeIds.Contains(i)))
-            {
-                RecordThemeIds = new ReadOnlyCollection<Guid>(RecordThemeIds.Union(idsList).ToList());
-            }
+            _themes = _themes.Union(idsList).ToList();
         }
 
         public void RemoveThemeId(Guid id)
         {
-            if (RecordThemeIds.Contains(id))
+            if (_themes.Contains(id))
             {
-                RecordThemeIds = new ReadOnlyCollection<Guid>(RecordThemeIds.Where(i => i != id).ToList());
+                _themes.Remove(id);
             }
         }
 
         public void RemoveThemeId(IEnumerable<Guid> idsList)
         {
-            var foundIds = RecordThemeIds.Intersect(idsList);
-            if (foundIds.Any())
-            {
-                RecordThemeIds = new ReadOnlyCollection<Guid>(RecordThemeIds.Except(idsList).ToList());
-            }
+            _themes = _themes.Except(idsList).ToList();
         }
 
-        public bool IsEmptyTypeFilter => RecordThemeIds.Count == 0;
+        public bool IsEmptyTypeFilter => Themes.Count == 0;
 
         public bool CombineThemes { get; set; }
+
+        public Dictionary<string, string?> GetValuesDict() => new Dictionary<string, string?>()
+        {
+            { nameof(FilterName), FilterName },
+            { nameof(FromDate), FromDate?.ToString("yyyy-MM-dd") },
+            { nameof(ToDate), ToDate?.ToString("yyyy-MM-dd") },
+           // { nameof(PageNo), PageNo.ToString() },
+           // { nameof(PageSize), PageSize.ToString() },
+            { nameof(CombineThemes), CombineThemes ? "true" : null },
+            { nameof(Themes), Themes.Count > 0 ? string.Join(",", Themes) : null }
+        };
     }
 }
