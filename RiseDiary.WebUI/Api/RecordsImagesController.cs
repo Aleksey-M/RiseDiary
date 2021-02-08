@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using System;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 namespace RiseDiary.WebUI.Api
 {
     [ApiController]
+    [Authorize]
     public class RecordsImagesController : ControllerBase
     {
         private readonly IRecordsImagesService _recordImagesService;

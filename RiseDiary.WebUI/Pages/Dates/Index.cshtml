@@ -15,18 +15,13 @@
                     <td>
                         @date.TransferredDate.ToString("yyyy.MM.dd ddd", System.Globalization.CultureInfo.CurrentCulture)
                     </td>
-                    <td>
-                        @date.Themes
-                    </td>
-                    <td>
+                    <td style="color:darkred">
                         @date.Date.ToString("yyyy.MM.dd")
                     </td>
                     <td>
                         <a href="~/Records/View?recordId=@date.Id">@date.Name</a>
-                    </td>
-                    <td style="word-break:break-word">
-                        @Html.Raw(date.Text)
-                    </td>
+                        <p class="small"><i>@date.Themes</i></p>
+                    </td>                   
                 </tr>
              }
         </tbody>

@@ -109,7 +109,7 @@ namespace RiseDiary.IntegratedTests.Services
             context.SoftDeleting = true;
             Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
-            IHostAndPortService hostAndPortService = new HostAndPortStub();
+            var hostAndPortService = new HostAndPortStub();
             // add links
             var (rec1, rec2) = await For2RecordsAddLinkToName(context, hostAndPortService);
 
@@ -130,7 +130,7 @@ namespace RiseDiary.IntegratedTests.Services
             context.SoftDeleting = true;
             Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
-            IHostAndPortService hostAndPortService = new HostAndPortStub();
+            var hostAndPortService = new HostAndPortStub();
             // add links
             var (rec1, rec2) = await For2RecordsAddLinkToText(context, hostAndPortService);
 
@@ -152,7 +152,7 @@ namespace RiseDiary.IntegratedTests.Services
             Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             await Add3CogitationsForEachRecord(context);
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
-            IHostAndPortService hostAndPortService = new HostAndPortStub();
+            var hostAndPortService = new HostAndPortStub();
             // add links
             var (cog1, cog2) = await For2RecordsAddLinkToCogitations(context, hostAndPortService);
 

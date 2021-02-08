@@ -1,8 +1,6 @@
-﻿using RiseDiary.Model;
-
-namespace RiseDiary.IntegratedTests.Stubs
+﻿namespace RiseDiary.IntegratedTests.Stubs
 {
-    internal class HostAndPortStub : IHostAndPortService
+    internal class HostAndPortStub
     {
         public string GetHostAndPort() => "https://testsite.com:3000";
 

@@ -9,20 +9,20 @@ namespace RiseDiary.Model.Services
     public class RecordsService : IRecordsService
     {
         private readonly DiaryDbContext _context;
-        private readonly IHostAndPortService _hostAndPortService;
+        private readonly IAppSettingsService _appSettingsService;
 
-        public RecordsService(DiaryDbContext context, IHostAndPortService hostAndPortService)
+        public RecordsService(DiaryDbContext context, IAppSettingsService appSettingsService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
-            _hostAndPortService = hostAndPortService ?? throw new ArgumentNullException(nameof(hostAndPortService));
+            _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
         }
 
         public async Task<Guid> AddCogitation(Guid recordId, string cogitationText)
         {
             if (string.IsNullOrWhiteSpace(cogitationText)) throw new ArgumentException("Text should be passed for creating new cogitation");
 
-            var placeholder = _hostAndPortService.GetHostAndPortPlaceholder();
-            var currentHostAndPort = _hostAndPortService.GetHostAndPort();
+            var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
+            var currentHostAndPort = await _appSettingsService.GetHostAndPort();
 
             bool isRecordExists = await _context.Records.AnyAsync(r => r.Id == recordId).ConfigureAwait(false);
             if (!isRecordExists) throw new ArgumentException($"Record with Id='{recordId}' does not exists");
@@ -45,8 +45,8 @@ namespace RiseDiary.Model.Services
         {
             if (string.IsNullOrWhiteSpace(recordText)) throw new ArgumentException("Text should be passed for creating new record");
 
-            var placeholder = _hostAndPortService.GetHostAndPortPlaceholder();
-            var currentHostAndPort = _hostAndPortService.GetHostAndPort();
+            var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
+            var currentHostAndPort = await _appSettingsService.GetHostAndPort();
 
             var record = new DiaryRecord
             {
@@ -103,8 +103,8 @@ namespace RiseDiary.Model.Services
 
             if (record == null) throw new ArgumentException($"Record with Id='{recordId}' does not exists");
 
-            var placeholder = _hostAndPortService.GetHostAndPortPlaceholder();
-            var currentHostAndPort = _hostAndPortService.GetHostAndPort();
+            var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
+            var currentHostAndPort = await _appSettingsService.GetHostAndPort();
 
             record.Text = (record.Text ?? "").Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase);
             record.Name = (record.Name ?? "").Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase);
@@ -121,8 +121,8 @@ namespace RiseDiary.Model.Services
             if (cogitation == null) throw new ArgumentException($"Cogitation with Id='{cogitationId}' does not exists");
             if (string.IsNullOrWhiteSpace(newText)) throw new ArgumentException("Cogitation should not be empty");
 
-            var placeholder = _hostAndPortService.GetHostAndPortPlaceholder();
-            var currentHostAndPort = _hostAndPortService.GetHostAndPort();
+            var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
+            var currentHostAndPort = await _appSettingsService.GetHostAndPort();
 
             cogitation.Text = newText.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
             await _context.SaveChangesAsync().ConfigureAwait(false);
@@ -140,8 +140,8 @@ namespace RiseDiary.Model.Services
                 record.Date = newDate.Value;
             }
 
-            var placeholder = _hostAndPortService.GetHostAndPortPlaceholder();
-            var currentHostAndPort = _hostAndPortService.GetHostAndPort();
+            var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
+            var currentHostAndPort = await _appSettingsService.GetHostAndPort();
 
             if (newName != null)
             {

@@ -10,18 +10,18 @@ namespace RiseDiary.Model.Services
     public class CalendarService : ICalendarService
     {
         private readonly DiaryDbContext _context;
-        private readonly IHostAndPortService _hostAndPortService;
+        private readonly IAppSettingsService _appSettingsService;
 
-        public CalendarService(DiaryDbContext context, IHostAndPortService hostAndPortService)
+        public CalendarService(DiaryDbContext context, IAppSettingsService appSettingsService)
         {
             _context = context;
-            _hostAndPortService = hostAndPortService;
+            _appSettingsService = appSettingsService;
         }
 
         public async Task<List<CalendarItem>> GetCalendarItems(int year, IEnumerable<Guid> themesId, bool combineThemes)
         {
-            var placeholder = _hostAndPortService.GetHostAndPortPlaceholder();
-            var currentHostAndPort = _hostAndPortService.GetHostAndPort();
+            var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
+            var currentHostAndPort = await _appSettingsService.GetHostAndPort();
 
             if (themesId is null || !themesId.Any())
             {
@@ -29,7 +29,7 @@ namespace RiseDiary.Model.Services
                     .AsNoTracking()
                     .Select(r => new CalendarItem(
                         r.Id,
-                        r.Name.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase),
+                        string.IsNullOrWhiteSpace(r.Name) ? "[ПУСТО]" : r.Name.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase),
                         r.Date, r.Date))
                     .ToListAsync()
                     .ConfigureAwait(false);
@@ -48,6 +48,7 @@ namespace RiseDiary.Model.Services
                 var items = await _context.Records
                     .AsNoTracking()
                     .Select(r => new { r.Id, r.Date, r.Name, Themes = r.ThemesRefs.Select(t => t.ThemeId) })
+                    .AsSingleQuery()
                     .ToListAsync()
                     .ConfigureAwait(false);
 
@@ -56,7 +57,7 @@ namespace RiseDiary.Model.Services
                     .Where(r => filterFunc(themesId, t => r.Themes.Contains(t)))
                     .Select(r => new CalendarItem(
                         r.Id,
-                        r.Name.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase),
+                        string.IsNullOrWhiteSpace(r.Name) ? "[ПУСТО]" : r.Name.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase),
                         r.Date, r.Date))
                     .OrderBy(r => r.StartDate)
                     .ToList();

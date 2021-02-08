@@ -10,12 +10,12 @@ namespace RiseDiary.Model.Services
     public class RecordsSearchService : IRecordsSearchService
     {
         protected readonly DiaryDbContext _context;
-        protected readonly IHostAndPortService _hostAndPortService;
+        protected readonly IAppSettingsService _appSettingsService;
 
-        public RecordsSearchService(DiaryDbContext context, IHostAndPortService hostAndPortService)
+        public RecordsSearchService(DiaryDbContext context, IAppSettingsService appSettingsService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
-            _hostAndPortService = hostAndPortService ?? throw new ArgumentNullException(nameof(hostAndPortService));
+            _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
         }
 
         public async Task<List<DiaryRecord>> GetRecordsList(RecordsFilter filter)
@@ -29,8 +29,8 @@ namespace RiseDiary.Model.Services
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            var placeholder = _hostAndPortService.GetHostAndPortPlaceholder();
-            var currentHostAndPort = _hostAndPortService.GetHostAndPort();
+            var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
+            var currentHostAndPort = await _appSettingsService.GetHostAndPort();
 
             foreach (var rec in recordsPage)
             {

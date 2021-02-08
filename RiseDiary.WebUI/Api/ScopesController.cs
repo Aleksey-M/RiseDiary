@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.Shared.Dto;
@@ -10,15 +11,16 @@ using System.Threading.Tasks;
 namespace RiseDiary.WebUI.Api
 {
     [ApiController]
+    [Authorize]
     public class ScopesController : ControllerBase
     {
         private readonly IScopesService _scopeService;
-        private readonly IHostAndPortService _hostAndPortService;
+        private readonly IAppSettingsService _appSettingsService;
 
-        public ScopesController(IScopesService scopesService, IHostAndPortService hostAndPortService)
+        public ScopesController(IScopesService scopesService, IAppSettingsService appSettingsService)
         {
             _scopeService = scopesService;
-            _hostAndPortService = hostAndPortService;
+            _appSettingsService = appSettingsService;
         }
 
         [HttpPost, Route("api/v1.0/scopes")]
@@ -30,7 +32,7 @@ namespace RiseDiary.WebUI.Api
             {
                 var newScopeName = newScopeDto.NewScopeName.Trim();
                 var id = await _scopeService.AddScope(newScopeName);
-                var newScopeUri = $@"{_hostAndPortService.GetHostAndPort()}/api/v1.0/scopes/{id}";
+                var newScopeUri = $@"{await _appSettingsService.GetHostAndPort()}/api/v1.0/scopes/{id}";
                 return Created(newScopeUri, id);
             }
             catch (ArgumentException exc)
@@ -65,7 +67,7 @@ namespace RiseDiary.WebUI.Api
             try
             {
                 var newThemeId = await _scopeService.AddTheme(sid, dto.NewThemeName.Trim(), dto.Actual);
-                var scopeUri = $@"{_hostAndPortService.GetHostAndPort()}/api/v1.0/scopes/{sid}";
+                var scopeUri = $@"{await _appSettingsService.GetHostAndPort()}/api/v1.0/scopes/{sid}";
                 return Created(scopeUri, newThemeId);
             }
             catch (ArgumentException exc)

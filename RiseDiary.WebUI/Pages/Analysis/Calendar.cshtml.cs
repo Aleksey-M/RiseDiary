@@ -48,18 +48,18 @@ namespace RiseDiary.WebUI.Pages
                 {
                     sb.Append("{id:\"").Append(d.Id).Append("\",");
                     sb.Append("name:\"").Append(d.Name.Replace("\"", "\\\"")).Append("\",");
-                    sb.Append("startDate: new Date(").Append(d.StartDate.Year).Append(",")
-                        .Append(d.StartDate.Month - 1).Append(",")
+                    sb.Append("startDate: new Date(").Append(d.StartDate.Year).Append(',')
+                        .Append(d.StartDate.Month - 1).Append(',')
                         .Append(d.StartDate.Day).Append(",0,0,0),");
-                    sb.Append("endDate: new Date(").Append(d.StartDate.Year).Append(",")
-                        .Append(d.StartDate.Month - 1).Append(",")
+                    sb.Append("endDate: new Date(").Append(d.StartDate.Year).Append(',')
+                        .Append(d.StartDate.Month - 1).Append(',')
                         .Append(d.StartDate.Day).Append(",0,0,0),");
                     sb.Append("},");
                 }
 
                 sb.Remove(sb.Length - 1, 1);
 
-                sb.Append("]");
+                sb.Append(']');
 
                 return sb.ToString();
             }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.Shared.Dto;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 namespace RiseDiary.WebUI.Api
 {
     [ApiController]
+    [Authorize]
     public class RecordsThemesController : ControllerBase
     {
         private readonly IRecordsThemesService _recordsThemesService;

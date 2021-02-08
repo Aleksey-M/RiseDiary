@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.Shared.Dto;
@@ -9,16 +10,17 @@ using System.Threading.Tasks;
 namespace RiseDiary.WebUI.Api
 {
     [ApiController]
+    [Authorize]
     public class RecordsController : ControllerBase
     {
         private readonly IRecordsService _recordService;
-        private readonly IHostAndPortService _hostAndPortService;
+        private readonly IAppSettingsService _appSettingsService;
         private readonly IRecordsThemesService _recordsThemesService;
 
-        public RecordsController(IRecordsService recordService, IHostAndPortService hostAndPortService, IRecordsThemesService recordsThemesService)
+        public RecordsController(IRecordsService recordService, IAppSettingsService appSettingsService, IRecordsThemesService recordsThemesService)
         {
             _recordService = recordService;
-            _hostAndPortService = hostAndPortService;
+            _appSettingsService = appSettingsService;
             _recordsThemesService = recordsThemesService;
         }
 
@@ -31,7 +33,7 @@ namespace RiseDiary.WebUI.Api
             {
                 var recId = await _recordService.AddRecord(createDto.Date, createDto.RecordName, createDto.RecordText);
                 if (createDto.ThemesIds.Length > 0) await _recordsThemesService.AddRecordTheme(recId, createDto.ThemesIds);
-                var newRecordUri = $@"{_hostAndPortService.GetHostAndPort()}/api/v1.0/records/{recId}";
+                var newRecordUri = $@"{await _appSettingsService.GetHostAndPort()}/api/v1.0/records/{recId}";
                 return Created(newRecordUri, recId);
             }
             catch (ArgumentException exc)
@@ -130,7 +132,7 @@ namespace RiseDiary.WebUI.Api
             try
             {
                 var cogId = await _recordService.AddCogitation(recordId, createCogitationDto.Text);
-                var recordUri = $@"{_hostAndPortService.GetHostAndPort()}/api/v1.0/records/{recordId}";
+                var recordUri = $@"{await _appSettingsService.GetHostAndPort()}/api/v1.0/records/{recordId}";
                 return Created(recordUri, cogId);
             }
             catch (ArgumentException exc)

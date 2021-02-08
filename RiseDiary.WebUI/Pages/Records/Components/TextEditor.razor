@@ -54,11 +54,11 @@
             </div>
         </div>
 
-        <div class="col-12 m-1">
-            <button type="button" class="btn btn-outline-success" title="Сохранить текст" @onclick="_ => SaveChangedText()">
+        <div class="col-12">
+            <button type="button" class="btn btn-outline-success btn-sm m-1" title="Сохранить текст" @onclick="_ => SaveChangedText()">
                 Сохранить
             </button>
-            <button type="button" class="btn btn-outline-secondary" title="Закрыть без сохранения" @onclick="_ => SwitchMode()">
+            <button type="button" class="btn btn-outline-secondary btn-sm m-1" title="Закрыть без сохранения" @onclick="_ => SwitchMode()">
                 Закрыть
             </button>
         </div>
@@ -69,11 +69,11 @@
             <div id="html-@_editorId" style="border:1px solid silver;overflow: auto; resize: vertical" contenteditable="true">@Text</div>
         </div>
 
-        <div class="col-12 m-1">
-            <button type="button" class="btn btn-outline-success" title="Сохранить текст" @onclick="_ => SaveChangedText()">
+        <div class="col-12">
+            <button type="button" class="btn btn-outline-success btn-sm m-1" title="Сохранить текст" @onclick="_ => SaveChangedText()">
                 Сохранить
             </button>
-            <button type="button" class="btn btn-outline-secondary" title="Закрыть без сохранения" @onclick="_ => SwitchMode()">
+            <button type="button" class="btn btn-outline-secondary btn-sm m-1" title="Закрыть без сохранения" @onclick="_ => SwitchMode()">
                 Закрыть
             </button>
         </div>
@@ -84,11 +84,11 @@
             @ViewText
         </div>
 
-        <div class="col-12 m-1">
-            <button type="button" class="btn btn-outline-info" title="Редактировать текст" @onclick="_ => SwitchMode()">
+        <div class="col-12">
+            <button type="button" class="btn btn-outline-info btn-sm m-1" title="Редактировать текст" @onclick="_ => SwitchMode()">
                 Редактировать
             </button>
-            <button type="button" class="btn btn-outline-secondary" title="Редактировать HTML" @onclick="_ => OpenHTML()">
+            <button type="button" class="btn btn-outline-secondary btn-sm m-1" title="Редактировать HTML" @onclick="_ => OpenHTML()">
                 Редактировать HTML
             </button>
         </div>

@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
+using RiseDiary.IntegratedTests.Stubs;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
@@ -62,7 +64,8 @@ namespace RiseDiary.IntegratedTests
             .Build();
 
             var builder = new DbContextOptionsBuilder<DiaryDbContext>();
-            builder.UseSqlite($"Data Source={dbFileFullName};");
+            builder.UseSqlite($"Data Source={dbFileFullName};", o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            builder.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
 
             var context = new DiaryDbContext(builder.Options);
             context.Database.EnsureCreated();
@@ -186,9 +189,9 @@ namespace RiseDiary.IntegratedTests
 
             var recList = _20recordNames.Select((n, i) => new DiaryRecord { Name = n, Date = _20recordDates.ElementAt(i) }).ToList();
 
-            if(_20recordsText != null)
+            if (_20recordsText != null)
             {
-                for(int i = 0; i<20; i++)
+                for (int i = 0; i < 20; i++)
                 {
                     recList[i].Text = _20recordsText[i];
                 }
@@ -546,11 +549,11 @@ namespace RiseDiary.IntegratedTests
                     .ForEach(c => context.Cogitations.Add(c));
             }
 
-            if(additionalCogitationsText != null)
+            if (additionalCogitationsText != null)
             {
                 context.Records
                     .ToList()
-                    .Zip(additionalCogitationsText, (rec, cogText) => new Cogitation{ Id = Guid.NewGuid(), Record = rec, Text = cogText })
+                    .Zip(additionalCogitationsText, (rec, cogText) => new Cogitation { Id = Guid.NewGuid(), Record = rec, Text = cogText })
                     .ToList()
                     .ForEach(c => context.Cogitations.Add(c));
             }
@@ -578,7 +581,7 @@ namespace RiseDiary.IntegratedTests
             return (cogId1, cogId2);
         }
 
-        protected async Task<(Guid, Guid)> For2RecordsAddLinkToName(DiaryDbContext context, IHostAndPortService hostAndPortService)
+        protected async Task<(Guid, Guid)> For2RecordsAddLinkToName(DiaryDbContext context, HostAndPortStub hostAndPortService)
         {
             int count = await context.Records.CountAsync();
             var rnd = new Random();
@@ -598,7 +601,7 @@ namespace RiseDiary.IntegratedTests
             return (rec1, rec2);
         }
 
-        protected async Task<(Guid, Guid)> For2RecordsAddLinkToText(DiaryDbContext context, IHostAndPortService hostAndPortService)
+        protected async Task<(Guid, Guid)> For2RecordsAddLinkToText(DiaryDbContext context, HostAndPortStub hostAndPortService)
         {
             int count = await context.Records.CountAsync();
             var rnd = new Random();
@@ -618,7 +621,7 @@ namespace RiseDiary.IntegratedTests
             return (rec1, rec2);
         }
 
-        protected async Task<(Guid, Guid)> For2RecordsAddLinkToCogitations(DiaryDbContext context, IHostAndPortService hostAndPortService)
+        protected async Task<(Guid, Guid)> For2RecordsAddLinkToCogitations(DiaryDbContext context, HostAndPortStub hostAndPortService)
         {
             int count = await context.Records.CountAsync();
             var rnd = new Random();

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Shared.Dto;
 using System;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 namespace RiseDiary.WebUI.Api
 {
     [ApiController]
+    [Authorize]
     public class DatesController : ControllerBase
     {
         private readonly IDatesService _datesService;

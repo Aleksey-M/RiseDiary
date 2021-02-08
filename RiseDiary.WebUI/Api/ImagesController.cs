@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.Shared;
@@ -10,17 +11,18 @@ using System.Threading.Tasks;
 namespace RiseDiary.WebUI.Api
 {
     [ApiController]
+    [Authorize]
     public class ImagesController : ControllerBase
     {
         private readonly IImagesService _imagesService;
         private readonly IRecordsImagesService _recordsImagesService;
-        private readonly IHostAndPortService _hostAndPortService;
+        private readonly IAppSettingsService _appSettingsService;
 
-        public ImagesController(IImagesService imagesService, IRecordsImagesService recordsImagesService, IHostAndPortService hostAndPortService)
+        public ImagesController(IImagesService imagesService, IRecordsImagesService recordsImagesService, IAppSettingsService appSettingsService)
         {
             _imagesService = imagesService;
             _recordsImagesService = recordsImagesService;
-            _hostAndPortService = hostAndPortService;
+            _appSettingsService = appSettingsService;
         }
 
         [HttpGet, Route("api/v1.0/image-file/{id}")]
@@ -77,7 +79,7 @@ namespace RiseDiary.WebUI.Api
                     await _recordsImagesService.AddRecordImage(imageDto.TargetRecordId.Value, newImageId);
                 }
 
-                var newImageUri = $@"{_hostAndPortService.GetHostAndPort()}/api/v1.0/images/{newImageId}";
+                var newImageUri = $@"{await _appSettingsService.GetHostAndPort()}/api/v1.0/images/{newImageId}";
 
                 return Created(newImageUri, newImageId);
             }

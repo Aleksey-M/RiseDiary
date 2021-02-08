@@ -11,13 +11,11 @@ namespace RiseDiary.Model.Services
     public class DatesService : IDatesService
     {
         protected readonly DiaryDbContext _context;
-        protected readonly IHostAndPortService _hostAndPortService;
         protected readonly IAppSettingsService _appSettingsService;
 
-        public DatesService(DiaryDbContext context, IAppSettingsService appSettingsService, IHostAndPortService hostAndPortService)
+        public DatesService(DiaryDbContext context, IAppSettingsService appSettingsService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
-            _hostAndPortService = hostAndPortService ?? throw new ArgumentNullException(nameof(hostAndPortService));
             _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
         }
 
@@ -25,8 +23,8 @@ namespace RiseDiary.Model.Services
         {
             var sId = (await _appSettingsService.GetAppSetting(AppSettingsKey.ImportantDaysScopeId)).value ?? throw new Exception("Setting 'ImportantDaysScopeId' does not exists");
             var scopeId = Guid.Parse(sId);
-            var placeholder = _hostAndPortService.GetHostAndPortPlaceholder();
-            var currentHostAndPort = _hostAndPortService.GetHostAndPort();
+            var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
+            var currentHostAndPort = await _appSettingsService.GetHostAndPort();
 
             var allRecordsIds = _context.Scopes
                 .AsNoTracking()
@@ -47,7 +45,7 @@ namespace RiseDiary.Model.Services
                     r.Id,
                     r.Date,
                     new DateTime(today.Year, r.Date.Month, r.Date.Day),
-                    r.Name?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "",
+                    string.IsNullOrWhiteSpace(r.Name) ? "[ПУСТО]" : r.Name.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase),
                     r.Text?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "",
                     string.Join(", ", r.ThemesRefs.Select(tr => tr.Theme!.ThemeName))))
                 .OrderBy(r => r.TransferredDate)

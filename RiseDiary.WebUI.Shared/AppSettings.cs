@@ -11,7 +11,8 @@ namespace RiseDiary.Shared
         ImageQuality,
         CropImageMaxScaledWidth,
         CropImageMaxScaledHeight,
-        ThumbnailSize
+        ThumbnailSize,
+        HostAndPort
     }
 
     public sealed class AppSettingDto

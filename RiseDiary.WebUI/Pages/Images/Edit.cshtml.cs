@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
+using RiseDiary.WebUI.Model;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ namespace RiseDiary.WebUI.Pages.Images
 
         private async Task UpdateModel(Guid imageId)
         {
-            string url = Request.Scheme + @"://" + Request.Host.Host + ":" + Request.Host.Port;
+            string url = Request.GetAppBaseUrl();
 
             Image = await _imagesService.FetchImageById(imageId);
             ImageUrl = new Uri($@"{url}/api/v1.0/image-file/{Image.Id}");

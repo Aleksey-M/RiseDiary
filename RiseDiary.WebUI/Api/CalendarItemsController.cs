@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Shared.Dto;
@@ -9,8 +10,8 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Api
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CalendarItemsController : ControllerBase
     {
         private readonly ICalendarService _calendarService;

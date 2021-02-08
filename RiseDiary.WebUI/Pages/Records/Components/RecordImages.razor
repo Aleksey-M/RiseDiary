@@ -23,8 +23,8 @@
         </div>
 
         <div class="col-12">
-            <button class="btn btn-outline-info m-2" @onclick="async _ => await ShowAvailableImages()">Прикрепить изображение</button>
-            <a href="/images/upload?recordId=@RecordId" class="btn btn-outline-info">Загрузить изображение</a>
+            <button class="btn btn-outline-info m-1 btn-sm" @onclick="async _ => await ShowAvailableImages()">Прикрепить изображение</button>
+            <a href="/images/upload?recordId=@RecordId" class="btn btn-outline-info m-1 btn-sm">Загрузить изображение</a>
         </div>
     }
     else
@@ -43,8 +43,8 @@
         </div>
 
         <div class="col-12">
-            <button class="btn btn-outline-info m-2" hidden="@_allImagesDisplayed" @onclick="async _ => await ShowAvailableImages()" title="Показать больше картинок">Показать больше</button>
-            <button class="btn btn-outline-secondary m-2" @onclick="_ => HideAvailableImages()" title="Закрыть список доступных изображений">Назад</button>
+            <button class="btn btn-outline-info m-1 btn-sm" hidden="@_allImagesDisplayed" @onclick="async _ => await ShowAvailableImages()" title="Показать больше картинок">Показать больше</button>
+            <button class="btn btn-outline-secondary m-1 btn-sm" @onclick="_ => HideAvailableImages()" title="Закрыть список доступных изображений">Назад</button>
         </div>
     }
 </div>
