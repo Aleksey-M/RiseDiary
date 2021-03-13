@@ -2,9 +2,9 @@
   "version": "1.0",
   "defaultProvider": "unpkg",
   "defaultDestination": "wwwroot/lib/",
-  "libraries": [    
+  "libraries": [
     {
-      "library": "bootstrap@5.0.0-beta1",
+      "library": "bootstrap@5.0.0-beta2",
       "files": [ "dist/css/bootstrap.min.css", "dist/js/bootstrap.bundle.min.js" ],
       "destination": "wwwroot/lib/bootstrap"
     },
@@ -20,7 +20,7 @@
     },
     {
       "library": "quill@1.3.7",
-      "files": ["dist/*"],
+      "files": [ "dist/*" ],
       "destination": "wwwroot/lib/quilljs"
     }
   ]
