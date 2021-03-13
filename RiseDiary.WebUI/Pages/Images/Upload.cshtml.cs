@@ -26,11 +26,32 @@ namespace RiseDiary.WebUI.Pages.Images
             TargetRecordId = recordId;
         }
 
-        public async Task<IActionResult> OnPostAddNewImageAsync(List<IFormFile> newImages, string? newImageName, Guid? targetRecordId)
+        public async Task<IActionResult> OnPostAddNewImageAsync(List<IFormFile> newImages, string? newImageName, string? newBiggestDimension, Guid? targetRecordId)
         {
             TargetRecordId = targetRecordId;
             var validationErrors = new List<string>();
             if (newImages == null || newImages.Count == 0) validationErrors.Add("Файл изображения не выбран");
+
+            int? biggestDimmSize = null;
+
+            if(newBiggestDimension is { Length: > 0 })
+            {
+                if(int.TryParse(newBiggestDimension, out int val))
+                {
+                    if(val > 100 && val < 10000)
+                    {
+                        biggestDimmSize = val;
+                    }
+                    else
+                    {
+                        validationErrors.Add("Размер должен быть больше 100 и меньше 10 000");
+                    }
+                }
+                else
+                {
+                    validationErrors.Add("Размер максимальной бОльшей стороны должен быть задан целым положительным числом");
+                }
+            }
 
             if (validationErrors.Count > 0)
             {
@@ -49,7 +70,7 @@ namespace RiseDiary.WebUI.Pages.Images
                     (false, false) => newImageName!
                 };
 
-                newImageId = await _imagesService.AddImage(newImages[i], newImgName);
+                newImageId = await _imagesService.AddImage(newImages[i], newImgName, biggestDimmSize);
 
                 if (TargetRecordId != null && TargetRecordId != Guid.Empty)
                 {

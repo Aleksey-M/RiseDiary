@@ -17,13 +17,16 @@
         <form asp-page-handler="AddNewImage" method="post" enctype="multipart/form-data">
             <input type="hidden" name="targetRecordId" id="targetRecordId" value="@(Model.TargetRecordId ?? Guid.Empty)" />
             <div class="row">
-                <div class="col-lg-4 col-md-3 col-sm-12 p-2">
+                <div class="col-lg-4 col-md-5 col-sm-12 p-2">
                     <input type="file" accept="image/*" multiple="multiple" id="newImages" name="newImages" class="form-control-file" />
                 </div>
-                <div class="col-lg-6 col-md-6 col-sm-12 p-2">
+                <div class="col-lg-5 col-md-7 col-sm-12 p-2">
                     <input type="text" placeholder="Название нового изображения" id="newImageName" name="newImageName" class="form-control" />
                 </div>
-                <div class="col-lg-2 col-md-3 col-sm-12 p-2">
+                <div class="col-lg-1 col-md-3 col-sm-6 p-2">
+                    <input type="text" placeholder="Сжимать, если сторона больше чем" id="newBiggestDimension" name="newBiggestDimension" class="form-control" />
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6 p-2">
                     <input type="submit" value="Добавить" class="btn btn-outline-success form-control" />
                 </div>
             </div>

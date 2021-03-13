@@ -21,7 +21,7 @@ namespace RiseDiary.Model.Services
             _appSettings = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
         }
 
-        public async Task<Guid> AddImage(IFormFile formFile, string imageName = "")
+        public async Task<Guid> AddImage(IFormFile formFile, string imageName = "", int? newBiggestDimensionSize = null)
         {
             if (string.IsNullOrWhiteSpace(imageName))
             {
@@ -33,13 +33,13 @@ namespace RiseDiary.Model.Services
             using var ms = new MemoryStream();
             await formFile.CopyToAsync(ms).ConfigureAwait(false);
 
-            var image = await AddImageWithoutSaving(ms.ToArray(), imageName).ConfigureAwait(false);
+            var image = await AddImageWithoutSaving(ms.ToArray(), imageName, newBiggestDimensionSize).ConfigureAwait(false);
             await _context.SaveChangesAsync().ConfigureAwait(false);
 
             return image.Id;
         }
 
-        protected async Task<DiaryImage> AddImageWithoutSaving(byte[] image, string imageName)
+        protected async Task<DiaryImage> AddImageWithoutSaving(byte[] image, string imageName, int? newBiggestDimensionSize = null)
         {
             if (string.IsNullOrWhiteSpace(imageName)) throw new ArgumentException("Image Name should not be empty");
             _ = image ?? throw new ArgumentNullException(nameof(image));
@@ -48,6 +48,16 @@ namespace RiseDiary.Model.Services
             int thumbnailSize = await _appSettings.GetAppSettingInt(AppSettingsKey.ThumbnailSize) ?? throw new Exception("Setting Value ThumbnailSize not set");
 
             var (taken, cameraModel) = GetMetadataFromPhoto(image);
+            var (width, height) = GetImageSize(image);
+
+            if(newBiggestDimensionSize is not null)
+            {
+                if(width > newBiggestDimensionSize || height > newBiggestDimensionSize)
+                {
+                    image = ScaleImage(image, imageQuality, newBiggestDimensionSize.Value);
+                    (width, height) = GetImageSize(image);
+                }
+            }
 
             var dImage = new DiaryImage
             {
@@ -59,12 +69,14 @@ namespace RiseDiary.Model.Services
                 Thumbnail = ScaleImage(image, imageQuality, thumbnailSize),
                 Taken = taken,
                 CameraModel = cameraModel,
+                Height = height,
+                Width = width,
                 FullImage = new DiaryImageFull
                 {
                     Data = image
                 }
             };
-            (dImage.Width, dImage.Height) = GetImageSize(image);
+
             await _context.Images.AddAsync(dImage).ConfigureAwait(false);
 
             return dImage;

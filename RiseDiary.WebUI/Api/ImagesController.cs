@@ -69,10 +69,11 @@ namespace RiseDiary.WebUI.Api
         public async Task<IActionResult> UploadImages([FromForm] UploadImageDto imageDto)
         {
             if (imageDto.Image == null) return BadRequest("Image file should be selected");
+            if (imageDto.NewBiggestDimension < 100 || imageDto.NewBiggestDimension > 10000) return BadRequest("Dimension size should be between 100 and 10 000");
 
             try
             {
-                var newImageId = await _imagesService.AddImage(imageDto.Image, imageDto.ImageName);
+                var newImageId = await _imagesService.AddImage(imageDto.Image, imageDto.ImageName, imageDto.NewBiggestDimension);
 
                 if (imageDto.TargetRecordId != null && imageDto.TargetRecordId != Guid.Empty)
                 {

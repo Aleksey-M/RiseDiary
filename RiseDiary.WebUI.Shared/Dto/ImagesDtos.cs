@@ -12,6 +12,7 @@ namespace RiseDiary.Shared.Dto
         [Required]
         public IFormFile? Image { get; set; }  
         public Guid? TargetRecordId { get; set; }
+        public int? NewBiggestDimension { get; set; }
     }
 
     public sealed class UpdateImageDto

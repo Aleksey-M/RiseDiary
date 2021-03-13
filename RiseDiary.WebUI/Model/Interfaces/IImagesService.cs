@@ -7,7 +7,7 @@ namespace RiseDiary.Model
 {
     public interface IImagesService
     {
-        Task<Guid> AddImage(IFormFile formFile, string imageName = "");
+        Task<Guid> AddImage(IFormFile formFile, string imageName = "", int? newBiggestDimensionSize = null);
         Task DeleteImage(Guid imageId);
         Task<byte[]> FetchFullImageById(Guid imageId);
         Task<DiaryImage> FetchImageById(Guid imageId);

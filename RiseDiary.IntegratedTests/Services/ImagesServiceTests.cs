@@ -22,6 +22,21 @@ namespace RiseDiary.IntegratedTests.Services
             imageId.Should().NotBeEmpty();
         }
 
+
+        [Test]
+        public async Task AddImage_WithBiggestSizeRestriction_ShouldReduseSize()
+        {
+            var context = CreateContext();
+            var svc = GetImagesService(context);
+
+            var imageId = await svc.AddImage(TestFile, newBiggestDimensionSize: 250);
+
+            imageId.Should().NotBeEmpty();
+            var image = await context.Images.SingleAsync(i => i.Id == imageId);
+            image.Height.Should().BeLessOrEqualTo(250);
+            image.Width.Should().BeLessOrEqualTo(250);
+        }
+
         [Test]
         public async Task FetchImageById_WithNotExistingId_ShouldThrowArgumentException()
         {
