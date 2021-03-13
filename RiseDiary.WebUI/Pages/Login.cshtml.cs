@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -30,6 +31,8 @@ namespace RiseDiary.WebUI.Pages
         public async Task<IActionResult> OnPost()
         {
             var user = _configuration.GetSection("SiteUser").Get<SiteUser>();
+
+            if (user is null) throw new Exception("User configuration not found");
 
             if (UserName == user.UserName)
             {
