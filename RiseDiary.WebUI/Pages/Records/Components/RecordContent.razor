@@ -114,6 +114,11 @@
     </div>
 }
 
+<div class="col-12 mb-2">
+    <hr />
+    <button type="button" class="btn btn-outline-danger" title="Удалить запись" @onclick="async _ => await DeleteRecord()">Удалить запись</button>
+</div>
+
 @code {
 
     [Parameter]
@@ -241,4 +246,14 @@
         await JSRuntime.InvokeVoidAsync("setQuillHtmlText", @"<p></p>", "newCogitation");
     }
 
+    private async Task DeleteRecord()
+    {
+        bool conf = await JSRuntime.InvokeAsync<bool>("confirm", "Удалить запись?");
+
+        if (conf)
+        {
+            await RecordsService.DeleteRecord(RecordId);
+            await JSRuntime.InvokeVoidAsync("redirectToIndex");
+        }
+    }
 }
