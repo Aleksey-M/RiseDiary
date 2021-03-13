@@ -13,6 +13,15 @@ namespace RiseDiary.Shared.Dto
         public int NewImageBiggestSide { get; set; }
     }
 
+    public sealed class RotateImageDto
+    {
+        [Required]
+        public Guid ImageId { get; set; }
+
+        [Required]
+        public bool RotateRight { get; set; }
+    }
+
     public sealed class ReplaceImageDto
     {
         [Required]

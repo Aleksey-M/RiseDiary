@@ -104,5 +104,25 @@ namespace RiseDiary.WebUI.Pages.Images
             await UpdateModel(imageId);
         }
 
+        public async Task OnPostRotateImageAsync(Guid imageId, Guid? recordId, string direction)
+        {
+            RecordId = recordId;
+            Image = await _imagesService.FetchImageById(imageId);
+
+            if (direction is { Length: > 0 })
+            {
+                if(direction.Equals("left", StringComparison.OrdinalIgnoreCase))
+                {
+                    await _imagesEditService.RotateImage(imageId, Turn.Left);
+                }
+                else
+                {
+                    await _imagesEditService.RotateImage(imageId, Turn.Right);
+                }
+            }            
+
+            await UpdateModel(imageId);
+        }
+
     }
 }

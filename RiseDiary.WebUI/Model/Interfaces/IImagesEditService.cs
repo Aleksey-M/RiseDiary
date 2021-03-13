@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model
 {
+    public enum Turn { Left, Right }
+
     public interface IImagesEditService
     {
         Task<bool> ImageHasChanges(Guid imageId);
@@ -13,5 +15,6 @@ namespace RiseDiary.Model
         Task ReplaceImage(IFormFile newImage, Guid imageId);
         Task ReduceImageSize(Guid imageId, int newBiggestDimensionSize);
         Task<Guid> CreateNewImageFromChanged(Guid imageId);
+        Task RotateImage(Guid imageId, Turn direction);
     }
 }

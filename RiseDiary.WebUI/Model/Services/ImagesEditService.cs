@@ -79,7 +79,7 @@ namespace RiseDiary.Model.Services
 
         public async Task ReduceImageSize(Guid imageId, int newBiggestDimensionSize)
         {
-            var image = await _context.Images.SingleOrDefaultAsync(i => i.Id == imageId);
+            var image = await _context.Images.SingleOrDefaultAsync(i => i.Id == imageId).ConfigureAwait(false);
             if (image == null) throw new ArgumentException($"Image with Id='{imageId}' does not exists");
 
             bool changesAlreadyExists = await ImageHasChanges(imageId);
@@ -105,7 +105,7 @@ namespace RiseDiary.Model.Services
             };
             (temp.Width, temp.Height) = GetImageSize(result);
 
-            await SaveModifiedImage(temp);
+            await SaveModifiedImage(temp).ConfigureAwait(false);
         }
 
         public async Task ReplaceImage(IFormFile newImage, Guid imageId)
@@ -130,6 +130,45 @@ namespace RiseDiary.Model.Services
                 SizeByte = imageArray.Length
             };
             (temp.Width, temp.Height) = GetImageSize(imageArray);
+
+            await SaveModifiedImage(temp).ConfigureAwait(false);
+        }
+
+        public async Task RotateImage(Guid imageId, Turn direction)
+        {
+            var image = await _context.Images.SingleOrDefaultAsync(i => i.Id == imageId).ConfigureAwait(false);
+            if (image == null) throw new ArgumentException($"Image with Id='{imageId}' does not exists");
+
+            bool changesAlreadyExists = await ImageHasChanges(imageId);
+            if (changesAlreadyExists) throw new ArgumentException($"Image with id='{imageId}' has unsaved changes");
+
+            var sourceImage = await _context.FullSizeImages
+                .AsNoTracking()
+                .SingleOrDefaultAsync(i => i.ImageId == imageId)
+                .ConfigureAwait(false);
+
+            int imageQuality = await _appSettings.GetAppSettingInt(AppSettingsKey.ImageQuality) ?? throw new Exception("Setting Value ImageQuality not set");
+
+            var result = direction switch
+            {
+                Turn.Left => RotateImage(sourceImage.Data, 270, imageQuality),
+                Turn.Right => RotateImage(sourceImage.Data, 90, imageQuality),
+                _ => throw new Exception("Unknown direction")
+            };
+
+            var temp = new TempImage
+            {
+                SourceImageId = image.Id,
+                Modification = direction switch
+                    { 
+                        Turn.Left => "Поворот на 90 градусов влево",
+                        Turn.Right => "Поворот на 90 градусов вправо",
+                        _ => ""
+                    },
+                Data = result,
+                SizeByte = result.Length
+            };
+            (temp.Width, temp.Height) = GetImageSize(result);
 
             await SaveModifiedImage(temp).ConfigureAwait(false);
         }

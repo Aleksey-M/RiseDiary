@@ -231,5 +231,45 @@ namespace RiseDiary.IntegratedTests.Services
             bool tempImageExists = await context.TempImages.AnyAsync(i => i.SourceImageId == imgWithTemp.Id);
             tempImageExists.Should().BeFalse();
         }
+
+        [Test]
+        public async Task RotateImage_ToLeft_ShouldAddTempImage()
+        {
+            var context = CreateContext();
+            var svc = GetImagesEditService(context);
+            var imgId = Create_Image(context, FullImage_512X341);                       
+
+            await svc.RotateImage(imgId, Model.Turn.Left);
+
+            var tmpImg = await context.TempImages.SingleOrDefaultAsync(i => i.SourceImageId == imgId);
+            var img = await context.Images.SingleOrDefaultAsync(i => i.Id == imgId);
+            img.Width.Should().Be(512);
+            img.Height.Should().Be(341);
+            tmpImg.Should().NotBeNull();
+            tmpImg.Modification.Should().Be("Поворот на 90 градусов влево");
+            tmpImg.Width.Should().Be(341);
+            tmpImg.Height.Should().Be(512);
+            //System.IO.File.WriteAllBytes(@"D:\file1.jpg", tmpImg.Data);
+        }
+
+        [Test]
+        public async Task RotateImage_ToRight_ShouldAddTempImage()
+        {
+            var context = CreateContext();
+            var svc = GetImagesEditService(context);
+            var imgId = Create_Image(context, FullImage_512X341);
+
+            await svc.RotateImage(imgId, Model.Turn.Right);
+
+            var tmpImg = await context.TempImages.SingleOrDefaultAsync(i => i.SourceImageId == imgId);
+            var img = await context.Images.SingleOrDefaultAsync(i => i.Id == imgId);
+            img.Width.Should().Be(512);
+            img.Height.Should().Be(341);
+            tmpImg.Should().NotBeNull();
+            tmpImg.Modification.Should().Be("Поворот на 90 градусов вправо");
+            tmpImg.Width.Should().Be(341);
+            tmpImg.Height.Should().Be(512);
+            //System.IO.File.WriteAllBytes(@"D:\file2.jpg", tmpImg.Data);
+        }
     }
 }

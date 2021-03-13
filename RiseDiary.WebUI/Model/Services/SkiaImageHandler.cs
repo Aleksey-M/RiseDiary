@@ -84,5 +84,32 @@ namespace RiseDiary.Model.Services
 
             return (taken, cameraModel);
         }
+
+        protected byte[] RotateImage(byte[] image, float degrees, int imageQuality)
+        {
+            using var bitmap = SKBitmap.Decode(image);
+            var rotated = new SKBitmap(width: bitmap.Height, height: bitmap.Width);
+
+            using (var surface = new SKCanvas(rotated))
+            {
+                var (dx, dy) = degrees switch
+                {
+                    > 0 and <= 45 => (0, 0),
+                    > 45 and <= 135 => (rotated.Width, 0),
+                    > 135 and <= 225 => (rotated.Width, rotated.Height),
+                    > 225 and <= 315 => (0, rotated.Height),
+                    _ => (0, 0)
+                };
+
+                surface.Translate(dx, dy);
+                surface.RotateDegrees(degrees);
+                surface.DrawBitmap(bitmap, 0, 0);
+            }           
+
+            using var jpeg = rotated.Encode(SKEncodedImageFormat.Jpeg, imageQuality);
+            using var memoryStream = new MemoryStream();
+            jpeg.AsStream().CopyTo(memoryStream);
+            return memoryStream.ToArray();
+        }
     }
 }
