@@ -5,9 +5,16 @@
     <div id="@("fullImage-" + ImageId)" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
+
+                <div class="modal-header">
+                    <i>@ImageName</i>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
                 <div class="modal-body text-center">
                     <img src="/api/v1.0/image-file/@ImageId" class="img-fluid">
                 </div>
+
             </div>
         </div>
     </div>

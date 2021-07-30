@@ -32,17 +32,16 @@
     public string AreaName { get; set; } = "";
 
     [Parameter]
-    public Dictionary<string, string?>? GetParametersList { get; set; }
+    public List<KeyValuePair<string, string?>>? GetParametersList { get; set; }
 
     private IEnumerable<(string classes, string href, int page)> LinksList
     {
         get
-        {
-            var getParams = GetParametersList ?? new Dictionary<string, string?>();
+        {            
+            var getParams = GetParametersList ?? new List<KeyValuePair<string, string?>>();
 
             foreach (var p in Pages?.Pages ?? Enumerable.Empty<int>())
-            {
-                getParams["pageNo"] = p.ToString();
+            {                              
 
                 if(p == (Pages?.CurrentPage ?? 1))
                 {
@@ -50,7 +49,7 @@
                 }
                 else
                 {
-                    yield return ("page-item", QueryHelpers.AddQueryString($"/{AreaName}", getParams), p);
+                    yield return ("page-item", QueryHelpers.AddQueryString($"/{AreaName}", getParams.Append(new KeyValuePair<string, string?>("pageNo", p.ToString()))), p);
                 }
             }
         }

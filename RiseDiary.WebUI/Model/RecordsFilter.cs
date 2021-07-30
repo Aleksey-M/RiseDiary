@@ -72,15 +72,20 @@ namespace RiseDiary.Model
 
         public bool CombineThemes { get; set; }
 
-        public Dictionary<string, string?> GetValuesDict() => new Dictionary<string, string?>()
+        public IEnumerable<KeyValuePair<string, string?>> GetValuesList()
         {
-            { nameof(FilterName), FilterName },
-            { nameof(FromDate), FromDate?.ToString("yyyy-MM-dd") },
-            { nameof(ToDate), ToDate?.ToString("yyyy-MM-dd") },
-           // { nameof(PageNo), PageNo.ToString() },
-           // { nameof(PageSize), PageSize.ToString() },
-            { nameof(CombineThemes), CombineThemes ? "true" : null },
-            { nameof(Themes), Themes.Count > 0 ? string.Join(",", Themes) : null }
-        };
+            var res = new List<KeyValuePair<string, string?>>()
+            {
+                { new KeyValuePair<string, string?>(nameof(FilterName), FilterName) },
+                { new KeyValuePair<string, string?>(nameof(FromDate), FromDate?.ToString("yyyy-MM-dd")) },
+                { new KeyValuePair<string, string?>(nameof(ToDate), ToDate?.ToString("yyyy-MM-dd")) },
+                { new KeyValuePair<string, string?>(nameof(CombineThemes), CombineThemes ? "true" : null) },
+                { new KeyValuePair<string, string?>(nameof(Themes), Themes.Count > 0 ? string.Join(",", Themes) : null) }
+            };
+
+            res.AddRange(Themes.Select(t => new KeyValuePair<string, string?>("themes", t.ToString())));
+
+            return res;
+        }
     }
 }
