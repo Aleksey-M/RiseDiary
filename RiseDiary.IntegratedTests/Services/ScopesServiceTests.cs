@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+
 namespace RiseDiary.IntegratedTests.Services
 {
     [TestFixture]
@@ -40,7 +42,7 @@ namespace RiseDiary.IntegratedTests.Services
             var svc = GetScopesService();
             Func<Task> action = async () => _ = await svc.AddScope(null!);
 
-            action.Should().Throw<ArgumentException>();
+            action.Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]
@@ -51,9 +53,9 @@ namespace RiseDiary.IntegratedTests.Services
             Func<Task> action2 = async () => _ = await svc.AddScope(" ");
             Func<Task> action3 = async () => _ = await svc.AddScope("   ");
 
-            action1.Should().Throw<ArgumentException>();
-            action2.Should().Throw<ArgumentException>();
-            action3.Should().Throw<ArgumentException>();
+            action1.Should().ThrowAsync<ArgumentException>();
+            action2.Should().ThrowAsync<ArgumentException>();
+            action3.Should().ThrowAsync<ArgumentException>();
         }
 
         [Test]

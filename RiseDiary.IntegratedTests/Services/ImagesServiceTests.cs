@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+
 namespace RiseDiary.IntegratedTests.Services
 {
     internal class ImagesServiceTests : TestedServices
@@ -56,7 +58,7 @@ namespace RiseDiary.IntegratedTests.Services
 
             image.Should().NotBeNull();
             image.Name.Should().Be("Test image name");
-            image.CreateDate.Should().BeCloseTo(DateTime.Now, 500);
+            image.CreateDate.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
         }
 
         [Test]
@@ -136,7 +138,7 @@ namespace RiseDiary.IntegratedTests.Services
 
             imgSaved.Should().NotBeNull();
             imgSaved.Name.Should().Be(newName);
-            imgSaved.ModifyDate.Should().BeCloseTo(DateTime.Now, 500);
+            imgSaved.ModifyDate.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
         }
 
         [Test]

@@ -7,13 +7,15 @@ using System.Linq;
 using System.Threading.Tasks;
 
 #pragma warning disable CA1812
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
 
 namespace RiseDiary.IntegratedTests.Services
 {
     [TestFixture]
     internal class CalendarServiceTests : TestedServices
     {
-        private readonly List<DateTime> _recordDates = new List<DateTime> {
+        private readonly List<DateTime> _recordDates = new()
+        {
                 new DateTime(2017, 7, 5),
                 new DateTime(2018, 1, 24),
                 new DateTime(2019, 10, 19),
@@ -21,7 +23,8 @@ namespace RiseDiary.IntegratedTests.Services
                 new DateTime(2018, 1, 4),
                 new DateTime(1999, 2, 28) };
 
-        private readonly Dictionary<DateTime, List<string>> _recordsDatesThemes = new Dictionary<DateTime, List<string>> {
+        private readonly Dictionary<DateTime, List<string>> _recordsDatesThemes = new()
+        {
             { new DateTime(2017, 7, 5), new List<string>{ "Important Dates", "Dreams" } },
             { new DateTime(2018, 1, 24), new List<string>{ "Intents", "Important Dates" } },
             { new DateTime(2019, 10, 19), new List<string>{ "Dreams" } },
@@ -70,7 +73,7 @@ namespace RiseDiary.IntegratedTests.Services
             res.Should().NotBeNull();
             res.Should().HaveCount(3);
             res.Should().BeInAscendingOrder();
-            res.Should().BeEquivalentTo(1999, 2017, 2019);
+            res.Should().BeEquivalentTo(new int[] { 1999, 2017, 2019 });
 
             //=========================//
 
@@ -79,7 +82,7 @@ namespace RiseDiary.IntegratedTests.Services
             res.Should().NotBeNull();
             res.Should().HaveCount(3);
             res.Should().BeInAscendingOrder();
-            res.Should().BeEquivalentTo(1999, 2017, 2019);
+            res.Should().BeEquivalentTo(new int[] { 1999, 2017, 2019 });
         }
 
         [Test]
@@ -94,7 +97,7 @@ namespace RiseDiary.IntegratedTests.Services
             res.Should().NotBeNull();
             res.Should().HaveCount(4);
             res.Should().BeInAscendingOrder();
-            res.Should().BeEquivalentTo(1999, 2017, 2018, 2019);
+            res.Should().BeEquivalentTo(new int[] { 1999, 2017, 2018, 2019 });
 
             //=========================//
 
@@ -103,7 +106,7 @@ namespace RiseDiary.IntegratedTests.Services
             res.Should().NotBeNull();
             res.Should().HaveCount(4);
             res.Should().BeInAscendingOrder();
-            res.Should().BeEquivalentTo(1999, 2017, 2018, 2019);
+            res.Should().BeEquivalentTo(new int[] { 1999, 2017, 2018, 2019 });
         }
 
         [Test]

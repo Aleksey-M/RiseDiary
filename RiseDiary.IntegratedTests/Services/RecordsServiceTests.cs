@@ -7,6 +7,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+
 namespace RiseDiary.IntegratedTests.Services
 {
     [TestFixture]
@@ -28,8 +30,8 @@ namespace RiseDiary.IntegratedTests.Services
             rec.Name.Should().Be(recName);
             rec.Text.Should().Be(recText);
             rec.Date.Should().Be(recDate.Date);
-            rec.CreateDate.Should().BeCloseTo(DateTime.Now, 500);
-            rec.ModifyDate.Should().BeCloseTo(DateTime.Now, 500);
+            rec.CreateDate.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
+            rec.ModifyDate.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
         }
 
         [Test]
@@ -286,7 +288,7 @@ namespace RiseDiary.IntegratedTests.Services
             var cog = await context.Cogitations.FindAsync(cogId);
             cog.Should().NotBeNull();
             cog.Text.Should().Be(text);
-            cog.Date.Should().BeCloseTo(DateTime.Now, 500);
+            cog.Date.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
             cog.RecordId.Should().Be(recId);
         }
 
