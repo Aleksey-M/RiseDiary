@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -8,6 +9,7 @@ using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -51,20 +53,41 @@ namespace RiseDiary.IntegratedTests
             return context;
         }
 
-        protected static (DiaryDbContext context, string fileName) GetContextWithFileName()
+        private static DbConnection CreateInMemoryDatabase()
         {
-            var dbFileFullName = Path.Combine(DirNameFull, Path.GetFileName(Path.GetTempFileName()));
-            if (File.Exists(dbFileFullName))
+            var connection = new SqliteConnection("Filename=:memory:");
+
+            connection.Open();
+
+            return connection;
+        }
+
+        protected static (DiaryDbContext context, string fileName) GetContextWithFileName(bool inMemory = true)
+        {
+            var dbFileFullName = inMemory ? ":memory:" : Path.Combine(DirNameFull, Path.GetFileName(Path.GetTempFileName()));
+
+            if (!inMemory)
             {
-                File.Delete(dbFileFullName);
+                if (File.Exists(dbFileFullName))
+                {
+                    File.Delete(dbFileFullName);
+                }
+                _dbFileNames.Add(dbFileFullName);
             }
-            _dbFileNames.Add(dbFileFullName);
 
             IConfigurationRoot configuration = new ConfigurationBuilder()
             .Build();
 
             var builder = new DbContextOptionsBuilder<DiaryDbContext>();
-            builder.UseSqlite($"Data Source={dbFileFullName};", o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            if (inMemory)
+            {
+
+                builder.UseSqlite(CreateInMemoryDatabase(), o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            }
+            else
+            {
+                builder.UseSqlite($"Data Source={dbFileFullName};", o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            }
             builder.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
 
             var context = new DiaryDbContext(builder.Options);

@@ -8,10 +8,10 @@ namespace RiseDiary.IntegratedTests
     [TestFixture]
     internal class SQLite_DataBaseTests : TestFixtureBase
     {
-        [Test]
+        [Test, Ignore("Create file test")]
         public void GetConnection_ShouldCreateDbFile_ByDbContext()
         {
-            var (context, fileName) = GetContextWithFileName();
+            var (context, fileName) = GetContextWithFileName(inMemory: false);
 
             context.Should().NotBeNull();
             File.Exists(fileName).Should().BeTrue();

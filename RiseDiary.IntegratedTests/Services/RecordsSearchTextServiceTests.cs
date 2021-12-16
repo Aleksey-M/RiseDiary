@@ -355,7 +355,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             Create_20Records(context, GetNamesList(), GetDatesList(20), GetNamesList().ToList());
-            await Add3CogitationsForEachRecord(context, "CogitationText_", GetNamesList());
+            await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             var filter = new RecordsTextFilter { SearchText = SearchSubstring4 };
 
@@ -375,7 +375,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             Create_20Records(context, GetNamesList(), GetDatesList(20), GetNamesList().ToList());
-            await Add3CogitationsForEachRecord(context, "CogitationText_", GetNamesList());
+            await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
 
             int count = await recSearchByTextSvc.GetRecordsCount(SearchSubstring4);

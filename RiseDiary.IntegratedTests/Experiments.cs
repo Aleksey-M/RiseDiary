@@ -11,7 +11,7 @@ namespace RiseDiary.IntegratedTests
     [TestFixture]
     internal class Experiments : TestFixtureBase
     {
-        [Test]
+        [Test, Ignore("Experimental test")]
         public async Task CheckEntityFrameworkQuert()
         {
             var context = CreateContext();
