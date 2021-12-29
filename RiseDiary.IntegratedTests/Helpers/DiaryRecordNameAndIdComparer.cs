@@ -13,6 +13,6 @@ namespace RiseDiary.IntegratedTests
             return x.Id == y.Id && x.Name == y.Name;
         }
         public int GetHashCode(DiaryRecord obj) => obj.Id.GetHashCode() + obj.Name.GetHashCode(StringComparison.InvariantCulture);
-        public static DiaryRecordNameAndIdComparer Instance => new DiaryRecordNameAndIdComparer();
+        public static DiaryRecordNameAndIdComparer Instance => new();
     }
 }

@@ -6,9 +6,10 @@ using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
+
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
 
 namespace RiseDiary.IntegratedTests.Services
 {
@@ -165,7 +166,7 @@ namespace RiseDiary.IntegratedTests.Services
         
 
 #pragma warning disable CA1822 // Mark members as static
-        private List<DiaryRecord> GetTestRecords() => new List<DiaryRecord>
+        private List<DiaryRecord> GetTestRecords() => new()
         {
             new DiaryRecord //1
             {
@@ -239,7 +240,7 @@ namespace RiseDiary.IntegratedTests.Services
             }            
         };
 
-        private List<DiaryScope> GetTestScopes() => new List<DiaryScope>
+        private List<DiaryScope> GetTestScopes() => new()
         {
             new DiaryScope
             {

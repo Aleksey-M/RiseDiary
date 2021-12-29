@@ -12,6 +12,7 @@
             get => _pageSize;
             set => _pageSize = value > 0 && value < 100 ? value : 20;
         }
+
         public int PageNo 
         { 
             get => _pageNo;

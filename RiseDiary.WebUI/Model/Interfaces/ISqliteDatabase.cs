@@ -8,9 +8,13 @@ namespace RiseDiary.Model
     public interface ISqliteDatabase
     {
         Task<DeletedEntitiesInfo> GetDeletedEntitiesInfo();
+
         SqliteDatabaseInfo GetSqliteDatabaseInfo();
+
         Task ClearDatabase();
+
         Task Vacuum();
+
         Task File2FileMigration();
     }
 }

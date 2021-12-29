@@ -35,6 +35,7 @@ namespace RiseDiary.Model.Services
                 .SingleOrDefaultAsync(i => i.Id == imageId)
                 .ConfigureAwait(false);
 
+            if (image is null) throw new ArgumentException($"Image with id='{imageId}' was not found");
             if (image.TempImage != null) throw new ArgumentException($"Image with id='{imageId}' has unsaved changes");
 
             int top = Convert.ToInt32(selectedPreviewRect.Top * scaleCoefficient);

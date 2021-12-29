@@ -9,6 +9,7 @@ namespace RiseDiary.Model
     public interface IDatesService
     {
         Task<List<DateListItem>> GetAllDates(DateTime today);
+
         Task<List<DateListItem>> GetDatesFromRange(DateTime tuday, bool withEmptyDates);
     }
 }

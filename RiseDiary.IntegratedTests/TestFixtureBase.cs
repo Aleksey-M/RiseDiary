@@ -43,7 +43,7 @@ namespace RiseDiary.IntegratedTests
             }
         }
 
-        private readonly static List<string> _dbFileNames = new List<string>();
+        private readonly static List<string> _dbFileNames = new();
 
         protected static string DirNameFull => AppDomain.CurrentDomain.BaseDirectory ?? throw new ArgumentNullException(nameof(AppDomain.CurrentDomain.BaseDirectory));
 
@@ -263,7 +263,7 @@ namespace RiseDiary.IntegratedTests
             DiaryRecord rec;
             for (int i = 0; i < 3; i++)
             {
-                rec = context.Records.Find(resList[i]);
+                rec = context.Records.Find(resList[i]) ?? throw new Exception($"Test error^ record with Id '{resList[i]}' was not found");
                 for (int j = 3; j - i > 0; j--)
                 {
                     var cog = new Cogitation { Date = DateTime.Now.AddDays(-j), RecordId = rec.Id, Text = new string('+', j) };

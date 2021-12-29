@@ -88,7 +88,7 @@ namespace RiseDiary.Model.Services
             }
         }
 
-        public async Task<DiaryScope> FetchScopeById(Guid scopeId)
+        public async Task<DiaryScope?> FetchScopeById(Guid scopeId)
         {
             return await _context.Scopes
                 .AsNoTracking()

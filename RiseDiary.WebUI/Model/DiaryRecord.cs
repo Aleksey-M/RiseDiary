@@ -6,16 +6,25 @@ namespace RiseDiary.Model
     public class DiaryRecord : IDeletedEntity
     {
         public Guid Id { get; set; }
+
         private DateTime _recordDate;
+
         public DateTime Date { get => _recordDate; set => _recordDate = value.Date; }
+
         public DateTime CreateDate { get; set; }
+
         public DateTime ModifyDate { get; set; }
+
         public string Name { get; set; } = "";
+
         public string Text { get; set; } = "";
+
         public bool Deleted { get; set; }
 
         public ICollection<Cogitation> Cogitations { get; private set; } = null!;
+
         public ICollection<DiaryRecordTheme> ThemesRefs { get; private set; } = null!;
+
         public ICollection<DiaryRecordImage> ImagesRefs { get; private set; } = null!;
     }
 
@@ -28,16 +37,20 @@ namespace RiseDiary.Model
         public static string GetRecordTextShort(this DiaryRecord rec)
         {
             if (string.IsNullOrEmpty(rec.Text)) return "[ПУСТО]";
-            return rec.Text.Length < 35 ? rec.Text : rec.Text.Substring(0, 35) + "[...]";
+            return rec.Text.Length < 35 ? rec.Text : string.Concat(rec.Text.AsSpan(0, 35), "[...]");
         }
     }
 
     public class Cogitation : IDeletedEntity
     {
         public Guid Id { get; set; }
+
         public Guid RecordId { get; set; }
+
         public DateTime Date { get; set; }
+
         public string Text { get; set; } = "";
+
         public bool Deleted { get; set; }
 
         public DiaryRecord? Record { get; set; }
@@ -46,20 +59,26 @@ namespace RiseDiary.Model
     public class DiaryRecordTheme : IDeletedEntity
     {
         public Guid ThemeId { get; set; }
+
         public Guid RecordId { get; set; }
+
         public bool Deleted { get; set; }
 
         public DiaryTheme? Theme { get; set; }
+
         public DiaryRecord? Record { get; set; }
     }
 
     public class DiaryRecordImage : IDeletedEntity
     {
         public Guid ImageId { get; set; }
+
         public Guid RecordId { get; set; }
+
         public bool Deleted { get; set; }
 
         public DiaryImage? Image { get; set; }
+
         public DiaryRecord? Record { get; set; }
     }
 }

@@ -206,7 +206,7 @@
             await ScopesSvc.DeleteTheme(EditedThemeId.Value);
             EditedThemeId = null;
             EditThemeErrorMessage = null;
-            CurrentScope = await ScopesSvc.FetchScopeById(CurrentScope.Id);
+            CurrentScope = await ScopesSvc.FetchScopeById(CurrentScope.Id) ?? throw new Exception($"Error on getting Scope with Id = '{CurrentScope.Id}'");
             this.StateHasChanged();
         }
     }
@@ -246,7 +246,7 @@
             await ScopesSvc.AddTheme(CurrentScope.Id, NewThemeName, true);
             NewThemeName = null;
             CreateThemeErrorMessage = null;
-            CurrentScope = await ScopesSvc.FetchScopeById(CurrentScope.Id);
+            CurrentScope = await ScopesSvc.FetchScopeById(CurrentScope.Id) ?? throw new Exception($"Error on getting Scope with Id = '{CurrentScope.Id}'");
         }
         catch(Exception exc)
         {
@@ -258,6 +258,6 @@
     {
         var theme = CurrentScope.Themes.Single(t => t.Id == themeId);
         await ScopesSvc.UpdateTheme(theme.Id, themeActuality: !theme.Actual);
-        CurrentScope = await ScopesSvc.FetchScopeById(CurrentScope.Id);
+        CurrentScope = await ScopesSvc.FetchScopeById(CurrentScope.Id) ?? throw new Exception($"Error on getting Scope with Id = '{CurrentScope.Id}'");
     }
 }

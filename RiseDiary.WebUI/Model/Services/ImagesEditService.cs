@@ -90,7 +90,7 @@ namespace RiseDiary.Model.Services
             var sourceImage = await _context.FullSizeImages
                 .AsNoTracking()
                 .SingleOrDefaultAsync(i => i.ImageId == imageId)
-                .ConfigureAwait(false);
+                .ConfigureAwait(false) ?? throw new Exception($"Full size image with Id = '{imageId}' does not exists");
 
             int imageQuality = await _appSettings.GetAppSettingInt(AppSettingsKey.ImageQuality) ?? throw new Exception("Setting Value ImageQuality not set");
 
@@ -145,7 +145,7 @@ namespace RiseDiary.Model.Services
             var sourceImage = await _context.FullSizeImages
                 .AsNoTracking()
                 .SingleOrDefaultAsync(i => i.ImageId == imageId)
-                .ConfigureAwait(false);
+                .ConfigureAwait(false) ?? throw new Exception($"Full size image with Id = '{imageId}' does not exists");
 
             int imageQuality = await _appSettings.GetAppSettingInt(AppSettingsKey.ImageQuality) ?? throw new Exception("Setting Value ImageQuality not set");
 

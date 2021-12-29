@@ -6,6 +6,7 @@ namespace RiseDiary.Model
     public interface IRecordsSearchService
     {
         Task<List<DiaryRecord>> GetRecordsList(RecordsFilter filter);
+
         Task<int> GetRecordsCount(RecordsFilter filter);
     }
 }

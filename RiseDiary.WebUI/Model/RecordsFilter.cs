@@ -25,8 +25,10 @@ namespace RiseDiary.Model
         }
 
         public int PageNo { get; set; }
+
         public int PageSize { get; set; } = 20;
-        public static RecordsFilter Empty => new RecordsFilter();
+
+        public static RecordsFilter Empty => new();
 
         public static bool IsEmpty(RecordsFilter filter)
         {
@@ -38,9 +40,9 @@ namespace RiseDiary.Model
             filter.Themes.Count == 0;
         }
 
-        private List<Guid> _themes = new List<Guid>();
+        private List<Guid> _themes = new();
 
-        public ReadOnlyCollection<Guid> Themes => new ReadOnlyCollection<Guid>(_themes);
+        public ReadOnlyCollection<Guid> Themes => new(_themes);
 
         public void AddThemeId(Guid rtid)
         {

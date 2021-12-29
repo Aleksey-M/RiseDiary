@@ -12,16 +12,23 @@ namespace RiseDiary.WebUI.Data
         public DiaryDbContext(DbContextOptions<DiaryDbContext> options) : base(options) { }
 
         public DbSet<DiaryScope> Scopes { get; set; } = null!;
+
         public DbSet<DiaryTheme> Themes { get; set; } = null!;
+
         public DbSet<DiaryImage> Images { get; set; } = null!;
+
         public DbSet<DiaryImageFull> FullSizeImages { get; set; } = null!;
+
         public DbSet<DiaryRecord> Records { get; set; } = null!;
+
         public DbSet<Cogitation> Cogitations { get; set; } = null!;
 
         public DbSet<DiaryRecordTheme> RecordThemes { get; set; } = null!;
+
         public DbSet<DiaryRecordImage> RecordImages { get; set; } = null!;
 
         public DbSet<AppSetting> AppSettings { get; set; } = null!;
+
         public DbSet<TempImage> TempImages { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -128,7 +135,11 @@ namespace RiseDiary.WebUI.Data
                     case EntityState.Deleted when entry.Entity is DiaryImage image:
                         // !!! this should be loaded by Include()
                         foreach (var rr in image.RecordsRefs) rr.Deleted = true;
-                        Entry(image.FullImage).State = EntityState.Unchanged;
+
+                        if(image.FullImage is not null)
+                        {
+                            Entry(image.FullImage).State = EntityState.Unchanged;
+                        }                        
 
                         if(image.TempImage != null)
                         {

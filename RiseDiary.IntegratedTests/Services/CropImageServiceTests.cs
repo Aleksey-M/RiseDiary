@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Threading.Tasks;
 using static System.Convert;
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+
 namespace RiseDiary.IntegratedTests.Services
 {
     [TestFixture]

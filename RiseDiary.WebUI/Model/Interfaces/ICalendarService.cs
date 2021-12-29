@@ -9,6 +9,7 @@ namespace RiseDiary.Model
     public interface ICalendarService
     {
         Task<List<int>> GetYears(IEnumerable<Guid> themesId, bool combineThemes);
+
         Task<List<CalendarItem>> GetCalendarItems(int year, IEnumerable<Guid> themesId, bool combineThemes);
     }
 }
