@@ -21,9 +21,9 @@ namespace RiseDiary.WebUI.Pages.Analysis
 
         private const int _pageSize = 50;
 
-        public Dictionary<string, string?> SearchParams => new Dictionary<string, string?>
+        public List<KeyValuePair<string, string?>> SearchParams => new()
         {
-            { nameof(SearchString), SearchString }
+            new KeyValuePair<string, string?>(nameof(SearchString), SearchString)
         };
 
         public async Task OnGetAsync(string? searchString, int? pageNo)

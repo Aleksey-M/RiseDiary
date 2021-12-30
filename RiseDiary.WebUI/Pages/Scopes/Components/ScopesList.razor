@@ -11,10 +11,9 @@
         <p style="color:red;">@ErrorMessage</p>}
         <div class="input-group">
             <input type="text" @bind-value="NewScopeName" @bind-value:event="onchange" class="form-control" placeholder="Введите название новой области интересов" />
-            <button type="button" @onclick="CreateNewScope" class="btn btn-outline-success input-group-btn" title="Создать">
-                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-plus" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-                </svg>
+            
+            <button type="button" @onclick="CreateNewScope" class="btn btn-link" >
+                <img src="img/plus-square.svg" width="20" height="20" title="Создать" alt="Создать" />
             </button>
         </div>
     </div>
