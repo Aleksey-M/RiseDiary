@@ -265,3 +265,5 @@ __pycache__/
 OldProjects/
 db/
 RiseDiary.WebUI/wwwroot/lib/
+RiseDiary.WebUI/appsettings.json
+Pwd/Program.cs
