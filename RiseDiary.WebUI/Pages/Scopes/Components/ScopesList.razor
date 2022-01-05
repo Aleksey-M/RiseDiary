@@ -4,47 +4,33 @@
 
 @inject IScopesService ScopesSvc
 
-@if (CriticalError is not null)
-{
-    <p style="color:red">Произошла критическая ошибка: @CriticalError</p>
-}
-else
-{
-    <div class="card">
-        <div class="card-header">
-            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
-            {
-                <p style="color:red;">@ErrorMessage</p>
-            }
-            <div class="input-group">
-                <input type="text" @bind-value="NewScopeName" @bind-value:event="onchange" class="form-control" placeholder="Введите название новой области интересов" />
-
-                <button type="button" @onclick="CreateNewScope" class="btn btn-link">
-                    <img src="img/plus-square.svg" width="20" height="20" title="Создать" alt="Создать" />
-                </button>
-            </div>
+<div class="card">
+    <div class="card-header">
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+        <p style="color:red;">@ErrorMessage</p>}
+        <div class="input-group">
+            <input type="text" @bind-value="NewScopeName" @bind-value:event="onchange" class="form-control" placeholder="Введите название новой области интересов" />
+            
+            <button type="button" @onclick="CreateNewScope" class="btn btn-link" >
+                <img src="img/plus-square.svg" width="20" height="20" title="Создать" alt="Создать" />
+            </button>
         </div>
     </div>
+</div>
 
-    <div>
-        @foreach (var sc in Scopes)
-        {
-            <Scope CurrentScope="sc" UpdateParentState="UpdateState" @key="sc"></Scope>
-        }
-    </div>
+<div>
+    @foreach (var sc in Scopes)
+    {
+        <Scope CurrentScope="sc" UpdateParentState="UpdateState" @key="sc"></Scope>
+    }
+</div>
 
-}
-
-@code{
-
+@code{ 
+    
     private List<DiaryScope> Scopes { get; set; } = null!;
-
     private string? NewScopeName { get; set; }
-
     private string? ErrorMessage { get; set; }
-
-    private string? CriticalError { get; set; }
-
 
     private async Task CreateNewScope()
     {
@@ -64,39 +50,18 @@ else
             catch (Exception exc)
             {
                 ErrorMessage = exc.Message;
-                Scopes = new List<DiaryScope>();
             }
         }
     }
 
     private async Task UpdateState()
     {
-        try
-        {
-            Scopes = await ScopesSvc.GetScopes();
-            this.StateHasChanged();
-        }
-        catch(Exception exc)
-        {
-            HandleCriticalError(exc);
-        }        
+        Scopes = await ScopesSvc.GetScopes();
+        this.StateHasChanged();
     }
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            Scopes = await ScopesSvc.GetScopes();
-        }
-        catch (Exception exc)
-        {
-            HandleCriticalError(exc);
-        }     
+        Scopes = await ScopesSvc.GetScopes();
     } 
-
-    private void HandleCriticalError(Exception exc)
-    {
-        CriticalError = exc.Message;
-        Scopes = new List<DiaryScope>();
-    }
 }

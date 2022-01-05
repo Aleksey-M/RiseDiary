@@ -4,20 +4,13 @@
 
 @inject IJSRuntime _JSRuntime
 
-@if (CriticalError is not null)
-{
-    <p style="color:red">Произошла критическая ошибка: @CriticalError</p>
-}
-else
-{
-    <div>
-        <h6 style="display:inline"><i>@AllThemes</i></h6>
+<div>
+    <h6 style="display:inline"><i>@AllThemes</i></h6>
 
-        <button type="button" class="btn btn-link p-0" title="Фильтр по темам" data-bs-toggle="modal" data-bs-target="#themesFilter">
-            <img src="img/pen.svg" />
-        </button>
-    </div>
-}
+    <button type="button" class="btn btn-link p-0" title="Фильтр по темам" data-bs-toggle="modal" data-bs-target="#themesFilter">
+        <img src="img/pen.svg" />
+    </button>
+</div>
 
 <div style="text-align:left" class="modal fade" id="themesFilter" tabindex="-1" aria-labelledby="themesFilterLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -119,75 +112,36 @@ else
     [Parameter]
     public Func<IEnumerable<Guid>, Task>? UpdateRecordThemes { get; set; }
 
-    private List<string> ThemesList
-    {
-        get
-        {
-            try
-            {                
-                return SelectedThemes?.Select(tr => tr.Theme?.ThemeName ?? "")?.ToList() ?? new List<string>();
-            }
-            catch (Exception exc)
-            {
-                CriticalError = exc.Message;
-                return new List<string>();
-            }
-        }
-    }
-
+    private List<string> ThemesList => SelectedThemes?.Select(tr => tr.Theme?.ThemeName ?? "")?.ToList() ?? new List<string>();
     private string AllThemes => string.Join(" | ", ThemesList);
 
     private List<Guid> _changedThemesList = new List<Guid>();
 
-    private string? CriticalError { get; set; }
-
-
     protected override void OnParametersSet()
     {
-        try
-        {
-            _changedThemesList = SelectedThemes.Select(st => st.ThemeId).ToList();
-            base.OnParametersSet();
-        }
-        catch (Exception exc)
-        {
-            CriticalError = exc.Message;
-        }
+        _changedThemesList = SelectedThemes.Select(st => st.ThemeId).ToList();
+        base.OnParametersSet();
     }
 
     private void CheckboxChange(Guid themeId)
     {
-        try
+        if (_changedThemesList.Contains(themeId))
         {
-            if (_changedThemesList.Contains(themeId))
-            {
-                _changedThemesList.Remove(themeId);
-            }
-            else
-            {
-                _changedThemesList.Add(themeId);
-            }            
+            _changedThemesList.Remove(themeId);
         }
-        catch (Exception exc)
+        else
         {
-            CriticalError = exc.Message;
+            _changedThemesList.Add(themeId);
         }
     }
 
     private async Task UpdateThemes()
     {
-        try
-        {
-            await _JSRuntime.InvokeVoidAsync("eval", "bootstrap.Modal.getInstance(document.getElementById('themesFilter')).hide()");
+        await _JSRuntime.InvokeVoidAsync("eval", "bootstrap.Modal.getInstance(document.getElementById('themesFilter')).hide()");
 
-            if (UpdateRecordThemes != null)
-            {
-                await UpdateRecordThemes(_changedThemesList);
-            }            
-        }
-        catch (Exception exc)
+        if (UpdateRecordThemes != null)
         {
-            CriticalError = exc.Message;
+            await UpdateRecordThemes(_changedThemesList);
         }
     }
 }

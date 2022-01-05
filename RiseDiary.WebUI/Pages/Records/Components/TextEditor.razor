@@ -4,105 +4,97 @@
 
 @inject IJSRuntime jsRuntime
 
-@if (CriticalError is not null)
-{
-    <p style="color:red">Произошла критическая ошибка: @CriticalError</p>
-}
-else
-{
-    <div class="row py-2">
-        @if (_editorMode == EditorMode.RichTextEdit)
-        {
-            <div class="col-12">
-                <div id="@_editorId" style="border: 1px solid black; overflow: auto; resize: vertical">
-                    <ErrorBoundary>
-                        <BlazoredTextEditor @ref="@QuillHtml">
-                            <ToolbarContent>
-                                <select class="ql-header">
-                                    <option selected=""></option>
-                                    <option value="1"></option>
-                                    <option value="2"></option>
-                                    <option value="3"></option>
-                                    <option value="4"></option>
-                                    <option value="5"></option>
-                                </select>
-                                <span class="ql-formats">
-                                    <select class="ql-font"></select>
-                                    <button class="ql-bold"></button>
-                                    <button class="ql-italic"></button>
-                                    <button class="ql-underline"></button>
-                                    <button class="ql-strike"></button>
-                                </span>
-                                <span class="ql-formats">
-                                    <button class="ql-list" value="ordered"></button>
-                                    <button class="ql-list" value="bullet"></button>
-                                    <button class="ql-indent" value="-1"></button>
-                                    <button class="ql-indent" value="+1"></button>
-                                    <select class="ql-align ql-picker ql-icon-picker"></select>
-                                </span>
-                                <span class="ql-formats">
-                                    <select class="ql-color"></select>
-                                    <select class="ql-background"></select>
-                                </span>
-                                <span class="ql-formats">
-                                    <button class="ql-script" value="sub"></button>
-                                    <button class="ql-script" value="super"></button>
-                                </span>
-                                <span class="ql-formats">
-                                    <button class="ql-link"></button>
-                                    <button class="ql-image"></button>
-                                    <button class="ql-video"></button>
-                                </span>
-                            </ToolbarContent>
-                            <EditorContent>
+<div class="row py-2">    
+    @if (_editorMode == EditorMode.RichTextEdit)
+    {
+        <div class="col-12">
+            <div id="@_editorId" style="border: 1px solid black; overflow: auto; resize: vertical">
+                <BlazoredTextEditor @ref="@QuillHtml">
+                    <ToolbarContent>
+                        <select class="ql-header">
+                            <option selected=""></option>
+                            <option value="1"></option>
+                            <option value="2"></option>
+                            <option value="3"></option>
+                            <option value="4"></option>
+                            <option value="5"></option>
+                        </select>
+                        <span class="ql-formats">
+                            <select class="ql-font"></select>
+                            <button class="ql-bold"></button>
+                            <button class="ql-italic"></button>
+                            <button class="ql-underline"></button>
+                            <button class="ql-strike"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-list" value="ordered"></button>
+                            <button class="ql-list" value="bullet"></button>
+                            <button class="ql-indent" value="-1"></button>
+                            <button class="ql-indent" value="+1"></button>
+                            <select class="ql-align ql-picker ql-icon-picker"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <select class="ql-color"></select>
+                            <select class="ql-background"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-script" value="sub"></button>
+                            <button class="ql-script" value="super"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-link"></button>
+                            <button class="ql-image"></button>
+                            <button class="ql-video"></button>
+                        </span>
+                    </ToolbarContent>
+                    <EditorContent>
 
-                            </EditorContent>
-                        </BlazoredTextEditor>
-                    </ErrorBoundary>
-                </div>
+                    </EditorContent>
+                </BlazoredTextEditor>
             </div>
+        </div>
 
-            <div class="col-12">
-                <button type="button" class="btn btn-outline-success btn-sm m-1" title="Сохранить текст" @onclick="_ => SaveChangedText()">
-                    Сохранить
-                </button>
-                <button type="button" class="btn btn-outline-secondary btn-sm m-1" title="Закрыть без сохранения" @onclick="_ => SwitchMode()">
-                    Закрыть
-                </button>
-            </div>
-        }
-        else if (_editorMode == EditorMode.HTMLEdit)
-        {
-            <div class="col-12">
-                <div id="html-@_editorId" style="border:1px solid silver;overflow: auto; resize: vertical" contenteditable="true">@Text</div>
-            </div>
+        <div class="col-12">
+            <button type="button" class="btn btn-outline-success btn-sm m-1" title="Сохранить текст" @onclick="_ => SaveChangedText()">
+                Сохранить
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm m-1" title="Закрыть без сохранения" @onclick="_ => SwitchMode()">
+                Закрыть
+            </button>
+        </div>
+    }
+    else if (_editorMode == EditorMode.HTMLEdit)
+    {
+        <div class="col-12">
+            <div id="html-@_editorId" style="border:1px solid silver;overflow: auto; resize: vertical" contenteditable="true">@Text</div>
+        </div>
 
-            <div class="col-12">
-                <button type="button" class="btn btn-outline-success btn-sm m-1" title="Сохранить текст" @onclick="_ => SaveChangedText()">
-                    Сохранить
-                </button>
-                <button type="button" class="btn btn-outline-secondary btn-sm m-1" title="Закрыть без сохранения" @onclick="_ => SwitchMode()">
-                    Закрыть
-                </button>
-            </div>
-        }
-        else
-        {
-            <div class="col-12 m-2">
-                @ViewText
-            </div>
+        <div class="col-12">
+            <button type="button" class="btn btn-outline-success btn-sm m-1" title="Сохранить текст" @onclick="_ => SaveChangedText()">
+                Сохранить
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm m-1" title="Закрыть без сохранения" @onclick="_ => SwitchMode()">
+                Закрыть
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="col-12 m-2">
+            @ViewText
+        </div>
 
-            <div class="col-12">
-                <button type="button" class="btn btn-outline-info btn-sm m-1" title="Редактировать текст" @onclick="_ => SwitchMode()">
-                    Редактировать
-                </button>
-                <button type="button" class="btn btn-outline-secondary btn-sm m-1" title="Редактировать HTML" @onclick="_ => OpenHTML()">
-                    Редактировать HTML
-                </button>
-            </div>
-        }
-    </div>
-}
+        <div class="col-12">
+            <button type="button" class="btn btn-outline-info btn-sm m-1" title="Редактировать текст" @onclick="_ => SwitchMode()">
+                Редактировать
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm m-1" title="Редактировать HTML" @onclick="_ => OpenHTML()">
+                Редактировать HTML
+            </button>
+        </div>
+    }
+</div>
+
 
 @code {
 
@@ -117,12 +109,8 @@ else
     private MarkupString ViewText => new MarkupString(Text);
 
     private EditorMode _editorMode = EditorMode.View;
-
     private string _editorId = "id-" + Guid.NewGuid().ToString();
-
     BlazoredTextEditor QuillHtml = null!;
-
-    private string? CriticalError { get; set; }
 
     private void SwitchMode()
     {
@@ -144,59 +132,46 @@ else
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        try
+        if(!firstRender && _editorMode == EditorMode.RichTextEdit)
         {
-            if (!firstRender && _editorMode == EditorMode.RichTextEdit)
-            {
-                await jsRuntime.InvokeVoidAsync("setQuillHtmlText", Text, _editorId);
-            }
-        }
-        catch (Exception exc)
-        {
-            CriticalError = exc.Message;
+            await jsRuntime.InvokeVoidAsync("setQuillHtmlText", Text, _editorId);
         }
     }
 
     private async Task SaveChangedText()
     {
-        try
+        if (SaveText == null) throw new ArgumentNullException(nameof(SaveText));
+
+        string html = "";
+
+        if (_editorMode == EditorMode.RichTextEdit)
         {
-            SaveText = SaveText ?? (_ => Task.CompletedTask);
-            string html = "";
+            var text = await QuillHtml.GetText();
+            text = text.Trim() ?? "";
 
-            if (_editorMode == EditorMode.RichTextEdit)
+            if (text == "")
             {
-                var text = await QuillHtml.GetText();
-                text = text.Trim() ?? "";
-
-                if (text == "")
-                {
-                    await jsRuntime.InvokeVoidAsync("alert", "Текст не введен");
-                    return;
-                }
-
-                html = await QuillHtml.GetHTML();
-            }
-            else
-            {
-                html = await jsRuntime.InvokeAsync<string>("getHtmlText", "html-" + _editorId);
-                html = html.Trim() ?? "";
-
-                if (html == "")
-                {
-                    await jsRuntime.InvokeVoidAsync("alert", "Текст не введен");
-                    return;
-                }
+                await jsRuntime.InvokeVoidAsync("alert", "Текст не введен");
+                return;
             }
 
-            await SaveText(html);
-            Text = html;
-            _editorMode = EditorMode.View;
+            html = await QuillHtml.GetHTML();
         }
-        catch (Exception exc)
+        else
         {
-            CriticalError = exc.Message;
+            html = await jsRuntime.InvokeAsync<string>("getHtmlText", "html-"+_editorId);
+            html = html.Trim() ?? "";
+
+            if (html == "")
+            {
+                await jsRuntime.InvokeVoidAsync("alert", "Текст не введен");
+                return;
+            }
         }
+
+        await SaveText(html);
+        Text = html;
+        _editorMode = EditorMode.View;
     }
 
 }

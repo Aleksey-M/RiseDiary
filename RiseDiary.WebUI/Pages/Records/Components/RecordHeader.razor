@@ -2,45 +2,39 @@
 
 @inject IJSRuntime jsRuntime 
 
-@if (CriticalError is not null)
+@if (_editMode)
 {
-    <p style="color:red">Произошла критическая ошибка: @CriticalError</p>
+    <div class="row">
+        <div class="col-lg-2 col-md-3 col-sm-12 mb-1">
+            <input type="date" required="required" @bind="_recordDate" @bind:event="oninput" @bind:format="yyyy-MM-dd" class="form-control" />
+        </div>
+        <div class="col-lg-10 col-md-9 col-sm-12 mb-1">
+            <div class="input-group">
+                <input type="text" required="required" @bind="_recordName" @bind:event="oninput" class="form-control" />
+
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-link" title="Сохранить изменения" @onclick="UpdateNameAndDate">
+                        <img src="img/check-square.svg" />
+                    </button>
+
+                    <button type="button" class="btn btn-link" title="Закрыть" @onclick="e => { _editMode = false; }">
+                        <img src="img/x-square.svg" />
+                    </button>
+                </div>
+            </div>
+        </div>        
+    </div>
 }
 else
 {
-    @if (_editMode)
-    {
-        <div class="row">
-            <div class="col-lg-2 col-md-3 col-sm-12 mb-1">
-                <input type="date" required="required" @bind="_recordDate" @bind:event="oninput" @bind:format="yyyy-MM-dd" class="form-control" />
-            </div>
-            <div class="col-lg-10 col-md-9 col-sm-12 mb-1">
-                <div class="input-group">
-                    <input type="text" required="required" @bind="_recordName" @bind:event="oninput" class="form-control" />
+    <h5 style="color:darkblue;display:inline">
+        <b>@RecordDate</b> <i>@RecordName</i>
+    </h5>
 
-                    <div class="input-group-append">
-                        <button type="button" class="btn btn-link" title="Сохранить изменения" @onclick="UpdateNameAndDate">
-                            <img src="img/check-square.svg" />
-                        </button>
+    <button type="button" class="btn btn-link pt-0" title="Редактировать заголовок и дату" @onclick="e => SwitchToEditMode()">
+        <img src="img/pen.svg" />
+    </button>
 
-                        <button type="button" class="btn btn-link" title="Закрыть" @onclick="e => { _editMode = false; }">
-                            <img src="img/x-square.svg" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-    else
-    {
-        <h5 style="color:darkblue;display:inline">
-            <b>@RecordDate</b> <i>@RecordName</i>
-        </h5>
-
-        <button type="button" class="btn btn-link pt-0" title="Редактировать заголовок и дату" @onclick="e => SwitchToEditMode()">
-            <img src="img/pen.svg" />
-        </button>
-    }
 }
 
 @code {
@@ -57,52 +51,34 @@ else
     public Func<DateTime, string, Task>? SaveRecordHeader { get; set; } = null;
 
     private DateTime _recordDate;
-
     private string _recordName = "";
-
-    private string? CriticalError { get; set; }
-
 
     private async Task UpdateNameAndDate()
     {
-        try
+        if(_recordDate.Date == DateTime.Parse(RecordDate) && _recordName.Trim() == (RecordName == "[ПУСТО]" ? "" : RecordName))
         {
-            if (_recordDate.Date == DateTime.Parse(RecordDate) && _recordName.Trim() == (RecordName == "[ПУСТО]" ? "" : RecordName))
-            {
-                _editMode = false;
-                return;
-            }
-
-            if (_recordDate == default)
-            {
-                await jsRuntime.InvokeVoidAsync("alert", "Дата не введена");
-                return;
-            }
-
             _editMode = false;
-
-            SaveRecordHeader = SaveRecordHeader ?? ((_, _) => Task.CompletedTask);
-
-            await SaveRecordHeader(_recordDate, _recordName.Trim());
+            return;
         }
-        catch (Exception exc)
+
+        if(_recordDate == default)
         {
-            CriticalError = exc.Message;
+            await jsRuntime.InvokeVoidAsync("alert", "Дата не введена");
+            return;
         }
+
+        _editMode = false;
+
+        if (SaveRecordHeader == null) throw new ArgumentNullException(nameof(SaveRecordHeader));
+
+        await SaveRecordHeader(_recordDate, _recordName.Trim());
     }
 
     private void SwitchToEditMode()
     {
-        try
-        {
-            _recordName = RecordName == "[ПУСТО]" ? "" : RecordName;
-            _recordDate = DateTime.Parse(RecordDate);
-            _editMode = true;
-        }
-        catch (Exception exc)
-        {
-            CriticalError = exc.Message;
-        }
+        _recordName = RecordName == "[ПУСТО]" ? "" : RecordName;
+        _recordDate = DateTime.Parse(RecordDate);
+        _editMode = true;
     }
 }
 
