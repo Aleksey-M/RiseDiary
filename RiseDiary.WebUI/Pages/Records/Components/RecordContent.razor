@@ -8,118 +8,145 @@
 @inject IRecordsThemesService ThemesService
 @inject IJSRuntime JSRuntime
 
-<div class="col-12">
-    <div class="row mt-3" style="background-color: #fff8dc; border-radius: 10px">
-
-        <div class="col-11 text-center my-2">
-            <RecordHeader RecordName="@_recordName" RecordDate="@_recordDate" SaveRecordHeader="SaveHeader" />
-        </div>
-
-        <div class="col-1 my-2">
-            <LandingRecord RecordId="@RecordId" />
-        </div>
-
-        <div class="col-md-6 col-sm-12 mb-2 text-center">
-            <h6 style="color:lightslategray">Создано: <b>@_createdDate</b></h6>
-        </div>
-
-        <div class="col-md-6 col-sm-12 mb-2 text-center">
-            <h6 style="color:lightslategray">Изменено: <b>@_modifiedDate</b></h6>
-        </div>
-
-        <div class="col-12 mb-2 text-center">
-            <RecordThemes AllScopes="_allScopes" SelectedThemes="_selectedThemes" UpdateRecordThemes="SaveThemes" />
-        </div>
-    </div>
-</div>
-
-<div class="col-12">
-    <div class="row mt-3">
-        <div class="col-12">
-            <TextEditor Text="@_recordText" SaveText="async t => await UpdateRecordAndCogitationText(RecordId, t)" />
-        </div>
-    </div>
-</div>
-
-<hr />
-
-<div class="col-12">
-    <RecordImages RecordId="RecordId" RecordImagesRefsMutable="_recordImagesRefs" />
-</div>
-
-<hr />
-
-<div class="col-12 text-center">
-    <h4 style="color:darkgrey">Комментарии (осмысления)</h4>
-</div>
-
-<div class="col-12 mt-2">
-    <div id="newCogitation" style="border: 1px solid black; overflow: auto; resize: vertical">
-        <BlazoredTextEditor @ref="@QuillHtml">
-            <ToolbarContent>
-                <select class="ql-header">
-                    <option selected=""></option>
-                    <option value="1"></option>
-                    <option value="2"></option>
-                    <option value="3"></option>
-                    <option value="4"></option>
-                    <option value="5"></option>
-                </select>
-                <span class="ql-formats">
-                    <select class="ql-font"></select>
-                    <button class="ql-bold"></button>
-                    <button class="ql-italic"></button>
-                    <button class="ql-underline"></button>
-                    <button class="ql-strike"></button>
-                </span>
-                <span class="ql-formats">
-                    <button class="ql-list" value="ordered"></button>
-                    <button class="ql-list" value="bullet"></button>
-                    <button class="ql-indent" value="-1"></button>
-                    <button class="ql-indent" value="+1"></button>
-                    <select class="ql-align ql-picker ql-icon-picker"></select>
-                </span>
-                <span class="ql-formats">
-                    <select class="ql-color"></select>
-                    <select class="ql-background"></select>
-                </span>
-                <span class="ql-formats">
-                    <button class="ql-script" value="sub"></button>
-                    <button class="ql-script" value="super"></button>
-                </span>
-                <span class="ql-formats">
-                    <button class="ql-link"></button>
-                    <button class="ql-image"></button>
-                    <button class="ql-video"></button>
-                </span>
-            </ToolbarContent>
-            <EditorContent>
-
-            </EditorContent>
-        </BlazoredTextEditor>
-    </div>
-</div>
-
-<div class="col-12 mb-2">
-    <button type="button" class="btn btn-outline-success mt-1" title="Сохранить текст" @onclick="async _ => await CreateNewCogitation()">
-        Создать
-    </button>
-</div>
-
-@foreach (var cog in _recordCogitations)
+@if (CriticalError is not null && CriticalErrorArea == ErrorArea.Page)
 {
-    <div class="col-12 my-1" style="background-color: rgba(220, 255, 225, 0.71); border-radius: 10px">
-        <p class="mt-2"><b>@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")</b> <button class="btn btn-sm btn-outline-danger" @onclick="async _ => await DeleteCogitation(cog.Id)" title="Удалить комментарий (осмысление)">Удалить</button></p>
-        <TextEditor Text="@cog.Text" SaveText="async t => await UpdateRecordAndCogitationText(cog.Id, t)" />
+    <p style="color:red">Произошла критическая ошибка: @CriticalError</p>
+}
+else
+{
+    <div class="col-12">
+        <div class="row mt-3" style="background-color: #fff8dc; border-radius: 10px">
+
+            <div class="col-11 text-center my-2">
+                <RecordHeader RecordName="@_recordName" RecordDate="@_recordDate" SaveRecordHeader="SaveHeader" />
+            </div>
+
+            <div class="col-1 my-2">
+                <LandingRecord RecordId="@RecordId" />
+            </div>
+
+            <div class="col-md-6 col-sm-12 mb-2 text-center">
+                <h6 style="color:lightslategray">Создано: <b>@_createdDate</b></h6>
+            </div>
+
+            <div class="col-md-6 col-sm-12 mb-2 text-center">
+                <h6 style="color:lightslategray">Изменено: <b>@_modifiedDate</b></h6>
+            </div>
+
+            <div class="col-12 mb-2 text-center">
+                <RecordThemes AllScopes="_allScopes" SelectedThemes="_selectedThemes" UpdateRecordThemes="SaveThemes" />
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="row mt-3">
+            <div class="col-12">
+                <TextEditor Text="@_recordText" SaveText="async t => await UpdateRecordAndCogitationText(RecordId, t)" />
+            </div>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="col-12">
+        <RecordImages RecordId="RecordId" RecordImagesRefsMutable="_recordImagesRefs" />
+    </div>
+
+    <hr />
+
+    <div class="col-12 text-center">
+        <h4 style="color:darkgrey">Комментарии (осмысления)</h4>
+    </div>
+
+    @if (CriticalError is not null && CriticalErrorArea == ErrorArea.CogitationCreate)
+    {
+        <div class="col-12 mt-2">
+            <p style="color:red">Произошла критическая ошибка: @CriticalError</p>
+        </div>
+    }
+    else
+    {
+        <div class="col-12 mt-2">
+            <div id="newCogitation" style="border: 1px solid black; overflow: auto; resize: vertical">
+                <ErrorBoundary>
+                    <BlazoredTextEditor @ref="@QuillHtml">
+                        <ToolbarContent>
+                            <select class="ql-header">
+                                <option selected=""></option>
+                                <option value="1"></option>
+                                <option value="2"></option>
+                                <option value="3"></option>
+                                <option value="4"></option>
+                                <option value="5"></option>
+                            </select>
+                            <span class="ql-formats">
+                                <select class="ql-font"></select>
+                                <button class="ql-bold"></button>
+                                <button class="ql-italic"></button>
+                                <button class="ql-underline"></button>
+                                <button class="ql-strike"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-list" value="ordered"></button>
+                                <button class="ql-list" value="bullet"></button>
+                                <button class="ql-indent" value="-1"></button>
+                                <button class="ql-indent" value="+1"></button>
+                                <select class="ql-align ql-picker ql-icon-picker"></select>
+                            </span>
+                            <span class="ql-formats">
+                                <select class="ql-color"></select>
+                                <select class="ql-background"></select>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-script" value="sub"></button>
+                                <button class="ql-script" value="super"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-link"></button>
+                                <button class="ql-image"></button>
+                                <button class="ql-video"></button>
+                            </span>
+                        </ToolbarContent>
+                        <EditorContent>
+
+                        </EditorContent>
+                    </BlazoredTextEditor>
+                </ErrorBoundary>
+            </div>
+        </div>
+
+        <div class="col-12 mb-2">
+            <button type="button" class="btn btn-outline-success mt-1" title="Сохранить текст" @onclick="async _ => await CreateNewCogitation()">
+                Создать
+            </button>
+        </div>
+    }
+
+    @foreach (var cog in _recordCogitations)
+    {
+        <div class="col-12 my-1" style="background-color: rgba(220, 255, 225, 0.71); border-radius: 10px">
+            @if (CriticalError is not null && CriticalErrorArea == ErrorArea.CogitationUpdate)
+            {
+                <p style="color:red">Произошла критическая ошибка: @CriticalError</p>
+            }
+            else
+            {
+                <p class="mt-2"><b>@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")</b> <button class="btn btn-sm btn-outline-danger" @onclick="async _ => await DeleteCogitation(cog.Id)" title="Удалить комментарий (осмысление)">Удалить</button></p>
+                <TextEditor Text="@cog.Text" SaveText="async t => await UpdateRecordAndCogitationText(cog.Id, t)" />
+            }
+        </div>
+    }
+
+    <div class="col-12 mb-2">
+        <hr />
+        <button type="button" class="btn btn-outline-danger" title="Удалить запись" @onclick="async _ => await DeleteRecord()">Удалить запись</button>
     </div>
 }
 
-<div class="col-12 mb-2">
-    <hr />
-    <button type="button" class="btn btn-outline-danger" title="Удалить запись" @onclick="async _ => await DeleteRecord()">Удалить запись</button>
-</div>
-
 @code {
+
+    private enum ErrorArea { None, Page, CogitationUpdate, CogitationCreate }
 
     [Parameter]
     public Guid RecordId { get; set; }
@@ -128,13 +155,20 @@
     private string _recordDate = "";
     private string _createdDate = "";
     private string _modifiedDate = "";
-    private ICollection<DiaryRecordImage> _recordImagesRefs = null!;
+
+    private ICollection<DiaryRecordImage> _recordImagesRefs = new List<DiaryRecordImage>();
 
     private List<DiaryScope> _allScopes = new List<DiaryScope>();
+
     private List<DiaryRecordTheme> _selectedThemes = new List<DiaryRecordTheme>();
+
     private List<Cogitation> _recordCogitations = new List<Cogitation>();
 
     private string _recordText = "";
+
+    private string? CriticalError { get; set; }
+
+    private ErrorArea CriticalErrorArea = ErrorArea.None;
 
     protected override async Task OnInitializedAsync()
     {
@@ -144,25 +178,33 @@
 
     private async Task ReadRecordData()
     {
-        _allScopes = await ScopesService.GetScopes();
+        try
+        {
+            _allScopes = await ScopesService.GetScopes();
 
-        var record = await RecordsService.FetchRecordById(RecordId);
-        _selectedThemes = record.ThemesRefs.ToList();
+            var record = await RecordsService.FetchRecordById(RecordId);
+            _selectedThemes = record.ThemesRefs.ToList();
 
-        _recordName = record.GetRecordNameDisplay();
-        _recordDate = record.Date.ToString("yyyy.MM.dd");
-        _createdDate = record.CreateDate.ToString("yyyy.MM.dd HH:mm:ss");
-        _modifiedDate = record.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss");
-        _recordText = record.Text;
-        _recordImagesRefs = record.ImagesRefs.ToList();
-        _recordCogitations = record.Cogitations.OrderByDescending(c => c.Date).ToList();
+            _recordName = record.GetRecordNameDisplay();
+            _recordDate = record.Date.ToString("yyyy.MM.dd");
+            _createdDate = record.CreateDate.ToString("yyyy.MM.dd HH:mm:ss");
+            _modifiedDate = record.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss");
+            _recordText = record.Text;
+            _recordImagesRefs = record.ImagesRefs.ToList();
+            _recordCogitations = record.Cogitations.OrderByDescending(c => c.Date).ToList();
 
-        StateHasChanged();
+            StateHasChanged();
+        }
+        catch (Exception exc)
+        {
+            CriticalError = exc.Message;
+            CriticalErrorArea = ErrorArea.Page;
+        }
     }
-
 
     private async Task SaveHeader(DateTime newDate, string newName)
     {
+        // ошибки обрабатываются компонентом
         await RecordsService.UpdateRecord(RecordId, newDate, newName, null);
 
         var record = await RecordsService.FetchRecordById(RecordId);
@@ -176,6 +218,7 @@
 
     private async Task SaveThemes(IEnumerable<Guid> selectedThemes)
     {
+        // шибки обрабатываются компонентом
         var removed = _selectedThemes.Where(st => !selectedThemes.Contains(st.ThemeId)).Select(st => st.ThemeId);
         var added = selectedThemes.Where(tid => !_selectedThemes.Any(st => st.ThemeId == tid));
 
@@ -189,33 +232,50 @@
     {
         if (textId == RecordId)
         {
+            // шибки обрабатываются компонентом
             await RecordsService.UpdateRecord(RecordId, null, null, text);
             _modifiedDate = DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss");
             StateHasChanged();
         }
         else
         {
-            if (text is { Length: 0 }) text = "[empty]";
-            var cog = _recordCogitations.SingleOrDefault(c => c.Id == textId);
-            if (cog is not null)
+            try
             {
-                await RecordsService.UpdateCogitationText(cog.Id, text);
-                cog.Text = text;
+                if (text is { Length: 0 }) text = "[empty]";
+                var cog = _recordCogitations.SingleOrDefault(c => c.Id == textId);
+                if (cog is not null)
+                {
+                    await RecordsService.UpdateCogitationText(cog.Id, text);
+                    cog.Text = text;
+                }
+            }
+            catch (Exception exc)
+            {
+                CriticalError = exc.Message;
+                CriticalErrorArea = ErrorArea.CogitationUpdate;
             }
         }
     }
 
     private async Task DeleteCogitation(Guid cogitationId)
     {
-        var cog = _recordCogitations.SingleOrDefault(c => c.Id == cogitationId);
-        if (cog is null) return;
-
-        bool conf = await JSRuntime.InvokeAsync<bool>("confirm", "Удалить комментарий (осмысление)?");
-
-        if (conf)
+        try
         {
-            await RecordsService.DeleteCogitation(cogitationId);
-            _recordCogitations.Remove(cog);
+            var cog = _recordCogitations.SingleOrDefault(c => c.Id == cogitationId);
+            if (cog is null) return;
+
+            bool conf = await JSRuntime.InvokeAsync<bool>("confirm", "Удалить комментарий (осмысление)?");
+
+            if (conf)
+            {
+                await RecordsService.DeleteCogitation(cogitationId);
+                _recordCogitations.Remove(cog);
+            }
+        }
+        catch (Exception exc)
+        {
+            CriticalError = exc.Message;
+            CriticalErrorArea = ErrorArea.CogitationUpdate;
         }
     }
 
@@ -223,37 +283,55 @@
 
     private async Task CreateNewCogitation()
     {
-        var text = await QuillHtml.GetText();
-        text = text.Trim() ?? "";
-
-        if (text == "")
+        try
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Текст не введен");
-            return;
+            var text = await QuillHtml.GetText();
+            text = text.Trim() ?? "";
+
+            if (text == "")
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Текст не введен");
+                return;
+            }
+
+            var html = await QuillHtml.GetHTML();
+            var newCogId = await RecordsService.AddCogitation(RecordId, html);
+
+            _recordCogitations.Insert(0, new Cogitation
+                {
+                    Id = newCogId,
+                    Date = DateTime.Now,
+                    Text = html,
+                    RecordId = RecordId
+                });
+
+            await JSRuntime.InvokeVoidAsync("setQuillHtmlText", @"<p></p>", "newCogitation");
         }
-
-        var html = await QuillHtml.GetHTML();
-        var newCogId = await RecordsService.AddCogitation(RecordId, html);
-
-        _recordCogitations.Insert(0, new Cogitation
+        catch (Exception exc)
         {
-            Id = newCogId,
-            Date = DateTime.Now,
-            Text = html,
-            RecordId = RecordId
-        });
-
-        await JSRuntime.InvokeVoidAsync("setQuillHtmlText", @"<p></p>", "newCogitation");
+            CriticalError = exc.Message;
+            CriticalErrorArea = ErrorArea.CogitationCreate;
+        }
     }
 
     private async Task DeleteRecord()
     {
-        bool conf = await JSRuntime.InvokeAsync<bool>("confirm", "Удалить запись?");
-
-        if (conf)
+        try
         {
-            await RecordsService.DeleteRecord(RecordId);
-            await JSRuntime.InvokeVoidAsync("redirectToIndex");
+            bool conf = await JSRuntime.InvokeAsync<bool>("confirm", "Удалить запись?");
+
+            if (conf)
+            {
+                await RecordsService.DeleteRecord(RecordId);
+                await JSRuntime.InvokeVoidAsync("redirectToIndex");
+            }
+        }
+
+        catch (Exception exc)
+        {
+            CriticalError = exc.Message;
+            CriticalErrorArea = ErrorArea.Page;
         }
     }
+
 }

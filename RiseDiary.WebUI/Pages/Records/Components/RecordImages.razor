@@ -7,82 +7,92 @@
 @inject IJSRuntime JSRuntime 
 
 <div class="row">
-    @if (!_addMode)
+    @if (CriticalError is not null)
     {
-        <div class="col-12">
-            <div class="row">
-                @foreach (var image in RecordImagesRefsMutable)
-                {
-                    <div class="col-lg-2 col-md-4 col-sm-6 p-3">
-                        <Thumbnail RecordId="RecordId" ImageId="image.ImageId" ImageName="@image?.Image?.Name">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="_ => RemoveImageLink(image?.ImageId)" title="Открепить">Открепить</button>
-                        </Thumbnail>
-                    </div>
-                }
-            </div>
-        </div>
-
-        <div class="col-12">
-            <button class="btn btn-outline-info m-1 btn-sm" @onclick="async _ => await ShowAvailableImages()">Прикрепить изображение</button>
-            <a href="/images/upload?recordId=@RecordId" class="btn btn-outline-info m-1 btn-sm">Загрузить изображение</a>
-        </div>
+        <p style="color:red">Произошла критическая ошибка: @CriticalError</p>
     }
     else
     {
-        <div class="col-12">
-            <div class="row">
-                @foreach (var image in _availableImages)
-                {
-                    <div class="col-lg-2 col-md-4 col-sm-6 p-3">
-                        <Thumbnail RecordId="RecordId" ImageId="image.Id" ImageName="@image.Name">
-                            <button type="button" class="btn btn-sm btn-outline-primary" @onclick="async _ => await LinkImage(image)" title="Прикрепить изображение к записи">Прикрепить</button>
-                        </Thumbnail>
-                    </div>
-                }
+        @if (!_addMode)
+        {
+            <div class="col-12">
+                <div class="row">
+                    @foreach (var image in RecordImagesRefsMutable)
+                    {
+                        <div class="col-lg-2 col-md-4 col-sm-6 p-3">
+                            <Thumbnail RecordId="RecordId" ImageId="image.ImageId" ImageName="@image?.Image?.Name">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="_ => RemoveImageLink(image?.ImageId)" title="Открепить">Открепить</button>
+                            </Thumbnail>
+                        </div>
+                    }
+                </div>
             </div>
-        </div>
 
-        <div class="col-12">
-            <button class="btn btn-outline-info m-1 btn-sm" hidden="@_allImagesDisplayed" @onclick="async _ => await ShowAvailableImages()" title="Показать больше картинок">Показать больше</button>
-            <button class="btn btn-outline-secondary m-1 btn-sm" @onclick="_ => HideAvailableImages()" title="Закрыть список доступных изображений">Назад</button>
-        </div>
+            <div class="col-12">
+                <button class="btn btn-outline-info m-1 btn-sm" @onclick="async _ => await ShowAvailableImages()">Прикрепить изображение</button>
+                <a href="/images/upload?recordId=@RecordId" class="btn btn-outline-info m-1 btn-sm">Загрузить изображение</a>
+            </div>
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="row">
+                    @foreach (var image in _availableImages)
+                    {
+                        <div class="col-lg-2 col-md-4 col-sm-6 p-3">
+                            <Thumbnail RecordId="RecordId" ImageId="image.Id" ImageName="@image.Name">
+                                <button type="button" class="btn btn-sm btn-outline-primary" @onclick="async _ => await LinkImage(image)" title="Прикрепить изображение к записи">Прикрепить</button>
+                            </Thumbnail>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-12">
+                <button class="btn btn-outline-info m-1 btn-sm" hidden="@_allImagesDisplayed" @onclick="async _ => await ShowAvailableImages()" title="Показать больше картинок">Показать больше</button>
+                <button class="btn btn-outline-secondary m-1 btn-sm" @onclick="_ => HideAvailableImages()" title="Закрыть список доступных изображений">Назад</button>
+            </div>
+        }
     }
 </div>
 
 @code {
 
-        [Parameter]
-        public Guid RecordId { get; set; }
+    [Parameter]
+    public Guid RecordId { get; set; }
 
-        [Parameter]
-        public ICollection<DiaryRecordImage> RecordImagesRefsMutable { get; set; } = null!;
-
-        private async Task RemoveImageLink(Guid? imageId)
-        {
-            if (await JSRuntime.InvokeAsync<bool>("confirm", "Открепить изобраение от записи?"))
-            {
-                await RecordsImageService.RemoveRecordImage(RecordId, imageId ?? throw new ArgumentNullException(nameof(imageId)));
-                var img = RecordImagesRefsMutable.Single(ri => ri.ImageId == imageId);
-                RecordImagesRefsMutable.Remove(img);
-            }
-        }
+    [Parameter]
+    public ICollection<DiaryRecordImage> RecordImagesRefsMutable { get; set; } = new List<DiaryRecordImage>();   
 
     private bool _addMode;
+
     private const int PAGE_SIZE = 30;
+
     private int _pagesCount;
+
     private bool _allImagesDisplayed;
 
     private List<DiaryImage> _availableImages = new List<DiaryImage>();
 
+    private string? CriticalError { get; set; }
+
+
     private async Task ShowAvailableImages()
     {
-        _addMode = true;
-        _pagesCount++;
-        int imagesCount = await ImagesService.GetImagesCount();
-        _availableImages = await ImagesService.FetchImageSet(0, _pagesCount * PAGE_SIZE);
-        _allImagesDisplayed = imagesCount <= _availableImages.Count;
+        try
+        {
+            _addMode = true;
+            _pagesCount++;
+            int imagesCount = await ImagesService.GetImagesCount();
+            _availableImages = await ImagesService.FetchImageSet(0, _pagesCount * PAGE_SIZE);
+            _allImagesDisplayed = imagesCount <= _availableImages.Count;
 
-        _availableImages = _availableImages.Where(i => !RecordImagesRefsMutable.Any(r => r.ImageId == i.Id)).ToList();
+            _availableImages = _availableImages.Where(i => !RecordImagesRefsMutable.Any(r => r.ImageId == i.Id)).ToList();
+        }
+        catch (Exception exc)
+        {
+            CriticalError = exc.Message;
+        }
     }
 
     private void HideAvailableImages()
@@ -94,15 +104,41 @@
 
     private async Task LinkImage(DiaryImage image)
     {
-        await RecordsImageService.AddRecordImage(RecordId, image.Id);
-        RecordImagesRefsMutable.Add(
-            new DiaryRecordImage
-            {
-                Image = image,
-                ImageId = image.Id,
-                RecordId = RecordId
-            });
-        _availableImages.Remove(image);
+        try
+        {
+            await RecordsImageService.AddRecordImage(RecordId, image.Id);
+
+            RecordImagesRefsMutable.Add(
+                new DiaryRecordImage
+                    {
+                        Image = image,
+                        ImageId = image.Id,
+                        RecordId = RecordId
+                    });
+
+            _availableImages.Remove(image);
+        }
+        catch (Exception exc)
+        {
+            CriticalError = exc.Message;
+        }
     }
 
+    private async Task RemoveImageLink(Guid? imageId)
+    {
+        try
+        {
+            imageId = imageId ?? Guid.Empty;
+            if (await JSRuntime.InvokeAsync<bool>("confirm", "Открепить изобраение от записи?"))
+            {
+                await RecordsImageService.RemoveRecordImage(RecordId, imageId.Value);
+                var img = RecordImagesRefsMutable.Single(ri => ri.ImageId == imageId);
+                RecordImagesRefsMutable.Remove(img);
+            }
+        }
+        catch (Exception exc)
+        {
+            CriticalError = exc.Message;
+        }
+    }
 }

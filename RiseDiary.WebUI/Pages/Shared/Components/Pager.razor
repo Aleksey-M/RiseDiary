@@ -6,14 +6,14 @@
 <nav aria-label="navigation" style="@(FloatRight ? "float:right" : "")">
     @if (Pages is { TotalPages: > 0 })
     {
-    <ul class="pagination mb-1">
-        @foreach (var (c, h, p) in LinksList)
-        {
-            <li class="@c">
-                <a href="@h" class="page-link">@p</a>
-            </li>
-        }        
-    </ul>
+        <ul class="pagination mb-1">
+            @foreach (var (c, h, p) in LinksList)
+            {
+                <li class="@c">
+                    <a href="@h" class="page-link">@p</a>
+                </li>
+            }
+        </ul>
     }
     else
     {
@@ -22,6 +22,7 @@
 </nav>
 
 @code{
+
     [Parameter]
     public PagesInfo? Pages { get; set; }
 
