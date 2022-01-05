@@ -5,138 +5,180 @@
 @inject IScopesService ScopesSvc
 @inject IJSRuntime JSRuntime
 
-<div class="card mt-3">
-    <div class="card-header">
-        @if (ErrorMessage != null)
-        {
-            <p style="color:red">@ErrorMessage</p>
-        }
-
-        @if (EditMode)
-        {
-            <div class="input-group">
-                <input type="text" @bind-value="ScopeNewName" @bind-value:event="onchange" class="form-control" />
-
-                <button type="submit" class="btn btn-link" @onclick="TryRemoveScope">
-                    <img src="img/trash.svg" width="20" height="20" alt="Удалить" title="Удалить" />
-                </button>
-
-                <button type="submit" class="btn btn-link" @onclick="UpdateScopeName">
-                    <img src="img/check2-square.svg" widtn="20" height="20" title="Обновить" alt="Обновить" />
-                </button>
-            </div>
-        }
-        else
-        {
-            <div class="row">
-                <h5 class="col-11 mt-1" style="color:blue">@CurrentScope.ScopeName</h5>
-
-                <button type="button" @onclick="ShowScopeNameEditField" class="btn btn-link col-1">
-                    <img src="img/pencil-square.svg" widtn="20" height="20" title="Изменить" alt="Изменить" />
-                </button>
-            </div>
-        }
-    </div>
-        
-    @if (CurrentScope.Themes.Count() > 0)
-    {
-        <ul class="list-group list-group-flush">
-            @foreach (var th in CurrentScope.Themes)
+@if (CriticalError is not null)
+{
+    <p style="color:red">Произошла критическая ошибка: @CriticalError</p>
+}
+else
+{
+    <div class="card mt-3">
+        <div class="card-header">
+            @if (ErrorMessage != null)
             {
-                <li class="list-group-item">
-                    <div class="row">
-                        @if (EditedThemeId != th.Id)
-                        {
-                            <div class="col-10">
-                                <h5>@th.ThemeName</h5>
-                            </div>
-
-                            <div class="col-1">
-                                <button type="button" @onclick="@(e => ToggleActuality(th.Id))" class="btn btn-link" style="float:left; margin-right:10px" title="Актуальность темы">
-                                    @if (th.Actual)
-                                    {
-                                        <img src="img/star-fill.svg" widtn="20" height="20" />
-                                    }
-                                    else
-                                    {
-                                        <img src="img/star.svg" widtn="20" height="20" />                                      
-                                    }
-                                </button>
-                            </div>
-
-                            <div class="col-1">
-                                <button type="button" @onclick="@(e => EditTheme(th.Id))" class="btn btn-link" style="float:right; margin-right:5px" title="Открыть на редактирование">
-                                    <img src="img/pencil-square.svg" widtn="20" height="20" />
-                                </button>
-                            </div>
-                        }
-                        else
-                        {
-                            @if (EditThemeErrorMessage != null)
-                            {
-                                <p style="color:red" class="col-12">@EditThemeErrorMessage</p>
-                            }
-
-                            <div class="input-group">
-                                <input type="text" @bind-value="ThemeNewName" @bind-value:event="onchange" class="form-control" />
-                                
-                                <button type="button" @onclick="DeleteTheme" class="btn btn-link">
-                                    <img src="img/trash.svg" width="20" height="20" alt="Удалить" title="Удалить" />
-                                </button>
-
-                                <button type="button" @onclick="UpdateThemeName" class="btn btn-link">
-                                    <img src="img/check2-square.svg" widtn="20" height="20" title="Обновить" alt="Обновить" />                                    
-                                </button>
-                            </div>
-                        }
-                    </div>
-                </li>
+                <p style="color:red">@ErrorMessage</p>
             }
-        </ul>
-    }
 
-    <div class="card-footer">
+            @if (EditMode)
+            {
+                <div class="input-group">
+                    <input type="text" @bind-value="ScopeNewName" @bind-value:event="onchange" class="form-control" />
 
-        @if (CreateThemeErrorMessage != null)
+                    <button type="submit" class="btn btn-link" @onclick="TryRemoveScope">
+                        <img src="img/trash.svg" width="20" height="20" alt="Удалить" title="Удалить" />
+                    </button>
+
+                    <button type="submit" class="btn btn-link" @onclick="UpdateScopeName">
+                        <img src="img/check2-square.svg" widtn="20" height="20" title="Обновить" alt="Обновить" />
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <h5 class="col-11 mt-1" style="color:blue">@CurrentScope.ScopeName</h5>
+
+                    <button type="button" @onclick="ShowScopeNameEditField" class="btn btn-link col-1">
+                        <img src="img/pencil-square.svg" widtn="20" height="20" title="Изменить" alt="Изменить" />
+                    </button>
+                </div>
+            }
+        </div>
+
+        @if (CurrentScope.Themes.Count() > 0)
         {
-            <p style="color:red">@CreateThemeErrorMessage</p>
+            <ul class="list-group list-group-flush">
+                @foreach (var th in CurrentScope.Themes)
+                {
+                    <li class="list-group-item">
+                        <div class="row">
+                            @if (EditedThemeId != th.Id)
+                            {
+                                <div class="col-10">
+                                    <h5>@th.ThemeName</h5>
+                                </div>
+
+                                <div class="col-1">
+                                    <button type="button" @onclick="@(e => ToggleActuality(th.Id))" class="btn btn-link" style="float:left; margin-right:10px" title="Актуальность темы">
+                                        @if (th.Actual)
+                                        {
+                                            <img src="img/star-fill.svg" widtn="20" height="20" />
+                                        }
+                                        else
+                                        {
+                                            <img src="img/star.svg" widtn="20" height="20" />
+                                        }
+                                    </button>
+                                </div>
+
+                                <div class="col-1">
+                                    <button type="button" @onclick="@(e => EditTheme(th.Id))" class="btn btn-link" style="float:right; margin-right:5px" title="Открыть на редактирование">
+                                        <img src="img/pencil-square.svg" widtn="20" height="20" />
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                @if (EditThemeErrorMessage != null)
+                                {
+                                    <p style="color:red" class="col-12">@EditThemeErrorMessage</p>
+                                }
+
+                                <div class="input-group">
+                                    <input type="text" @bind-value="ThemeNewName" @bind-value:event="onchange" class="form-control" />
+
+                                    <button type="button" @onclick="DeleteTheme" class="btn btn-link">
+                                        <img src="img/trash.svg" width="20" height="20" alt="Удалить" title="Удалить" />
+                                    </button>
+
+                                    <button type="button" @onclick="UpdateThemeName" class="btn btn-link">
+                                        <img src="img/check2-square.svg" widtn="20" height="20" title="Обновить" alt="Обновить" />
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </li>
+                }
+            </ul>
         }
 
-        <div class="input-group">
-            <input type="text" @bind-value="NewThemeName" @bind-value:event="onchange" class="form-control" placeholder='Название новой темы для области "@CurrentScope.ScopeName"' />
-            
-            <button type="button" class="btn btn-link" @onclick="CreateNewTheme">
-                <img src="img/plus-square.svg" widtn="20" height="20" title="Создать" alt="Создать" />                
-            </button>
+        <div class="card-footer">
+
+            @if (CreateThemeErrorMessage != null)
+            {
+                <p style="color:red">@CreateThemeErrorMessage</p>
+            }
+
+            <div class="input-group">
+                <input type="text" @bind-value="NewThemeName" @bind-value:event="onchange" class="form-control" placeholder='Название новой темы для области "@CurrentScope.ScopeName"' />
+
+                <button type="button" class="btn btn-link" @onclick="CreateNewTheme">
+                    <img src="img/plus-square.svg" widtn="20" height="20" title="Создать" alt="Создать" />
+                </button>
+            </div>
         </div>
     </div>
-</div>
+}
 
-@code{ 
-    [Parameter] public DiaryScope CurrentScope { get; set; } = null!;
-    [Parameter] public Func<Task> UpdateParentState { get; set; } = null!;
+@code{
+
+    [Parameter] 
+    public DiaryScope CurrentScope { get; set; } = null!;
+
+    [Parameter] 
+    public Func<Task> UpdateParentState { get; set; } = null!;
+
     private List<DiaryTheme> Themes { get; set; } = new List<DiaryTheme>();
 
     private string? ErrorMessage { get; set; }
+
     private string? CreateThemeErrorMessage { get; set; }
+
     private string? EditThemeErrorMessage { get; set; }
+
     private string? NewThemeName { get; set; }
+
     private bool EditMode { get; set; }
+
     private string? ScopeNewName { get; set; }
+
     private Guid? EditedThemeId { get; set; }
+
     private string? ThemeNewName { get; set; }
+
+    private string? CriticalError { get; set; }
+
+
+    private void HandleCriticalError(Exception exc)
+    {
+        CriticalError = exc.Message;
+        Themes = new List<DiaryTheme>();
+    }
 
     private void EditTheme(Guid themeId)
     {
-        EditedThemeId = themeId;
-        ThemeNewName = CurrentScope.Themes.Single(t => t.Id == themeId).ThemeName;
-        EditThemeErrorMessage = null;
+        try
+        {
+            EditedThemeId = themeId;
+            ThemeNewName = CurrentScope.Themes.Single(t => t.Id == themeId).ThemeName;
+            EditThemeErrorMessage = null;
+        }
+        catch (Exception exc)
+        {
+            HandleCriticalError(exc);
+        }
     }
 
     private void ShowScopeNameEditField()
     {
-        ScopeNewName = CurrentScope.ScopeName;
-        EditMode = true;
+        try
+        {
+            ScopeNewName = CurrentScope.ScopeName;
+            EditMode = true;
+        }
+        catch(Exception exc)
+        {
+            HandleCriticalError(exc);
+        }       
     }
 
     private async Task UpdateScopeName()
@@ -192,30 +234,47 @@
 
     private async Task DeleteTheme()
     {
-        if (EditedThemeId == null) return;
-        if (await JSRuntime.InvokeAsync<bool>("confirm", "Удалить тему?"))
+        try
         {
-            await ScopesSvc.DeleteTheme(EditedThemeId.Value);
-            EditedThemeId = null;
-            EditThemeErrorMessage = null;
-            CurrentScope = await ScopesSvc.FetchScopeById(CurrentScope.Id) ?? throw new Exception($"Error on getting Scope with Id = '{CurrentScope.Id}'");
-            this.StateHasChanged();
+            if (EditedThemeId == null) return;
+
+            if (await JSRuntime.InvokeAsync<bool>("confirm", "Удалить тему?"))
+            {
+                await ScopesSvc.DeleteTheme(EditedThemeId.Value);
+                EditedThemeId = null;
+                EditThemeErrorMessage = null;
+                CurrentScope = await ScopesSvc.FetchScopeById(CurrentScope.Id) 
+                    ?? throw new Exception($"Error on getting Scope with Id = '{CurrentScope.Id}'");
+
+                this.StateHasChanged();
+            }
+        }
+        catch (Exception exc)
+        {
+            HandleCriticalError(exc);
         }
     }
 
     private async Task TryRemoveScope()
     {
-        if (await ScopesSvc.CanDeleteScope(CurrentScope.Id))
+        try
         {
-            if (await JSRuntime.InvokeAsync<bool>("confirm", "Удалить сферу интересов?"))
+            if (await ScopesSvc.CanDeleteScope(CurrentScope.Id))
             {
-                await ScopesSvc.DeleteScope(CurrentScope.Id);
-                await UpdateParentState();
+                if (await JSRuntime.InvokeAsync<bool>("confirm", "Удалить сферу интересов?"))
+                {
+                    await ScopesSvc.DeleteScope(CurrentScope.Id);
+                    await UpdateParentState();
+                }
+            }
+            else
+            {
+                ErrorMessage = "Область не может быть удалена. Есть связанные темы";
             }
         }
-        else
+        catch (Exception exc)
         {
-            ErrorMessage = "Область не может быть удалена. Есть связанные темы";
+            HandleCriticalError(exc);
         }
     }
 
@@ -238,7 +297,8 @@
             await ScopesSvc.AddTheme(CurrentScope.Id, NewThemeName, true);
             NewThemeName = null;
             CreateThemeErrorMessage = null;
-            CurrentScope = await ScopesSvc.FetchScopeById(CurrentScope.Id) ?? throw new Exception($"Error on getting Scope with Id = '{CurrentScope.Id}'");
+            CurrentScope = await ScopesSvc.FetchScopeById(CurrentScope.Id) 
+                ?? throw new Exception($"Error on getting Scope with Id = '{CurrentScope.Id}'");
         }
         catch(Exception exc)
         {
@@ -248,8 +308,16 @@
 
     public async Task ToggleActuality(Guid themeId)
     {
-        var theme = CurrentScope.Themes.Single(t => t.Id == themeId);
-        await ScopesSvc.UpdateTheme(theme.Id, themeActuality: !theme.Actual);
-        CurrentScope = await ScopesSvc.FetchScopeById(CurrentScope.Id) ?? throw new Exception($"Error on getting Scope with Id = '{CurrentScope.Id}'");
+        try
+        {
+            var theme = CurrentScope.Themes.Single(t => t.Id == themeId);
+            await ScopesSvc.UpdateTheme(theme.Id, themeActuality: !theme.Actual);
+            CurrentScope = await ScopesSvc.FetchScopeById(CurrentScope.Id) 
+                ?? throw new Exception($"Error on getting Scope with Id = '{CurrentScope.Id}'");
+        }
+        catch(Exception exc)
+        {
+            HandleCriticalError(exc);
+        }       
     }
 }
