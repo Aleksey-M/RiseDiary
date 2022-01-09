@@ -7,9 +7,7 @@ namespace RiseDiary.Model
     {
         public Guid Id { get; set; }
 
-        private DateTime _recordDate;
-
-        public DateTime Date { get => _recordDate; set => _recordDate = value.Date; }
+        public DateOnly Date { get; set; }
 
         public DateTime CreateDate { get; set; }
 

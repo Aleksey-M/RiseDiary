@@ -54,9 +54,9 @@ else
     public string RecordDate { get; set; } = "";
 
     [Parameter]
-    public Func<DateTime, string, Task>? SaveRecordHeader { get; set; } = null;
+    public Func<DateOnly, string, Task>? SaveRecordHeader { get; set; } = null;
 
-    private DateTime _recordDate;
+    private DateOnly _recordDate;
 
     private string _recordName = "";
 
@@ -67,7 +67,7 @@ else
     {
         try
         {
-            if (_recordDate.Date == DateTime.Parse(RecordDate) && _recordName.Trim() == (RecordName == "[ПУСТО]" ? "" : RecordName))
+            if (_recordDate == DateOnly.Parse(RecordDate) && _recordName.Trim() == (RecordName == "[ПУСТО]" ? "" : RecordName))
             {
                 _editMode = false;
                 return;
@@ -96,7 +96,7 @@ else
         try
         {
             _recordName = RecordName == "[ПУСТО]" ? "" : RecordName;
-            _recordDate = DateTime.Parse(RecordDate);
+            _recordDate = DateOnly.Parse(RecordDate);
             _editMode = true;
         }
         catch (Exception exc)

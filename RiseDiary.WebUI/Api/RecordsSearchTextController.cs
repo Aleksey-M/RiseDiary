@@ -24,7 +24,10 @@ namespace RiseDiary.WebUI.Api
         [HttpGet, Route("api/v1.0/records/textsearch/list")]
         [ProducesResponseType(typeof(RecordsPageDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<RecordsPageDto>> GetRecordsList([FromQuery] string? searchText, [FromQuery] int? pageSize, [FromQuery] int? pageNo)
+        public async Task<ActionResult<RecordsPageDto>> GetRecordsList(
+            [FromQuery] string? searchText, 
+            [FromQuery] int? pageSize, 
+            [FromQuery] int? pageNo)
         {
             try
             {
@@ -69,7 +72,10 @@ namespace RiseDiary.WebUI.Api
         [HttpGet, Route("api/v1.0/records/textsearch/expandedlist")]
         [ProducesResponseType(typeof(RecordsDetailPageDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<RecordsDetailPageDto>> GetRecordsListExpanded([FromQuery] string? searchText, [FromQuery] int? pageSize, [FromQuery] int? pageNo)
+        public async Task<ActionResult<RecordsDetailPageDto>> GetRecordsListExpanded(
+            [FromQuery] string? searchText, 
+            [FromQuery] int? pageSize, 
+            [FromQuery] int? pageNo)
         {
             try
             {

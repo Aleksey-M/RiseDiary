@@ -24,7 +24,14 @@ namespace RiseDiary.WebUI.Api
         [HttpGet, Route("api/v1.0/records/list")]
         [ProducesResponseType(typeof(RecordsPageDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<RecordsPageDto>> GetRecordsList([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? name, [FromQuery] bool? combinedThemes, [FromQuery] Guid[]? themeId, [FromQuery] int? pageSize, [FromQuery] int? pageNo)
+        public async Task<ActionResult<RecordsPageDto>> GetRecordsList(
+            [FromQuery] DateTime? from, 
+            [FromQuery] DateTime? to, 
+            [FromQuery] string? name, 
+            [FromQuery] bool? combinedThemes, 
+            [FromQuery] Guid[]? themeId, 
+            [FromQuery] int? pageSize, 
+            [FromQuery] int? pageNo)
         {
             try
             {
@@ -37,8 +44,8 @@ namespace RiseDiary.WebUI.Api
                     CombineThemes = combinedThemes ?? false,
                     PageSize = pageSize.Value,
                     PageNo = pageNo.Value,
-                    FromDate = from,
-                    ToDate = to,
+                    FromDate = from.HasValue ? DateOnly.FromDateTime(from.Value) : null,
+                    ToDate = to.HasValue ? DateOnly.FromDateTime(to.Value) : null,
                     FilterName = name
                 };
 
@@ -77,7 +84,14 @@ namespace RiseDiary.WebUI.Api
         [HttpGet, Route("api/v1.0/records/expandedlist")]
         [ProducesResponseType(typeof(RecordsDetailPageDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<RecordsDetailPageDto>> GetRecordsListExpanded([FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? name, [FromQuery] bool? combinedThemes, [FromQuery] Guid[]? themeId, [FromQuery] int? pageSize, [FromQuery] int? pageNo)
+        public async Task<ActionResult<RecordsDetailPageDto>> GetRecordsListExpanded(
+            [FromQuery] DateTime? from, 
+            [FromQuery] DateTime? to, 
+            [FromQuery] string? name, 
+            [FromQuery] bool? combinedThemes, 
+            [FromQuery] Guid[]? themeId, 
+            [FromQuery] int? pageSize, 
+            [FromQuery] int? pageNo)
         {
             try
             {
@@ -90,8 +104,8 @@ namespace RiseDiary.WebUI.Api
                     CombineThemes = combinedThemes ?? false,
                     PageSize = pageSize.Value,
                     PageNo = pageNo.Value,
-                    FromDate = from,
-                    ToDate = to,
+                    FromDate = from.HasValue ? DateOnly.FromDateTime(from.Value) : null,
+                    ToDate = to.HasValue ? DateOnly.FromDateTime(to.Value) : null,
                     FilterName = name
                 };
 

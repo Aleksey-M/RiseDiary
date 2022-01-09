@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model
 {
-    public record DateListItem(Guid Id, DateTime Date, DateTime TransferredDate, string Name, string Text, string Themes);
+    public record DateListItem(Guid Id, DateOnly Date, DateOnly TransferredDate, string Name, string Text, string Themes);
 
     public interface IDatesService
     {
-        Task<List<DateListItem>> GetAllDates(DateTime today);
+        Task<List<DateListItem>> GetAllDates(DateOnly today);
 
-        Task<List<DateListItem>> GetDatesFromRange(DateTime tuday, bool withEmptyDates);
+        Task<List<DateListItem>> GetDatesFromRange(DateOnly tuday, bool withEmptyDates);
     }
 }

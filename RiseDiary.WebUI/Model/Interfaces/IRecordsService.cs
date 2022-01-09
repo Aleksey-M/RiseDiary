@@ -5,9 +5,9 @@ namespace RiseDiary.Model
 {
     public interface IRecordsService
     {
-        Task<Guid> AddRecord(DateTime date, string recordName, string recordText);
+        Task<Guid> AddRecord(DateOnly date, string recordName, string recordText);
 
-        Task UpdateRecord(Guid recordId, DateTime? newDate, string? newName, string? newText);
+        Task UpdateRecord(Guid recordId, DateOnly? newDate, string? newName, string? newText);
 
         Task DeleteRecord(Guid recordId);
 

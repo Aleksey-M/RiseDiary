@@ -17,7 +17,9 @@ namespace RiseDiary.WebUI.Pages.Settings
 
         [Required(ErrorMessage = "Обязательное значение"), MinLength(10, ErrorMessage = "Базовый URI не может быть короче 10 символов")]
         public string? HostAndPort { get; set; }
+
         public string CurrentHostAndPort { get; set; } = "";
+
 
         public async Task OnGetAsync()
         {

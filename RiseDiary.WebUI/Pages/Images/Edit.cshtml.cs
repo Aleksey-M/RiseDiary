@@ -23,9 +23,13 @@ namespace RiseDiary.WebUI.Pages.Images
         }
 
         public Guid? RecordId { get; private set; }
+
         public DiaryImage Image { get; private set; } = null!;
+
         public Uri ImageUrl { get; private set; } = null!;
+
         public Dictionary<Guid, string> ImageLinks { get; private set; } = new Dictionary<Guid, string>();
+
 
         private async Task UpdateModel(Guid imageId)
         {

@@ -13,7 +13,9 @@ namespace RiseDiary.Shared.Dto
     public sealed class ThemeDto
     {
         public Guid ThemeId { get; set; }
+
         public string ThemeName { get; set; } = null!;
+
         public bool Actual { get; set; }
     }
 
@@ -21,8 +23,10 @@ namespace RiseDiary.Shared.Dto
     {
         [Required]
         public Guid ScopeId { get; set; }
+
         [Required, StringLength(50)]
         public string ScopeName { get; set; } = null!;
+
         public IEnumerable<ThemeDto> Themes { get; set; } = null!;
     }
 
@@ -30,6 +34,7 @@ namespace RiseDiary.Shared.Dto
     {
         [Required]
         public Guid ScopeId { get; set; }
+
         [Required, StringLength(50)]
         public string NewScopeName { get; set; } = null!;
     }
@@ -38,8 +43,10 @@ namespace RiseDiary.Shared.Dto
     {
         [Required]
         public Guid ScopeId { get; set; }
+
         [Required, StringLength(50)]
         public string NewThemeName { get; set; } = null!;
+
         [Required]
         public bool Actual { get; set; }
     }
@@ -48,10 +55,13 @@ namespace RiseDiary.Shared.Dto
     {
         [Required]
         public Guid ScopeId { get; set; }
+
         [Required]
         public Guid ThemeId { get; set; }
+
         [Required, StringLength(50)]
         public string ThemeNewName { get; set; } = null!;
+
         [Required]
         public bool? NewActual { get; set; }
     }

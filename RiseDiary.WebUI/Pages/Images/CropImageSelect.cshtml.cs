@@ -10,15 +10,20 @@ namespace RiseDiary.WebUI.Pages.Images
     public class CropImageSelectModel : PageModel
     {
         private readonly ICropImageService _cropImageService;
+
         public CropImageSelectModel(ICropImageService cropImageService)
         {
             _cropImageService = cropImageService ?? throw new ArgumentNullException(nameof(cropImageService));
         }
 
         public Guid ImageId { get; private set; }
+
         public Guid RecordId { get; private set; }
+
         public ScaledImagePreview ScaledImage { get; private set; } = null!;
+
         public string ScaledImageString => Convert.ToBase64String(ScaledImage.Image);
+
 
         public async Task<ActionResult> OnGetAsync(Guid? imageId, Guid? recordId)
         {

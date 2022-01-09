@@ -10,13 +10,16 @@ namespace RiseDiary.WebUI.Pages.Analysis
     public class IndexModel : PageModel
     {
         private readonly IRecordsSearchTextService _recordsSearchTextService;
+
         public IndexModel(IRecordsSearchTextService recordsSearchTextService)
         {
             _recordsSearchTextService = recordsSearchTextService;
         }
 
         public IEnumerable<DiaryRecord> Records { get; private set; } = Enumerable.Empty<DiaryRecord>();
+
         public PagesInfo Pages { get; private set; } = null!;
+
         public string SearchString { get; private set; } = "";
 
         private const int _pageSize = 50;
@@ -25,6 +28,7 @@ namespace RiseDiary.WebUI.Pages.Analysis
         {
             new KeyValuePair<string, string?>(nameof(SearchString), SearchString)
         };
+
 
         public async Task OnGetAsync(string? searchString, int? pageNo)
         {

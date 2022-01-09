@@ -14,23 +14,23 @@ namespace RiseDiary.IntegratedTests.Services
     [TestFixture]
     internal class CalendarServiceTests : TestedServices
     {
-        private readonly List<DateTime> _recordDates = new()
+        private readonly List<DateOnly> _recordDates = new()
         {
-                new DateTime(2017, 7, 5),
-                new DateTime(2018, 1, 24),
-                new DateTime(2019, 10, 19),
-                new DateTime(2017, 3, 16),
-                new DateTime(2018, 1, 4),
-                new DateTime(1999, 2, 28) };
+                new DateOnly(2017, 7, 5),
+                new DateOnly(2018, 1, 24),
+                new DateOnly(2019, 10, 19),
+                new DateOnly(2017, 3, 16),
+                new DateOnly(2018, 1, 4),
+                new DateOnly(1999, 2, 28) };
 
-        private readonly Dictionary<DateTime, List<string>> _recordsDatesThemes = new()
+        private readonly Dictionary<DateOnly, List<string>> _recordsDatesThemes = new()
         {
-            { new DateTime(2017, 7, 5), new List<string>{ "Important Dates", "Dreams" } },
-            { new DateTime(2018, 1, 24), new List<string>{ "Intents", "Important Dates" } },
-            { new DateTime(2019, 10, 19), new List<string>{ "Dreams" } },
-            { new DateTime(2017, 3, 16), new List<string>{ "Important Dates" } },
-            { new DateTime(2018, 1, 4), new List<string>{ "Dreams", "Other Theme", "Intents", "Important Dates" } },
-            { new DateTime(1999, 2, 28), new List<string>{ "Dreams" } }
+            { new DateOnly(2017, 7, 5), new List<string>{ "Important Dates", "Dreams" } },
+            { new DateOnly(2018, 1, 24), new List<string>{ "Intents", "Important Dates" } },
+            { new DateOnly(2019, 10, 19), new List<string>{ "Dreams" } },
+            { new DateOnly(2017, 3, 16), new List<string>{ "Important Dates" } },
+            { new DateOnly(2018, 1, 4), new List<string>{ "Dreams", "Other Theme", "Intents", "Important Dates" } },
+            { new DateOnly(1999, 2, 28), new List<string>{ "Dreams" } }
         };
 
         private readonly List<Guid> _empty = Enumerable.Empty<Guid>().ToList();
@@ -216,10 +216,10 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var calendarService = GetCalendarService(context);
-            var _newRecordDateThemes = new Dictionary<DateTime, List<string>>();
+            var _newRecordDateThemes = new Dictionary<DateOnly, List<string>>();
             foreach (var i in _recordsDatesThemes)
             {
-                _newRecordDateThemes[new DateTime(2017, i.Key.Month, i.Key.Day)] = i.Value;
+                _newRecordDateThemes[new DateOnly(2017, i.Key.Month, i.Key.Day)] = i.Value;
             }
             var data = await AddThemesForRecords(context, _newRecordDateThemes);
             var themesFilter = new List<Guid> { data.ElementAt(3).themesIds.First(), data.ElementAt(1).themesIds.First() }; // "Important Dates" + "Intents"
@@ -238,7 +238,7 @@ namespace RiseDiary.IntegratedTests.Services
             var data = await AddThemesForRecords(context, _recordsDatesThemes);
             var themesFilter = new List<Guid> { data.ElementAt(3).themesIds.First(), data.ElementAt(1).themesIds.First() }; // "Important Dates"
 
-            var deletedDate = new DateTime(2017, 3, 16);
+            var deletedDate = new DateOnly(2017, 3, 16);
             context.Records.Remove(context.Records.Single(r => r.Date == deletedDate));
             context.SaveChanges();
 
@@ -258,14 +258,14 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             context.SoftDeleting = true;
             var calendarService = GetCalendarService(context);
-            var _newRecordDateThemes = new Dictionary<DateTime, List<string>>();
+            var _newRecordDateThemes = new Dictionary<DateOnly, List<string>>();
             foreach (var i in _recordsDatesThemes)
             {
-                _newRecordDateThemes[new DateTime(2017, i.Key.Month, i.Key.Day)] = i.Value;
+                _newRecordDateThemes[new DateOnly(2017, i.Key.Month, i.Key.Day)] = i.Value;
             }
             var data = await AddThemesForRecords(context, _newRecordDateThemes);
             var themesFilter = new List<Guid> { data.ElementAt(3).themesIds.First(), data.ElementAt(1).themesIds.First() }; // "Important Dates" + "Intents"
-            var deletedDate = new DateTime(2017, 3, 16);
+            var deletedDate = new DateOnly(2017, 3, 16);
             context.Records.Remove(context.Records.Single(r => r.Date == deletedDate));
             context.SaveChanges();
 
@@ -287,7 +287,7 @@ namespace RiseDiary.IntegratedTests.Services
             var calendarService = GetCalendarService(context);
             var data = AddThemesForRecords(context, _recordsDatesThemes);
 
-            var deletedDate = new DateTime(2017, 3, 16);
+            var deletedDate = new DateOnly(2017, 3, 16);
             var rec = context.Records.Single(r => r.Date == deletedDate);
             context.Records.Remove(rec);
             context.SaveChanges();

@@ -311,7 +311,7 @@ namespace RiseDiary.WebUI
                 var r = new DiaryRecord
                 {
                     Id = id,
-                    Date = DateTime.Parse(Date ?? "", CultureInfo.InvariantCulture),
+                    Date = DateOnly.Parse(Date ?? "", CultureInfo.InvariantCulture),
                     CreateDate = DateTime.Parse(CreateDate ?? "", CultureInfo.InvariantCulture),
                     ModifyDate = DateTime.Parse(ModifyDate ?? "", CultureInfo.InvariantCulture),
                     Name = Name ?? "",

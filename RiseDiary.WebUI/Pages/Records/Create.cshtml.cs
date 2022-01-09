@@ -21,7 +21,7 @@ namespace RiseDiary.WebUI.Pages.Records
             if (recordText.Length == 0) recordText = @"<p></p>";
             recordName = recordName?.Trim() ?? "";
 
-            Guid recordId = await _recordsService.AddRecord(recordDate, recordName, recordText);
+            Guid recordId = await _recordsService.AddRecord(DateOnly.FromDateTime(recordDate), recordName, recordText);
 
             return RedirectToPage("View", new { recordId });
         }

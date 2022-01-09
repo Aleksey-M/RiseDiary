@@ -21,10 +21,15 @@ namespace RiseDiary.WebUI.Pages.Dates
         }
 
         public IEnumerable<DiaryScope> Scopes { get; private set; } = Enumerable.Empty<DiaryScope>();
+
         public Guid SelectedScopeId { get; private set; }
+
         public int DaysDisplayRange { get; private set; }
+
         public string Message { get; private set; } = "Выберите источник дат и периоды отображения";
+
         public string? ErrorMessage { get; private set; }
+
 
         public async Task UpdateViewModel()
         {

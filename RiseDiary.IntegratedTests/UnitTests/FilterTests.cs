@@ -14,22 +14,22 @@ namespace RiseDiary.UnitTests
         public void Filter_SetDateTo_ShouldCleareTime()
         {
             var recFilter = RecordsFilter.Empty;
-            var date = DateTime.Now;
+            var date = DateOnly.FromDateTime(DateTime.Now);
 
             recFilter.ToDate = date;
 
-            Assert.AreEqual(recFilter.ToDate, date.Date);
+            Assert.AreEqual(recFilter.ToDate, date);
         }
 
         [Test]
         public void Filter_SetDateFrom_ShouldCleareTime()
         {
             var recFilter = RecordsFilter.Empty;
-            var date = DateTime.Now;
+            var date = DateOnly.FromDateTime(DateTime.Now);
 
             recFilter.FromDate = date;
 
-            Assert.AreEqual(recFilter.FromDate, date.Date);
+            Assert.AreEqual(recFilter.FromDate, date);
         }
 
         [Test]
@@ -130,10 +130,10 @@ namespace RiseDiary.UnitTests
         public void Filter_SetDateToProperty_ShouldSet()
         {
             var filter = RecordsFilter.Empty;
-            var date = DateTime.Now.AddDays(-3);
+            var date = DateOnly.FromDateTime(DateTime.Now.AddDays(-3));
 
             filter.ToDate = date;
-            Assert.AreEqual(filter.ToDate, date.Date);
+            Assert.AreEqual(filter.ToDate, date);
             filter.ToDate = null;
             Assert.IsNull(filter.ToDate);
         }
@@ -142,10 +142,10 @@ namespace RiseDiary.UnitTests
         public void Filter_SetDateFromProperty_ShouldSet()
         {
             var filter = RecordsFilter.Empty;
-            var date = DateTime.Now.AddDays(-7);
+            var date = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
 
             filter.FromDate = date;
-            Assert.AreEqual(filter.FromDate, date.Date);
+            Assert.AreEqual(filter.FromDate, date);
             filter.FromDate = null;
             Assert.IsNull(filter.FromDate);
         }
@@ -153,12 +153,12 @@ namespace RiseDiary.UnitTests
         [Test]
         public void Filter_SetDateFromAndDateToProperties_TheSameDate_ShouldSet()
         {
-            var date = DateTime.Now.AddDays(-7);
+            var date = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
 
             var filter = new RecordsFilter { FromDate = date, ToDate = date };
 
-            Assert.AreEqual(filter.FromDate, date.Date);
-            Assert.AreEqual(filter.ToDate, date.Date);
+            Assert.AreEqual(filter.FromDate, date);
+            Assert.AreEqual(filter.ToDate, date);
             Assert.AreEqual(filter.ToDate, filter.FromDate);
             filter.FromDate = null;
             filter.ToDate = null;
@@ -170,13 +170,13 @@ namespace RiseDiary.UnitTests
         public void Filter_SetDateFrom_GreaterThanDateTo_ShouldSetToNull()
         {
             var filter = RecordsFilter.Empty;
-            var dateTo = DateTime.Now.AddDays(-7);
-            var dateFrom = DateTime.Now.AddDays(-3);
+            var dateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
+            var dateFrom = DateOnly.FromDateTime(DateTime.Now.AddDays(-3));
 
             filter.FromDate = dateFrom;
             filter.ToDate = dateTo;
 
-            Assert.AreEqual(filter.FromDate, dateFrom.Date);
+            Assert.AreEqual(filter.FromDate, dateFrom);
             Assert.IsNull(filter.ToDate);
         }
 
@@ -184,13 +184,13 @@ namespace RiseDiary.UnitTests
         public void Filter_SetDateTo_LessThanDateFrom_ShouldSetToNull()
         {
             var filter = RecordsFilter.Empty;
-            var dateTo = DateTime.Now.AddDays(-7);
-            var dateFrom = DateTime.Now.AddDays(-3);
+            var dateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
+            var dateFrom = DateOnly.FromDateTime(DateTime.Now.AddDays(-3));
 
             filter.ToDate = dateTo;
             filter.FromDate = dateFrom;
 
-            Assert.AreEqual(filter.ToDate, dateTo.Date);
+            Assert.AreEqual(filter.ToDate, dateTo);
             Assert.IsNull(filter.FromDate);
         }
     }

@@ -9,12 +9,14 @@ namespace RiseDiary.WebUI.Pages.Settings
         private readonly ISqliteDatabase _sqliteDb;
 
         public DeletedEntitiesInfo DeletedEntities { get; private set; } = null!;
+
         public SqliteDatabaseInfo DatabaseInfo { get; private set; } = null!;
 
         public DbActionsModel(ISqliteDatabase sqliteDb)
         {
             _sqliteDb = sqliteDb;
         }
+
 
         public async Task OnGetAsync()
         {

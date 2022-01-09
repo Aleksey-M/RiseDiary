@@ -9,26 +9,26 @@ namespace RiseDiary.Model
     {
         public string? FilterName { get; set; }
 
-        private DateTime? _recordDateFrom;
-        private DateTime? _recordDateTo;
+        private DateOnly? _recordDateFrom;
+        private DateOnly? _recordDateTo;
 
-        public DateTime? FromDate
+        public DateOnly? FromDate
         {
             get => _recordDateFrom;
-            set => _recordDateFrom = value > _recordDateTo ? null : value?.Date;
+            set => _recordDateFrom = value > _recordDateTo ? null : value;
         }
 
-        public DateTime? ToDate
+        public DateOnly? ToDate
         {
             get => _recordDateTo;
-            set => _recordDateTo = value < _recordDateFrom ? null : value?.Date;
+            set => _recordDateTo = value < _recordDateFrom ? null : value;
         }
 
         public int PageNo { get; set; }
 
         public int PageSize { get; set; } = 20;
 
-        public static RecordsFilter Empty => new();
+        public static RecordsFilter Empty => new ();
 
         public static bool IsEmpty(RecordsFilter filter)
         {

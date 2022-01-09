@@ -12,6 +12,7 @@ namespace RiseDiary.WebUI.Pages
     {
         private readonly ICalendarService _calendarServices;
         private readonly IScopesService _scopeSvc;
+
         public CalendarModel(ICalendarService calendarServices, IScopesService scopeSvc)
         {
             _calendarServices = calendarServices;
@@ -19,11 +20,17 @@ namespace RiseDiary.WebUI.Pages
         }
 
         public IEnumerable<CalendarItem> Records { get; private set; } = Enumerable.Empty<CalendarItem>();
+
         public int CurrentYear { get; private set; }
+
         public IEnumerable<DiaryScope> AllScopes { get; private set; } = Enumerable.Empty<DiaryScope>();
+
         public IEnumerable<Guid> SelectedThemes { get; private set; } = Enumerable.Empty<Guid>();
+
         public IEnumerable<int> YearsListFiltered { get; private set; } = Enumerable.Empty<int>();
+
         public bool CombineThemes { get; private set; }
+
 
         public async Task OnGetAsync(int? year, Guid[] themes, bool? combineThemes)
         {

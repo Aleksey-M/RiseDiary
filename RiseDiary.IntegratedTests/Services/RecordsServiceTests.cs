@@ -19,7 +19,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetRecordsService(context);
-            var recDate = DateTime.Now.AddDays(-3);
+            var recDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-3));
             var recName = "Record Name";
             var recText = @"<H1>Record text</H1>";
 
@@ -29,7 +29,7 @@ namespace RiseDiary.IntegratedTests.Services
             rec.Should().NotBeNull();
             rec.Name.Should().Be(recName);
             rec.Text.Should().Be(recText);
-            rec.Date.Should().Be(recDate.Date);
+            rec.Date.Should().Be(recDate);
             rec.CreateDate.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
             rec.ModifyDate.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
         }
@@ -45,7 +45,7 @@ namespace RiseDiary.IntegratedTests.Services
             var loadedRec = await svc.FetchRecordById(id);
 
             loadedRec.Should().NotBeNull();
-            loadedRec.Date.Should().Be(rec.Date.Date);
+            loadedRec.Date.Should().Be(rec.Date);
             loadedRec.CreateDate.Should().Be(rec.CreateDate);
             loadedRec.ModifyDate.Should().Be(rec.ModifyDate);
             loadedRec.Name.Should().Be(rec.Name);
@@ -116,7 +116,7 @@ namespace RiseDiary.IntegratedTests.Services
             var svc = GetRecordsService(context);
             var id = Create_Record(context);
             var rec = await context.Records.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id);
-            var newDate = DateTime.Now.AddDays(-10).Date;
+            var newDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-10));
 
             await svc.UpdateRecord(id, newDate, null, null);
 
@@ -192,7 +192,7 @@ namespace RiseDiary.IntegratedTests.Services
             var hpSvc = new HostAndPortStub();
             var text = $@"New text with link {hpSvc.GetHostAndPort()}/index and another link {hpSvc.GetHostAndPort()}/images/12345678";
 
-            var id = await svc.AddRecord(DateTime.Now, text, text);
+            var id = await svc.AddRecord(DateOnly.FromDateTime(DateTime.Now), text, text);
 
             var rec = await context.Records.SingleOrDefaultAsync(r => r.Id == id);
             rec.Name.Should().NotContain(hpSvc.GetHostAndPort());

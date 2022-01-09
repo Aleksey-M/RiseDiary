@@ -19,23 +19,36 @@ namespace RiseDiary.WebUI.Pages
         }
 
         public IEnumerable<DiaryRecord> Records { get; private set; } = Enumerable.Empty<DiaryRecord>();
+
         public RecordsFilter Filters { get; private set; } = RecordsFilter.Empty;
+
         public PagesInfo Pages { get; private set; } = null!;
+
         public IEnumerable<DiaryScope> AllScopes { get; private set; } = Enumerable.Empty<DiaryScope>();
+
         public Guid[] SelectedThemes { get; private set; } = Array.Empty<Guid>();
 
+
         private const int _pageSize = 20;
+
         public bool CombineThemes { get; private set; }
 
-        public async Task OnGetAsync(DateTime? fromDate, DateTime? toDate, Guid[] themes, string? filterName, bool? combineThemes, int? pageNo)
+
+        public async Task OnGetAsync(
+            DateTime? fromDate,
+            DateTime? toDate, 
+            Guid[] themes, 
+            string? filterName, 
+            bool? combineThemes, 
+            int? pageNo)
         {
             CombineThemes = combineThemes ?? false;
 
             Filters = new RecordsFilter
             {
                 PageSize = _pageSize,
-                FromDate = fromDate,
-                ToDate = toDate,
+                FromDate = fromDate == null ? null : DateOnly.FromDateTime(fromDate.Value),
+                ToDate = toDate == null ? null : DateOnly.FromDateTime(toDate.Value),
                 FilterName = filterName?.Trim(),
                 PageNo = (pageNo ?? 1) - 1,
                 CombineThemes = CombineThemes

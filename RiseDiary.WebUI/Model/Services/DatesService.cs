@@ -19,7 +19,7 @@ namespace RiseDiary.Model.Services
             _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
         }
 
-        public async Task<List<DateListItem>> GetAllDates(DateTime today)
+        public async Task<List<DateListItem>> GetAllDates(DateOnly today)
         {
             var sId = (await _appSettingsService.GetAppSetting(AppSettingsKey.ImportantDaysScopeId)).value ?? throw new Exception("Setting 'ImportantDaysScopeId' does not exists");
             var scopeId = Guid.Parse(sId);
@@ -44,7 +44,7 @@ namespace RiseDiary.Model.Services
                 .Select(r => new DateListItem(
                     r.Id,
                     r.Date,
-                    new DateTime(today.Year, r.Date.Month, r.Date.Day),
+                    new DateOnly(today.Year, r.Date.Month, r.Date.Day),
                     string.IsNullOrWhiteSpace(r.Name) ? "[ПУСТО]" : r.Name.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase),
                     r.Text?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "",
                     string.Join(", ", r.ThemesRefs.Select(tr => tr.Theme!.ThemeName))))
@@ -54,12 +54,12 @@ namespace RiseDiary.Model.Services
             return items;
         }
 
-        public async Task<List<DateListItem>> GetDatesFromRange(DateTime today, bool withEmptyDates)
+        public async Task<List<DateListItem>> GetDatesFromRange(DateOnly today, bool withEmptyDates)
         {
             var daysCount = (await _appSettingsService.GetAppSettingInt(AppSettingsKey.ImportantDaysDisplayRange)) ?? throw new Exception("Setting 'ImportantDaysDisplayRange' does not exists");
             var allRecords = await GetAllDates(today);
 
-            var startDate = today.Date.AddDays(-daysCount);
+            var startDate = today.AddDays(-daysCount);
             var datesRange = Enumerable.Range(0, daysCount * 2)
                 .Select(i => startDate.AddDays(i))
                 .Select(d => new DateListItem(Guid.Empty, d, d, "", "", ""))

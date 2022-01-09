@@ -24,7 +24,7 @@ namespace RiseDiary.IntegratedTests.Services
             var datesService = GetDatesService(10, context);
             var hostAndPortService = new HostAndPortStub();
 
-            var list = await datesService.GetAllDates(DateTime.Now);
+            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
 
             var r1 = list[2];
             r1?.Name.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
@@ -42,7 +42,7 @@ namespace RiseDiary.IntegratedTests.Services
             var datesService = GetDatesService(10, context);
             var hostAndPortService = new HostAndPortStub();
 
-            var list = await datesService.GetAllDates(DateTime.Now);
+            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
 
             var r1 = list[2];
             r1?.Text.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
@@ -59,7 +59,7 @@ namespace RiseDiary.IntegratedTests.Services
             var (scopes, _) = await AddTestData(context);
             var datesService = GetDatesService(10, context);
             
-            var list = await datesService.GetAllDates(DateTime.Now);
+            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
 
             list[1].Themes.Should().ContainAll(
                 scopes[0].Themes.ElementAt(0).ThemeName,
@@ -75,7 +75,7 @@ namespace RiseDiary.IntegratedTests.Services
             await AddTestData(context);
             var datesService = GetDatesService(10, context);
 
-            var list = await datesService.GetAllDates(DateTime.Now);
+            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
 
             list.Should().HaveCount(8);
             list.Should().BeInAscendingOrder(item => item.TransferredDate);
@@ -91,7 +91,7 @@ namespace RiseDiary.IntegratedTests.Services
             await context.SaveChangesAsync();
             var datesService = GetDatesService(10, context);
 
-            var list = await datesService.GetAllDates(DateTime.Now);
+            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
 
             list.Should().HaveCount(7);
             list.Should().NotContain(item => item.Id == records[3].Id);
@@ -110,7 +110,7 @@ namespace RiseDiary.IntegratedTests.Services
             await context.SaveChangesAsync();
             var datesService = GetDatesService(10, context);
 
-            var list = await datesService.GetAllDates(DateTime.Now);
+            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
 
             list.Should().HaveCount(7);
             list.Should().NotContain(item => item.Id == records[0].Id);
@@ -123,17 +123,17 @@ namespace RiseDiary.IntegratedTests.Services
             await AddTestData(context);
             var datesService = GetDatesService(5, context);
 
-            var list = await datesService.GetDatesFromRange(new DateTime(2020, 04, 28), false);
+            var list = await datesService.GetDatesFromRange(new DateOnly(2020, 04, 28), false);
 
             list.Should().HaveCount(1);
-            list[0].Date.Should().Be(DateTime.Parse("2012-04-23"));
+            list[0].Date.Should().Be(DateOnly.Parse("2012-04-23"));
 
             //============================//
 
-            list = await datesService.GetDatesFromRange(new DateTime(2020, 06, 19), false);
+            list = await datesService.GetDatesFromRange(new DateOnly(2020, 06, 19), false);
 
             list.Should().HaveCount(2);
-            var expected = new string[] { "2019-06-23", "2015-06-23" }.Select(t => DateTime.Parse(t)).ToList();
+            var expected = new string[] { "2019-06-23", "2015-06-23" }.Select(t => DateOnly.Parse(t)).ToList();
             list.Select(i => i.Date).Should().OnlyContain(d => expected.Contains(d));
         }
         
@@ -144,12 +144,12 @@ namespace RiseDiary.IntegratedTests.Services
             var (_, records) = await AddTestData(context);
             var datesService = GetDatesService(5, context);
 
-            var list = await datesService.GetDatesFromRange(new DateTime(2020, 01, 01), false);
+            var list = await datesService.GetDatesFromRange(new DateOnly(2020, 01, 01), false);
 
             list.Should().HaveCount(2);
             list.Should().SatisfyRespectively(
-                first => first.Date.Should().Be(DateTime.Parse("2019-12-31")),
-                second => second.Date.Should().Be(DateTime.Parse("2018-01-01")));
+                first => first.Date.Should().Be(DateOnly.Parse("2019-12-31")),
+                second => second.Date.Should().Be(DateOnly.Parse("2018-01-01")));
         }
 
         [Test]
@@ -159,7 +159,7 @@ namespace RiseDiary.IntegratedTests.Services
             await AddTestData(context);
             var datesService = GetDatesService(5, context);
 
-            var list = await datesService.GetDatesFromRange(new DateTime(2020, 06, 19), true);
+            var list = await datesService.GetDatesFromRange(new DateOnly(2020, 06, 19), true);
 
             list.Should().HaveCount(11);
         }
@@ -171,70 +171,70 @@ namespace RiseDiary.IntegratedTests.Services
             new DiaryRecord //1
             {
                 Id = Guid.NewGuid(),
-                Date = DateTime.Parse("2018-01-01"),
+                Date = DateOnly.Parse("2018-01-01"),
                 Name = Guid.NewGuid().ToString(),
                 Text = Guid.NewGuid().ToString()
             },
              new DiaryRecord // 0
             {
                 Id = Guid.NewGuid(),
-                Date = DateTime.Parse("2016-02-10"),
+                Date = DateOnly.Parse("2016-02-10"),
                 Name = Guid.NewGuid().ToString(),
                 Text = Guid.NewGuid().ToString()
             },
              new DiaryRecord // 3
             {
                 Id = Guid.NewGuid(),
-                Date = DateTime.Parse("2010-04-22"),
+                Date = DateOnly.Parse("2010-04-22"),
                 Name = Guid.NewGuid().ToString(),
                 Text = Guid.NewGuid().ToString()
             },
             new DiaryRecord // 1
             {
                 Id = Guid.NewGuid(),
-                Date = DateTime.Parse("2012-04-23"),
+                Date = DateOnly.Parse("2012-04-23"),
                 Name = Guid.NewGuid().ToString() + $@"Link: <a href=""{new HostAndPortStub().GetHostAndPortPlaceholder()}/images/123"">Some Image</a>",
                 Text = Guid.NewGuid().ToString() + $@"Link: <a href=""{new HostAndPortStub().GetHostAndPortPlaceholder()}/images/123"">Some Image</a>"
             },
             new DiaryRecord // 0
             {
                 Id = Guid.NewGuid(),
-                Date = DateTime.Parse("2008-06-19"), 
+                Date = DateOnly.Parse("2008-06-19"), 
                 Name = Guid.NewGuid().ToString(),
                 Text = Guid.NewGuid().ToString()
             },
             new DiaryRecord // 2
             {
                 Id = Guid.NewGuid(),
-                Date = DateTime.Parse("2019-06-23"),
+                Date = DateOnly.Parse("2019-06-23"),
                 Name = Guid.NewGuid().ToString(),
                 Text = Guid.NewGuid().ToString()
             },
             new DiaryRecord // 3
             {
                 Id = Guid.NewGuid(),
-                Date = DateTime.Parse("2015-06-23"),
+                Date = DateOnly.Parse("2015-06-23"),
                 Name = Guid.NewGuid().ToString(),
                 Text = Guid.NewGuid().ToString()
             },
             new DiaryRecord // 3
             {
                 Id = Guid.NewGuid(),
-                Date = DateTime.Parse("2020-06-24"),
+                Date = DateOnly.Parse("2020-06-24"),
                 Name = Guid.NewGuid().ToString() + $@"Link: <a href=""{new HostAndPortStub().GetHostAndPortPlaceholder()}/records/987987987"">Some record</a>",
                 Text = Guid.NewGuid().ToString() + $@"Link: <a href=""{new HostAndPortStub().GetHostAndPortPlaceholder()}/records/987987987"">Some record</a>"
             },
             new DiaryRecord // 3
             {
                 Id = Guid.NewGuid(),
-                Date = DateTime.Parse("2005-09-17"),
+                Date = DateOnly.Parse("2005-09-17"),
                 Name = Guid.NewGuid().ToString(),
                 Text = Guid.NewGuid().ToString()
             },
             new DiaryRecord // 1
             {
                 Id = Guid.NewGuid(),
-                Date = DateTime.Parse("2019-12-31"),
+                Date = DateOnly.Parse("2019-12-31"),
                 Name = Guid.NewGuid().ToString(),
                 Text = Guid.NewGuid().ToString()
             }            

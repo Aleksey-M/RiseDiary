@@ -27,6 +27,7 @@ namespace RiseDiary.WebUI
         [Required(ErrorMessage = "Обязательное значение"), Range(200, 2000, ErrorMessage = "Допустимы значения от 200 до 2000")]
         public int? CropImageMaxScaledHeight { get; set; }
 
+
         private async Task LoadSettings()
         {
             ImageQuality = await _settingsSvc.GetAppSettingInt(AppSettingsKey.ImageQuality).ConfigureAwait(false);

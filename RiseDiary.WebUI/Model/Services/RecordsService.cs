@@ -41,7 +41,7 @@ namespace RiseDiary.Model.Services
             return cogitation.Id;
         }
 
-        public async Task<Guid> AddRecord(DateTime date, string recordName, string recordText)
+        public async Task<Guid> AddRecord(DateOnly date, string recordName, string recordText)
         {
             if (string.IsNullOrWhiteSpace(recordText)) throw new ArgumentException("Text should be passed for creating new record");
 
@@ -53,7 +53,7 @@ namespace RiseDiary.Model.Services
                 Id = Guid.NewGuid(),
                 CreateDate = DateTime.Now,
                 ModifyDate = DateTime.Now,
-                Date = date.Date,
+                Date = date,
                 Name = (recordName ?? "").Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase),
                 Text = recordText.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase)
             };
@@ -128,7 +128,7 @@ namespace RiseDiary.Model.Services
             await _context.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public async Task UpdateRecord(Guid recordId, DateTime? newDate, string? newName, string? newText)
+        public async Task UpdateRecord(Guid recordId, DateOnly? newDate, string? newName, string? newText)
         {
             if (newDate == null && newName == null && newText == null) return;
 

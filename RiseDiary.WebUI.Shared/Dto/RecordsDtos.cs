@@ -17,7 +17,7 @@ namespace RiseDiary.Shared.Dto
     public sealed class CreateRecordDto
     {
         [Required]
-        public DateTime Date { get; set; }
+        public DateOnly Date { get; set; }
 
         public string RecordName { get; set; } = "";
 
@@ -30,20 +30,30 @@ namespace RiseDiary.Shared.Dto
     public sealed class RecordDto
     {
         public Guid Id { get; set; }
-        public DateTime Date { get; set; }
+
+        public DateOnly Date { get; set; }
+
         public DateTime CreatedDate { get; set; }
+
         public DateTime ModifiedDate { get; set; }
+
         public string? Name { get; set; }
+
         public string Text { get; set; } = "";
+
         public ThemeDto[] Themes { get; set; } = Array.Empty<ThemeDto>();
+
         public ImageListItemDto[] Images { get; set; } = Array.Empty<ImageListItemDto>();
+
         public CogitationDto[] Cogitations { get; set; } = Array.Empty<CogitationDto>();
     }
 
     public sealed class CogitationDto
     {
         public Guid Id { get; set; }
+
         public DateTime CreateDate { get; set; }
+
         public string Text { get; set; } = "";
     }
 
@@ -51,8 +61,11 @@ namespace RiseDiary.Shared.Dto
     {
         [Required]
         public Guid Id { get; set; }
-        public DateTime? NewDate { get; set; }
+
+        public DateOnly? NewDate { get; set; }
+
         public string? NewName { get; set; }
+
         public string? NewText { get; set; }
     }
 

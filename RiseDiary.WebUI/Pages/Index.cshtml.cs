@@ -10,11 +10,13 @@ namespace RiseDiary.WebUI.Pages
     {
         private readonly IRecordsService _recordsService;
         private readonly IAppSettingsService _settingsSvc;
+
         public IndexModel(IRecordsService recordsService, IAppSettingsService settingsSvc)
         {
             _recordsService = recordsService;
             _settingsSvc = settingsSvc;
         }
+
 
         public DiaryRecord? StartPageRecord { get; private set; }
 

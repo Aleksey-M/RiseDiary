@@ -161,12 +161,19 @@ namespace RiseDiary.WebUI.Api
 
         [HttpDelete, Route("api/v1.0/records/{recordId}/cogitations/{cogitationId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-#pragma warning disable IDE0060 // Remove unused parameter
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeleteCogitation(Guid recordId, Guid cogitationId)
         {
+            var record = await _recordService.FetchRecordById(recordId);
+            var hasCogitation = record.Cogitations.Any(c => c.Id == cogitationId);
+
+            if (!hasCogitation)
+            {
+                return BadRequest();
+            }
+
             await _recordService.DeleteCogitation(cogitationId);
             return NoContent();
         }
-#pragma warning restore IDE0060 // Remove unused parameter
     }
 }

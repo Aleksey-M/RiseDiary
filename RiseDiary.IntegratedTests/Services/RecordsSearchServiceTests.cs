@@ -308,7 +308,7 @@ namespace RiseDiary.IntegratedTests.Services
 
             int matchesFound = await svc.GetRecordsCount(filters);
 
-            Assert.AreEqual(matches, matchesFound);
+            matchesFound.Should().Be(matches);
         }
 
         [Test]
@@ -317,13 +317,12 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             Create_20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
-            var dateTo = DateTime.Now.AddDays(-8);
+            var dateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(-8));
             var filters = new RecordsFilter { ToDate = dateTo };
 
             var resList = await svc.GetRecordsList(filters);
 
-            resList.Should().OnlyContain(r => r.Date < dateTo);
-            Assert.True(resList.All(rec => rec.Date < dateTo));
+            resList.Should().OnlyContain(r => r.Date <= dateTo);
         }
 
         [Test]
@@ -332,7 +331,7 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             Create_20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
-            var dateTo = DateTime.Now.AddDays(-7);
+            var dateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
             int testCount = 20 - 6; // 20 days except last week (Today date is not added)
             var filters = new RecordsFilter { ToDate = dateTo };
 
@@ -347,12 +346,12 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             Create_20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
-            var dateFrom = DateTime.Now.AddDays(-7);
+            var dateFrom = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
             var filters = new RecordsFilter { FromDate = dateFrom };
 
             var resList = await svc.GetRecordsList(filters);
 
-            resList.Should().OnlyContain(r => r.Date >= dateFrom.Date);
+            resList.Should().OnlyContain(r => r.Date >= dateFrom);
         }
 
         [Test]
@@ -361,7 +360,7 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             Create_20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
-            var dateFrom = DateTime.Now.AddDays(-6);
+            var dateFrom = DateOnly.FromDateTime(DateTime.Now.AddDays(-6));
             int testCount = 6; // all records for last week, except today
             var filters = new RecordsFilter { FromDate = dateFrom };
 
@@ -376,7 +375,7 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             Create_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var svc = GetRecordsSearchService(context);
-            var concreteDate = DateTime.Now.AddDays(-7);
+            var concreteDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
             var filters = new RecordsFilter { FromDate = concreteDate, ToDate = concreteDate };
 
             var resList = await svc.GetRecordsList(filters);
@@ -391,7 +390,7 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             Create_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var svc = GetRecordsSearchService(context);
-            var concreteDate = DateTime.Now.AddDays(-7);
+            var concreteDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
             int testCount = 2;
             var filters = new RecordsFilter { FromDate = concreteDate, ToDate = concreteDate };
 
@@ -404,8 +403,8 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsList_ByDateAndName_ShouldReturn2Records()
         {
             string searchName = "SearchТекстІї*01";
-            var dateFrom = DateTime.Now.AddDays(-14).Date;
-            var dateTo = DateTime.Now.AddDays(-9).Date;
+            var dateFrom = DateOnly.FromDateTime(DateTime.Now.AddDays(-14));
+            var dateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(-9));
             var context = CreateContext();
             Create_20Records(context, GetNamesList(), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
@@ -429,8 +428,8 @@ namespace RiseDiary.IntegratedTests.Services
         {
             string searchName = "SearchТекстІї*01";
             const int matchesInRange = 2;
-            var dateFrom = DateTime.Now.AddDays(-14).Date;
-            var dateTo = DateTime.Now.AddDays(-9).Date;
+            var dateFrom = DateOnly.FromDateTime(DateTime.Now.AddDays(-14));
+            var dateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(-9));
             var context = CreateContext();
             Create_20Records(context, GetNamesList(), GetDatesList(20));
             var searchService = GetRecordsSearchService(context);
@@ -637,8 +636,8 @@ namespace RiseDiary.IntegratedTests.Services
             Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var (themeId1, recordsNamesForTheme1, themeId2, recordsNamesForTheme2) = BindRecordsWithThemes(context, ThemesTestDataSet.DatesAndThemesRec);
             var searchService = GetRecordsSearchService(context);
-            var dateFrom = DateTime.Now.AddDays(-10).Date;
-            var dateTo = DateTime.Now.AddDays(-5).Date;
+            var dateFrom = DateOnly.FromDateTime(DateTime.Now.AddDays(-10));
+            var dateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(-5));
             var filter = new RecordsFilter { FromDate = dateFrom, ToDate = dateTo };
             filter.AddThemeId(themeId1);
 
@@ -668,8 +667,8 @@ namespace RiseDiary.IntegratedTests.Services
             Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var (themeId1, _, _, _) = BindRecordsWithThemes(context, ThemesTestDataSet.DatesAndThemesCount);
             var searchService = GetRecordsSearchService(context);
-            var dateFrom = DateTime.Now.AddDays(-10).Date;
-            var dateTo = DateTime.Now.AddDays(-5).Date;
+            var dateFrom = DateOnly.FromDateTime(DateTime.Now.AddDays(-10));
+            var dateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(-5));
             var filter = new RecordsFilter { FromDate = dateFrom, ToDate = dateTo };
             filter.AddThemeId(themeId1);
 

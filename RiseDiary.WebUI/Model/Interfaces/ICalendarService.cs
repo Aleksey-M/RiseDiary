@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model
 {
-    public record CalendarItem(Guid Id, string Name, DateTime StartDate, DateTime EndDate);
+    public record CalendarItem(Guid Id, string Name, DateOnly StartDate, DateOnly EndDate);
 
     public interface ICalendarService
     {

@@ -112,7 +112,7 @@ namespace RiseDiary.IntegratedTests
 
             return new DiaryRecord
             {
-                Date = now,
+                Date = DateOnly.FromDateTime(now),
                 CreateDate = DateTime.Now,
                 ModifyDate = DateTime.Now,
                 Name = @"/-*/--!@#$+_)*&(^*^$#?>?<ЪъЇЇіячсіопдоавйцу",
@@ -171,19 +171,19 @@ namespace RiseDiary.IntegratedTests
 
             context.Records.Add(new Model.DiaryRecord
             {
-                Date = DateTime.Now,
+                Date = DateOnly.FromDateTime(DateTime.Now),
                 Name = "first",
                 Text = "1111"
             });
             context.Records.Add(new Model.DiaryRecord
             {
-                Date = DateTime.Now,
+                Date = DateOnly.FromDateTime(DateTime.Now),
                 Name = "second",
                 Text = "2222"
             });
             context.Records.Add(new Model.DiaryRecord
             {
-                Date = DateTime.Now,
+                Date = DateOnly.FromDateTime(DateTime.Now),
                 Name = "third",
                 Text = "3333"
             });
@@ -202,10 +202,10 @@ namespace RiseDiary.IntegratedTests
         }
 
         protected static IEnumerable<string> GetNumberList(int count, string? prefix = null) => Enumerable.Range(1, count).Select(i => prefix ?? "" + i.ToString("00", CultureInfo.InvariantCulture));
-        protected static IEnumerable<DateTime> GetDatesList(int count) => Enumerable.Range(1, count).Select(i => DateTime.Now.AddDays(-i).Date);
-        protected static IEnumerable<DateTime> GetDatesListWithTwoSameDatesWeekAgo(int count) => Enumerable.Range(1, count).Select(i => i == 2 ? DateTime.Now.AddDays(-7).Date : DateTime.Now.AddDays(-i).Date);
+        protected static IEnumerable<DateOnly> GetDatesList(int count) => Enumerable.Range(1, count).Select(i => DateOnly.FromDateTime(DateTime.Now.AddDays(-i)));
+        protected static IEnumerable<DateOnly> GetDatesListWithTwoSameDatesWeekAgo(int count) => Enumerable.Range(1, count).Select(i => i == 2 ? DateOnly.FromDateTime(DateTime.Now.AddDays(-7)) : DateOnly.FromDateTime(DateTime.Now.AddDays(-i)));
 
-        protected static void Create_20Records(DiaryDbContext context, IEnumerable<string> _20recordNames, IEnumerable<DateTime> _20recordDates, List<string>? _20recordsText = null)
+        protected static void Create_20Records(DiaryDbContext context, IEnumerable<string> _20recordNames, IEnumerable<DateOnly> _20recordDates, List<string>? _20recordsText = null)
         {
             if (_20recordDates.Count() != 20) throw new ArgumentOutOfRangeException(nameof(_20recordDates));
             if (_20recordNames.Count() != 20) throw new ArgumentOutOfRangeException(nameof(_20recordNames));
@@ -224,7 +224,7 @@ namespace RiseDiary.IntegratedTests
             context.SaveChanges();
         }
 
-        protected static void Create_30Themes_20Records(DiaryDbContext context, IEnumerable<string> _20recordNames, IEnumerable<DateTime> _20recordDates)
+        protected static void Create_30Themes_20Records(DiaryDbContext context, IEnumerable<string> _20recordNames, IEnumerable<DateOnly> _20recordDates)
         {
             Create_20Records(context, _20recordNames, _20recordDates);
 
@@ -373,13 +373,13 @@ namespace RiseDiary.IntegratedTests
             return (rec, theme.Scope, img);
         }
 
-        protected static async Task<List<DiaryRecord>> AddSetOfRecordsWithDates(DiaryDbContext context, IEnumerable<DateTime> recDates)
+        protected static async Task<List<DiaryRecord>> AddSetOfRecordsWithDates(DiaryDbContext context, IEnumerable<DateOnly> recDates)
         {
             var recs = recDates.Select(d => new DiaryRecord
             {
                 Date = d,
-                CreateDate = d,
-                ModifyDate = d,
+                CreateDate = d.ToDateTime(TimeOnly.MinValue),
+                ModifyDate = d.ToDateTime(TimeOnly.MinValue),
                 Id = Guid.NewGuid(),
                 Name = "Record for date " + d.ToString("yyyy.MM.dd", CultureInfo.InvariantCulture),
                 Text = "Record for date " + d.ToString("yyyy.MM.dd", CultureInfo.InvariantCulture)
@@ -391,7 +391,7 @@ namespace RiseDiary.IntegratedTests
             return recs;
         }
 
-        protected async static Task<List<(DateTime date, List<Guid> themesIds)>> AddThemesForRecords(DiaryDbContext context, Dictionary<DateTime, List<string>> themesByDate)
+        protected async static Task<List<(DateOnly date, List<Guid> themesIds)>> AddThemesForRecords(DiaryDbContext context, Dictionary<DateOnly, List<string>> themesByDate)
         {
             _ = await AddSetOfRecordsWithDates(context, themesByDate.Select(tbd => tbd.Key).ToList());
 
@@ -436,7 +436,7 @@ namespace RiseDiary.IntegratedTests
 
             var res = context.RecordThemes.Include(rt => rt.Record).ToList();
 
-            var retRes = new List<(DateTime date, List<Guid> themesIds)>();
+            var retRes = new List<(DateOnly date, List<Guid> themesIds)>();
             foreach (var kv in themesByDate)
             {
                 retRes.Add((kv.Key, res.Where(r => r.Record!.Date == kv.Key).Select(rt => rt.ThemeId).ToList()));

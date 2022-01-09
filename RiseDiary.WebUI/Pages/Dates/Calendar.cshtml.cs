@@ -22,6 +22,7 @@ namespace RiseDiary.WebUI.Pages.Dates
         }
 
         public IEnumerable<DateListItem> Dates { get; private set; } = Enumerable.Empty<DateListItem>();
+
         public DateTime Today { get; } = DateTime.Now.Date;
 
         public async Task<IActionResult> OnGetAsync()
@@ -31,7 +32,7 @@ namespace RiseDiary.WebUI.Pages.Dates
 
             if (!Guid.TryParse(stringId, out _) || range == null) return Redirect("~/Dates/Setup");
 
-            Dates = await _datesService.GetAllDates(DateTime.Now.Date);
+            Dates = await _datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
             return Page();
         }
 

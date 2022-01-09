@@ -24,7 +24,7 @@ namespace RiseDiary.WebUI.Api
         [HttpGet, Route("api/v1.0/dates/all")]
         public async Task<ActionResult<List<DateListItemDto>>> GetAllDates()
         {
-            var records = await _datesService.GetAllDates(DateTime.Now.Date);
+            var records = await _datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
 
             var dto = records.Select(d => new DateListItemDto
                 {
@@ -44,7 +44,7 @@ namespace RiseDiary.WebUI.Api
         [HttpGet, Route("api/v1.0/dates/range")]
         public async Task<ActionResult<List<DateListItemDto>>> GetDatesRange([FromQuery] bool withEmptyDates = true)
         {
-            var records = await _datesService.GetDatesFromRange(DateTime.Now.Date, withEmptyDates);
+            var records = await _datesService.GetDatesFromRange(DateOnly.FromDateTime(DateTime.Now), withEmptyDates);
 
             var dto = records.Select(d => new DateListItemDto
                 {
@@ -64,7 +64,7 @@ namespace RiseDiary.WebUI.Api
         [HttpGet, Route("api/v1.0/dates/calendar")]
         public async Task<ActionResult<List<CalendarDateDto>>> GetCalendarDates()
         {
-            var records = await _datesService.GetAllDates(DateTime.Now.Date);
+            var records = await _datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
 
             var dto = records.Select(d => new CalendarDateDto
                 {

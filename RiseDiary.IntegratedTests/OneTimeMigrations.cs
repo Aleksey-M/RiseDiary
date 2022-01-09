@@ -1,8 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using RiseDiary.WebUI;
 using RiseDiary.WebUI.Data;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Migrations
@@ -42,6 +45,41 @@ namespace Migrations
             }
 
             await context.SaveChangesAsync();
+        }
+
+        [Test, Ignore("Special test")]
+        public async Task UpdateDatesToDateOnly()
+        {
+            var fileNameFull = "D:\\Projects\\RiseDiary\\DB\\Diary.db";
+            var connStrSource = $@"Data Source={fileNameFull};";
+
+            using var connection = new SqliteConnection(connStrSource);
+            connection.Open();
+
+            var records = new List<(string, string)>();
+
+            using var readCommand = connection.CreateCommand();
+            readCommand.CommandText = "SELECT Id, Date FROM Records";
+            using var reader = readCommand.ExecuteReader();
+            while (await reader.ReadAsync())
+            {
+                records.Add((
+                    reader["Id"]?.ToString() ?? "",
+                    reader["Date"]?.ToString() ?? ""));
+            }
+            reader.Close();
+
+            var updatedDates = records
+                .Select(r => (Id: r.Item1, Date: r.Item2.Split(" ")[0]))
+                .Select(r => $"update Records set Date = '{r.Date}' where Id = '{r.Id}'")
+                .ToList();
+
+            using var updateCommand = connection.CreateCommand();
+            foreach (var updateDate in updatedDates)
+            {
+                updateCommand.CommandText = updateDate;
+                await updateCommand.ExecuteNonQueryAsync();
+            }
         }
     }
 }

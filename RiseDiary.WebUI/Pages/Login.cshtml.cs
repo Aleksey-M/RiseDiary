@@ -18,6 +18,7 @@ namespace RiseDiary.WebUI.Pages
     public class LoginModel : PageModel
     {
         private readonly IConfiguration _configuration;
+
         public LoginModel(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -25,9 +26,13 @@ namespace RiseDiary.WebUI.Pages
 
         [BindProperty, DisplayName("Имя пользователя")]
         public string? UserName { get; set; }
+
         [BindProperty, DataType(DataType.Password), DisplayName("Пароль")]
         public string? Password { get; set; }
+
         public string? Message { get; set; }
+
+
         public async Task<IActionResult> OnPost()
         {
             var user = _configuration.GetSection("SiteUser").Get<SiteUser>();
@@ -37,14 +42,14 @@ namespace RiseDiary.WebUI.Pages
             if (UserName == user.UserName)
             {
                 var passwordHasher = new PasswordHasher<string>();
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-                if (passwordHasher.VerifyHashedPassword(null, user.Password, Password) == PasswordVerificationResult.Success)
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+                if (passwordHasher.VerifyHashedPassword(user.UserName, user.Password, Password) == PasswordVerificationResult.Success)
                 {
                     var claims = new List<Claim>
                     {
                         new Claim(ClaimTypes.Name, UserName)
                     };
+
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
                     return Redirect("/");
