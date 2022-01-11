@@ -63,8 +63,8 @@ namespace RiseDiary.Model.Services
             {
                 Id = Guid.NewGuid(),
                 Name = imageName,
-                CreateDate = DateTime.Now,
-                ModifyDate = DateTime.Now,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = DateTime.UtcNow,
                 SizeByte = image.Length,
                 Thumbnail = ScaleImage(image, imageQuality, thumbnailSize),
                 Taken = taken,
@@ -107,7 +107,7 @@ namespace RiseDiary.Model.Services
             _ = img ?? throw new ArgumentException($"Image with id '{imageId}' does not exist");
 
             img.Name = imageNewName;
-            img.ModifyDate = DateTime.Now;
+            img.ModifyDate = DateTime.UtcNow;
             await _context.SaveChangesAsync().ConfigureAwait(false);
         }
 

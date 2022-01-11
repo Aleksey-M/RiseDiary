@@ -35,7 +35,8 @@ namespace RiseDiary.IntegratedTests.Services
             var mDate = context.AppSettings.FirstOrDefault(s => s.Key == AppSettingsKey.ImageQuality.ToString())?.ModifiedDate;
 
             mDate.Should().NotBeNull()
-                .And.BeSameDateAs(DateTime.Now.Date);
+                .And.BeSameDateAs(DateTime.UtcNow.Date)
+                .And.BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         }
 
         [Test]
@@ -48,7 +49,7 @@ namespace RiseDiary.IntegratedTests.Services
             {
                 Key = AppSettingsKey.ImageQuality.ToString(),
                 Value = value,
-                ModifiedDate = DateTime.Now.AddDays(-2)
+                ModifiedDate = DateTime.UtcNow.AddDays(-2)
             });
             await context.SaveChangesAsync();
 
@@ -56,7 +57,8 @@ namespace RiseDiary.IntegratedTests.Services
 
             var mDate = context.AppSettings.FirstOrDefault(s => s.Key == AppSettingsKey.ImageQuality.ToString())?.ModifiedDate;
             mDate.Should().NotBeNull()
-                .And.BeSameDateAs(DateTime.Now.Date);
+                .And.BeSameDateAs(DateTime.UtcNow.Date)
+                .And.BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         }
 
         [Test]
@@ -85,7 +87,7 @@ namespace RiseDiary.IntegratedTests.Services
             {
                 Key = AppSettingsKey.ImageQuality.ToString(),
                 Value = value,
-                ModifiedDate = DateTime.Now.AddDays(-2)
+                ModifiedDate = DateTime.UtcNow.AddDays(-2)
             });
             await context.SaveChangesAsync();
 

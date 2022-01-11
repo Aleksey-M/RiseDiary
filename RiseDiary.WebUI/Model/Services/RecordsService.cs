@@ -31,7 +31,7 @@ namespace RiseDiary.Model.Services
             {
                 Id = Guid.NewGuid(),
                 RecordId = recordId,
-                Date = DateTime.Now,
+                Date = DateTime.UtcNow,
                 Text = cogitationText.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase)
             };
 
@@ -51,8 +51,8 @@ namespace RiseDiary.Model.Services
             var record = new DiaryRecord
             {
                 Id = Guid.NewGuid(),
-                CreateDate = DateTime.Now,
-                ModifyDate = DateTime.Now,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = DateTime.UtcNow,
                 Date = date,
                 Name = (recordName ?? "").Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase),
                 Text = recordText.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase)
@@ -153,7 +153,7 @@ namespace RiseDiary.Model.Services
                 record.Text = newText.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
             }
 
-            record.ModifyDate = DateTime.Now;
+            record.ModifyDate = DateTime.UtcNow;
             await _context.SaveChangesAsync().ConfigureAwait(false);
         }
     }

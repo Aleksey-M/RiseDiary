@@ -104,7 +104,7 @@ namespace RiseDiary.IntegratedTests
 
         protected static DiaryRecord GetTestRecord(int? yearsAdd = null, int? month = null)
         {
-            DateTime now = DateTime.Now;
+            DateTime now = DateTime.UtcNow;
             if (yearsAdd == null)
                 now = month == null ? now : new DateTime(now.Year, (int)month, 10);
             else
@@ -113,8 +113,8 @@ namespace RiseDiary.IntegratedTests
             return new DiaryRecord
             {
                 Date = DateOnly.FromDateTime(now),
-                CreateDate = DateTime.Now,
-                ModifyDate = DateTime.Now,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = DateTime.UtcNow,
                 Name = @"/-*/--!@#$+_)*&(^*^$#?>?<ЪъЇЇіячсіопдоавйцу",
                 Text = @";'][[p][p]}{}{Pрпорпырорпорёёёё"
             };
@@ -138,12 +138,12 @@ namespace RiseDiary.IntegratedTests
                 Name = Guid.NewGuid().ToString(),
                 Thumbnail = File.ReadAllBytes(FullImage_1280X814),
                 CameraModel = "Some model",
-                Taken = DateTime.Now.AddDays(-2),
+                Taken = DateTime.UtcNow.AddDays(-2),
                 Deleted = false,
                 Height = h,
                 Width = w,
-                CreateDate = DateTime.Now.AddHours(-3),
-                ModifyDate = DateTime.Now.AddHours(-2),
+                CreateDate = DateTime.UtcNow.AddHours(-3),
+                ModifyDate = DateTime.UtcNow.AddHours(-2),
                 SizeByte = 120000,
                 Id = Guid.NewGuid(),
                 FullImage = new DiaryImageFull
@@ -171,19 +171,19 @@ namespace RiseDiary.IntegratedTests
 
             context.Records.Add(new Model.DiaryRecord
             {
-                Date = DateOnly.FromDateTime(DateTime.Now),
+                Date = DateOnly.FromDateTime(DateTime.UtcNow),
                 Name = "first",
                 Text = "1111"
             });
             context.Records.Add(new Model.DiaryRecord
             {
-                Date = DateOnly.FromDateTime(DateTime.Now),
+                Date = DateOnly.FromDateTime(DateTime.UtcNow),
                 Name = "second",
                 Text = "2222"
             });
             context.Records.Add(new Model.DiaryRecord
             {
-                Date = DateOnly.FromDateTime(DateTime.Now),
+                Date = DateOnly.FromDateTime(DateTime.UtcNow),
                 Name = "third",
                 Text = "3333"
             });
@@ -202,8 +202,8 @@ namespace RiseDiary.IntegratedTests
         }
 
         protected static IEnumerable<string> GetNumberList(int count, string? prefix = null) => Enumerable.Range(1, count).Select(i => prefix ?? "" + i.ToString("00", CultureInfo.InvariantCulture));
-        protected static IEnumerable<DateOnly> GetDatesList(int count) => Enumerable.Range(1, count).Select(i => DateOnly.FromDateTime(DateTime.Now.AddDays(-i)));
-        protected static IEnumerable<DateOnly> GetDatesListWithTwoSameDatesWeekAgo(int count) => Enumerable.Range(1, count).Select(i => i == 2 ? DateOnly.FromDateTime(DateTime.Now.AddDays(-7)) : DateOnly.FromDateTime(DateTime.Now.AddDays(-i)));
+        protected static IEnumerable<DateOnly> GetDatesList(int count) => Enumerable.Range(1, count).Select(i => DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-i)));
+        protected static IEnumerable<DateOnly> GetDatesListWithTwoSameDatesWeekAgo(int count) => Enumerable.Range(1, count).Select(i => i == 2 ? DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7)) : DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-i)));
 
         protected static void Create_20Records(DiaryDbContext context, IEnumerable<string> _20recordNames, IEnumerable<DateOnly> _20recordDates, List<string>? _20recordsText = null)
         {
@@ -266,7 +266,7 @@ namespace RiseDiary.IntegratedTests
                 rec = context.Records.Find(resList[i]) ?? throw new Exception($"Test error^ record with Id '{resList[i]}' was not found");
                 for (int j = 3; j - i > 0; j--)
                 {
-                    var cog = new Cogitation { Date = DateTime.Now.AddDays(-j), RecordId = rec.Id, Text = new string('+', j) };
+                    var cog = new Cogitation { Date = DateTime.UtcNow.AddDays(-j), RecordId = rec.Id, Text = new string('+', j) };
                     context.Cogitations.Add(cog);
                     context.SaveChanges();
                 }
@@ -367,7 +367,7 @@ namespace RiseDiary.IntegratedTests
 
             context.Add(new DiaryRecordImage { Record = rec, Image = img });
             context.Add(new DiaryRecordTheme { Record = rec, Theme = theme });
-            context.Add(new Cogitation { Record = rec, Date = DateTime.Now, Text = "Some Cogitation text" });
+            context.Add(new Cogitation { Record = rec, Date = DateTime.UtcNow, Text = "Some Cogitation text" });
             context.SaveChanges();
 
             return (rec, theme.Scope, img);
@@ -455,7 +455,7 @@ namespace RiseDiary.IntegratedTests
             {
                 Id = Guid.NewGuid(),
                 Name = "new image " + Guid.NewGuid().ToString(),
-                CreateDate = DateTime.Now,
+                CreateDate = DateTime.UtcNow,
                 FullImage = new DiaryImageFull
                 {
                     Id = Guid.NewGuid(),
@@ -464,9 +464,9 @@ namespace RiseDiary.IntegratedTests
                 Height = 3000,
                 Width = 4000,
                 CameraModel = "camera model",
-                Taken = DateTime.Now.AddDays(-1),
+                Taken = DateTime.UtcNow.AddDays(-1),
                 SizeByte = imgData.Length,
-                ModifyDate = DateTime.Now,
+                ModifyDate = DateTime.UtcNow,
                 TempImage = new TempImage
                 {
                     Id = Guid.NewGuid(),

@@ -128,7 +128,7 @@ namespace RiseDiary.IntegratedTests.Services
             var savedImage = await context.Images.Include(i => i.FullImage).SingleOrDefaultAsync(i => i.Id == imgWithTemp.Id);
             savedImage.Should().NotBeNull();
             savedImage.Name.Should().Be(imgWithTemp.Name);
-            savedImage.ModifyDate.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
+            savedImage.ModifyDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(500));
             savedImage.CreateDate.Should().Be(imgWithTemp.CreateDate);
             savedImage.CameraModel.Should().Be(imgWithTemp.CameraModel);
             savedImage.Taken.Should().Be(imgWithTemp.Taken);
@@ -167,7 +167,7 @@ namespace RiseDiary.IntegratedTests.Services
             imagesCountAfter.Should().Be(imagesCountBefore + 1);
             var newImage = await context.Images.Include(i => i.FullImage).SingleOrDefaultAsync(i => i.Id == newImageId);
             newImage.Name.Should().Be($"{imgWithTemp.Name} ({modification})");
-            newImage.ModifyDate.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
+            newImage.ModifyDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(500));
             newImage.FullImage.Should().NotBeNull();
             newImage.FullImage!.Data.Should().BeEquivalentTo(tempImageData);
         }

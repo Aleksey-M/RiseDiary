@@ -21,6 +21,16 @@
         }
     </style>
 
+    <script type="text/javascript">
+        
+        function convertToLocalDate(utcDate) {
+            let localDate = new Date(utcDate); 
+            localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset() * 2); // умножаем на 2, потому что toISOString прибавляет getTimezoneOffset
+            return localDate.toISOString().replace('T', ' ').replace(/\..+/, '').replaceAll('-', '.');                       
+        }
+
+    </script> 
+
 </head>
 <body>
     <div class="container">

@@ -28,8 +28,8 @@
                     <tr>
                         <td class="main-date-column">@rec.Date.ToString("yyyy.MM.dd")</td>
                         <td><a href="~/Records/View?recordId=@rec.Id">@rec.GetRecordNameDisplay()</a></td>
-                        <td class="date-column">@rec.CreateDate.ToString("G")</td>
-                        <td class="date-column">@rec.ModifyDate.ToString("G")</td>
+                        <td class="date-column"><script type="text/javascript">document.write(convertToLocalDate('@rec.CreateDate.ToString("yyyy.MM.dd HH:mm:ss")'))</script></td>
+                        <td class="date-column"><script type="text/javascript">document.write(convertToLocalDate('@rec.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss")'))</script></td>
                     </tr>
                 }
             </tbody>

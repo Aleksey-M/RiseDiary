@@ -36,7 +36,7 @@ namespace RiseDiary.WebUI.Pages
         {
             CombineThemes = combineThemes ?? false;
             SelectedThemes = themes ?? Enumerable.Empty<Guid>();
-            CurrentYear = year ?? DateTime.Now.Year;
+            CurrentYear = year ?? DateTime.UtcNow.Year;
             AllScopes = await _scopeSvc.GetScopes();
             YearsListFiltered = await _calendarServices.GetYears(SelectedThemes, CombineThemes);
             Records = await _calendarServices.GetCalendarItems(CurrentYear, SelectedThemes, CombineThemes);

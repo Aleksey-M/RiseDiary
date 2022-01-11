@@ -19,7 +19,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetRecordsService(context);
-            var recDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-3));
+            var recDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-3));
             var recName = "Record Name";
             var recText = @"<H1>Record text</H1>";
 
@@ -30,8 +30,8 @@ namespace RiseDiary.IntegratedTests.Services
             rec.Name.Should().Be(recName);
             rec.Text.Should().Be(recText);
             rec.Date.Should().Be(recDate);
-            rec.CreateDate.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
-            rec.ModifyDate.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
+            rec.CreateDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(500));
+            rec.ModifyDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(500));
         }
 
         [Test]
@@ -116,7 +116,7 @@ namespace RiseDiary.IntegratedTests.Services
             var svc = GetRecordsService(context);
             var id = Create_Record(context);
             var rec = await context.Records.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id);
-            var newDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-10));
+            var newDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-10));
 
             await svc.UpdateRecord(id, newDate, null, null);
 
@@ -192,7 +192,7 @@ namespace RiseDiary.IntegratedTests.Services
             var hpSvc = new HostAndPortStub();
             var text = $@"New text with link {hpSvc.GetHostAndPort()}/index and another link {hpSvc.GetHostAndPort()}/images/12345678";
 
-            var id = await svc.AddRecord(DateOnly.FromDateTime(DateTime.Now), text, text);
+            var id = await svc.AddRecord(DateOnly.FromDateTime(DateTime.UtcNow), text, text);
 
             var rec = await context.Records.SingleOrDefaultAsync(r => r.Id == id);
             rec.Name.Should().NotContain(hpSvc.GetHostAndPort());
@@ -249,7 +249,7 @@ namespace RiseDiary.IntegratedTests.Services
             var hpSvc = new HostAndPortStub();
             var text = $@"New text with link {hpSvc.GetHostAndPortPlaceholder()}/index and another link {hpSvc.GetHostAndPortPlaceholder()}/images/12345678";
             var cogitationsList = Enumerable.Range(1, 3)
-                .Select(i => new Cogitation { Id = Guid.NewGuid(), RecordId = recId, Date = DateTime.Now, Text = text }).ToList();
+                .Select(i => new Cogitation { Id = Guid.NewGuid(), RecordId = recId, Date = DateTime.UtcNow, Text = text }).ToList();
             context.Cogitations.AddRange(cogitationsList);
             await context.SaveChangesAsync();
 
@@ -288,7 +288,7 @@ namespace RiseDiary.IntegratedTests.Services
             var cog = await context.Cogitations.FindAsync(cogId);
             cog.Should().NotBeNull();
             cog.Text.Should().Be(text);
-            cog.Date.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
+            cog.Date.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(500));
             cog.RecordId.Should().Be(recId);
         }
 
@@ -315,7 +315,7 @@ namespace RiseDiary.IntegratedTests.Services
             var svc = GetRecordsService(context);
             var recId = Create_Record(context);
             var cId = Guid.NewGuid();
-            var cDate = DateTime.Now;
+            var cDate = DateTime.UtcNow;
             var cText = "Some Text 81237912y0r9182ny";
             var newText = "Some other text";
             context.Cogitations.Add(new Cogitation { Id = cId, Date = cDate, RecordId = recId, Text = cText });
@@ -335,7 +335,7 @@ namespace RiseDiary.IntegratedTests.Services
             var svc = GetRecordsService(context);
             var recId = Create_Record(context);
             var cId = Guid.NewGuid();
-            var cDate = DateTime.Now;
+            var cDate = DateTime.UtcNow;
             var cText = "Some Text 81237912y0r9182ny";
             var hpSvc = new HostAndPortStub();
             var newText = $@"New text with link {hpSvc.GetHostAndPort()}/index and another link {hpSvc.GetHostAndPort()}/images/12345678";

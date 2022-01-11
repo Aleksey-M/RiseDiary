@@ -24,7 +24,7 @@ namespace RiseDiary.IntegratedTests.Services
             var datesService = GetDatesService(10, context);
             var hostAndPortService = new HostAndPortStub();
 
-            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
+            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.UtcNow));
 
             var r1 = list[2];
             r1?.Name.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
@@ -42,7 +42,7 @@ namespace RiseDiary.IntegratedTests.Services
             var datesService = GetDatesService(10, context);
             var hostAndPortService = new HostAndPortStub();
 
-            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
+            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.UtcNow));
 
             var r1 = list[2];
             r1?.Text.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
@@ -59,7 +59,7 @@ namespace RiseDiary.IntegratedTests.Services
             var (scopes, _) = await AddTestData(context);
             var datesService = GetDatesService(10, context);
             
-            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
+            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.UtcNow));
 
             list[1].Themes.Should().ContainAll(
                 scopes[0].Themes.ElementAt(0).ThemeName,
@@ -75,7 +75,7 @@ namespace RiseDiary.IntegratedTests.Services
             await AddTestData(context);
             var datesService = GetDatesService(10, context);
 
-            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
+            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.UtcNow));
 
             list.Should().HaveCount(8);
             list.Should().BeInAscendingOrder(item => item.TransferredDate);
@@ -91,7 +91,7 @@ namespace RiseDiary.IntegratedTests.Services
             await context.SaveChangesAsync();
             var datesService = GetDatesService(10, context);
 
-            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
+            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.UtcNow));
 
             list.Should().HaveCount(7);
             list.Should().NotContain(item => item.Id == records[3].Id);
@@ -110,7 +110,7 @@ namespace RiseDiary.IntegratedTests.Services
             await context.SaveChangesAsync();
             var datesService = GetDatesService(10, context);
 
-            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.Now));
+            var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.UtcNow));
 
             list.Should().HaveCount(7);
             list.Should().NotContain(item => item.Id == records[0].Id);

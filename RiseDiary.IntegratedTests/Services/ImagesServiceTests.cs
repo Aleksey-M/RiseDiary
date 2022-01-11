@@ -58,7 +58,7 @@ namespace RiseDiary.IntegratedTests.Services
 
             image.Should().NotBeNull();
             image.Name.Should().Be("Test image name");
-            image.CreateDate.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
+            image.CreateDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(500));
         }
 
         [Test]
@@ -138,7 +138,7 @@ namespace RiseDiary.IntegratedTests.Services
 
             imgSaved.Should().NotBeNull();
             imgSaved.Name.Should().Be(newName);
-            imgSaved.ModifyDate.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(500));
+            imgSaved.ModifyDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(500));
         }
 
         [Test]

@@ -20,7 +20,7 @@ namespace RiseDiary.WebUI.Pages.Dates
             _settingsSvc = settingsSvc;
         }
 
-        public DateOnly Today { get; } = DateOnly.FromDateTime(DateTime.Now);
+        public DateOnly Today { get; } = DateOnly.FromDateTime(DateTime.UtcNow);
 
         public IEnumerable<DateListItem> Dates { get; private set; } = Enumerable.Empty<DateListItem>();
 

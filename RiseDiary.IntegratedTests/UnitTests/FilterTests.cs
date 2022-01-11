@@ -14,7 +14,7 @@ namespace RiseDiary.UnitTests
         public void Filter_SetDateTo_ShouldCleareTime()
         {
             var recFilter = RecordsFilter.Empty;
-            var date = DateOnly.FromDateTime(DateTime.Now);
+            var date = DateOnly.FromDateTime(DateTime.UtcNow);
 
             recFilter.ToDate = date;
 
@@ -25,7 +25,7 @@ namespace RiseDiary.UnitTests
         public void Filter_SetDateFrom_ShouldCleareTime()
         {
             var recFilter = RecordsFilter.Empty;
-            var date = DateOnly.FromDateTime(DateTime.Now);
+            var date = DateOnly.FromDateTime(DateTime.UtcNow);
 
             recFilter.FromDate = date;
 
@@ -130,7 +130,7 @@ namespace RiseDiary.UnitTests
         public void Filter_SetDateToProperty_ShouldSet()
         {
             var filter = RecordsFilter.Empty;
-            var date = DateOnly.FromDateTime(DateTime.Now.AddDays(-3));
+            var date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-3));
 
             filter.ToDate = date;
             Assert.AreEqual(filter.ToDate, date);
@@ -142,7 +142,7 @@ namespace RiseDiary.UnitTests
         public void Filter_SetDateFromProperty_ShouldSet()
         {
             var filter = RecordsFilter.Empty;
-            var date = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
+            var date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7));
 
             filter.FromDate = date;
             Assert.AreEqual(filter.FromDate, date);
@@ -153,7 +153,7 @@ namespace RiseDiary.UnitTests
         [Test]
         public void Filter_SetDateFromAndDateToProperties_TheSameDate_ShouldSet()
         {
-            var date = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
+            var date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7));
 
             var filter = new RecordsFilter { FromDate = date, ToDate = date };
 
@@ -170,8 +170,8 @@ namespace RiseDiary.UnitTests
         public void Filter_SetDateFrom_GreaterThanDateTo_ShouldSetToNull()
         {
             var filter = RecordsFilter.Empty;
-            var dateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
-            var dateFrom = DateOnly.FromDateTime(DateTime.Now.AddDays(-3));
+            var dateTo = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7));
+            var dateFrom = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-3));
 
             filter.FromDate = dateFrom;
             filter.ToDate = dateTo;
@@ -184,8 +184,8 @@ namespace RiseDiary.UnitTests
         public void Filter_SetDateTo_LessThanDateFrom_ShouldSetToNull()
         {
             var filter = RecordsFilter.Empty;
-            var dateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(-7));
-            var dateFrom = DateOnly.FromDateTime(DateTime.Now.AddDays(-3));
+            var dateTo = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7));
+            var dateFrom = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-3));
 
             filter.ToDate = dateTo;
             filter.FromDate = dateFrom;

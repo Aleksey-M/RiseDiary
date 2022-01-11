@@ -30,7 +30,7 @@ namespace RiseDiary.Model.Services
             int thumbnailSize = await _appSettings.GetAppSettingInt(AppSettingsKey.ThumbnailSize) ?? throw new Exception("Setting Value ThumbnailSize not set");
 
             image.Thumbnail = ScaleImage(image.TempImage.Data, imageQuality, thumbnailSize);
-            image.ModifyDate = DateTime.Now;
+            image.ModifyDate = DateTime.UtcNow;
             image.SizeByte = image.TempImage.Data.Length;
             (image.Width, image.Height) = GetImageSize(image.TempImage.Data);
 

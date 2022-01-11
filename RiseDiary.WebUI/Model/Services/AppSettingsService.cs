@@ -44,7 +44,7 @@ namespace RiseDiary.Model.Services
                 {
                     Key = keyStr,
                     Value = value,
-                    ModifiedDate = DateTime.Now
+                    ModifiedDate = DateTime.UtcNow
                 });
                 await _context.SaveChangesAsync().ConfigureAwait(false);
             }
@@ -53,7 +53,7 @@ namespace RiseDiary.Model.Services
                 if (appSetting.Value != value)
                 {
                     appSetting.Value = value;
-                    appSetting.ModifiedDate = DateTime.Now;
+                    appSetting.ModifiedDate = DateTime.UtcNow;
                     await _context.SaveChangesAsync().ConfigureAwait(false);
                 }
             }

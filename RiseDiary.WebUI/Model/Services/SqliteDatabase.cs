@@ -89,7 +89,7 @@ namespace RiseDiary.Model.Services
             {
                 Directory.CreateDirectory(backupFolder);
             }
-            var backupFileName = Path.Combine(backupFolder, "Migration " + DateTime.Now.ToString("yyyy.MM.dd-hh_mm_ss", CultureInfo.InvariantCulture) + ".bak");
+            var backupFileName = Path.Combine(backupFolder, "Migration " + DateTime.UtcNow.ToString("yyyy.MM.dd-hh_mm_ss", CultureInfo.InvariantCulture) + ".bak");
 
             using var context = await CreateCurrentContext(backupFileName).ConfigureAwait(false);
             // old SQLite file
@@ -181,7 +181,7 @@ namespace RiseDiary.Model.Services
         private static async Task WriteScopesAndThemes(DiaryDbContext context, List<(string? Id, string? Name, bool Deleted)> scopes, List<(string? Id, string? ScopeId, string? ThemeName, bool Deleted, bool Actual)> themes)
         {
             var sList = new List<DiaryScope>();
-            foreach (var (Id, Name, Deleted) in scopes)
+            foreach (var (Id, Name, Deleted) in scopes.OrderBy(x => x.Name))
             {
                 var sId = Guid.Parse(Id ?? throw new ArgumentException($"Id for scope '{Name}' is null"));
 
@@ -266,16 +266,24 @@ namespace RiseDiary.Model.Services
         private static async Task WriteImages(DiaryDbContext context, List<(string? Id, string? Name, string? CreateDate, string? ModifyDate, byte[] Thumbnail, int Width, int Height, int SizeByte, bool Deleted, DateTime? Taken, string? cameraModel)> images, List<(string? Id, string? ImageId, byte[] Data)> fullImages)
         {
             var imgList = new List<DiaryImage>();
-            foreach (var (Id, Name, CreateDate, ModifyDate, Thumbnail, Width, Height, SizeByte, Deleted, Taken, CameraModel) in images)
+            foreach (var (Id, Name, CreateDate, ModifyDate, Thumbnail, Width, Height, SizeByte, Deleted, Taken, CameraModel) in images.OrderBy(x => x.CreateDate))
             {
                 var iId = Guid.Parse(Id ?? throw new ArgumentException($"Id for Image '{Name}' is null"));
+
+                var createDate = string.IsNullOrWhiteSpace(CreateDate)
+                    ? DateTime.UtcNow
+                    : DateTime.Parse(CreateDate, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
+                var modifyDate = string.IsNullOrWhiteSpace(ModifyDate)
+                    ? DateTime.UtcNow
+                    : DateTime.Parse(ModifyDate, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 
                 var i = new DiaryImage
                 {
                     Id = iId,
                     Name = Name ?? "",
-                    CreateDate = DateTime.Parse(CreateDate ?? "", CultureInfo.InvariantCulture),
-                    ModifyDate = DateTime.Parse(ModifyDate ?? "", CultureInfo.InvariantCulture),
+                    CreateDate = createDate,
+                    ModifyDate = modifyDate,
                     Thumbnail = Thumbnail,
                     Width = Width,
                     Height = Height,
@@ -325,13 +333,17 @@ namespace RiseDiary.Model.Services
         private static async Task WriteAppSettings(DiaryDbContext context, List<(string Key, string Value, string ModifiedDate)> appSettings)
         {
             var appSet = new List<AppSetting>();
-            foreach (var (Key, Value, ModifiedDate) in appSettings)
+            foreach (var (Key, Value, ModifiedDate) in appSettings.OrderBy(x => x.Key))
             {
+                var modifiedDate = string.IsNullOrWhiteSpace(ModifiedDate) 
+                    ? DateTime.UtcNow 
+                    : DateTime.Parse(ModifiedDate, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
                 appSet.Add(new AppSetting
                 {
                     Key = Key,
                     Value = Value,
-                    ModifiedDate = DateTime.Parse(ModifiedDate ?? "", CultureInfo.InvariantCulture)
+                    ModifiedDate = modifiedDate
                 });
             }
 
@@ -367,16 +379,24 @@ namespace RiseDiary.Model.Services
         private static async Task WriteRecords(DiaryDbContext context, List<(string? Id, string? Date, string? CreateDate, string? ModifyDate, string? Name, string? Text, bool Deleted)> records)
         {
             var recordsInstances = new List<DiaryRecord>();
-            foreach (var (Id, Date, CreateDate, ModifyDate, Name, Text, Deleted) in records)
+            foreach (var (Id, Date, CreateDate, ModifyDate, Name, Text, Deleted) in records.OrderBy(x => x.Date))
             {
                 var id = Guid.Parse(Id ?? throw new ArgumentException($"Id for Record '{Name}' is null"));
+
+                var createDate = string.IsNullOrWhiteSpace(CreateDate)
+                    ? DateTime.UtcNow
+                    : DateTime.Parse(CreateDate, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
+                var modifyDate = string.IsNullOrWhiteSpace(ModifyDate)
+                    ? DateTime.UtcNow
+                    : DateTime.Parse(ModifyDate, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 
                 var r = new DiaryRecord
                 {
                     Id = id,
                     Date = DateOnly.Parse(Date ?? "", CultureInfo.InvariantCulture),
-                    CreateDate = DateTime.Parse(CreateDate ?? "", CultureInfo.InvariantCulture),
-                    ModifyDate = DateTime.Parse(ModifyDate ?? "", CultureInfo.InvariantCulture),
+                    CreateDate = createDate,
+                    ModifyDate = modifyDate,
                     Name = Name ?? "",
                     Text = Text ?? "",
                     Deleted = Deleted
@@ -415,15 +435,19 @@ namespace RiseDiary.Model.Services
         private static async Task WriteCogitations(DiaryDbContext context, List<(string? Id, string? RecordId, string? Date, string? Text, bool Deleted)> cogitations)
         {
             var cogList = new List<Cogitation>();
-            foreach (var (Id, RecordId, Date, Text, Deleted) in cogitations)
+            foreach (var (Id, RecordId, Date, Text, Deleted) in cogitations.OrderBy(x => x.Date))
             {
                 var id = Guid.Parse(Id ?? throw new ArgumentException($"Id for Cogitation '{Text}' is null"));
                 var recId = Guid.Parse(RecordId ?? throw new ArgumentException($"Id for Cogitation Record '{Text}' is null"));
 
+                var date = string.IsNullOrWhiteSpace(Date)
+                    ? DateTime.UtcNow
+                    : DateTime.Parse(Date, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
                 var c = new Cogitation
                 {
                     Id = id,
-                    Date = DateTime.Parse(Date ?? "", CultureInfo.InvariantCulture),
+                    Date = date,
                     RecordId = recId,
                     Text = Text ?? "",
                     Deleted = Deleted

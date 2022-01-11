@@ -132,7 +132,7 @@ else
             }
             else
             {
-                <p class="mt-2"><b>@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")</b> <button class="btn btn-sm btn-outline-danger" @onclick="async _ => await DeleteCogitation(cog.Id)" title="Удалить комментарий (осмысление)">Удалить</button></p>
+                <p class="mt-2"><b>@cog.Date</b> <button class="btn btn-sm btn-outline-danger" @onclick="async _ => await DeleteCogitation(cog.Id)" title="Удалить комментарий (осмысление)">Удалить</button></p>
                 <TextEditor Text="@cog.Text" SaveText="async t => await UpdateRecordAndCogitationText(cog.Id, t)" />
             }
         </div>
@@ -148,6 +148,12 @@ else
 
     private enum ErrorArea { None, Page, CogitationUpdate, CogitationCreate }
 
+    private record CogitationView(Guid Id) 
+    { 
+        public string Date { get; set; } = "";
+        public string Text { get; set; } = "";
+    }
+
     [Parameter]
     public Guid RecordId { get; set; }
 
@@ -162,7 +168,7 @@ else
 
     private List<DiaryRecordTheme> _selectedThemes = new List<DiaryRecordTheme>();
 
-    private List<Cogitation> _recordCogitations = new List<Cogitation>();
+    private List<CogitationView> _recordCogitations = new List<CogitationView>();
 
     private string _recordText = "";
 
@@ -191,7 +197,10 @@ else
             _modifiedDate = record.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss");
             _recordText = record.Text;
             _recordImagesRefs = record.ImagesRefs.ToList();
-            _recordCogitations = record.Cogitations.OrderByDescending(c => c.Date).ToList();
+            _recordCogitations = record.Cogitations
+                .OrderByDescending(c => c.Date)
+                .Select(x => new CogitationView(x.Id ) { Date = x.Date.ToString("yyyy.MM.dd HH:mm:ss"), Text = x.Text })
+                .ToList();
 
             StateHasChanged();
         }
@@ -199,6 +208,25 @@ else
         {
             CriticalError = exc.Message;
             CriticalErrorArea = ErrorArea.Page;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _createdDate = await JSRuntime.InvokeAsync<string>("convertToLocalDate", _createdDate);
+            _modifiedDate = await JSRuntime.InvokeAsync<string>("convertToLocalDate", _modifiedDate);
+
+            foreach(var c in _recordCogitations)
+            {
+                var date = await JSRuntime.InvokeAsync<string>("convertToLocalDate", c.Date);
+                c.Date = date;
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
+
+            StateHasChanged();
         }
     }
 
@@ -234,14 +262,18 @@ else
         {
             // шибки обрабатываются компонентом
             await RecordsService.UpdateRecord(RecordId, null, null, text);
-            _modifiedDate = DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss");
+            _modifiedDate = DateTime.UtcNow.ToString("yyyy.MM.dd HH:mm:ss");
             StateHasChanged();
         }
         else
         {
             try
             {
-                if (text is { Length: 0 }) text = "[empty]";
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    text = "[empty]";
+                } 
+
                 var cog = _recordCogitations.SingleOrDefault(c => c.Id == textId);
                 if (cog is not null)
                 {
@@ -296,13 +328,12 @@ else
 
             var html = await QuillHtml.GetHTML();
             var newCogId = await RecordsService.AddCogitation(RecordId, html);
+            var newDate = await JSRuntime.InvokeAsync<string>("convertToLocalDate", DateTime.UtcNow.ToString("yyyy.MM.dd HH:mm:ss"));
 
-            _recordCogitations.Insert(0, new Cogitation
-                {
-                    Id = newCogId,
-                    Date = DateTime.Now,
-                    Text = html,
-                    RecordId = RecordId
+            _recordCogitations.Insert(0, new CogitationView(newCogId)
+                {                    
+                    Date = newDate,
+                    Text = html
                 });
 
             await JSRuntime.InvokeVoidAsync("setQuillHtmlText", @"<p></p>", "newCogitation");
