@@ -194,7 +194,7 @@ namespace Migrations
             //
             static string ConvertToUtc(string stringDate)
             {
-                var lastLocalChangesDate = new DateTime(2022, 3, 1); // после 1 марта не обновляем
+                var lastLocalChangesDate = new DateTime(2021, 3, 1); // после 1 марта не обновляем
                 var date = DateTime.Parse(stringDate);
                 if(date < lastLocalChangesDate)
                 {
