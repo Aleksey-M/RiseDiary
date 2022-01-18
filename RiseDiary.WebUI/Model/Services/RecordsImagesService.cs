@@ -15,40 +15,148 @@ namespace RiseDiary.Model.Services
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task AddRecordImage(Guid recordId, Guid imageId)
+        public async Task AddRecordImage(Guid recordId, Guid imageId, int? order = null)
         {
-            var ri = await _context.RecordImages
+            var recExists = await _context.Records.AsNoTracking().AnyAsync(r => r.Id == recordId).ConfigureAwait(false);
+            var imgExists = await _context.Images.AsNoTracking().AnyAsync(i => i.Id == imageId).ConfigureAwait(false);
+            var errorMessage = (recExists, imgExists) switch
+            {
+                (true, true) => "",
+                (false, true) => $"Record with id '{recordId}' does not exists",
+                (true, false) => $"Image with id '{imageId}' does not exists",
+                (false, false) => $"Record with id '{recordId}' does not exists, and image with id '{imageId}' does not exists"
+            };
+
+            if (errorMessage != "") throw new ArgumentException(errorMessage);
+
+
+            var recordImage = await _context.RecordImages
                 .IgnoreQueryFilters()
                 .SingleOrDefaultAsync(ri => ri.RecordId == recordId && ri.ImageId == imageId)
                 .ConfigureAwait(false);
 
-            if (ri != null)
+            if (recordImage != null && !recordImage.Deleted)
             {
-                ri.Deleted = false;
+                return;
+            }
+
+            recordImage ??= new DiaryRecordImage
+            {
+                ImageId = imageId,
+                RecordId = recordId,
+                Order = 0
+            };
+
+            recordImage.Order = await _context.RecordImages
+                .Where(x => x.RecordId == recordId)
+                .Select(x => x.Order)
+                .DefaultIfEmpty()
+                .MaxAsync()
+                .ConfigureAwait(false) + 1;
+
+            if (recordImage.Deleted)
+            {
+                recordImage.Deleted = false;
             }
             else
             {
-                var recExists = await _context.Records.AsNoTracking().AnyAsync(r => r.Id == recordId).ConfigureAwait(false);
-                var imgExists = await _context.Images.AsNoTracking().AnyAsync(i => i.Id == imageId).ConfigureAwait(false);
-                var errorMessage = (recExists, imgExists) switch
+                await _context.RecordImages.AddAsync(recordImage).ConfigureAwait(false);
+            }
+
+            await _context.SaveChangesAsync().ConfigureAwait(false);
+            
+
+            if (order.HasValue && order.Value < recordImage.Order )
+            {
+                var imageWithOrderExists = await _context.RecordImages
+                    .AnyAsync(x => x.RecordId == recordId && x.Order == order.Value)
+                    .ConfigureAwait(false);
+
+                var list = await _context.RecordImages
+                    .Where(x => x.RecordId == recordId)
+                    .ToListAsync()
+                    .ConfigureAwait(false);
+
+                if (imageWithOrderExists)
                 {
-                    (true, true) => "",
-                    (false, true) => $"Record with id '{recordId}' does not exists",
-                    (true, false) => $"Image with id '{imageId}' does not exists",
-                    (false, false) => $"Record with id '{recordId}' does not exists, and image with id '{imageId}' does not exists"
-                };
+                    ShiftOrders(list, imageId, order.Value);
+                }
 
-                if (errorMessage != "") throw new ArgumentException(errorMessage);
-
-                await _context.RecordImages.AddAsync(new DiaryRecordImage { ImageId = imageId, RecordId = recordId }).ConfigureAwait(false);
+                if (order.Value <= 0)
+                {
+                    ShiftOrders(list, imageId, 1);
+                }
             }
 
             await _context.SaveChangesAsync().ConfigureAwait(false);
         }
 
+        private static void ShiftOrders(List<DiaryRecordImage> diaryRecordImages, Guid insertedImageId, int newOrder, int? oldOrder = null)
+        {
+            var recordImage = diaryRecordImages.Single(x => x.ImageId == insertedImageId);
+
+            if(oldOrder.HasValue)
+            {
+                if (oldOrder.Value < newOrder)
+                {
+                    foreach (var image in diaryRecordImages)
+                    {
+                        if (image.Order > oldOrder && image.Order <= newOrder)
+                        {
+                            image.Order--;
+                        }
+                    }
+                }
+                else if (oldOrder.Value > newOrder)
+                {
+                    foreach (var image in diaryRecordImages)
+                    {
+                        if (image.Order < oldOrder && image.Order >= newOrder)
+                        {
+                            image.Order++;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                foreach (var image in diaryRecordImages)
+                {
+                    if (image.Order >= newOrder)
+                    {
+                        image.Order++;
+                    }
+                }                
+            }
+
+            recordImage.Order = newOrder;
+
+            foreach (var (image, index) in diaryRecordImages.OrderBy(x => x.Order).Select((x, i) => (x, i)))
+            {
+                image.Order = index + 1;
+            }            
+        }
+
+        public async Task<List<DiaryRecordImage>> ChangeRecordImageOrder(Guid recordId, Guid imageId, int newOrder)
+        {
+            var list = await _context.RecordImages
+                   .Where(x => x.RecordId == recordId)
+                   .ToListAsync()
+                   .ConfigureAwait(false);
+
+            int oldOrder = list.Single(x => x.RecordId == recordId && x.ImageId == imageId).Order;
+
+            ShiftOrders(list, imageId, newOrder, oldOrder);
+
+            await _context.SaveChangesAsync();
+
+            return list.OrderBy(x => x.Order).ToList();
+        }
+
         public async Task<List<Guid>> GetLinkedImagesIdList(Guid recordId) => await _context.RecordImages
             .AsNoTracking()
             .Where(ri => ri.RecordId == recordId)
+            .OrderBy(ri => ri.Order)
             .Select(ri => ri.ImageId)
             .ToListAsync()
             .ConfigureAwait(false);

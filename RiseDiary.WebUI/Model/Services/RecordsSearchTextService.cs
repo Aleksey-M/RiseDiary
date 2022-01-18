@@ -56,7 +56,7 @@ namespace RiseDiary.Model.Services
                 .Include(r => r.Cogitations)
                 .Include(r => r.ThemesRefs)
                 .ThenInclude(rt => rt.Theme)
-                .Include(r => r.ImagesRefs)
+                .Include(r => r.ImagesRefs.OrderBy(x => x.Order))
                 .ThenInclude(ri => ri.Image)
                 .Where(r => combinedList.Contains(r.Id))
                 .ToListAsync()

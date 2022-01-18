@@ -194,10 +194,18 @@ namespace Migrations
             //
             static string ConvertToUtc(string stringDate)
             {
+                var lastLocalChangesDate = new DateTime(2021, 3, 1); // после 1 марта не обновляем
                 var date = DateTime.Parse(stringDate);
-                date = DateTime.SpecifyKind(date, DateTimeKind.Local);
-                var utcDate = TimeZoneInfo.ConvertTimeToUtc(date, TimeZoneInfo.Local);
-                return utcDate.ToString("yyyy-MM-dd HH:mm:ss.fffffff");
+                if(date < lastLocalChangesDate)
+                {
+                    date = DateTime.SpecifyKind(date, DateTimeKind.Local);
+                    var utcDate = TimeZoneInfo.ConvertTimeToUtc(date, TimeZoneInfo.Local);
+                    return utcDate.ToString("yyyy-MM-dd HH:mm:ss.fffffff");
+                }
+                else
+                {
+                    return stringDate;
+                }                
             }
         }
     }

@@ -94,7 +94,7 @@ namespace RiseDiary.Model.Services
             var record = await _context.Records
                .AsNoTracking()
                .Include(r => r.Cogitations)
-               .Include(r => r.ImagesRefs)
+               .Include(r => r.ImagesRefs.OrderBy(x => x.Order))
                .ThenInclude(ir => ir.Image)
                .Include(r => r.ThemesRefs)
                .ThenInclude(rt => rt.Theme)

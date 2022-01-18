@@ -20,11 +20,27 @@ namespace RiseDiary.WebUI.Api
         [HttpPost, Route("api/v1.0/records/{recordId}/images/{imageId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddThemeToRecord(Guid recordId, Guid imageId)
+        public async Task<IActionResult> AddImageToRecord(Guid recordId, Guid imageId, [FromQuery] int? order)
         {
             try
             {
-                await _recordImagesService.AddRecordImage(recordId, imageId);
+                await _recordImagesService.AddRecordImage(recordId, imageId, order);
+                return Ok();
+            }
+            catch (ArgumentException exc)
+            {
+                return BadRequest(exc.Message);
+            }
+        }
+
+        [HttpPut, Route("api/v1.0/records/{recordId}/images/{imageId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ChangeRecordImageOrder(Guid recordId, Guid imageId, [FromQuery] int order)
+        {
+            try
+            {
+                await _recordImagesService.ChangeRecordImageOrder(recordId, imageId, order);
                 return Ok();
             }
             catch (ArgumentException exc)
@@ -36,7 +52,7 @@ namespace RiseDiary.WebUI.Api
         [HttpDelete, Route("api/v1.0/records/{recordId}/images/{imageId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> DeleteRecordTheme(Guid recordId, Guid imageId)
+        public async Task<IActionResult> DeleteRecordImage(Guid recordId, Guid imageId)
         {
             try
             {

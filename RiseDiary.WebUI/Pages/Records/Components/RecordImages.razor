@@ -19,9 +19,23 @@
                 <div class="row">
                     @foreach (var image in RecordImagesRefsMutable)
                     {
-                        <div class="col-lg-2 col-md-4 col-sm-6 p-3">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-3">
                             <Thumbnail RecordId="RecordId" ImageId="image.ImageId" ImageName="@image?.Image?.Name">
-                                <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="_ => RemoveImageLink(image?.ImageId)" title="Открепить">Открепить</button>
+                                @if ((image?.Order ?? 0) > 1)
+                                {
+                                    <button type="button" class="btn btn-link px-0" @onclick="async _ => await UpdateImageOrder(image?.ImageId, (image?.Order ?? 0) - 1)">
+                                        <img src="img/arrow-left.svg" />
+                                    </button>
+                                }
+
+                                <button type="button" class="btn btn-sm btn-outline-secondary mx-3" @onclick="async _ => await RemoveImageLink(image?.ImageId)" title="Открепить">Открепить</button>
+                                
+                                @if ((image?.Order ?? 0) < RecordImagesRefsMutable.Count)
+                                {
+                                    <button type="button" class="btn btn-link px-0" @onclick="async _ => await UpdateImageOrder(image?.ImageId, (image?.Order ?? 0) + 1)">
+                                        <img src="img/arrow-right.svg" />
+                                    </button>
+                                }
                             </Thumbnail>
                         </div>
                     }
@@ -50,7 +64,7 @@
 
             <div class="col-12">
                 <button class="btn btn-outline-info m-1 btn-sm" hidden="@_allImagesDisplayed" @onclick="async _ => await ShowAvailableImages()" title="Показать больше картинок">Показать больше</button>
-                <button class="btn btn-outline-secondary m-1 btn-sm" @onclick="_ => HideAvailableImages()" title="Закрыть список доступных изображений">Назад</button>
+                <button class="btn btn-outline-secondary m-1 btn-sm" @onclick="_ => HideAvailableImages()" title="Закрыть список доступных изображений">Закрыть</button>
             </div>
         }
     }
@@ -113,7 +127,8 @@
                     {
                         Image = image,
                         ImageId = image.Id,
-                        RecordId = RecordId
+                        RecordId = RecordId,
+                        Order = RecordImagesRefsMutable.Select(x => x.Order).DefaultIfEmpty().Max() + 1
                     });
 
             _availableImages.Remove(image);
@@ -135,6 +150,20 @@
                 var img = RecordImagesRefsMutable.Single(ri => ri.ImageId == imageId);
                 RecordImagesRefsMutable.Remove(img);
             }
+        }
+        catch (Exception exc)
+        {
+            CriticalError = exc.Message;
+        }
+    }
+
+    private async Task UpdateImageOrder(Guid? imageId, int order)
+    {
+        if (!imageId.HasValue) return;
+
+        try
+        {
+            RecordImagesRefsMutable = await RecordsImageService.ChangeRecordImageOrder(RecordId, imageId.Value, order);
         }
         catch (Exception exc)
         {

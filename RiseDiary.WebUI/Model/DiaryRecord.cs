@@ -75,6 +75,8 @@ namespace RiseDiary.Model
 
         public bool Deleted { get; set; }
 
+        public int Order { get; set; }
+
         public DiaryImage? Image { get; set; }
 
         public DiaryRecord? Record { get; set; }
