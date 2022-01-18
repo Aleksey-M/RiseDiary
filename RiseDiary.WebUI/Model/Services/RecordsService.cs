@@ -145,12 +145,16 @@ namespace RiseDiary.Model.Services
 
             if (newName != null)
             {
-                record.Name = newName.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
+                record.Name = currentHostAndPort.Length > 0
+                    ? newName.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase)
+                    : newName;
             }
 
             if (newText != null)
             {
-                record.Text = newText.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
+                record.Text = currentHostAndPort.Length > 0
+                    ? newText.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase)
+                    : newText;
             }
 
             record.ModifyDate = DateTime.UtcNow;

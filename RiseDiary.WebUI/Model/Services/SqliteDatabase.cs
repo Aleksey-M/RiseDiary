@@ -500,11 +500,11 @@ namespace RiseDiary.Model.Services
             await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        private static async Task<List<(string? ImageId, string? RecordId, bool Deleted)>> ReadRecordsImages(SqliteConnection connection)
+        private static async Task<List<(string? ImageId, string? RecordId, bool Deleted, int Order)>> ReadRecordsImages(SqliteConnection connection)
         {
-            await CheckColumnsCount(connection, "RecordImages", 3).ConfigureAwait(false);
+            await CheckColumnsCount(connection, "RecordImages", 4).ConfigureAwait(false);
             //
-            var recImages = new List<(string? ImageId, string? RecordId, bool Deleted)>();
+            var recImages = new List<(string? ImageId, string? RecordId, bool Deleted, int Order)>();
             using var c9 = connection.CreateCommand();
             c9.CommandText = "SELECT * FROM RecordImages";
             using var r9 = await c9.ExecuteReaderAsync().ConfigureAwait(false);
@@ -513,7 +513,8 @@ namespace RiseDiary.Model.Services
                 recImages.Add((
                     r9["ImageId"].ToString(),
                     r9["RecordId"].ToString(),
-                    Convert.ToBoolean(r9["Deleted"], CultureInfo.InvariantCulture))
+                    Convert.ToBoolean(r9["Deleted"], CultureInfo.InvariantCulture),
+                    int.TryParse(r9["Order"].ToString(), out int order) ? order : 0)
                     );
             }
             await r9.CloseAsync().ConfigureAwait(false);
@@ -521,16 +522,17 @@ namespace RiseDiary.Model.Services
             return recImages;
         }
 
-        private static async Task WriteRecordsImages(DiaryDbContext context, List<(string? ImageId, string? RecordId, bool Deleted)> recImages)
+        private static async Task WriteRecordsImages(DiaryDbContext context, List<(string? ImageId, string? RecordId, bool Deleted, int Order)> recImages)
         {
             var recImgList = new List<DiaryRecordImage>();
-            foreach (var (ImageId, RecordId, Deleted) in recImages)
+            foreach (var (ImageId, RecordId, Deleted, Order) in recImages)
             {
                 var ri = new DiaryRecordImage
                 {
                     ImageId = Guid.Parse(ImageId ?? ""),
                     RecordId = Guid.Parse(RecordId ?? ""),
-                    Deleted = Deleted
+                    Deleted = Deleted,
+                    Order = Order
                 };
 
                 recImgList.Add(ri);
