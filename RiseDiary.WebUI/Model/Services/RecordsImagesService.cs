@@ -140,6 +140,7 @@ namespace RiseDiary.Model.Services
         public async Task<List<DiaryRecordImage>> ChangeRecordImageOrder(Guid recordId, Guid imageId, int newOrder)
         {
             var list = await _context.RecordImages
+                   .Include(x => x.Image)
                    .Where(x => x.RecordId == recordId)
                    .ToListAsync()
                    .ConfigureAwait(false);
