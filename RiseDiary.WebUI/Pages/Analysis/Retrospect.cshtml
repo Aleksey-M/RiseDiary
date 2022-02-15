@@ -66,7 +66,7 @@
                                             @foreach (var image in rec.ImagesRefs)
                                             {
                                                 <div class="col-lg-2 col-md-4 col-sm-6 p-3">
-                                                    <component type="typeof(Thumbnail)" render-mode="Static" param-imageId="image.ImageId" param-imageName="@("")" param-onlyImage="true" />
+                                                    <component type="typeof(Thumbnail)" render-mode="Static" param-image="image.Image" param-onlyImage="true" />
                                                 </div>
                                             }                                               
                                         </div>

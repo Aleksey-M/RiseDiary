@@ -20,7 +20,7 @@
                     @foreach (var image in RecordImagesRefsMutable)
                     {
                         <div class="col-lg-3 col-md-6 col-sm-12 p-3">
-                            <Thumbnail RecordId="RecordId" ImageId="image.ImageId" ImageName="@image?.Image?.Name">
+                            <Thumbnail RecordId="RecordId" Image="@image?.Image">
                                 @if ((image?.Order ?? 0) > 1)
                                 {
                                     <button type="button" class="btn btn-link px-0" @onclick="async _ => await UpdateImageOrder(image?.ImageId, (image?.Order ?? 0) - 1)">
@@ -54,7 +54,7 @@
                     @foreach (var image in _availableImages)
                     {
                         <div class="col-lg-2 col-md-4 col-sm-6 p-3">
-                            <Thumbnail RecordId="RecordId" ImageId="image.Id" ImageName="@image.Name">
+                            <Thumbnail RecordId="RecordId" Image="@image">
                                 <button type="button" class="btn btn-sm btn-outline-primary" @onclick="async _ => await LinkImage(image)" title="Прикрепить изображение к записи">Прикрепить</button>
                             </Thumbnail>
                         </div>

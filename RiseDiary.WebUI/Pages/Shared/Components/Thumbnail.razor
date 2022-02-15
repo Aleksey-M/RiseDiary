@@ -8,17 +8,17 @@
     }
     else
     {
-        <div id="@("fullImage-" + ImageId)" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
+        <div id="@("fullImage-" + _image.Id.ToString())" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+            <div class="modal-dialog @(_image.Width > _image.Height ? "modal-xl" : "modal-lg")">
                 <div class="modal-content">
 
                     <div class="modal-header">
-                        <i>@ImageName</i>
+                        <i>@_image.Id</i>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
                     <div class="modal-body text-center">
-                        <img src="/api/v1.0/image-file/@ImageId" class="img-fluid">
+                        <img src="/api/v1.0/image-file/@_image.Id" class="img-fluid">
                     </div>
 
                 </div>
@@ -28,14 +28,14 @@
         @if (!OnlyImage)
         {
             <div class="card-header text-wrap text-center">
-                <a href="/images/Edit?imageId=@ImageId&recordId=@(RecordId?.ToString() ?? "")">@ImageName</a>
+                <a href="/images/Edit?imageId=@(_image.Id.ToString())&recordId=@(RecordId?.ToString() ?? "")">@(_image.Name)</a>
             </div>
         }
 
         <div class="card-body">
             <div class="text-center">
-                <a data-bs-toggle="modal" data-bs-target="@("#fullImage-" + ImageId)" style="cursor:pointer">
-                    <img src="/api/v1.0/image-thumbnail/@ImageId" class="img-thumbnail" />
+                <a data-bs-toggle="modal" data-bs-target="@("#fullImage-" + _image.Id.ToString())" style="cursor:pointer">
+                    <img src="/api/v1.0/image-thumbnail/@_image.Id" class="img-thumbnail" />
                 </a>
             </div>
         </div>
@@ -58,13 +58,13 @@
 
 @code {
 
-    private DiaryImage? _image = null;
+    private DiaryImage _image = null!;
 
     private string? CriticalError { get; set; }
 
 
     [Parameter]
-    public DiaryImage? Image
+    public DiaryImage Image
     {
         get => _image;
         set
@@ -72,8 +72,6 @@
             try
             {
                 _image = value ?? throw new ArgumentNullException("Image");
-                ImageId = _image.Id;
-                ImageName = _image.Name;
             }
             catch (Exception exc)
             {
@@ -89,11 +87,5 @@
     public RenderFragment? ChildContent { get; set; }
 
     [Parameter]
-    public Guid ImageId { get; set; }
-
-    [Parameter]
     public Guid? RecordId { get; set; }
-
-    [Parameter]
-    public string ImageName { get; set; } = "";
 }
