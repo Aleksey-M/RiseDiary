@@ -24,6 +24,7 @@ namespace RiseDiary.Model.Services
 
             var recordsPage = await FetchRecordsListFilteredQuery(filter)
                 .OrderByDescending(r => r.Date)
+                .ThenByDescending(r => r.CreateDate)
                 .Skip(filter.PageNo * filter.PageSize)
                 .Take(filter.PageSize)
                 .ToListAsync()

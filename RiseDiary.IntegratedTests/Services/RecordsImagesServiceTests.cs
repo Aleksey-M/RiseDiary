@@ -237,11 +237,11 @@ namespace RiseDiary.IntegratedTests.Services
             int order1 = (await context.RecordImages.SingleAsync(x => x.ImageId == imagesIds[0])).Order;
             order1.Should().Be(1);
             int order2 = (await context.RecordImages.SingleAsync(x => x.ImageId == imagesIds[1])).Order;
-            order2.Should().Be(5);
+            order2.Should().Be(4);
             int order3 = (await context.RecordImages.SingleAsync(x => x.ImageId == imagesIds[2])).Order;
-            order3.Should().Be(3);
+            order3.Should().Be(2);
             int order4 = (await context.RecordImages.SingleAsync(x => x.ImageId == imagesIds[3])).Order;
-            order4.Should().Be(4);
+            order4.Should().Be(3);
         }
 
         [Test]

@@ -76,6 +76,7 @@ namespace RiseDiary.Model.Services
 
             var list = (await SearchRecords(filter.SearchText).ConfigureAwait(false))
                 .OrderByDescending(r => r.Date)
+                .ThenByDescending(r => r.CreateDate)
                 .Skip(filter.PageNo * filter.PageSize)
                 .Take(filter.PageSize)
                 .ToList();
