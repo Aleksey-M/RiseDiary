@@ -176,6 +176,16 @@ namespace RiseDiary.Model.Services
             if (recordImage != null)
             {
                 _context.RecordImages.Remove(recordImage);
+
+                var nextRecordImages = await _context.RecordImages
+                    .Where(x => x.RecordId == recordId && x.Order >= recordImage.Order)
+                    .ToListAsync().ConfigureAwait(false);
+
+                if(nextRecordImages.Count > 0)
+                {
+                    nextRecordImages.ForEach(x => x.Order--);
+                }
+
                 await _context.SaveChangesAsync().ConfigureAwait(false);
             }
         }

@@ -94,6 +94,19 @@ namespace RiseDiary.Model.Services
             if (img != null)
             {
                 _context.Images.Remove(img);
+
+                foreach (var recordImage in img.RecordsRefs)
+                {
+                    var nextRecordImages = await _context.RecordImages
+                        .Where(x => x.RecordId == recordImage.RecordId && x.Order >= recordImage.Order)
+                        .ToListAsync().ConfigureAwait(false);
+
+                    if (nextRecordImages.Count > 0)
+                    {
+                        nextRecordImages.ForEach(x => x.Order--);
+                    }
+                }
+
                 await _context.SaveChangesAsync().ConfigureAwait(false);
             }
         }

@@ -500,5 +500,25 @@ namespace RiseDiary.IntegratedTests.Services
                 (imagesIds[1], 4)
             });
         }
+
+        [Test]
+        public async Task RemoveRecordImage_NextImagesOrderShouldBeDecreased()
+        {
+            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var recordsImagesService = GetRecordsImagesService(context);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[0], 1);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[1], 2);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[2], 3);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[3], 4);
+
+            await recordsImagesService.RemoveRecordImage(recordId, imagesIds[1]);
+
+            int order1 = (await context.RecordImages.SingleAsync(x => x.ImageId == imagesIds[0])).Order;
+            order1.Should().Be(1);
+            int order3 = (await context.RecordImages.SingleAsync(x => x.ImageId == imagesIds[2])).Order;
+            order3.Should().Be(2);
+            int order4 = (await context.RecordImages.SingleAsync(x => x.ImageId == imagesIds[3])).Order;
+            order4.Should().Be(3);
+        }
     }
 }

@@ -778,5 +778,36 @@ namespace RiseDiary.IntegratedTests
 
             return (themeId1, themeId2, new List<string> { "* /*searchтекстІї*01/*", "_SearchТекстІї*011АРРОПРОлрффлвыа" });
         }
+
+        protected async Task<(Guid rec1Id, Guid rec2Id, Guid rec3Id, Guid imgId)> CreateRecordsWithLinkedImage(DiaryDbContext context)
+        {
+            var rec1Id = Create_Record(context);
+            var rec2Id = Create_Record(context);
+            var rec3Id = Create_Record(context);
+            var imgId = Create_Image(context);
+
+            context.RecordImages.Add(new DiaryRecordImage { ImageId = imgId, RecordId = rec1Id, Order = 1 });
+            context.RecordImages.Add(new DiaryRecordImage { ImageId = imgId, RecordId = rec2Id, Order = 1 });
+            context.RecordImages.Add(new DiaryRecordImage { ImageId = imgId, RecordId = rec3Id, Order = 1 });
+
+            for (int i = 2; i <= 4; i++)
+            {
+                context.RecordImages.Add(new DiaryRecordImage { ImageId = Create_Image(context), RecordId = rec1Id, Order = i });
+            }
+
+            for (int i = 2; i <= 4; i++)
+            {
+                context.RecordImages.Add(new DiaryRecordImage { ImageId = Create_Image(context), RecordId = rec2Id, Order = i });
+            }
+
+            for (int i = 2; i <= 4; i++)
+            {
+                context.RecordImages.Add(new DiaryRecordImage { ImageId = Create_Image(context), RecordId = rec3Id, Order = i });
+            }
+
+            await context.SaveChangesAsync();
+
+            return (rec1Id, rec2Id, rec3Id, imgId);
+        }
     }
 }

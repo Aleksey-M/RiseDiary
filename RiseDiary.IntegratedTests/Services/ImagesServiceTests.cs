@@ -180,7 +180,7 @@ namespace RiseDiary.IntegratedTests.Services
         }
 
         [Test]
-        public async Task DeleteImage_WithDisabledSD_ShouldDeleteRecords()
+        public async Task DeleteImage_WithDisabledSD_ShouldDeleteImageWithRecordImage()
         {
             var context = CreateContext();
             context.SoftDeleting = false;
@@ -194,6 +194,25 @@ namespace RiseDiary.IntegratedTests.Services
 
             var recordImage = context.RecordImages.IgnoreQueryFilters().FirstOrDefault(recImage => recImage.ImageId == image.Id);
             recordImage.Should().BeNull();
+        }
+
+        [Test]
+        public async Task DeleteImage_ShouldBeReorderedAllRecordsImages()
+        {
+            var context = CreateContext();
+            var (rec1Id, rec2Id, rec3Id, imgId) = await CreateRecordsWithLinkedImage(context);
+            var svc = GetImagesService(context);
+
+            await svc.DeleteImage(imgId);
+
+            var rec1ImagesOrder = await context.RecordImages.Where(x => x.RecordId == rec1Id).Select(x => x.Order).ToListAsync();
+            rec1ImagesOrder.Should().BeEquivalentTo(new int[] { 1, 2, 3 });
+
+            var rec2ImagesOrder = await context.RecordImages.Where(x => x.RecordId == rec2Id).Select(x => x.Order).ToListAsync();
+            rec2ImagesOrder.Should().BeEquivalentTo(new int[] { 1, 2, 3 });
+
+            var rec3ImagesOrder = await context.RecordImages.Where(x => x.RecordId == rec3Id).Select(x => x.Order).ToListAsync();
+            rec3ImagesOrder.Should().BeEquivalentTo(new int[] { 1, 2, 3 });
         }
 
         [Test]
