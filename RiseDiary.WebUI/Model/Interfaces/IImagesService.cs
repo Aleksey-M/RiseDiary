@@ -21,4 +21,9 @@ namespace RiseDiary.Model
 
         Task UpdateImage(Guid imageId, string imageNewName);
     }
+
+    public class ImageNotFoundException : Exception
+    {
+        public ImageNotFoundException(Guid imageId) : base($"Image with id '{imageId}' does not exist") { }
+    }
 }

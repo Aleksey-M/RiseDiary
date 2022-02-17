@@ -117,7 +117,7 @@ namespace RiseDiary.Model.Services
             if (imageNewName.Length > 250) throw new ArgumentException("Image name length not should be more than 250 characters");
 
             var img = await _context.Images.SingleOrDefaultAsync(i => i.Id == imageId).ConfigureAwait(false);
-            _ = img ?? throw new ArgumentException($"Image with id '{imageId}' does not exist");
+            _ = img ?? throw new ImageNotFoundException(imageId);
 
             img.Name = imageNewName;
             img.ModifyDate = DateTime.UtcNow;
@@ -132,7 +132,7 @@ namespace RiseDiary.Model.Services
                 .SingleOrDefaultAsync(i => i.Id == imageId)
                 .ConfigureAwait(false);
 
-            return img ?? throw new ArgumentException($"Image with id '{imageId}' does not exist");
+            return img ?? throw new ImageNotFoundException(imageId);
         }
 
         public async Task<byte[]> FetchFullImageById(Guid imageId)
@@ -142,7 +142,7 @@ namespace RiseDiary.Model.Services
                 .Include(i => i.FullImage)
                 .Include(i => i.TempImage)
                 .SingleOrDefaultAsync(i => i.Id == imageId).ConfigureAwait(false);
-            _ = img ?? throw new ArgumentException($"Image with id '{imageId}' does not exist");
+            _ = img ?? throw new ImageNotFoundException(imageId);
 
             if (img.TempImage != null) return img.TempImage.Data;
 

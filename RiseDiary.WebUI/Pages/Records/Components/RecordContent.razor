@@ -186,9 +186,18 @@ else
     {
         try
         {
-            _allScopes = await ScopesService.GetScopes();
+            DiaryRecord record = null!;
+            try
+            {
+                record = await RecordsService.FetchRecordById(RecordId);
+            }
+            catch (RecordNotFoundException)
+            {
+                await JSRuntime.InvokeVoidAsync("redirectToReferrer");
+                return;
+            }
 
-            var record = await RecordsService.FetchRecordById(RecordId);
+            _allScopes = await ScopesService.GetScopes();            
             _selectedThemes = record.ThemesRefs.ToList();
 
             _recordName = record.GetRecordNameDisplay();
@@ -354,7 +363,7 @@ else
             if (conf)
             {
                 await RecordsService.DeleteRecord(RecordId);
-                await JSRuntime.InvokeVoidAsync("redirectToIndex");
+                await JSRuntime.InvokeVoidAsync("redirectToReferrer");
             }
         }
 

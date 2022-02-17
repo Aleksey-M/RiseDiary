@@ -19,4 +19,9 @@ namespace RiseDiary.Model
 
         Task DeleteCogitation(Guid cogitationId);
     }
+
+    public class RecordNotFoundException : Exception
+    {
+        public RecordNotFoundException(Guid imageId) : base($"Record with id '{imageId}' does not exist") { }
+    }
 }

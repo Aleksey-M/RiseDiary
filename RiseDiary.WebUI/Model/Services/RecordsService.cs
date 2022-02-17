@@ -25,7 +25,7 @@ namespace RiseDiary.Model.Services
             var currentHostAndPort = await _appSettingsService.GetHostAndPort();
 
             bool isRecordExists = await _context.Records.AnyAsync(r => r.Id == recordId).ConfigureAwait(false);
-            if (!isRecordExists) throw new ArgumentException($"Record with Id='{recordId}' does not exists");
+            if (!isRecordExists) throw new RecordNotFoundException(recordId);
 
             var cogitation = new Cogitation
             {
@@ -101,7 +101,7 @@ namespace RiseDiary.Model.Services
                .SingleOrDefaultAsync(r => r.Id == recordId)
                .ConfigureAwait(false);
 
-            if (record == null) throw new ArgumentException($"Record with Id='{recordId}' does not exists");
+            if (record == null) throw new RecordNotFoundException(recordId);
 
             var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
             var currentHostAndPort = await _appSettingsService.GetHostAndPort();
@@ -133,7 +133,7 @@ namespace RiseDiary.Model.Services
             if (newDate == null && newName == null && newText == null) return;
 
             var record = await _context.Records.SingleOrDefaultAsync(r => r.Id == recordId).ConfigureAwait(false);
-            if (record == null) throw new ArgumentException($"Record with Id='{recordId}' does not exists");
+            if (record == null) throw new RecordNotFoundException(recordId);
 
             if (newDate != null)
             {

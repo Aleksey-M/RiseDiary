@@ -42,11 +42,32 @@ namespace RiseDiary.WebUI.Pages.Images
 
         public async Task<IActionResult> OnGetAsync(Guid? imageId, Guid? recordId)
         {
-            if (imageId == null || imageId.Value == Guid.Empty) return Redirect("/images/index");
+            if (!imageId.HasValue || imageId.Value == default)
+            {
+                return Redirect(recordId);
+            }            
 
             RecordId = recordId;
-            await UpdateModel(imageId.Value);
+
+            try
+            {
+                await UpdateModel(imageId.Value);
+            }
+            catch (ImageNotFoundException)
+            {
+                return Redirect(recordId);
+            }
+
             return Page();
+
+            IActionResult Redirect(Guid? recordId)
+            {
+                if (recordId.HasValue && recordId.Value != default)
+                {
+                    return base.Redirect("/records/view?recordid=" + recordId.Value);
+                }
+                return base.Redirect("/images/index");
+            }
         }
 
         public async Task<IActionResult> OnPostDeleteImageAsync(Guid? imageId, Guid? recordId)

@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using RiseDiary.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,12 +41,12 @@ namespace RiseDiary.IntegratedTests.Services
         }
 
         [Test]
-        public async Task FetchImageById_WithNotExistingId_ShouldThrowArgumentException()
+        public async Task FetchImageById_WithNotExistingId_ShouldThrowException()
         {
             var svc = GetImagesService();
             Func<Task> action = async () => _ = await svc.FetchImageById(Guid.NewGuid());
 
-            await action.Should().ThrowAsync<ArgumentException>();
+            await action.Should().ThrowAsync<ImageNotFoundException>();
         }
 
         [Test]
