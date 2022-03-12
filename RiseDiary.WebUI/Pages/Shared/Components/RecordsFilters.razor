@@ -16,13 +16,13 @@
             <input type="date" class="form-control" title="До" name="toDate" value="@(RecordsFilter.ToDate?.ToString("yyyy-MM-dd") ?? "")" />
         </div>
 
-        <div class="col-lg-4 col-sm-12 my-2">
+        <div class="col-lg-3 col-sm-12 my-2">
             <input type="text" class="form-control" placeholder="Фильтр по названию" title="Фильтр по названию" name="filterName" value="@RecordsFilter.FilterName" />
         </div>
 
-        <div class="col-lg-2 col-sm-6 my-2">
+        <div class="col-lg-1 col-sm-6 my-2">
             <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#themesFilter">
-                Фильтр по темам
+                Темы
             </button>
 
             <div class="modal fade" id="themesFilter" tabindex="-1" aria-labelledby="themesFilterLabel" aria-hidden="true">
@@ -126,8 +126,13 @@
 
         </div>
 
-        <div class="col-lg-2 col-sm-6 my-2">
-            <button type="submit" class="btn btn-outline-info" style="float: right">Применить</button>
+        <div class="col-lg-2 col-sm-6 my-3">
+            <input type="checkbox" name="expanded" id="expanded" checked="@Expanded" value="true"/>
+            <label for="expanded">Развернуто</label>           
+        </div>
+
+        <div class="col-lg-2 col-sm-12 my-2">
+            <button type="submit" class="btn btn-outline-info" style="float: right">Применить</button>            
         </div>
     </div>
 </form>
@@ -148,5 +153,8 @@
 
     [Parameter]
     public RecordsFilter RecordsFilter { get; set; } = null!;
+
+    [Parameter]
+    public bool Expanded { get; set;}
 
 }

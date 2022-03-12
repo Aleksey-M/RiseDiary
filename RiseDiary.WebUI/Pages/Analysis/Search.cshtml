@@ -5,47 +5,101 @@
     ViewData["Title"] = "Поиск записей по фрагменту названия или текста";
 }
 
-    <div class="col-12">
-        <div class="my-3 px-3">
-            <component type="typeof(Pager)" render-mode="Static" param-areaName="@("analysis/search")" param-pages="@Model.Pages" param-getParametersList="@Model.SearchParams" />
-        </div>
+<div class="col-12">
+    <div class="px-3">
+        <component type="typeof(Pager)" render-mode="Static" param-areaName="@("analysis/search")" param-pages="@Model.Pages" param-getParametersList="@Model.SearchParams" />
     </div>
-    
-    <div class="col-12">
+</div>
+
+<div class="col-12">
+    <div class="px-3">
+        <form method="get">
+            <div class="row">
+
+                <input type="hidden" name="pageNo" value="1" />
+
+                <div class="offset-lg-2 col-lg-4 col-md-7 col-sm-12 my-2">
+                    <input type="text" placeholder="Строка поиска" name="searchString" id="searchString" value="@Model.SearchString" class="form-control" />
+                </div>
+
+                <div class="col-lg-2 col-md-3 col-sm-6 my-2 py-2">
+                    <input type="checkbox" name="expanded" id="expanded" checked="@Model.Expanded" value="true" />
+                    <label for="expanded">Развернуто</label>
+                </div>
+
+                <div class="col-lg-2 col-md-2 col-sm-6 my-2">
+                    <input type="submit" value="Поиск" class="btn btn-outline-info" />
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Expanded)
+{
+    <div class="offset-lg-2 col-lg-8 col-md-12">
         <table class="table">
-            <thead>
-                <tr>
-                    <th>
-                        <form method="get">
-                            <div class="row px-2">
-
-                                <input type="hidden" name="pageNo" value="1" />
-
-                                <div class="offset-lg-2 col-lg-6 col-md-10 mb-2">
-                                    <input type="text" placeholder="Строка поиска" name="searchString" id="searchString" value="@Model.SearchString" class="form-control" />
-                                </div>
-
-                                <div class="col-lg-2 col-md-2 mb-2">
-                                    <input type="submit" value="Поиск" class="btn btn-outline-info" />
-                                </div>
-
-                            </div>
-                        </form>
-                    </th>
-                </tr>               
-            </thead>
-        </table>
-        <table class="table table-striped">
             <tbody>
-                    @foreach (var rec in Model.Records)
-                    {
-                        <tr>
-                            <td class="main-date-column">@rec.Date.ToString("yyyy.MM.dd")</td>
-                            <td><a href="~/Records/View?recordId=@rec.Id">@rec.GetRecordNameDisplay()</a></td>
-                            <td class="date-column"><script type="text/javascript">document.write(convertToLocalDate('@rec.CreateDate.ToString("yyyy.MM.dd HH:mm:ss")'))</script></td>
-                            <td class="date-column"><script type="text/javascript">document.write(convertToLocalDate('@rec.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss")'))</script></td>                           
-                        </tr>
-                    }
+                <tr>
+                    <td colspan="5">
+                        <div class="row">
+                            @foreach (var rec in Model.Records)
+                            {
+                                <div class="col-12 p-1">
+                                    <hr />
+                                    <div class="px-2">
+
+                                        <p>
+                                            <b>
+                                                <i><a href="~/Records/View?recordId=@rec.Id">@rec.Date.ToString("yyyy.MM.dd")</a></i>
+                                                &nbsp;@rec.Name
+                                            </b>
+                                        </p>
+
+                                        <p>
+                                            @Html.Raw(rec.Text)
+                                        </p>
+
+                                        <div class="row">
+                                            @foreach (var image in rec.ImagesRefs)
+                                            {
+                                                <div class="col-lg-2 col-md-4 col-sm-6 p-3">
+                                                    <component type="typeof(Thumbnail)" render-mode="Static" param-image="image.Image" param-onlyImage="true" />
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    @if (rec.Cogitations.Any())
+                                    {
+                                        <div class="row p-3">
+                                            @foreach (var cog in rec.Cogitations)
+                                            {
+                                                <div class="offset-2 col-10 mt-2">
+
+                                                    <p>
+                                                        <b>
+                                                            <i>
+                                                                <a href="~/Records/View?recordId=@rec.Id">
+                                                                    <script type="text/javascript">document.write(convertToLocalDate('@cog.Date.ToString("yyyy.MM.dd HH:mm:ss")'))</script>
+                                                                </a>
+                                                            </i>
+                                                        </b>
+                                                    </p>
+
+                                                    <p>
+                                                        @Html.Raw(@cog.Text)
+                                                    </p>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </td>
+                </tr>
             </tbody>
             <tfoot>
                 <tr>
@@ -54,9 +108,33 @@
             </tfoot>
         </table>
     </div>
-
+}
+else
+{
     <div class="col-12">
-        <div class="my-3 px-3">
-            <component type="typeof(Pager)" render-mode="Static" param-areaName="@("analysis/search")" param-pages="@Model.Pages" param-getParametersList="@Model.SearchParams" />
-        </div>
+        <table class="table table-striped">
+            <tbody>
+                @foreach (var rec in Model.Records)
+                {
+                    <tr>
+                        <td class="main-date-column">@rec.Date.ToString("yyyy.MM.dd")</td>
+                        <td><a href="~/Records/View?recordId=@rec.Id">@rec.GetRecordNameDisplay()</a></td>
+                        <td class="date-column"><script type="text/javascript">document.write(convertToLocalDate('@rec.CreateDate.ToString("yyyy.MM.dd HH:mm:ss")'))</script></td>
+                        <td class="date-column"><script type="text/javascript">document.write(convertToLocalDate('@rec.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss")'))</script></td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="5"><b><i>Записей отфильтровано : @Model.Pages.TotalItems </i></b></td>
+                </tr>
+            </tfoot>
+        </table>
     </div>
+}
+
+<div class="col-12">
+    <div class="px-3">
+        <component type="typeof(Pager)" render-mode="Static" param-areaName="@("analysis/search")" param-pages="@Model.Pages" param-getParametersList="@Model.SearchParams" />
+    </div>
+</div>

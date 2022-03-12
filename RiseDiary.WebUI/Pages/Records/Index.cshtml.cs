@@ -29,20 +29,27 @@ namespace RiseDiary.WebUI.Pages
 
         public Guid[] SelectedThemes { get; private set; } = Array.Empty<Guid>();
 
+        public bool Expanded { get; private set; }
 
         private const int _pageSize = 50;
 
         public bool CombineThemes { get; private set; }
-        
+
+        public IEnumerable<KeyValuePair<string, string?>> GetParams() => Filters.GetValuesList()
+            .Append(new KeyValuePair<string, string?>(nameof(Expanded), Expanded.ToString()))
+            .ToList();
+
         public async Task OnGetAsync(
             DateTime? fromDate,
             DateTime? toDate, 
             Guid[] themes, 
             string? filterName, 
             bool? combineThemes, 
-            int? pageNo)
+            int? pageNo,
+            bool? expanded)
         {
             CombineThemes = combineThemes ?? false;
+            Expanded = expanded ?? false;
 
             Filters = new RecordsFilter
             {

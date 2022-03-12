@@ -22,22 +22,24 @@ namespace RiseDiary.WebUI.Pages.Analysis
 
         public string SearchString { get; private set; } = "";
 
+        public bool Expanded { get; private set; }
+
         private const int _pageSize = 50;
 
         public List<KeyValuePair<string, string?>> SearchParams => new()
         {
-            new KeyValuePair<string, string?>(nameof(SearchString), SearchString)
+            new KeyValuePair<string, string?>(nameof(SearchString), SearchString),
+            new KeyValuePair<string, string?>(nameof(Expanded), Expanded.ToString())
         };
 
-
-        public async Task OnGetAsync(string? searchString, int? pageNo)
+        public async Task OnGetAsync(string? searchString, int? pageNo, bool? expanded)
         {
             pageNo ??= 1;
+            Expanded = expanded.HasValue && expanded.Value;
 
             if (string.IsNullOrWhiteSpace(searchString))
             {
                 SearchString = "";
-                Records = new List<DiaryRecord>();
                 Pages = PagesInfo.GetPagesInfo(0);
             }
             else
