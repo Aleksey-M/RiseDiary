@@ -128,6 +128,8 @@ namespace RiseDiary.Model.Services
                 .Include(r => r.ImagesRefs.OrderBy(x => x.Order))
                 .ThenInclude(ri => ri.Image)
                 .Where(x => x.Date.Month == month && x.Date.Day == day)
+                .OrderByDescending(r => r.Date)
+                .ThenByDescending(r => r.CreateDate)
                 .ToListAsync();
 
     }

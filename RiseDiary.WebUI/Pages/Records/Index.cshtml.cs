@@ -31,7 +31,7 @@ namespace RiseDiary.WebUI.Pages
 
         public bool Expanded { get; private set; }
 
-        private const int _pageSize = 50;
+        private const int _pageSize = 25;
 
         public bool CombineThemes { get; private set; }
 
