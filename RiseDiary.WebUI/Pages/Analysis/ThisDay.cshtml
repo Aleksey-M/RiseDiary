@@ -1,4 +1,13 @@
 ﻿@page
+
 @model RiseDiary.WebUI.Pages.Analysis.ThisDayModel
+
+@using RiseDiary.WebUI.Pages.Shared.Components
+
 @{
+    ViewData["Title"] = "Этот день";
 }
+
+<div class="col-12 p-3 text-center"><h3>@Model.ThisDay</h3></div>
+
+<component type="typeof(RecordsTable)" render-mode="Static" param-records="@Model.Records" param-expanded="true" />

@@ -118,5 +118,17 @@ namespace RiseDiary.Model.Services
 
             return result;
         }
+
+        public async Task<List<DiaryRecord>> GetThisDayRecords(int month, int day) =>
+            await _context.Records
+                .AsNoTracking()
+                .Include(r => r.Cogitations)
+                .Include(r => r.ThemesRefs)
+                .ThenInclude(rt => rt.Theme)
+                .Include(r => r.ImagesRefs.OrderBy(x => x.Order))
+                .ThenInclude(ri => ri.Image)
+                .Where(x => x.Date.Month == month && x.Date.Day == day)
+                .ToListAsync();
+
     }
 }

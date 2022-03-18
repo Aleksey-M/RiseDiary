@@ -8,5 +8,7 @@ namespace RiseDiary.Model
         Task<List<DiaryRecord>> GetRecordsList(RecordsFilter filter);
 
         Task<int> GetRecordsCount(RecordsFilter filter);
+
+        Task<List<DiaryRecord>> GetThisDayRecords(int month, int day);
     }
 }

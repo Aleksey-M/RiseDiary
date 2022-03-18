@@ -230,7 +230,7 @@ else
 
         _recordName = record.GetRecordNameDisplay();
         _recordDate = record.Date.ToString("yyyy.MM.dd");
-        _modifiedDate = record.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss");
+        _modifiedDate = BrowserTimeOffset.ToLocalString(record.ModifyDate);
 
         StateHasChanged();
     }
@@ -253,7 +253,7 @@ else
         {
             // шибки обрабатываются компонентом
             await RecordsService.UpdateRecord(RecordId, null, null, text);
-            _modifiedDate = DateTime.UtcNow.ToString("yyyy.MM.dd HH:mm:ss");
+            _modifiedDate = BrowserTimeOffset.ToLocalString(DateTime.UtcNow);
             StateHasChanged();
         }
         else
