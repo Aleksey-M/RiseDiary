@@ -7,6 +7,7 @@
 @inject IScopesService ScopesService
 @inject IRecordsThemesService ThemesService
 @inject IJSRuntime JSRuntime
+@inject BrowserTimeOffsetService BrowserTimeOffset
 
 @if (CriticalError is not null && CriticalErrorArea == ErrorArea.Page)
 {
@@ -202,13 +203,13 @@ else
 
             _recordName = record.GetRecordNameDisplay();
             _recordDate = record.Date.ToString("yyyy.MM.dd");
-            _createdDate = record.CreateDate.ToString("yyyy.MM.dd HH:mm:ss");
-            _modifiedDate = record.ModifyDate.ToString("yyyy.MM.dd HH:mm:ss");
+            _createdDate = BrowserTimeOffset.ToLocalString(record.CreateDate);
+            _modifiedDate = BrowserTimeOffset.ToLocalString(record.ModifyDate);
             _recordText = record.Text;
             _recordImagesRefs = record.ImagesRefs.ToList();
             _recordCogitations = record.Cogitations
                 .OrderByDescending(c => c.Date)
-                .Select(x => new CogitationView(x.Id ) { Date = x.Date.ToString("yyyy.MM.dd HH:mm:ss"), Text = x.Text })
+                .Select(x => new CogitationView(x.Id ) { Date = BrowserTimeOffset.ToLocalString(x.Date), Text = x.Text })
                 .ToList();
 
             StateHasChanged();
@@ -217,25 +218,6 @@ else
         {
             CriticalError = exc.Message;
             CriticalErrorArea = ErrorArea.Page;
-        }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _createdDate = await JSRuntime.InvokeAsync<string>("convertToLocalDate", _createdDate);
-            _modifiedDate = await JSRuntime.InvokeAsync<string>("convertToLocalDate", _modifiedDate);
-
-            foreach(var c in _recordCogitations)
-            {
-                var date = await JSRuntime.InvokeAsync<string>("convertToLocalDate", c.Date);
-                c.Date = date;
-            }
-
-            await base.OnAfterRenderAsync(firstRender);
-
-            StateHasChanged();
         }
     }
 
@@ -337,7 +319,7 @@ else
 
             var html = await QuillHtml.GetHTML();
             var newCogId = await RecordsService.AddCogitation(RecordId, html);
-            var newDate = await JSRuntime.InvokeAsync<string>("convertToLocalDate", DateTime.UtcNow.ToString("yyyy.MM.dd HH:mm:ss"));
+            var newDate = BrowserTimeOffset.ToLocalString(DateTime.UtcNow);
 
             _recordCogitations.Insert(0, new CogitationView(newCogId)
                 {                    

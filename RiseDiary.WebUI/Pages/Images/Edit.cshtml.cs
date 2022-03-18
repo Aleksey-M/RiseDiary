@@ -14,12 +14,18 @@ namespace RiseDiary.WebUI.Pages.Images
         private readonly IImagesService _imagesService;
         private readonly IRecordsImagesService _recordImagesService;
         private readonly IImagesEditService _imagesEditService;
+        private readonly BrowserTimeOffsetService _browserTimeOffsetService;
 
-        public EditModel(IImagesService imagesService, IRecordsImagesService recordImagesService, IImagesEditService imagesEditService)
+        public EditModel(
+            IImagesService imagesService, 
+            IRecordsImagesService recordImagesService, 
+            IImagesEditService imagesEditService,
+            BrowserTimeOffsetService browserTimeOffsetService)
         {
             _imagesService = imagesService;
             _recordImagesService = recordImagesService;
             _imagesEditService = imagesEditService;
+            _browserTimeOffsetService = browserTimeOffsetService;
         }
 
         public Guid? RecordId { get; private set; }
@@ -29,6 +35,10 @@ namespace RiseDiary.WebUI.Pages.Images
         public Uri ImageUrl { get; private set; } = null!;
 
         public Dictionary<Guid, string> ImageLinks { get; private set; } = new Dictionary<Guid, string>();
+
+        public string CreateDate => _browserTimeOffsetService.ToLocalString(Image.CreateDate);
+
+        public string ModifyDate => _browserTimeOffsetService.ToLocalString(Image.ModifyDate);
 
 
         private async Task UpdateModel(Guid imageId)

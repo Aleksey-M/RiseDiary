@@ -65,6 +65,8 @@ namespace RiseDiary.WebUI
             services.AddTransient<ICalendarService, CalendarService>();
             services.AddTransient<ISqliteDatabase, SqliteDatabase>();
 
+            services.AddSingleton<BrowserTimeOffsetService>();
+
             services.AddServerSideBlazor();
 
             int enableSwaggerUI = _configuration.GetValue<int>("enableSwaggerUI");

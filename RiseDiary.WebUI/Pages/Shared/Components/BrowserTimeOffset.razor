@@ -1,0 +1,16 @@
+﻿@using RiseDiary.WebUI
+
+@inject BrowserTimeOffsetService _browserTimeOffsetService
+@inject IJSRuntime _jsRuntime
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_browserTimeOffsetService.Offset.HasValue)
+        {
+            _browserTimeOffsetService.Offset = await _jsRuntime.InvokeAsync<int>("getBrowserTimezoneOffset");
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}

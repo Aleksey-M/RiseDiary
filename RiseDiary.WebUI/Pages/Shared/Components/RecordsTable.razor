@@ -1,0 +1,120 @@
+﻿@using RiseDiary.Model
+@using RiseDiary.WebUI
+
+@inject BrowserTimeOffsetService _browserTimeOffsetService
+
+@if (Expanded)
+{
+    <div class="offset-lg-2 col-lg-8 col-md-12">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <td colspan="5">
+                        <div class="row">
+                            @foreach (var rec in Records)
+                            {
+                                <div class="col-12 p-1">
+                                    <hr />
+                                    <div class="px-2">
+
+                                        <p>
+                                            <b>
+                                                <i><a href="/Records/View?recordId=@rec.Id">@rec.Date.ToString("yyyy.MM.dd")</a></i>
+                                                &nbsp;@rec.Name
+                                            </b>
+                                        </p>
+
+                                        <p>
+                                            @((MarkupString)rec.Text)
+                                        </p>
+
+                                        <div class="row">
+                                            @foreach (var image in rec.ImagesRefs)
+                                            {
+                                                <div class="col-lg-2 col-md-4 col-sm-6 p-3">
+                                                    <component type="typeof(Thumbnail)" render-mode="Static" param-image="image.Image" param-onlyImage="true" />
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    @if (rec.Cogitations.Any())
+                                    {
+                                        <div class="row p-3">
+                                            @foreach (var cog in rec.Cogitations)
+                                            {
+                                                <div class="offset-2 col-10 mt-2">
+
+                                                    <p>
+                                                        <b>
+                                                            <i>
+                                                                <a href="/Records/View?recordId=@rec.Id">
+                                                                    @_browserTimeOffsetService.ToLocalString(cog.Date)                                                                    
+                                                                </a>
+                                                            </i>
+                                                        </b>
+                                                    </p>
+
+                                                    <p>
+                                                        @((MarkupString)cog.Text)
+                                                    </p>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+            @if (TotalCount.HasValue)
+            {
+                <tfoot>
+                    <tr>
+                        <td colspan="5"><b><i>Записей отфильтровано : @TotalCount.Value</i></b></td>
+                    </tr>
+                </tfoot>
+            }
+        </table>
+    </div>
+}
+else
+{
+    <div class="col-12">
+        <table class="table table-striped">
+            <tbody>
+                @foreach (var rec in Records)
+                {
+                    <tr>
+                        <td class="main-date-column">@rec.Date.ToString("yyyy.MM.dd")</td>
+                        <td><a href="/Records/View?recordId=@rec.Id">@rec.GetRecordNameDisplay()</a></td>
+                        <td class="date-column">@_browserTimeOffsetService.ToLocalString(rec.CreateDate)</td>
+                        <td class="date-column">@_browserTimeOffsetService.ToLocalString(rec.ModifyDate)</td>
+                    </tr>
+                }
+            </tbody>
+            @if (TotalCount.HasValue)
+            {
+                <tfoot>
+                <tr>
+                    <td colspan="5"><b><i>Записей отфильтровано : @TotalCount.Value</i></b></td>
+                </tr>
+            </tfoot>
+            }            
+        </table>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public IEnumerable<DiaryRecord> Records { get; set; } = Enumerable.Empty<DiaryRecord>();
+
+    [Parameter]
+    public int? TotalCount { get; set; }
+
+    [Parameter]
+    public bool Expanded { get; set; }
+
+}
