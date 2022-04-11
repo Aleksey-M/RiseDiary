@@ -194,7 +194,7 @@ else
             }
             catch (RecordNotFoundException)
             {
-                await JSRuntime.InvokeVoidAsync("redirectToReferrer");
+                await JSRuntime.InvokeVoidAsync("redirectToIndex");
                 return;
             }
 
