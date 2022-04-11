@@ -25,6 +25,10 @@
                                         </p>
 
                                         <p>
+                                            <small><i>@GetAllThemes(rec)</i></small>
+                                        </p>
+
+                                        <p>
                                             @((MarkupString)rec.Text)
                                         </p>
 
@@ -117,4 +121,16 @@ else
     [Parameter]
     public bool Expanded { get; set; }
 
+    private string GetAllThemes(DiaryRecord record)
+    {
+        try
+        {                
+            var themesNames = record.ThemesRefs.Select(tr => tr.Theme?.ThemeName ?? "").ToList();
+            return string.Join(" | ", themesNames);
+        }
+        catch
+        {
+            return "ERROR!";
+        }
+    }
 }
