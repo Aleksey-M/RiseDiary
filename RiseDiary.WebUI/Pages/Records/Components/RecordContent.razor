@@ -68,60 +68,71 @@ else
     }
     else
     {
-        <div class="col-12 mt-2">
-            <div id="newCogitation" style="border: 1px solid black; overflow: auto; resize: vertical">
-                <ErrorBoundary>
-                    <BlazoredTextEditor @ref="@QuillHtml">
-                        <ToolbarContent>
-                            <select class="ql-header">
-                                <option selected=""></option>
-                                <option value="1"></option>
-                                <option value="2"></option>
-                                <option value="3"></option>
-                                <option value="4"></option>
-                                <option value="5"></option>
-                            </select>
-                            <span class="ql-formats">
-                                <select class="ql-font"></select>
-                                <button class="ql-bold"></button>
-                                <button class="ql-italic"></button>
-                                <button class="ql-underline"></button>
-                                <button class="ql-strike"></button>
-                            </span>
-                            <span class="ql-formats">
-                                <button class="ql-list" value="ordered"></button>
-                                <button class="ql-list" value="bullet"></button>
-                                <button class="ql-indent" value="-1"></button>
-                                <button class="ql-indent" value="+1"></button>
-                                <select class="ql-align ql-picker ql-icon-picker"></select>
-                            </span>
-                            <span class="ql-formats">
-                                <select class="ql-color"></select>
-                                <select class="ql-background"></select>
-                            </span>
-                            <span class="ql-formats">
-                                <button class="ql-script" value="sub"></button>
-                                <button class="ql-script" value="super"></button>
-                            </span>
-                            <span class="ql-formats">
-                                <button class="ql-link"></button>
-                                <button class="ql-image"></button>
-                                <button class="ql-video"></button>
-                            </span>
-                        </ToolbarContent>
-                        <EditorContent>
+        if (_showCogitationEditor)
+        {
+            <div class="col-12 mt-2">
+                <div id="newCogitation" style="border: 1px solid black; overflow: auto; resize: vertical">
+                    <ErrorBoundary>
+                        <BlazoredTextEditor @ref="@QuillHtml">
+                            <ToolbarContent>
+                                <select class="ql-header">
+                                    <option selected=""></option>
+                                    <option value="1"></option>
+                                    <option value="2"></option>
+                                    <option value="3"></option>
+                                    <option value="4"></option>
+                                    <option value="5"></option>
+                                </select>
+                                <span class="ql-formats">
+                                    <select class="ql-font"></select>
+                                    <button class="ql-bold"></button>
+                                    <button class="ql-italic"></button>
+                                    <button class="ql-underline"></button>
+                                    <button class="ql-strike"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-list" value="ordered"></button>
+                                    <button class="ql-list" value="bullet"></button>
+                                    <button class="ql-indent" value="-1"></button>
+                                    <button class="ql-indent" value="+1"></button>
+                                    <select class="ql-align ql-picker ql-icon-picker"></select>
+                                </span>
+                                <span class="ql-formats">
+                                    <select class="ql-color"></select>
+                                    <select class="ql-background"></select>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-script" value="sub"></button>
+                                    <button class="ql-script" value="super"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-link"></button>
+                                    <button class="ql-image"></button>
+                                    <button class="ql-video"></button>
+                                </span>
+                            </ToolbarContent>
+                            <EditorContent>
 
-                        </EditorContent>
-                    </BlazoredTextEditor>
-                </ErrorBoundary>
+                            </EditorContent>
+                        </BlazoredTextEditor>
+                    </ErrorBoundary>
+                </div>
             </div>
-        </div>
 
-        <div class="col-12 mb-2">
-            <button type="button" class="btn btn-outline-success mt-1" title="Сохранить текст" @onclick="async _ => await CreateNewCogitation()">
-                Создать
-            </button>
-        </div>
+            <div class="col-12 mb-2">
+                <button type="button" class="btn btn-outline-success btn-sm mt-1" title="Сохранить текст" @onclick="async _ => await CreateNewCogitation()">
+                    Создать
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="col-12 mb-2">
+                <button type="button" class="btn btn-outline-success btn-sm mt-1" title="Добавить комментарий" @onclick="_ => _showCogitationEditor = true">
+                    Добавить комментарий
+                </button>
+            </div>
+        }
     }
 
     @foreach (var cog in _recordCogitations)
@@ -162,6 +173,7 @@ else
     private string _recordDate = "";
     private string _createdDate = "";
     private string _modifiedDate = "";
+    private bool _showCogitationEditor;
 
     private ICollection<DiaryRecordImage> _recordImagesRefs = new List<DiaryRecordImage>();
 
@@ -328,6 +340,7 @@ else
                 });
 
             await JSRuntime.InvokeVoidAsync("setQuillHtmlText", @"<p></p>", "newCogitation");
+            _showCogitationEditor = false;
         }
         catch (Exception exc)
         {
