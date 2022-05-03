@@ -150,27 +150,58 @@ namespace RiseDiary.Model.Services
             return img.FullImage?.Data ?? throw new Exception("Saved image is not contains image data");
         }
 
-        public async Task<int> GetImagesCount(string? imageNameFilter = null) => string.IsNullOrEmpty(imageNameFilter?.Trim())
-            ? await _context.Images
-                .CountAsync()
-                .ConfigureAwait(false)
-            : await _context.Images
-                .Where(x => x.Name.ToLower().Contains(imageNameFilter.Trim().ToLower()))
-                .CountAsync()
+        public async Task<int> GetImagesCount(string? imageNameFilter = null)
+        {
+            var nameFilter = imageNameFilter?.Trim()?.ToUpper();
+
+            if (string.IsNullOrEmpty(nameFilter))
+            {
+                return await _context.Images
+                   .CountAsync()
+                   .ConfigureAwait(false);
+            }
+
+            var imagesNames = await _context.Images
+                .Select(x => x.Name)
+                .ToListAsync()
                 .ConfigureAwait(false);
+
+            return imagesNames
+                .Where(x => x.ToUpper().Contains(nameFilter))
+                .Count();
+        }
 
         public async Task<List<DiaryImage>> FetchImageSet(int skip, int count, string? imageNameFilter = null)
         {
-            var query = string.IsNullOrEmpty(imageNameFilter?.Trim())
-                ? _context.Images.AsNoTracking()
-                : _context.Images.Where(x => x.Name.ToLower().Contains(imageNameFilter.Trim().ToLower()));
+            var nameFilter = imageNameFilter?.Trim()?.ToUpper();
 
-            return await query
-            .OrderByDescending(i => i.CreateDate)
-            .Skip(skip)
-            .Take(count)
-            .ToListAsync()
-            .ConfigureAwait(false);
+            if (string.IsNullOrEmpty(nameFilter))
+            {
+                return await _context.Images
+                    .OrderByDescending(i => i.CreateDate)
+                    .Skip(skip)
+                    .Take(count)
+                    .ToListAsync()
+                    .ConfigureAwait(false);
+            }
+
+            var imagesNames = await _context.Images
+               .Select(x => new { x.Id, x.Name })
+               .ToListAsync()
+               .ConfigureAwait(false);
+
+            var imagesIds = imagesNames
+                 .Where(x => x.Name.ToUpper().Contains(nameFilter))
+                 .Select(x => x.Id)
+                 .ToList();
+
+            return await _context.Images
+                .Where(x => imagesIds.Contains(x.Id))
+                .OrderByDescending(i => i.CreateDate)
+                .Skip(skip)
+                .Take(count)
+                .ToListAsync()
+                .ConfigureAwait(false);
         }             
 
     }

@@ -169,7 +169,6 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             var svc = GetImagesService(context);
             var id = await svc.AddImage(TestFile, $"Test image");
-            await Task.Delay(1000);
             string newName = Guid.NewGuid().ToString();
 
             await svc.UpdateImage(id, newName);
@@ -188,12 +187,11 @@ namespace RiseDiary.IntegratedTests.Services
             for (int i = 0; i < 10; i++)
             {
                 await svc.AddImage(TestFile, $"Test image {i}");
-                await Task.Delay(500);
             }
 
             var page = await svc.FetchImageSet(7, 5);
 
-            var page2 = await context.Images.AsNoTracking().OrderByDescending(i => i.CreateDate).Skip(7).Take(5).ToListAsync();
+            var page2 = await context.Images.OrderByDescending(i => i.CreateDate).Skip(7).Take(5).ToListAsync();
             page.Should().NotBeNull();
             page.Should().HaveCount(3);
             page.Should().BeEquivalentTo(page2);
@@ -207,13 +205,11 @@ namespace RiseDiary.IntegratedTests.Services
             for (int i = 0; i < 10; i++)
             {
                 await svc.AddImage(TestFile, $"Test image {i}");
-                await Task.Delay(500);
             }
 
             var page = await svc.FetchImageSet(0, 5, "IMAGE 7");
 
             var page2 = await context.Images
-                .AsNoTracking()
                 .Include(x => x.FullImage)
                 .Where(x => x.Name.ToLower().Trim().Contains("IMAGE 7".ToLower()))
                 .OrderByDescending(i => i.CreateDate)
@@ -223,6 +219,32 @@ namespace RiseDiary.IntegratedTests.Services
 
             page.Should().NotBeNull();
             page.Should().HaveCount(1);
+            page.Should().BeEquivalentTo(page2);
+        }
+
+        [Test]
+        public async Task FetchImageSet_WithFilter_ShouldReturnSecondPage()
+        {
+            var context = CreateContext();
+            var svc = GetImagesService(context);
+            for (int i = 0; i < 30; i++)
+            {
+                await svc.AddImage(TestFile, $"Test image {i}");
+            }
+
+            var page = await svc.FetchImageSet(10, 10, "2");
+
+            var page2 = await context.Images
+                .Include(x => x.FullImage)
+                .Where(x => x.Name.Contains("2"))
+                .OrderByDescending(i => i.CreateDate)
+                .Skip(10)
+                .Take(10)
+                .ToListAsync();
+
+            page.Should().NotBeNull();
+            page.Should().HaveCount(2);
+            page.Select(x => x.Name).ToList().Should().BeEquivalentTo(new List<string> { "Test image 12", "Test image 2" });
             page.Should().BeEquivalentTo(page2);
         }
 
