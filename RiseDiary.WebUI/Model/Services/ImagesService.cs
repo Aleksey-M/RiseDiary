@@ -141,7 +141,8 @@ namespace RiseDiary.Model.Services
                 .AsNoTracking()
                 .Include(i => i.FullImage)
                 .Include(i => i.TempImage)
-                .SingleOrDefaultAsync(i => i.Id == imageId).ConfigureAwait(false);
+                .SingleOrDefaultAsync(i => i.Id == imageId)
+                .ConfigureAwait(false);
             _ = img ?? throw new ImageNotFoundException(imageId);
 
             if (img.TempImage != null) return img.TempImage.Data;
@@ -149,15 +150,28 @@ namespace RiseDiary.Model.Services
             return img.FullImage?.Data ?? throw new Exception("Saved image is not contains image data");
         }
 
-        public async Task<int> GetImagesCount() => await _context.Images.AsNoTracking().CountAsync();
+        public async Task<int> GetImagesCount(string? imageNameFilter = null) => string.IsNullOrEmpty(imageNameFilter?.Trim())
+            ? await _context.Images
+                .CountAsync()
+                .ConfigureAwait(false)
+            : await _context.Images
+                .Where(x => x.Name.ToLower().Contains(imageNameFilter.Trim().ToLower()))
+                .CountAsync()
+                .ConfigureAwait(false);
 
-        public async Task<List<DiaryImage>> FetchImageSet(int skip, int count) =>
-            await _context.Images
-            .AsNoTracking()
+        public async Task<List<DiaryImage>> FetchImageSet(int skip, int count, string? imageNameFilter = null)
+        {
+            var query = string.IsNullOrEmpty(imageNameFilter?.Trim())
+                ? _context.Images.AsNoTracking()
+                : _context.Images.Where(x => x.Name.ToLower().Contains(imageNameFilter.Trim().ToLower()));
+
+            return await query
             .OrderByDescending(i => i.CreateDate)
-            .Skip(skip).Take(count)
+            .Skip(skip)
+            .Take(count)
             .ToListAsync()
             .ConfigureAwait(false);
+        }             
 
     }
 }

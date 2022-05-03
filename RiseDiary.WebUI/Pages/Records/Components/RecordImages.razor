@@ -14,7 +14,7 @@
     else
     {
         @if (!_addMode)
-        {
+        {           
             <div class="col-12">
                 <div class="row">
                     @foreach (var image in RecordImagesRefsMutable)
@@ -51,6 +51,20 @@
         {
             <div class="col-12">
                 <div class="row">
+                    
+                    <div class="col-lg-10 col-md-9 col-sm-12">
+                        <input @bind="_nameFilter" @bind:event="oninput" type="text" class="form-control form-control-sm my-1" id="imageFilter" name="imageFilter" placeholder="поиск по названию" />
+                    </div>
+
+                    <div class="col-lg-2 col-md-3 col-sm-12">
+                         <button class="btn btn-outline-info my-1 btn-sm" @onclick="async _ => await ShowAvailableImages()" title="Фильтрация картинок по названию">Применить</button>
+                    </div>
+
+                </div>                
+            </div>
+
+            <div class="col-12">
+                <div class="row">
                     @foreach (var image in _availableImages)
                     {
                         <div class="col-lg-2 col-md-4 col-sm-6 p-3">
@@ -63,7 +77,7 @@
             </div>
 
             <div class="col-12">
-                <button class="btn btn-outline-info m-1 btn-sm" hidden="@_allImagesDisplayed" @onclick="async _ => await ShowAvailableImages()" title="Показать больше картинок">Показать больше</button>
+                <button class="btn btn-outline-info m-1 btn-sm" hidden="@_allImagesDisplayed" @onclick="async _ => await ShowAvailableImages(_pagesCount + 1)" title="Показать больше картинок">Показать больше</button>
                 <button class="btn btn-outline-secondary m-1 btn-sm" @onclick="_ => HideAvailableImages()" title="Закрыть список доступных изображений">Закрыть</button>
             </div>
         }
@@ -90,15 +104,17 @@
 
     private string? CriticalError { get; set; }
 
+    private string? _nameFilter;
 
-    private async Task ShowAvailableImages()
+
+    private async Task ShowAvailableImages(int? pagesCount = null)
     {
         try
         {
             _addMode = true;
-            _pagesCount++;
-            int imagesCount = await ImagesService.GetImagesCount();
-            _availableImages = await ImagesService.FetchImageSet(0, _pagesCount * PAGE_SIZE);
+            _pagesCount = pagesCount ?? 1;
+            int imagesCount = await ImagesService.GetImagesCount(_nameFilter);
+            _availableImages = await ImagesService.FetchImageSet(0, _pagesCount * PAGE_SIZE, _nameFilter);
             _allImagesDisplayed = imagesCount <= _availableImages.Count;
 
             _availableImages = _availableImages.Where(i => !RecordImagesRefsMutable.Any(r => r.ImageId == i.Id)).ToList();
@@ -112,6 +128,7 @@
     private void HideAvailableImages()
     {
         _addMode = false;
+        _nameFilter = null;
         _pagesCount = 0;
         _availableImages = new List<DiaryImage>();
     }

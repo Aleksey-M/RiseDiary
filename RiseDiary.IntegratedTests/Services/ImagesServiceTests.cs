@@ -104,6 +104,44 @@ namespace RiseDiary.IntegratedTests.Services
         }
 
         [Test]
+        public async Task GetImagesCount_WithFilter_ShouldReturnZero()
+        {
+            var svc = GetImagesService();
+
+            int count = await svc.GetImagesCount("Filter by name");
+
+            count.Should().Be(0);
+        }
+
+        [Test]
+        public async Task GetImagesCount_WithFilter_ShouldReturnOne()
+        {
+            var svc = GetImagesService();
+            for (int i = 0; i < 3; i++)
+            {
+                await svc.AddImage(TestFile, $"Test image {i}");
+            }
+
+            int count = await svc.GetImagesCount("ImaGe 1");
+
+            count.Should().Be(1);
+        }
+
+        [Test]
+        public async Task GetImagesCount_WithoutMatch_ShouldReturnZero()
+        {
+            var svc = GetImagesService();
+            for (int i = 0; i < 3; i++)
+            {
+                await svc.AddImage(TestFile, $"Test image {i}");
+            }
+
+            int count = await svc.GetImagesCount("ImaGe 4");
+
+            count.Should().Be(0);
+        }
+
+        [Test]
         public async Task DeleteImage_ShouldDeleteOneImage()
         {
             var context = CreateContext();
@@ -158,6 +196,33 @@ namespace RiseDiary.IntegratedTests.Services
             var page2 = await context.Images.AsNoTracking().OrderByDescending(i => i.CreateDate).Skip(7).Take(5).ToListAsync();
             page.Should().NotBeNull();
             page.Should().HaveCount(3);
+            page.Should().BeEquivalentTo(page2);
+        }
+
+        [Test]
+        public async Task FetchImageSet_WithFilter_ShouldReturn1LastImage()
+        {
+            var context = CreateContext();
+            var svc = GetImagesService(context);
+            for (int i = 0; i < 10; i++)
+            {
+                await svc.AddImage(TestFile, $"Test image {i}");
+                await Task.Delay(500);
+            }
+
+            var page = await svc.FetchImageSet(0, 5, "IMAGE 7");
+
+            var page2 = await context.Images
+                .AsNoTracking()
+                .Include(x => x.FullImage)
+                .Where(x => x.Name.ToLower().Trim().Contains("IMAGE 7".ToLower()))
+                .OrderByDescending(i => i.CreateDate)
+                .Skip(0)
+                .Take(5)
+                .ToListAsync();
+
+            page.Should().NotBeNull();
+            page.Should().HaveCount(1);
             page.Should().BeEquivalentTo(page2);
         }
 
