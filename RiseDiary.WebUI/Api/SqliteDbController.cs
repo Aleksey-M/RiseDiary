@@ -9,9 +9,10 @@ namespace RiseDiary.WebUI.Api
 {
     [ApiController]
     [Authorize]
-    public class SqliteDbController : ControllerBase
+    public sealed class SqliteDbController : ControllerBase
     {
         private readonly ISqliteDatabase _sqliteDb;
+
         public SqliteDbController(ISqliteDatabase sqliteDb)
         {
             _sqliteDb = sqliteDb;

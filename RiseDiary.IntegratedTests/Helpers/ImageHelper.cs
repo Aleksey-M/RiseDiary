@@ -65,7 +65,7 @@ namespace RiseDiary.IntegratedTests
 
         public static TempImage ScaleImage(DiaryImage image, byte[] fullImage, int maxSizePx, int imageQuality)
         {
-            if (image == null) throw new ArgumentNullException(nameof(image));
+            ArgumentNullException.ThrowIfNull(image);
 
             var result = ScaleImage(fullImage, imageQuality, maxSizePx);
             var temp = new TempImage
@@ -81,7 +81,7 @@ namespace RiseDiary.IntegratedTests
 
         public static TempImage CropImage(DiaryImage image, byte[] fullImage, int left, int top, int width, int height, int imageQuality)
         {
-            if (image == null) throw new ArgumentNullException(nameof(image));
+            ArgumentNullException.ThrowIfNull(image);
 
             var result = CropImage(fullImage, left, top, width, height, imageQuality);
             var temp = new TempImage

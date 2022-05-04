@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace RiseDiary.IntegratedTests.Services
 {
     [TestFixture]
-    internal class RecordsServiceTests : TestedServices
+    internal class RecordsServiceTests : TestFixtureBase
     {
         [Test]
         public async Task AddRecord_ShouldCreateRecord()

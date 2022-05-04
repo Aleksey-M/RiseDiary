@@ -10,9 +10,10 @@ namespace RiseDiary.WebUI.Api
 {
     [ApiController]
     [Authorize]
-    public class RecordsThemesController : ControllerBase
+    public sealed class RecordsThemesController : ControllerBase
     {
         private readonly IRecordsThemesService _recordsThemesService;
+
         public RecordsThemesController(IRecordsThemesService recordsThemesService)
         {
             _recordsThemesService = recordsThemesService;

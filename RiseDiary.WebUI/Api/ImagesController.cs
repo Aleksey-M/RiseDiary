@@ -12,10 +12,12 @@ namespace RiseDiary.WebUI.Api
 {
     [ApiController]
     [Authorize]
-    public class ImagesController : ControllerBase
+    public sealed class ImagesController : ControllerBase
     {
         private readonly IImagesService _imagesService;
+
         private readonly IRecordsImagesService _recordsImagesService;
+
         private readonly IAppSettingsService _appSettingsService;
 
         public ImagesController(IImagesService imagesService, IRecordsImagesService recordsImagesService, IAppSettingsService appSettingsService)

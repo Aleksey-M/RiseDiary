@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace RiseDiary.Shared
 {
-    public class PagesInfo
+    public sealed class PagesInfo
     {
         private PagesInfo() { }
 

@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
 {
-    public class RecordsImagesService : IRecordsImagesService
+    internal sealed class RecordsImagesService : IRecordsImagesService
     {
         private readonly DiaryDbContext _context;
+
         public RecordsImagesService(DiaryDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));

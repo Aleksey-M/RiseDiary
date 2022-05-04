@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace RiseDiary.IntegratedTests.Services
 {
     [TestFixture]
-    internal class RecordsSearchTextServiceTests : TestedServices
+    internal class RecordsSearchTextServiceTests : TestFixtureBase
     {
         [Test]
         public async Task SoftDeleting_GetRecordsListByText_ShouldNotReturnDeletedRecords()

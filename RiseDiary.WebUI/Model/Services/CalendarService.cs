@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
 {
-    public class CalendarService : ICalendarService
+    internal sealed class CalendarService : ICalendarService
     {
         private readonly DiaryDbContext _context;
+
         private readonly IAppSettingsService _appSettingsService;
 
         public CalendarService(DiaryDbContext context, IAppSettingsService appSettingsService)

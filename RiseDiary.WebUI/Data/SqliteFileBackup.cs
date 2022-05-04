@@ -1,13 +1,6 @@
-﻿using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using RiseDiary.Model;
-using RiseDiary.WebUI.Data;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 
 namespace RiseDiary.WebUI
 {
@@ -15,7 +8,7 @@ namespace RiseDiary.WebUI
     {
         internal static (string path, string backupsPath) GetPathAndBackupFolder(string fileNameFull)
         {
-            if (fileNameFull == null) throw new ArgumentNullException(nameof(fileNameFull));
+            ArgumentNullException.ThrowIfNull(fileNameFull);
             return (Path.GetDirectoryName(fileNameFull) ?? "", Path.Combine(Path.GetDirectoryName(fileNameFull) ?? "", "backup"));
         }
 

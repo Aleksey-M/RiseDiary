@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -39,7 +37,8 @@ namespace RiseDiary.WebUI
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(cookieOptions => {
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(cookieOptions =>
+            {
                 cookieOptions.LoginPath = "/Login";
             });
 
@@ -95,7 +94,7 @@ namespace RiseDiary.WebUI
             app.UseRouting();
             app.UseHttpsRedirection();
             app.UseAuthentication();
-            app.UseAuthorization();            
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

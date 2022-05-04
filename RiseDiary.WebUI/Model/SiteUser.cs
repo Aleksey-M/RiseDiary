@@ -1,6 +1,6 @@
 ﻿namespace RiseDiary.WebUI
 {
-    public class SiteUser
+    public sealed class SiteUser
     {
         public string UserName { get; set; } = "";
 

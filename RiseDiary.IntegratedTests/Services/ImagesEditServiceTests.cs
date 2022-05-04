@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace RiseDiary.IntegratedTests.Services
 {
     [TestFixture]
-    internal class ImagesEditServiceTests : TestedServices
+    internal class ImagesEditServiceTests : TestFixtureBase
     {
         [Test]
         public async Task FetchChangedImage_ForUnchangedImage_ShouldThrowException()

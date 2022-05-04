@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.IntegratedTests.Services
 {
-    internal class ImagesServiceTests : TestedServices
+    internal class ImagesServiceTests : TestFixtureBase
     {
 
         [Test]

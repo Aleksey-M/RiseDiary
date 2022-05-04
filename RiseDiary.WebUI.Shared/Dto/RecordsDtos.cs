@@ -1,10 +1,9 @@
-﻿using RiseDiary.Shared.Dto;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace RiseDiary.Shared.Dto
 {
-    public class UpdateRecordThemesDto
+    public sealed class UpdateRecordThemesDto
     {
         [Required]
         public Guid RecordId { get; set; }

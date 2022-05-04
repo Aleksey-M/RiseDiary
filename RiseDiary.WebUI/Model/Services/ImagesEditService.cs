@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
 {
-    public class ImagesEditService : ImagesService, IImagesEditService
+    internal class ImagesEditService : ImagesService, IImagesEditService
     {
         public ImagesEditService(DiaryDbContext context, IAppSettingsService appSettingsService) : base(context, appSettingsService) { }
 
@@ -110,7 +110,7 @@ namespace RiseDiary.Model.Services
 
         public async Task ReplaceImage(IFormFile newImage, Guid imageId)
         {
-            _ = newImage ?? throw new ArgumentNullException(nameof(newImage));
+            ArgumentNullException.ThrowIfNull(newImage);
 
             var image = await _context.Images.SingleOrDefaultAsync(i => i.Id == imageId);
             if (image == null) throw new ArgumentException($"Image with Id='{imageId}' does not exists");

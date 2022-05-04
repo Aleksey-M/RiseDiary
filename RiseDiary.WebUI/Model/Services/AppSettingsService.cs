@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
 {
-    public class AppSettingsService : IAppSettingsService
+    internal sealed class AppSettingsService : IAppSettingsService
     {
         private readonly DiaryDbContext _context;
+
         public AppSettingsService(DiaryDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));

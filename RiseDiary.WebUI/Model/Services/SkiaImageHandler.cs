@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace RiseDiary.Model.Services
 {
-    public abstract class SkiaImageHandler
+    internal abstract class SkiaImageHandler
     {
         protected byte[] ScaleImage(byte[] data, int imageQuality, int maxSizePx)
         {

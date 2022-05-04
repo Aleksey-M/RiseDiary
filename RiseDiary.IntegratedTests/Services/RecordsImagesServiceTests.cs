@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.IntegratedTests.Services
 {
-    internal class RecordsImagesServiceTests : TestedServices
+    internal class RecordsImagesServiceTests : TestFixtureBase
     {
         private async Task<(Guid recId, Guid imgId, IRecordsImagesService recImgSvc, IImagesService imgSvc, DiaryDbContext context)> CreateRecordWithLinkedImage()
         {

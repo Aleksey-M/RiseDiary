@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
 {
-    public class ScopesService : IScopesService
+    internal sealed class ScopesService : IScopesService
     {
         private readonly DiaryDbContext _context;
+
         public ScopesService(DiaryDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -121,7 +122,7 @@ namespace RiseDiary.Model.Services
 
         public async Task UpdateScopeName(Guid scopeId, string scopeNewName)
         {
-            if (string.IsNullOrWhiteSpace(scopeNewName)) throw new ArgumentNullException(nameof(scopeNewName));
+            if (string.IsNullOrWhiteSpace(scopeNewName)) throw new ArgumentException("Scope name should not be empty", nameof(scopeNewName));
             scopeNewName = scopeNewName.Trim();
 
             if (await _context.Scopes.AnyAsync(s => s.ScopeName == scopeNewName && s.Id != scopeId)) throw new ArgumentException($"Scope with name {scopeNewName} already exists");

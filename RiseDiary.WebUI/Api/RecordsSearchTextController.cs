@@ -12,7 +12,7 @@ namespace RiseDiary.WebUI.Api
 {
     [ApiController]
     [Authorize]
-    public class RecordsSearchTextController : ControllerBase
+    public sealed class RecordsSearchTextController : ControllerBase
     {
         private readonly IRecordsSearchTextService _recordsSearchService;
 

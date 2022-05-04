@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
 {
-    public class DatesService : IDatesService
+    internal sealed class DatesService : IDatesService
     {
-        protected readonly DiaryDbContext _context;
-        protected readonly IAppSettingsService _appSettingsService;
+        private readonly DiaryDbContext _context;
+
+        private readonly IAppSettingsService _appSettingsService;
 
         public DatesService(DiaryDbContext context, IAppSettingsService appSettingsService)
         {

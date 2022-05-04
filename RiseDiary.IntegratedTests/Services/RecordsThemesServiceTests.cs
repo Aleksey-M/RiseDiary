@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.IntegratedTests.Services
 {
-    internal class RecordsThemesServiceTests : TestedServices
+    internal class RecordsThemesServiceTests : TestFixtureBase
     {
         [Test]
         public async Task BindRecord_RecordTheme_DeleteRecord_ShouldMarkAsDeleted()

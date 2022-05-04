@@ -1,6 +1,6 @@
 ﻿namespace RiseDiary.Model
 {
-    public class RecordsTextFilter
+    public sealed class RecordsTextFilter
     {
         public string? SearchText { get; set; }
 

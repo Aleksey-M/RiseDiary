@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RiseDiary.Model
 {
-    public class DiaryScope : IDeletedEntity
+    public sealed class DiaryScope : IDeletedEntity
     {
         public Guid Id { get; set; }
 
@@ -14,7 +14,7 @@ namespace RiseDiary.Model
         public ICollection<DiaryTheme> Themes { get; set; } = null!;
     }
 
-    public class DiaryTheme : IDeletedEntity
+    public sealed class DiaryTheme : IDeletedEntity
     {
         public Guid Id { get; set; }
 

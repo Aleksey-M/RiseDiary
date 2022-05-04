@@ -12,7 +12,7 @@ namespace RiseDiary.WebUI.Api
 {
     [ApiController]
     [Authorize]
-    public class DatesController : ControllerBase
+    public sealed class DatesController : ControllerBase
     {
         private readonly IDatesService _datesService;
 

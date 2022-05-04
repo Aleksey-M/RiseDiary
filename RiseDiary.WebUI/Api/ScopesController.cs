@@ -12,9 +12,10 @@ namespace RiseDiary.WebUI.Api
 {
     [ApiController]
     [Authorize]
-    public class ScopesController : ControllerBase
+    public sealed class ScopesController : ControllerBase
     {
         private readonly IScopesService _scopeService;
+
         private readonly IAppSettingsService _appSettingsService;
 
         public ScopesController(IScopesService scopesService, IAppSettingsService appSettingsService)

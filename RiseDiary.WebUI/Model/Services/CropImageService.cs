@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
 {
-    public class CropImageService : ImagesEditService, ICropImageService
+    internal sealed class CropImageService : ImagesEditService, ICropImageService
     {
         public CropImageService(DiaryDbContext context, IAppSettingsService appSettingsService) : base(context, appSettingsService) { }
 
@@ -62,7 +62,7 @@ namespace RiseDiary.Model.Services
             await SaveModifiedImage(tmpImage);
         }
 
-        protected ScaledImagePreview CreateScaledImagePreview(int maxScaledWidth, int maxScaledHeight, byte[] fullImage, int imageQuality)
+        private ScaledImagePreview CreateScaledImagePreview(int maxScaledWidth, int maxScaledHeight, byte[] fullImage, int imageQuality)
         {
             (int fullImageWidth, int fullImageHeight) = GetImageSize(fullImage);
 

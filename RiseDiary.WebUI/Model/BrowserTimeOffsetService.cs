@@ -2,7 +2,7 @@
 
 namespace RiseDiary.WebUI
 {
-    public class BrowserTimeOffsetService
+    public sealed class BrowserTimeOffsetService
     {
         public int? Offset { get; set; }
 

@@ -11,9 +11,10 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
 {
-    public class SqliteDatabase : ISqliteDatabase
+    internal sealed class SqliteDatabase : ISqliteDatabase
     {
         private readonly IConfiguration _config;
+
         private readonly DiaryDbContext _context;
 
         public SqliteDatabase(IConfiguration config, DiaryDbContext context)

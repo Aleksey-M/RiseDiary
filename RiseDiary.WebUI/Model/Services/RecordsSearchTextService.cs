@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
 {
-    public class RecordsSearchTextService : IRecordsSearchTextService
+    internal sealed class RecordsSearchTextService : IRecordsSearchTextService
     {
-        protected readonly DiaryDbContext _context;
-        protected readonly IAppSettingsService _appSettingsService;
+        private readonly DiaryDbContext _context;
+
+        private readonly IAppSettingsService _appSettingsService;
 
         public RecordsSearchTextService(DiaryDbContext context, IAppSettingsService appSettingsService)
         {
@@ -18,7 +19,7 @@ namespace RiseDiary.Model.Services
             _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
         }
 
-        protected async Task<IEnumerable<DiaryRecord>> SearchRecords(string searchText)
+        private async Task<IEnumerable<DiaryRecord>> SearchRecords(string searchText)
         {
             searchText = searchText?.ToUpper() ?? throw new ArgumentNullException(nameof(searchText));
 
@@ -71,7 +72,7 @@ namespace RiseDiary.Model.Services
 
         public async Task<List<DiaryRecord>> GetRecordsList(RecordsTextFilter filter)
         {
-            if (filter == null) throw new ArgumentNullException(nameof(filter));
+            ArgumentNullException.ThrowIfNull(filter);
             if (string.IsNullOrWhiteSpace(filter.SearchText)) return Enumerable.Empty<DiaryRecord>().ToList();
 
             var list = (await SearchRecords(filter.SearchText).ConfigureAwait(false))

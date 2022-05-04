@@ -11,7 +11,7 @@ using static System.Convert;
 namespace RiseDiary.IntegratedTests.Services
 {
     [TestFixture]
-    internal class CropImageServiceTests : TestedServices
+    internal class CropImageServiceTests : TestFixtureBase
     {
         [Test]
         public async Task CreateScaledImagePreview_ImageDoesNotExists_ShouldThrowException()

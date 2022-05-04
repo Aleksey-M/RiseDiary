@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace RiseDiary.IntegratedTests.Services
 {
     [TestFixture]
-    internal class DatesServiceTests : TestedServices
+    internal class DatesServiceTests : TestFixtureBase
     {
         [Test]
         public async Task GetAllDates_ShouldReplacePlaceholdereByHostAndPort_InRecordName()

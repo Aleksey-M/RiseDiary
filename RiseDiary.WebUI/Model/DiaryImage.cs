@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace RiseDiary.Model
 {
-    public class DiaryImage : IDeletedEntity
+    public sealed class DiaryImage : IDeletedEntity
     {
         public Guid Id { get; set; }
 
@@ -35,7 +35,7 @@ namespace RiseDiary.Model
         public ICollection<DiaryRecordImage> RecordsRefs { get; private set; } = null!;
     }
 
-    public class DiaryImageFull
+    public sealed class DiaryImageFull
     {
         public Guid Id { get; set; }
 
@@ -44,7 +44,7 @@ namespace RiseDiary.Model
         public byte[] Data { get; set; } = Array.Empty<byte>();
     }
 
-    public class TempImage
+    public sealed class TempImage
     {
         public Guid Id { get; set; }
 
@@ -72,7 +72,7 @@ namespace RiseDiary.Model
         public static string GetSizeKbString(this TempImage tempImage) => Math.Round(tempImage.SizeByte / 1024f, 2).ToString(CultureInfo.InvariantCulture) + " Kb";
     }
 
-    public class ScaledImagePreview
+    public sealed class ScaledImagePreview
     {
         public double Coefficient { get; }
 

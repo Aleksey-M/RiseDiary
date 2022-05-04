@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.IntegratedTests.Services
 {
-    internal class AppSettingsServiceTests : TestedServices
+    internal class AppSettingsServiceTests : TestFixtureBase
     {
         [Test]
         public async Task UpdateSettings_WithCorrectKeyValue_ShouldNotThrowException()

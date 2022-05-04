@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
 {
-    public class RecordsService : IRecordsService
+    internal sealed class RecordsService : IRecordsService
     {
         private readonly DiaryDbContext _context;
+
         private readonly IAppSettingsService _appSettingsService;
 
         public RecordsService(DiaryDbContext context, IAppSettingsService appSettingsService)

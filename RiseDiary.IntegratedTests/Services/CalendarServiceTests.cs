@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace RiseDiary.IntegratedTests.Services
 {
     [TestFixture]
-    internal class CalendarServiceTests : TestedServices
+    internal class CalendarServiceTests : TestFixtureBase
     {
         private readonly List<DateOnly> _recordDates = new()
         {

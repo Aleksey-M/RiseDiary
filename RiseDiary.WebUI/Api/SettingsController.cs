@@ -10,9 +10,10 @@ namespace RiseDiary.WebUI.Api
 {
     [ApiController]
     [Authorize]
-    public class SettingsController : ControllerBase
+    public sealed class SettingsController : ControllerBase
     {
         private readonly IAppSettingsService _settingsSvc;
+
         public SettingsController(IAppSettingsService settingsSvc)
         {
             _settingsSvc = settingsSvc;

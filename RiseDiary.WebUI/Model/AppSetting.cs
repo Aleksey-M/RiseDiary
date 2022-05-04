@@ -2,7 +2,7 @@
 
 namespace RiseDiary.Model
 {
-    public class AppSetting
+    public sealed class AppSetting
     {
         public string Key { get; set; } = "";
 

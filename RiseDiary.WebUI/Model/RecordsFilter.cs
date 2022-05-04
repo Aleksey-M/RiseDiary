@@ -32,7 +32,7 @@ namespace RiseDiary.Model
 
         public static bool IsEmpty(RecordsFilter filter)
         {
-            if (filter == null) throw new ArgumentNullException(nameof(filter));
+            ArgumentNullException.ThrowIfNull(filter);            
 
             return string.IsNullOrWhiteSpace(filter.FilterName) &&
             filter.FromDate == null &&

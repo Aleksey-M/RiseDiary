@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
 {
-    public class RecordsSearchService : IRecordsSearchService
+    internal sealed class RecordsSearchService : IRecordsSearchService
     {
-        protected readonly DiaryDbContext _context;
-        protected readonly IAppSettingsService _appSettingsService;
+        private readonly DiaryDbContext _context;
+
+        private readonly IAppSettingsService _appSettingsService;
 
         public RecordsSearchService(DiaryDbContext context, IAppSettingsService appSettingsService)
         {
@@ -20,7 +21,7 @@ namespace RiseDiary.Model.Services
 
         public async Task<List<DiaryRecord>> GetRecordsList(RecordsFilter filter)
         {
-            if (filter == null) throw new ArgumentNullException(nameof(filter));
+            ArgumentNullException.ThrowIfNull(filter);
 
             var recordsPage = await FetchRecordsListFilteredQuery(filter)
                 .OrderByDescending(r => r.Date)
@@ -48,11 +49,11 @@ namespace RiseDiary.Model.Services
 
         public async Task<int> GetRecordsCount(RecordsFilter filter)
         {
-            if (filter == null) throw new ArgumentNullException(nameof(filter));
+            ArgumentNullException.ThrowIfNull(filter);
             return await FetchRecordsListFilteredQuery(filter).CountAsync().ConfigureAwait(false);
         }
 
-        protected IQueryable<DiaryRecord> FetchRecordsListFilteredQuery(RecordsFilter filter)
+        private IQueryable<DiaryRecord> FetchRecordsListFilteredQuery(RecordsFilter filter)
         {
             var result = _context.Records
                 .AsNoTracking()

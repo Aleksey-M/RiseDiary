@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace RiseDiary.IntegratedTests.Services
 {
     [TestFixture]
-    internal class ScopesServiceTests : TestedServices
+    internal class ScopesServiceTests : TestFixtureBase
     {
         [Test]
         public async Task AddScope_ShouldNotThrowException()

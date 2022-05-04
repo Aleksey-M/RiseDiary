@@ -10,9 +10,10 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
 {
-    public class ImagesService : SkiaImageHandler, IImagesService
+    internal class ImagesService : SkiaImageHandler, IImagesService
     {
         protected readonly DiaryDbContext _context;
+
         protected readonly IAppSettingsService _appSettings;
 
         public ImagesService(DiaryDbContext context, IAppSettingsService appSettingsService)
@@ -42,7 +43,7 @@ namespace RiseDiary.Model.Services
         protected async Task<DiaryImage> AddImageWithoutSaving(byte[] image, string imageName, int? newBiggestDimensionSize = null)
         {
             if (string.IsNullOrWhiteSpace(imageName)) throw new ArgumentException("Image Name should not be empty");
-            _ = image ?? throw new ArgumentNullException(nameof(image));
+            ArgumentNullException.ThrowIfNull(image);
 
             int imageQuality = await _appSettings.GetAppSettingInt(AppSettingsKey.ImageQuality) ?? throw new Exception("Setting Value ImageQuality not set");
             int thumbnailSize = await _appSettings.GetAppSettingInt(AppSettingsKey.ThumbnailSize) ?? throw new Exception("Setting Value ThumbnailSize not set");

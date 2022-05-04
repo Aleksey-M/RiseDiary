@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
+using RiseDiary.IntegratedTests.Services;
 using RiseDiary.IntegratedTests.Stubs;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Data;
@@ -809,5 +810,29 @@ namespace RiseDiary.IntegratedTests
 
             return (rec1Id, rec2Id, rec3Id, imgId);
         }
+
+        static protected ICalendarService GetCalendarService(DiaryDbContext? context = null) => TestedServices.GetCalendarService(context ?? CreateContext(), new AppSettingsServiceStub());
+
+        static protected IDatesService GetDatesService(int daysRange, DiaryDbContext? context = null) => TestedServices.GetDatesService(context ?? CreateContext(), new AppSettingsForDatesServiceStub(daysRange));
+
+        static protected IRecordsSearchTextService GetRecordsSearchTextService(DiaryDbContext? context = null) => TestedServices.GetRecordsSearchTextService(context ?? CreateContext(), new AppSettingsServiceStub());
+
+        static protected IRecordsSearchService GetRecordsSearchService(DiaryDbContext? context = null) => TestedServices.GetRecordsSearchService(context ?? CreateContext(), new AppSettingsServiceStub());
+
+        static protected IRecordsService GetRecordsService(DiaryDbContext? context = null) => TestedServices.GetRecordsService(context ?? CreateContext(), new AppSettingsServiceStub());
+
+        static protected ICropImageService GetCropImageService(DiaryDbContext? context = null) => TestedServices.GetCropImageService(context ?? CreateContext(), new AppSettingsServiceStub());
+
+        static protected IImagesEditService GetImagesEditService(DiaryDbContext? context = null) => TestedServices.GetImagesEditService(context ?? CreateContext(), new AppSettingsServiceStub());
+
+        static protected IImagesService GetImagesService(DiaryDbContext? context = null) => TestedServices.GetImagesService(context ?? CreateContext(), new AppSettingsServiceStub());
+
+        static protected IRecordsImagesService GetRecordsImagesService(DiaryDbContext? context = null) => TestedServices.GetRecordsImagesService(context ?? CreateContext());
+
+        static protected IAppSettingsService GetAppSettingsService(DiaryDbContext? context = null) => TestedServices.GetAppSettingsService(context ?? CreateContext());
+
+        static protected IRecordsThemesService GetRecordsThemesService(DiaryDbContext? context = null) => TestedServices.GetRecordsThemesService(context ?? CreateContext());
+
+        static protected IScopesService GetScopesService(DiaryDbContext? context = null) => TestedServices.GetScopesService(context ?? CreateContext());
     }
 }

@@ -12,9 +12,10 @@ namespace RiseDiary.WebUI.Api
 {
     [ApiController]
     [Authorize]
-    public class CalendarItemsController : ControllerBase
+    public sealed class CalendarItemsController : ControllerBase
     {
         private readonly ICalendarService _calendarService;
+
         public CalendarItemsController(ICalendarService calendarService)
         {
             _calendarService = calendarService;

@@ -11,9 +11,10 @@ namespace RiseDiary.WebUI.Api
 {
     [ApiController]
     [Authorize]
-    public class EditImagesController : ControllerBase
+    public sealed class EditImagesController : ControllerBase
     {
         private readonly IImagesEditService _imagesEditService;
+
         private readonly ICropImageService _cropImageService;
 
         public EditImagesController(IImagesEditService imagesEditService, ICropImageService cropImageService)

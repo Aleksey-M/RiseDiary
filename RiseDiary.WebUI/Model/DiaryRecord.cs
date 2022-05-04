@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RiseDiary.Model
 {
-    public class DiaryRecord : IDeletedEntity
+    public sealed class DiaryRecord : IDeletedEntity
     {
         public Guid Id { get; set; }
 
@@ -39,7 +39,7 @@ namespace RiseDiary.Model
         }
     }
 
-    public class Cogitation : IDeletedEntity
+    public sealed class Cogitation : IDeletedEntity
     {
         public Guid Id { get; set; }
 
@@ -54,7 +54,7 @@ namespace RiseDiary.Model
         public DiaryRecord? Record { get; set; }
     }
 
-    public class DiaryRecordTheme : IDeletedEntity
+    public sealed class DiaryRecordTheme : IDeletedEntity
     {
         public Guid ThemeId { get; set; }
 
@@ -67,7 +67,7 @@ namespace RiseDiary.Model
         public DiaryRecord? Record { get; set; }
     }
 
-    public class DiaryRecordImage : IDeletedEntity
+    public sealed class DiaryRecordImage : IDeletedEntity
     {
         public Guid ImageId { get; set; }
 

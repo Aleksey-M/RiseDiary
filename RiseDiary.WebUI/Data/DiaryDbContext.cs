@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Data
 {
-    public class DiaryDbContext : DbContext
+    public sealed class DiaryDbContext : DbContext
     {
         public DiaryDbContext(DbContextOptions<DiaryDbContext> options) : base(options) { }
 
@@ -33,7 +33,7 @@ namespace RiseDiary.WebUI.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            if (modelBuilder == null) throw new ArgumentNullException(nameof(modelBuilder));
+            ArgumentNullException.ThrowIfNull(modelBuilder);
 
             modelBuilder.Entity<DiaryRecord>().Property(r => r.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<DiaryRecord>().HasMany(r => r.Cogitations)
