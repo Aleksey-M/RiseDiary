@@ -3,7 +3,15 @@
 
 @inject BrowserTimeOffsetService _browserTimeOffsetService
 
-@if (Expanded)
+@if (Records.Count() == 0)
+{
+    <div class="col-12 p-5">
+        <h3 style="color:silver">Нет записей</h3>
+    </div>
+}
+
+
+@if (Expanded && Records.Count() > 0)
 {
     <div class="offset-lg-2 col-lg-8 col-md-12">
         <table class="table">
@@ -83,7 +91,8 @@
         </table>
     </div>
 }
-else
+
+@if (!Expanded && Records.Count() > 0)
 {
     <div class="col-12">
         <table class="table table-striped">
