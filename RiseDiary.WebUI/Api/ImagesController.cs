@@ -161,17 +161,18 @@ namespace RiseDiary.WebUI.Api
         [HttpGet, Route("api/v1.0/images")]
         [ProducesResponseType(typeof(ImagesPageDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ImagesPageDto>> GetImagesPage([FromQuery] int? pageSize, [FromQuery] int? pageNo)
+        public async Task<ActionResult<ImagesPageDto>> GetImagesPage(
+            [FromQuery] int? pageSize, [FromQuery] int? pageNo, [FromQuery] string? imageNameFilter)
         {
             try
             {
                 pageSize ??= 20;
                 pageNo ??= 1;
-                var count = await _imagesService.GetImagesCount();
+                var count = await _imagesService.GetImagesCount(imageNameFilter);
                 pageSize = pageSize > 100 ? 100 : pageSize;
 
                 var pagesInfo = PagesInfo.GetPagesInfo(count, pageNo.Value, pageSize.Value);
-                var images = await _imagesService.FetchImageSet(pagesInfo.StartIndex, pagesInfo.PageSize);
+                var images = await _imagesService.FetchImageSet(pagesInfo.StartIndex, pagesInfo.PageSize, imageNameFilter);
 
                 var dto = new ImagesPageDto
                 {
