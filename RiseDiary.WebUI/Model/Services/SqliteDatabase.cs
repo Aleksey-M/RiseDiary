@@ -58,7 +58,7 @@ namespace RiseDiary.Model.Services
             _context.SoftDeleting = oldValue;
         }
 
-        public async Task<DeletedEntitiesInfo> GetDeletedEntitiesInfo()
+        public async Task<DeletedEntitiesCount> GetDeletedEntitiesCount()
         {
             int records = await _context.Records.IgnoreQueryFilters().CountAsync(r => r.Deleted).ConfigureAwait(false);
             int images = await _context.Images.IgnoreQueryFilters().CountAsync(i => i.Deleted).ConfigureAwait(false);
@@ -68,15 +68,15 @@ namespace RiseDiary.Model.Services
             int recThemes = await _context.RecordThemes.IgnoreQueryFilters().CountAsync(rt => rt.Deleted).ConfigureAwait(false);
             int cogitations = await _context.Cogitations.IgnoreQueryFilters().CountAsync(r => r.Deleted).ConfigureAwait(false);
 
-            return new DeletedEntitiesInfo(scopes, themes, records, cogitations, images, recThemes, recImages);
+            return new DeletedEntitiesCount(scopes, themes, records, cogitations, images, recThemes, recImages);
         }
 
-        public SqliteDatabaseInfo GetSqliteDatabaseInfo()
+        public SqliteDatabaseFileInfo GetSqliteDatabaseInfo()
         {
             var dataBaseFileName = _config.GetValue<string>("dbFile");
             var dataBaseFileSize = Math.Round(new FileInfo(dataBaseFileName).Length / 1024f / 1024f, 2).ToString(CultureInfo.InvariantCulture) + " Mb";
 
-            return new SqliteDatabaseInfo(dataBaseFileName, dataBaseFileSize);
+            return new SqliteDatabaseFileInfo(dataBaseFileName, dataBaseFileSize);
         }
 
         public async Task Vacuum() => await _context.Database.ExecuteSqlRawAsync("vacuum;").ConfigureAwait(false);

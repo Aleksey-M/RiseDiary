@@ -6,7 +6,7 @@
 
     <div class="offset-md-2 col-md-8 col-sm-12">
         <div class="mt-3 mb-3">
-            <p style="word-break:break-word"><b>Файл базы данных:</b> <i>@Model.DatabaseInfo.FileName (<b>@Model.DatabaseInfo.FileSize</b>)</i></p>
+            <p style="word-break:break-word"><b>Файл базы данных:</b> <i>@Model.DatabaseFileInfo.FileName (<b>@Model.DatabaseFileInfo.FileSize</b>)</i></p>
             <form method="post">
                 <input type="submit" class="btn btn-success btn-sm" value="Создать бекап" asp-page-handler="File2FileMigration" />
             </form>
@@ -15,7 +15,7 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th colspan="2">Удаленные данные, хранящиеся в базе</th>
+                    <th colspan="2"><a asp-page="DeletedData">Удаленные данные, хранящиеся в базе</a></th>
                 </tr>
                 <tr>
                     <th>Данные</th>

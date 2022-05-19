@@ -23,7 +23,7 @@ namespace RiseDiary.WebUI.Api
         public async Task<ActionResult<SqliteDbInfoDto>> GetDbInfo()
         {
             var db = _sqliteDb.GetSqliteDatabaseInfo();
-            var deleted = await _sqliteDb.GetDeletedEntitiesInfo();
+            var deleted = await _sqliteDb.GetDeletedEntitiesCount();
 
             return Ok(new SqliteDbInfoDto
             {

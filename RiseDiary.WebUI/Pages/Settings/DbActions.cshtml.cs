@@ -8,9 +8,9 @@ namespace RiseDiary.WebUI.Pages.Settings
     {
         private readonly ISqliteDatabase _sqliteDb;
 
-        public DeletedEntitiesInfo DeletedEntities { get; private set; } = null!;
+        public DeletedEntitiesCount DeletedEntities { get; private set; } = null!;
 
-        public SqliteDatabaseInfo DatabaseInfo { get; private set; } = null!;
+        public SqliteDatabaseFileInfo DatabaseFileInfo { get; private set; } = null!;
 
         public DbActionsModel(ISqliteDatabase sqliteDb)
         {
@@ -20,8 +20,8 @@ namespace RiseDiary.WebUI.Pages.Settings
 
         public async Task OnGetAsync()
         {
-            DeletedEntities = await _sqliteDb.GetDeletedEntitiesInfo();
-            DatabaseInfo = _sqliteDb.GetSqliteDatabaseInfo();
+            DeletedEntities = await _sqliteDb.GetDeletedEntitiesCount();
+            DatabaseFileInfo = _sqliteDb.GetSqliteDatabaseInfo();
         }
 
         public async Task OnPostClearBaseAsync()
@@ -29,16 +29,16 @@ namespace RiseDiary.WebUI.Pages.Settings
             await _sqliteDb.ClearDatabase();
             await _sqliteDb.Vacuum();
 
-            DeletedEntities = await _sqliteDb.GetDeletedEntitiesInfo();
-            DatabaseInfo = _sqliteDb.GetSqliteDatabaseInfo();
+            DeletedEntities = await _sqliteDb.GetDeletedEntitiesCount();
+            DatabaseFileInfo = _sqliteDb.GetSqliteDatabaseInfo();
         }
 
         public async Task OnPostFile2FileMigrationAsync()
         {
             await _sqliteDb.File2FileMigration();
 
-            DeletedEntities = await _sqliteDb.GetDeletedEntitiesInfo();
-            DatabaseInfo = _sqliteDb.GetSqliteDatabaseInfo();
+            DeletedEntities = await _sqliteDb.GetDeletedEntitiesCount();
+            DatabaseFileInfo = _sqliteDb.GetSqliteDatabaseInfo();
         }
     }
 }
