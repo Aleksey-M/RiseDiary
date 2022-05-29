@@ -14,21 +14,47 @@
             </div>
         }
 
-        <form asp-page-handler="AddNewImage" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="targetRecordId" id="targetRecordId" value="@(Model.TargetRecordId ?? Guid.Empty)" />
+        <form asp-page-handler="AddNewImage" method="post" enctype="multipart/form-data" onsubmit="onSubmit()">
+            <input type="hidden" name="targetRecordId" id="targetRecordId" value="@(Model.TargetRecordId ?? Guid.Empty)" />    
+            
             <div class="row">
+
+                <div class="col-12">
+                <h3 id="loading" name="loading" style="display:none">Загрузка...</h3>
+                </div>
+
                 <div class="col-lg-4 col-md-5 col-sm-12 p-2">
                     <input type="file" accept="image/*" multiple="multiple" id="newImages" name="newImages" class="form-control-file" />
                 </div>
+
                 <div class="col-lg-5 col-md-7 col-sm-12 p-2">
                     <input type="text" placeholder="Название нового изображения" id="newImageName" name="newImageName" class="form-control" />
                 </div>
+
                 <div class="col-lg-1 col-md-3 col-sm-6 p-2">
                     <input type="text" placeholder="Сжимать, если сторона больше чем" id="newBiggestDimension" name="newBiggestDimension" class="form-control" />
                 </div>
+
                 <div class="col-lg-2 col-md-3 col-sm-6 p-2">
-                    <input type="submit" value="Добавить" class="btn btn-outline-success form-control" />
+                    <input type="submit" value="Добавить" id="addButton" class="btn btn-outline-success form-control" />
                 </div>
+
             </div>
         </form>
     </div>
+
+
+    @section Scripts
+    {
+        <script type="text/javascript">
+            
+            function onSubmit(){
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('newImages').style.display = 'none';
+                document.getElementById('newImageName').style.display = 'none';
+                document.getElementById('newBiggestDimension').style.display = 'none';
+                document.getElementById('addButton').style.display = 'none';
+            }
+
+        </script>
+    }
