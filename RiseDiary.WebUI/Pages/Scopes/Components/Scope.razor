@@ -53,12 +53,12 @@ else
                         <div class="row">
                             @if (EditedThemeId != th.Id)
                             {
-                                <div class="col-10">
+                                <div class="col-lg-10 col-md-8 col-sm-12">
                                     <h5>@th.ThemeName</h5>
                                 </div>
 
-                                <div class="col-1">
-                                    <button type="button" @onclick="@(e => ToggleActuality(th.Id))" class="btn btn-link" style="float:left; margin-right:10px" title="Актуальность темы">
+                                <div class="col-lg-1 col-md-2 col-sm-6 text-center">
+                                    <button type="button" @onclick="@(e => ToggleActuality(th.Id))" class="btn btn-link" title="Актуальность темы">
                                         @if (th.Actual)
                                         {
                                             <img src="img/star-fill.svg" widtn="20" height="20" />
@@ -70,8 +70,8 @@ else
                                     </button>
                                 </div>
 
-                                <div class="col-1">
-                                    <button type="button" @onclick="@(e => EditTheme(th.Id))" class="btn btn-link" style="float:right; margin-right:5px" title="Открыть на редактирование">
+                                <div class="col-lg-1 col-md-2 col-sm-6 text-center">
+                                    <button type="button" @onclick="@(e => EditTheme(th.Id))" class="btn btn-link" title="Открыть на редактирование">
                                         <img src="img/pencil-square.svg" widtn="20" height="20" />
                                     </button>
                                 </div>
