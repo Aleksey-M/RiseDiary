@@ -87,7 +87,7 @@
     <script src="~/lib/quilljs/dist/quill.js"></script>
 
     <script type="text/javascript">
-        var quill = new Quill('#editor-container', {
+        const quill = new Quill('#editor-container', {
             modules: {
                 toolbar: '#toolbar'
             },
@@ -95,9 +95,35 @@
             theme: 'snow'  
         });
 
+        const recordHtml = localStorage.getItem('_recordHtml');
+        const recordDate = localStorage.getItem('_recordDate');
+        const recordName = localStorage.getItem('_recordName');
+
+        if (recordDate) {
+            document.getElementById('recordDate').value = recordDate;
+            console.log(recordDate);
+        }
+
+        if (recordName) {
+            document.getElementById('recordName').value = recordName;
+            console.log(recordName);
+        }
+
+        if (recordHtml) {
+             quill.root.innerHTML = recordHtml;
+             console.log(recordHtml);
+        }
+
         function submitForm() {
-            let html = quill.root.innerHTML;
-            document.getElementById('recordText').value = html;
+            const recordHtml = quill.root.innerHTML;
+            const recordDate = document.getElementById('recordDate').value;
+            const recordName = document.getElementById('recordName').value;
+
+            localStorage.setItem('_recordDate', recordDate);
+            localStorage.setItem('_recordName', recordName);
+            localStorage.setItem('_recordHtml', recordHtml);
+
+            document.getElementById('recordText').value = recordHtml;
             document.getElementById('createRecordForm').submit();
         }
 

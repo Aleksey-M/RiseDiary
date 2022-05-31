@@ -32,8 +32,8 @@
 
         function setQuillHtmlText(html, id) {
             let counter = 0;
-            let iId = setInterval(function () {
-                let elem = document.querySelector(`#${id} .ql-container.ql-snow`);
+            const iId = setInterval(function () {
+                const elem = document.querySelector(`#${id} .ql-container.ql-snow`);
                 counter++;
 
                 if (counter > 100) {
@@ -42,7 +42,7 @@
                 }
 
                 if (elem != null) {
-                    let instance = Quill.find(elem);
+                    const instance = Quill.find(elem);
                     console.log(instance);
                     instance.root.innerHTML = html;
                     clearInterval(iId);
@@ -56,6 +56,12 @@
 
         function redirectToReferrer() {
             document.location = document.referrer;
+        }
+
+        if (window.location.search.indexOf('clearDraft') > -1) {
+            localStorage.removeItem('_recordDate');
+            localStorage.removeItem('_recordName');
+            localStorage.removeItem('_recordHtml');
         }
 
     </script>

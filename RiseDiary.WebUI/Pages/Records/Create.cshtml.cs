@@ -17,13 +17,16 @@ namespace RiseDiary.WebUI.Pages.Records
 
         public async Task<IActionResult> OnPostAsync(DateTime recordDate, string? recordName, string recordText)
         {
-            recordText ??= @"<p></p>";
-            if (recordText.Length == 0) recordText = @"<p></p>";
+            if (string.IsNullOrWhiteSpace(recordText))
+            {
+                recordText = @"<p></p>";
+            }
+
             recordName = recordName?.Trim() ?? "";
 
             Guid recordId = await _recordsService.AddRecord(DateOnly.FromDateTime(recordDate), recordName, recordText);
 
-            return RedirectToPage("View", new { recordId });
+            return RedirectToPage("View", new { recordId, clearDraft = "clearDraft" });
         }
     }
 }
