@@ -553,5 +553,65 @@ namespace RiseDiary.Model.Services
             await r.CloseAsync();
             if (columnsCount != expectedColumnsCount) throw new Exception($"В таблице {tableName} количество колонок не совпадает с ожидаемым");
         }
+
+        public async Task<DeletedData> GetDeletedEntitiesData()
+        {
+            var deletedData = new DeletedData();
+
+            deletedData.Records = await _context.Records
+                .IgnoreQueryFilters()
+                .Where(x => x.Deleted)
+                .Select(x => new DeletedRecord(x.Id, x.Date, x.Name, x.Text))
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            deletedData.RecordsCogitations = await _context.Cogitations
+                .IgnoreQueryFilters()
+                .Where(x => x.Deleted)
+                .Select(x => new DeletedCogitation(x.Id, x.RecordId, x.Date, x.Text, x.Record != null ? x.Record.Name : ""))
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            deletedData.RecordsThemes = await _context.RecordThemes
+                .IgnoreQueryFilters()
+                .Where(x => x.Deleted)
+                .Select(x => new DeletedRecordTheme(x.RecordId, x.ThemeId,
+                    x.Record != null ? x.Record.Name : "",
+                    x.Theme != null ? x.Theme.ThemeName : ""))
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            deletedData.RecordsImages = await _context.RecordImages
+                .IgnoreQueryFilters()
+                .Where(x => x.Deleted)
+                .Select(x => new DeletedRecordImage(x.RecordId, x.ImageId,
+                    x.Record != null ? x.Record.Name : "",
+                    x.Image != null ? x.Image.GetBase64Thumbnail() : ""))
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            deletedData.Scopes = await _context.Scopes
+                .IgnoreQueryFilters()
+                .Where(x => x.Deleted)
+                .Select(x => new DeletedScope(x.Id, x.ScopeName))
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            deletedData.Themes = await _context.Themes
+                .IgnoreQueryFilters()
+                .Where(x => x.Deleted)
+                .Select(x => new DeletedTheme(x.Id, x.Scope != null ? x.Scope.ScopeName : "", x.ThemeName))
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            deletedData.Images = await _context.Images
+                .IgnoreQueryFilters()
+                .Where(x => x.Deleted)
+                .Select(x => new DeletedImage(x.Id, x.Name, x.GetBase64Thumbnail()))
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            return deletedData;
+        }
     }
 }
