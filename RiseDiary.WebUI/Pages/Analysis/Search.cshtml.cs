@@ -10,10 +10,12 @@ namespace RiseDiary.WebUI.Pages.Analysis
     public class IndexModel : PageModel
     {
         private readonly IRecordsSearchTextService _recordsSearchTextService;
+        private readonly IAppSettingsService _appSettingsService;
 
-        public IndexModel(IRecordsSearchTextService recordsSearchTextService)
+        public IndexModel(IRecordsSearchTextService recordsSearchTextService, IAppSettingsService appSettingsService)
         {
             _recordsSearchTextService = recordsSearchTextService;
+            _appSettingsService = appSettingsService;
         }
 
         public IEnumerable<DiaryRecord> Records { get; private set; } = Enumerable.Empty<DiaryRecord>();
@@ -23,8 +25,6 @@ namespace RiseDiary.WebUI.Pages.Analysis
         public string SearchString { get; private set; } = "";
 
         public bool Expanded { get; private set; }
-
-        private const int _pageSize = 50;
 
         public List<KeyValuePair<string, string?>> SearchParams => new()
         {
@@ -36,6 +36,7 @@ namespace RiseDiary.WebUI.Pages.Analysis
         {
             pageNo ??= 1;
             Expanded = expanded.HasValue && expanded.Value;
+            int pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.ImagesPageSize) ?? 50;
 
             if (string.IsNullOrWhiteSpace(searchString))
             {
@@ -46,7 +47,7 @@ namespace RiseDiary.WebUI.Pages.Analysis
             {
                 SearchString = searchString;
                 int recordsCount = await _recordsSearchTextService.GetRecordsCount(SearchString);
-                Pages = PagesInfo.GetPagesInfo(recordsCount, pageNo ?? 1, _pageSize, 10);
+                Pages = PagesInfo.GetPagesInfo(recordsCount, pageNo ?? 1, pageSize, 10);
                 Records = await _recordsSearchTextService.GetRecordsList(new RecordsTextFilter { SearchText = SearchString, PageNo = Pages.CurrentPage - 1, PageSize = Pages.PageSize });
             }
         }

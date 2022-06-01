@@ -12,11 +12,14 @@ namespace RiseDiary.WebUI.Pages
     {
         private readonly IRecordsSearchService _searchRecordsService;
         private readonly IScopesService _scopesSvc;
+        private readonly IAppSettingsService _appSettingsService;
 
-        public RecordsViewModel(IRecordsSearchService searchRecordsService, IScopesService scopesSvc)
+        public RecordsViewModel(IRecordsSearchService searchRecordsService,
+            IScopesService scopesSvc, IAppSettingsService appSettingsService)
         {
             _searchRecordsService = searchRecordsService;
             _scopesSvc = scopesSvc;
+            _appSettingsService = appSettingsService;
         }
 
         public IEnumerable<DiaryRecord> Records { get; private set; } = Enumerable.Empty<DiaryRecord>();
@@ -30,8 +33,6 @@ namespace RiseDiary.WebUI.Pages
         public Guid[] SelectedThemes { get; private set; } = Array.Empty<Guid>();
 
         public bool Expanded { get; private set; }
-
-        private const int _pageSize = 25;
 
         public bool CombineThemes { get; private set; }
 
@@ -50,10 +51,11 @@ namespace RiseDiary.WebUI.Pages
         {
             CombineThemes = combineThemes ?? false;
             Expanded = expanded ?? false;
+            int pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.ImagesPageSize) ?? 25;
 
             Filters = new RecordsFilter
             {
-                PageSize = _pageSize,
+                PageSize = pageSize,
                 FromDate = fromDate == null ? null : DateOnly.FromDateTime(fromDate.Value),
                 ToDate = toDate == null ? null : DateOnly.FromDateTime(toDate.Value),
                 FilterName = filterName?.Trim(),
@@ -68,7 +70,7 @@ namespace RiseDiary.WebUI.Pages
             }
 
             var recordsCount = await _searchRecordsService.GetRecordsCount(Filters);
-            Pages = PagesInfo.GetPagesInfo(recordsCount, Filters.PageNo + 1, _pageSize, 10);
+            Pages = PagesInfo.GetPagesInfo(recordsCount, Filters.PageNo + 1, pageSize, 10);
             Records = await _searchRecordsService.GetRecordsList(Filters);
             AllScopes = await _scopesSvc.GetScopes();
         }

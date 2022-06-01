@@ -12,7 +12,9 @@ namespace RiseDiary.Shared
         CropImageMaxScaledWidth,
         CropImageMaxScaledHeight,
         ThumbnailSize,
-        HostAndPort
+        HostAndPort,
+        RecordsPageSize,
+        ImagesPageSize
     }
 
     public sealed class AppSettingDto
@@ -53,6 +55,14 @@ namespace RiseDiary.Shared
             (AppSettingsKey.CropImageMaxScaledHeight, _) when !int.TryParse(value, out _) => "Value should be set as int",
             (AppSettingsKey.CropImageMaxScaledHeight, _) => int.Parse(value) <= 200 ? "Max Scaled Height value must be greater than 200" :
                                                              int.Parse(value) > 2000 ? "Max Scaled Height value must be less than 2000" : "",
+
+            (AppSettingsKey.RecordsPageSize, _) when !int.TryParse(value, out _) => "Range value should be set as int",
+            (AppSettingsKey.RecordsPageSize, _) => int.Parse(value) <= 1 ? "Range value must be greater than 1" :
+                                                   int.Parse(value) > 200 ? "Range value must be less than 200" : "",
+
+            (AppSettingsKey.ImagesPageSize, _) when !int.TryParse(value, out _) => "Range value should be set as int",
+            (AppSettingsKey.ImagesPageSize, _) => int.Parse(value) <= 1 ? "Range value must be greater than 1" :
+                                                             int.Parse(value) > 200 ? "Range value must be less than 200" : "",
 
             (_, _) => ""
         };
