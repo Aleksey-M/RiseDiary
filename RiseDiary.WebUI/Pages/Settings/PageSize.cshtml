@@ -21,6 +21,23 @@
          </div>
     </form>
 
+    <form method="post" asp-page-handler="UpdateAvailableImagesPageSize">
+         <div class="row mt-2 mb-3">
+             <div class="col-lg-8 col-md-6 col-sm-12 mt-1">
+                 <b>Количество миниатюр картинок, выводимое на одну страницу в окне выбора картинок при добавлении к записи</b>
+             </div>
+
+             <div class="col-lg-2 col-md-3 col-sm-6 mt-1">
+                 <span asp-validation-for="AvailableImagesPageSize" style="color:red"></span>
+                 <input asp-for="AvailableImagesPageSize" class="form-control" />
+             </div>
+
+             <div class="col-lg-2 col-md-3 col-sm-6 mt-1">
+                 <button type="submit" class="btn btn-outline-success form-control">Сохранить</button>
+             </div>
+         </div>
+    </form>
+
      <form method="post" asp-page-handler="UpdateRecordsPageSize">
          <div class="row mt-2 mb-3">
              <div class="col-lg-8 col-md-6 col-sm-12 mt-1">

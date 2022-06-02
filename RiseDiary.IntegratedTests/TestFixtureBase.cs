@@ -811,6 +811,24 @@ namespace RiseDiary.IntegratedTests
             return (rec1Id, rec2Id, rec3Id, imgId);
         }
 
+        protected async Task<(Guid recordId, List<Guid> imagesIds, DiaryDbContext context)> CreateRecordAnd4Images()
+        {
+            var context = CreateContext();
+            var imageSvc = GetImagesService(context);
+
+            var imagesIds = new List<Guid>
+            {
+                await imageSvc.AddImage(TestFile, imageName: "Image 01"),
+                await imageSvc.AddImage(TestFile, imageName: "Image 02"),
+                await imageSvc.AddImage(TestFile, imageName: "Image 1"),
+                await imageSvc.AddImage(TestFile, imageName: "Image 03")
+            };
+
+            var recordId = Create_Record(context);
+
+            return (recordId, imagesIds, context);
+        }
+
         static protected ICalendarService GetCalendarService(DiaryDbContext? context = null) => TestedServices.GetCalendarService(context ?? CreateContext(), new AppSettingsServiceStub());
 
         static protected IDatesService GetDatesService(int daysRange, DiaryDbContext? context = null) => TestedServices.GetDatesService(context ?? CreateContext(), new AppSettingsForDatesServiceStub(daysRange));

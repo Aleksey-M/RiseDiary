@@ -151,34 +151,37 @@ namespace RiseDiary.Model.Services
             return img.FullImage?.Data ?? throw new Exception("Saved image is not contains image data");
         }
 
-        public async Task<int> GetImagesCount(string? imageNameFilter = null)
+        public async Task<int> GetImagesCount(string? imageNameFilter = null, Guid? recordId = null)
         {
             var nameFilter = imageNameFilter?.Trim()?.ToUpper();
 
             if (string.IsNullOrEmpty(nameFilter))
             {
                 return await _context.Images
+                   .Where(x => !x.RecordsRefs.Any(y => y.RecordId == recordId))
                    .CountAsync()
                    .ConfigureAwait(false);
             }
 
             var imagesNames = await _context.Images
+                .Where(x => !x.RecordsRefs.Any(y => y.RecordId == recordId))
                 .Select(x => x.Name)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            return imagesNames
+            return imagesNames                
                 .Where(x => x.ToUpper().Contains(nameFilter))
                 .Count();
         }
 
-        public async Task<List<DiaryImage>> FetchImageSet(int skip, int count, string? imageNameFilter = null)
+        public async Task<List<DiaryImage>> FetchImageSet(int skip, int count, string? imageNameFilter = null, Guid? recordId = null)
         {
             var nameFilter = imageNameFilter?.Trim()?.ToUpper();
 
             if (string.IsNullOrEmpty(nameFilter))
             {
                 return await _context.Images
+                    .Where(x => !x.RecordsRefs.Any(y => y.RecordId == recordId))
                     .OrderByDescending(i => i.CreateDate)
                     .Skip(skip)
                     .Take(count)
@@ -187,6 +190,7 @@ namespace RiseDiary.Model.Services
             }
 
             var imagesNames = await _context.Images
+               .Where(x => !x.RecordsRefs.Any(y => y.RecordId == recordId))
                .Select(x => new { x.Id, x.Name })
                .ToListAsync()
                .ConfigureAwait(false);
@@ -198,6 +202,7 @@ namespace RiseDiary.Model.Services
 
             return await _context.Images
                 .Where(x => imagesIds.Contains(x.Id))
+                .Where(x => !x.RecordsRefs.Any(y => y.RecordId == recordId))
                 .OrderByDescending(i => i.CreateDate)
                 .Skip(skip)
                 .Take(count)

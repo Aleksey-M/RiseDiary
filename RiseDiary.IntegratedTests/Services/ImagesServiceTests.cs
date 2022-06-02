@@ -128,6 +128,51 @@ namespace RiseDiary.IntegratedTests.Services
         }
 
         [Test]
+        public async Task GetImagesCount_WithRecordId_ShouldExcludeAlreadyAddedImage()
+        {
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
+            var imagesService = GetImagesService(context);
+            var recordsImagesService = GetRecordsImagesService(context);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[1]);
+
+            int count = await imagesService.GetImagesCount(recordId: recordId);
+
+            count.Should().Be(3);
+            imagesIds.Should().HaveCount(4);
+        }
+
+        [Test]
+        public async Task GetImagesCount_WithRecordIdAndAllAddedImages_ShouldReturnZero()
+        {
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
+            var imagesService = GetImagesService(context);
+            var recordsImagesService = GetRecordsImagesService(context);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[0]);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[1]);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[2]);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[3]);
+
+            int count = await imagesService.GetImagesCount(recordId: recordId);
+
+            count.Should().Be(0);
+            imagesIds.Should().HaveCount(4);            
+        }
+
+        [Test]
+        public async Task GetImagesCount_WithFilterAndRecordId_ShouldReturnFilteredAndWithoutAlreadyAddedImage()
+        {
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
+            var imagesService = GetImagesService(context);
+            var recordsImagesService = GetRecordsImagesService(context);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[0]);
+
+            int count = await imagesService.GetImagesCount(imageNameFilter: "1", recordId: recordId);
+
+            count.Should().Be(1);
+            imagesIds.Should().HaveCount(4);
+        }
+
+        [Test]
         public async Task GetImagesCount_WithoutMatch_ShouldReturnZero()
         {
             var svc = GetImagesService();
@@ -246,6 +291,55 @@ namespace RiseDiary.IntegratedTests.Services
             page.Should().HaveCount(2);
             page.Select(x => x.Name).ToList().Should().BeEquivalentTo(new List<string> { "Test image 12", "Test image 2" });
             page.Should().BeEquivalentTo(page2);
+        }
+
+        [Test]
+        public async Task FetchImageSet_WithRecordId_ShouldExcludeAlreadyAddedImage()
+        {
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
+            var imagesService = GetImagesService(context);
+            var recordsImagesService = GetRecordsImagesService(context);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[1]);
+
+            var page = await imagesService.FetchImageSet(0, 4, recordId: recordId);
+
+            page.Should().NotBeNull();
+            page.Should().HaveCount(3);
+            page.Select(i => i.Id).Should().BeEquivalentTo(imagesIds.Where(i => i != imagesIds[1]));
+        }
+
+        [Test]
+        public async Task FetchImageSet_WithRecordIdAndAllAddedImages_ShouldReturnEmptyList()
+        {            
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
+            var imagesService = GetImagesService(context);
+            var recordsImagesService = GetRecordsImagesService(context);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[0]);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[1]);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[2]);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[3]);
+
+            var page = await imagesService.FetchImageSet(0, 4, recordId: recordId);
+
+            page.Should().NotBeNull();
+            page.Should().HaveCount(0);
+            imagesIds.Should().HaveCount(4);
+        }
+
+        [Test]
+        public async Task FetchImageSet_WithFilterAndRecordId_ShouldReturnFilteredAndWithoutAlreadyAddedImage()
+        {            
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
+            var imagesService = GetImagesService(context);
+            var recordsImagesService = GetRecordsImagesService(context);
+            await recordsImagesService.AddRecordImage(recordId, imagesIds[0]);
+
+            var page = await imagesService.FetchImageSet(0, 4, imageNameFilter: "1", recordId: recordId);
+
+            page.Should().NotBeNull();
+            page.Should().HaveCount(1);
+            page.Select(i => i.Id).Should().BeEquivalentTo(new Guid[] { imagesIds[2] });
+            imagesIds.Should().HaveCount(4);
         }
 
         [Test]

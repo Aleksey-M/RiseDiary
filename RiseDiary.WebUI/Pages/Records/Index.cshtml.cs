@@ -51,7 +51,7 @@ namespace RiseDiary.WebUI.Pages
         {
             CombineThemes = combineThemes ?? false;
             Expanded = expanded ?? false;
-            int pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.ImagesPageSize) ?? 25;
+            int pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.RecordsPageSize) ?? 25;
 
             Filters = new RecordsFilter
             {

@@ -4,6 +4,7 @@
 
 @inject IRecordsImagesService RecordsImageService 
 @inject IImagesService ImagesService
+@inject IAppSettingsService AppSettingsService
 @inject IJSRuntime JSRuntime 
 
 <div class="row">
@@ -94,7 +95,7 @@
 
     private bool _addMode;
 
-    private const int PAGE_SIZE = 30;
+    private int? _pageSize;
 
     private int _pagesCount;
 
@@ -113,11 +114,14 @@
         {
             _addMode = true;
             _pagesCount = pagesCount ?? 1;
-            int imagesCount = await ImagesService.GetImagesCount(_nameFilter);
-            _availableImages = await ImagesService.FetchImageSet(0, _pagesCount * PAGE_SIZE, _nameFilter);
-            _allImagesDisplayed = imagesCount <= _availableImages.Count;
+            _pageSize ??= await AppSettingsService.GetAppSettingInt(RiseDiary.Shared.AppSettingsKey.AvailableImagesPageSize) ?? 30;
 
-            _availableImages = _availableImages.Where(i => !RecordImagesRefsMutable.Any(r => r.ImageId == i.Id)).ToList();
+            int imagesCount = await ImagesService.GetImagesCount(imageNameFilter: _nameFilter, recordId: RecordId);
+
+            _availableImages = await ImagesService.FetchImageSet(0, _pagesCount * _pageSize.Value, 
+                imageNameFilter: _nameFilter, recordId: RecordId);
+
+            _allImagesDisplayed = imagesCount <= _availableImages.Count;
         }
         catch (Exception exc)
         {
@@ -137,16 +141,9 @@
     {
         try
         {
-            await RecordsImageService.AddRecordImage(RecordId, image.Id);
+            var newRecordImage = await RecordsImageService.AddRecordImage(RecordId, image.Id);
 
-            RecordImagesRefsMutable.Add(
-                new DiaryRecordImage
-                    {
-                        Image = image,
-                        ImageId = image.Id,
-                        RecordId = RecordId,
-                        Order = RecordImagesRefsMutable.Select(x => x.Order).DefaultIfEmpty().Max() + 1
-                    });
+            RecordImagesRefsMutable.Add(newRecordImage);
 
             _availableImages.Remove(image);
         }

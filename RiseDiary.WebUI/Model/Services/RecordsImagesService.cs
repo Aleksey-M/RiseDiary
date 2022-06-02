@@ -16,7 +16,7 @@ namespace RiseDiary.Model.Services
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task AddRecordImage(Guid recordId, Guid imageId, int? order = null)
+        public async Task<DiaryRecordImage> AddRecordImage(Guid recordId, Guid imageId, int? order = null)
         {
             var recExists = await _context.Records.AsNoTracking().AnyAsync(r => r.Id == recordId).ConfigureAwait(false);
             var imgExists = await _context.Images.AsNoTracking().AnyAsync(i => i.Id == imageId).ConfigureAwait(false);
@@ -38,7 +38,7 @@ namespace RiseDiary.Model.Services
 
             if (recordImage != null && !recordImage.Deleted)
             {
-                return;
+                return recordImage;
             }
 
             recordImage ??= new DiaryRecordImage
@@ -87,9 +87,11 @@ namespace RiseDiary.Model.Services
                 {
                     ShiftOrders(list, imageId, 1);
                 }
+
+                await _context.SaveChangesAsync().ConfigureAwait(false);
             }
 
-            await _context.SaveChangesAsync().ConfigureAwait(false);
+            return recordImage;
         }
 
         private static void ShiftOrders(List<DiaryRecordImage> diaryRecordImages, Guid insertedImageId, int newOrder, int? oldOrder = null)

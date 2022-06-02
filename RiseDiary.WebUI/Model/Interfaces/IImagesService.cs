@@ -15,9 +15,9 @@ namespace RiseDiary.Model
 
         Task<DiaryImage> FetchImageById(Guid imageId);
 
-        Task<List<DiaryImage>> FetchImageSet(int skip, int count, string? imageNameFilter = null);
+        Task<List<DiaryImage>> FetchImageSet(int skip, int count, string? imageNameFilter = null, Guid? recordId = null);
 
-        Task<int> GetImagesCount(string? imageNameFilter = null);
+        Task<int> GetImagesCount(string? imageNameFilter = null, Guid? recordId = null);
 
         Task UpdateImage(Guid imageId, string imageNewName);
     }

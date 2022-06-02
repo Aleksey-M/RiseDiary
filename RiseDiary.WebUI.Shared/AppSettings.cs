@@ -14,7 +14,8 @@ namespace RiseDiary.Shared
         ThumbnailSize,
         HostAndPort,
         RecordsPageSize,
-        ImagesPageSize
+        ImagesPageSize,
+        AvailableImagesPageSize
     }
 
     public sealed class AppSettingDto
@@ -62,6 +63,9 @@ namespace RiseDiary.Shared
 
             (AppSettingsKey.ImagesPageSize, _) when !int.TryParse(value, out _) => "Range value should be set as int",
             (AppSettingsKey.ImagesPageSize, _) => int.Parse(value) <= 1 ? "Range value must be greater than 1" :
+                                                             int.Parse(value) > 200 ? "Range value must be less than 200" : "",
+            (AppSettingsKey.AvailableImagesPageSize, _) when !int.TryParse(value, out _) => "Range value should be set as int",
+            (AppSettingsKey.AvailableImagesPageSize, _) => int.Parse(value) <= 1 ? "Range value must be greater than 1" :
                                                              int.Parse(value) > 200 ? "Range value must be less than 200" : "",
 
             (_, _) => ""

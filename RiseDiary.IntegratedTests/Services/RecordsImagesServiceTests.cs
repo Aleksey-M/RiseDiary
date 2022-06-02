@@ -126,30 +126,12 @@ namespace RiseDiary.IntegratedTests.Services
             recordsDict.Should().HaveCount(1);
             recordsDict.Keys.Should().Contain(recId);
             recordsDict[recId].Should().Be(recName);
-        }
-
-        private async Task<(Guid recordId, List<Guid> imagesIds, DiaryDbContext context)> CreateRecordAnd3Images()
-        {
-            var context = CreateContext();
-            var imageSvc = GetImagesService(context);
-
-            var imagesIds = new List<Guid>
-            {
-                await imageSvc.AddImage(TestFile),
-                await imageSvc.AddImage(TestFile),
-                await imageSvc.AddImage(TestFile),
-                await imageSvc.AddImage(TestFile)
-            };
-
-            var recordId = Create_Record(context);
-
-            return (recordId, imagesIds, context);
-        }
+        }        
 
         [Test]
         public async Task AddRecordImage_WithoutOrder_ShouldSaveMaxOrder()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             var recordsImagesService = GetRecordsImagesService(context);
 
             await recordsImagesService.AddRecordImage(recordId, imagesIds[0]);
@@ -167,7 +149,7 @@ namespace RiseDiary.IntegratedTests.Services
         [Test]
         public async Task AddRecordImage_WithBiggestOrder_ShouldAddToEnd()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             var recordsImagesService = GetRecordsImagesService(context);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[0]);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[1]);
@@ -182,7 +164,7 @@ namespace RiseDiary.IntegratedTests.Services
         [Test]
         public async Task AddRecordImage_WithNegativeOrder_ShouldAddToStart()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             var recordsImagesService = GetRecordsImagesService(context);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[0]);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[1]);
@@ -203,7 +185,7 @@ namespace RiseDiary.IntegratedTests.Services
         [Test]
         public async Task AddRecordImage_WithoutExistedOrder_ShouldSaveOrder()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             var recordsImagesService = GetRecordsImagesService(context);
 
             await recordsImagesService.AddRecordImage(recordId, imagesIds[0], 10);
@@ -221,7 +203,7 @@ namespace RiseDiary.IntegratedTests.Services
         [Test]
         public async Task AddRecordImage_WithSoftDeletion_ShouldSaveMaxOrder()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             context.SoftDeleting = true;
 
             var recordsImagesService = GetRecordsImagesService(context);
@@ -247,7 +229,7 @@ namespace RiseDiary.IntegratedTests.Services
         [Test]
         public async Task AddRecordImage_WithSoftDeletionAndExistedOrder_ShouldSaveOrderAndShiftExisted()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             context.SoftDeleting = true;
 
             var recordsImagesService = GetRecordsImagesService(context);
@@ -271,7 +253,7 @@ namespace RiseDiary.IntegratedTests.Services
         [Test]
         public async Task AddRecordImage_WithExistedOrder_ShouldSaveOrderAndShiftExisted()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
 
             var recordsImagesService = GetRecordsImagesService(context);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[0], 3);
@@ -295,7 +277,7 @@ namespace RiseDiary.IntegratedTests.Services
         [Test]
         public async Task ChangeRecordImageOrder_ToRight1_ShouldUpdateOrders()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             var recordsImagesService = GetRecordsImagesService(context);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[0], 1);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[1], 2);
@@ -325,7 +307,7 @@ namespace RiseDiary.IntegratedTests.Services
         [Test]
         public async Task ChangeRecordImageOrder_ToRight2_ShouldUpdateOrders()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             var recordsImagesService = GetRecordsImagesService(context);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[0], 1);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[1], 2);
@@ -354,7 +336,7 @@ namespace RiseDiary.IntegratedTests.Services
 
         public async Task ChangeRecordImageOrder_ToLeft1_ShouldUpdateOrders()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             var recordsImagesService = GetRecordsImagesService(context);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[0], 1);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[1], 2);
@@ -384,7 +366,7 @@ namespace RiseDiary.IntegratedTests.Services
         [Test]
         public async Task ChangeRecordImageOrder_ToLeft2_ShouldUpdateOrders()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             var recordsImagesService = GetRecordsImagesService(context);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[0], 1);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[1], 2);
@@ -414,7 +396,7 @@ namespace RiseDiary.IntegratedTests.Services
         [Test]
         public async Task ChangeRecordImageOrder_WithSameOrder_ShouldNotUpdateOrders()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             var recordsImagesService = GetRecordsImagesService(context);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[0], 1);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[1], 2);
@@ -444,7 +426,7 @@ namespace RiseDiary.IntegratedTests.Services
         [Test]
         public async Task ChangeRecordImageOrder_WithNegativeOrder_ShouldShiftOrders()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             var recordsImagesService = GetRecordsImagesService(context);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[0], 1);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[1], 2);
@@ -474,7 +456,7 @@ namespace RiseDiary.IntegratedTests.Services
         [Test]
         public async Task ChangeRecordImageOrder_WithBigPositiveOrder_ShouldShiftOrders()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             var recordsImagesService = GetRecordsImagesService(context);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[0], 1);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[1], 2);
@@ -504,7 +486,7 @@ namespace RiseDiary.IntegratedTests.Services
         [Test]
         public async Task RemoveRecordImage_NextImagesOrderShouldBeDecreased()
         {
-            var (recordId, imagesIds, context) = await CreateRecordAnd3Images();
+            var (recordId, imagesIds, context) = await CreateRecordAnd4Images();
             var recordsImagesService = GetRecordsImagesService(context);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[0], 1);
             await recordsImagesService.AddRecordImage(recordId, imagesIds[1], 2);

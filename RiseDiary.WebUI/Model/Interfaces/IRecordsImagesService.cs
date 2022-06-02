@@ -6,7 +6,7 @@ namespace RiseDiary.Model
 {
     public interface IRecordsImagesService
     {
-        Task AddRecordImage(Guid recordId, Guid imageId, int? order = null);
+        Task<DiaryRecordImage> AddRecordImage(Guid recordId, Guid imageId, int? order = null);
 
         Task RemoveRecordImage(Guid recordId, Guid imageId);
 
