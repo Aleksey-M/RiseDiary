@@ -26,37 +26,20 @@ namespace RiseDiary.WebUI.Pages.Images
             TargetRecordId = recordId;
         }
 
-        public async Task<IActionResult> OnPostAddNewImageAsync(List<IFormFile> newImages, string? newImageName, string? newBiggestDimension, Guid? targetRecordId)
+        public async Task<IActionResult> OnPostAddNewImageAsync(List<IFormFile> newImages, string? newImageName, int? newBiggestDimension, Guid? targetRecordId)
         {
             TargetRecordId = targetRecordId;
-            var validationErrors = new List<string>();
-            if (newImages == null || newImages.Count == 0) validationErrors.Add("Файл изображения не выбран");
 
-            int? biggestDimmSize = null;
-
-            if(newBiggestDimension is { Length: > 0 })
+            if (newImages == null || newImages.Count == 0)
             {
-                if(int.TryParse(newBiggestDimension, out int val))
-                {
-                    if(val > 100 && val < 10000)
-                    {
-                        biggestDimmSize = val;
-                    }
-                    else
-                    {
-                        validationErrors.Add("Размер должен быть больше 100 и меньше 10 000");
-                    }
-                }
-                else
-                {
-                    validationErrors.Add("Размер максимальной бОльшей стороны должен быть задан целым положительным числом");
-                }
+                ModelState.AddModelError("Image", "Файл изображения не выбран");
+                return Page();
             }
 
-            if (validationErrors.Count > 0)
+            int? biggestDimmSize = newBiggestDimension;
+            if (biggestDimmSize.HasValue && (biggestDimmSize > 10_000 || biggestDimmSize < 100))
             {
-                validationErrors.ForEach(s => ModelState.AddModelError("Image", s));
-                return Page();
+                biggestDimmSize = null;
             }
 
             Guid newImageId = Guid.Empty;
@@ -72,25 +55,21 @@ namespace RiseDiary.WebUI.Pages.Images
 
                 newImageId = await _imagesService.AddImage(newImages[i], newImgName, biggestDimmSize);
 
-                if (TargetRecordId != null && TargetRecordId != Guid.Empty)
+                if (HasRecord(TargetRecordId))
                 {
-                    await _recordImagesService.AddRecordImage(TargetRecordId.Value, newImageId);
+                    await _recordImagesService.AddRecordImage(TargetRecordId!.Value, newImageId);
                 }
             }
 
-            if (newImages?.Count == 1)
+            return (newImages!.Count == 1, HasRecord(TargetRecordId)) switch
             {
-                if (TargetRecordId != null && TargetRecordId != Guid.Empty)
-                    return Redirect($"/Images/Edit?recordId={TargetRecordId.Value}&imageId={newImageId}");
-                else
-                    return Redirect($"/Images/Edit?recordId=0&imageId={newImageId}");
-            }
+                (true, true)  => Redirect($"/Images/Edit?recordId={TargetRecordId!.Value}&imageId={newImageId}"),
+                (true, false) => Redirect($"/Images/Edit?imageId={newImageId}"),
+                (false, true) => Redirect($"/Records/View?recordId={TargetRecordId!.Value}"),
+                (false, false) => Redirect($"/Images")
+            };
 
-
-            if (TargetRecordId != null && TargetRecordId != Guid.Empty)
-                return Redirect($"/Records/View?recordId={TargetRecordId.Value}");
-            else
-                return Redirect($"/Images");
+            static bool HasRecord(Guid? recordId) => recordId != null && recordId != Guid.Empty;
         }
     }
 }
