@@ -68,13 +68,6 @@ namespace RiseDiary.WebUI
 
             services.AddServerSideBlazor();
 
-            int enableSwaggerUI = _configuration.GetValue<int>("enableSwaggerUI");
-            if (enableSwaggerUI > 0)
-            {
-                services.AddSwaggerDocument();
-                services.AddMvcCore().AddApiExplorer();
-            }
-
             int needMigration = _configuration.GetValue<int>("needMigration");
             if (needMigration > 0)
             {
@@ -102,13 +95,6 @@ namespace RiseDiary.WebUI
                 endpoints.MapRazorPages();
                 endpoints.MapBlazorHub();
             });
-
-            int enableSwaggerUI = _configuration.GetValue<int>("enableSwaggerUI");
-            if (enableSwaggerUI > 0)
-            {
-                app.UseOpenApi();
-                app.UseSwaggerUi3();
-            }
 
             if (_needFileBackup && applicationLifetime != null)
             {
