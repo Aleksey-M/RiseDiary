@@ -31,10 +31,15 @@ namespace RiseDiary.Model.Services
                 .ToListAsync()
                 .ConfigureAwait(false);
 
+            return await ReplaceHostAndPort(recordsPage);
+        }
+
+        private async Task<List<DiaryRecord>> ReplaceHostAndPort(List<DiaryRecord> diaryRecords)
+        {
             var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
             var currentHostAndPort = await _appSettingsService.GetHostAndPort();
 
-            foreach (var rec in recordsPage)
+            foreach (var rec in diaryRecords)
             {
                 rec.Text = rec.Text?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "";
                 rec.Name = rec.Name?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "";
@@ -44,7 +49,7 @@ namespace RiseDiary.Model.Services
                 }
             }
 
-            return recordsPage;
+            return diaryRecords;
         }
 
         public async Task<int> GetRecordsCount(RecordsFilter filter)
@@ -120,8 +125,9 @@ namespace RiseDiary.Model.Services
             return result;
         }
 
-        public async Task<List<DiaryRecord>> GetThisDayRecords(int month, int day) =>
-            await _context.Records
+        public async Task<List<DiaryRecord>> GetThisDayRecords(int month, int day)
+        {
+            var records = await _context.Records
                 .AsNoTracking()
                 .Include(r => r.Cogitations)
                 .Include(r => r.ThemesRefs)
@@ -133,5 +139,7 @@ namespace RiseDiary.Model.Services
                 .ThenByDescending(r => r.CreateDate)
                 .ToListAsync();
 
+            return await ReplaceHostAndPort(records);
+        }
     }
 }
