@@ -157,15 +157,16 @@ namespace RiseDiary.Model.Services
             return list.OrderBy(x => x.Order).ToList();
         }
 
-        public async Task<List<Guid>> GetLinkedImagesIdList(Guid recordId) => await _context.RecordImages
+        public async Task<List<DiaryRecordImage>> GetLinkedImagesList(Guid recordId) => await _context.RecordImages
             .AsNoTracking()
+            .Include(ri => ri.Image)
             .Where(ri => ri.RecordId == recordId)
             .OrderBy(ri => ri.Order)
-            .Select(ri => ri.ImageId)
             .ToListAsync()
             .ConfigureAwait(false);
 
         public async Task<Dictionary<Guid, string>> GetLinkedRecordsInfo(Guid imageId) => await _context.RecordImages
+            .AsNoTracking()
             .Include(ri => ri.Record)
             .Where(ri => ri.ImageId == imageId)
             .ToDictionaryAsync(ri => ri.RecordId, ri => ri.Record?.Name ?? throw new Exception($"Record with id = {ri.RecordId} is not exists in db"));

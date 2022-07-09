@@ -39,7 +39,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetRecordsService(context);
-            var id = Create_Record(context);
+            var id = CreateRecord(context);
             var rec = await context.Records.SingleOrDefaultAsync(r => r.Id == id);
 
             var loadedRec = await svc.FetchRecordById(id);
@@ -114,7 +114,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetRecordsService(context);
-            var id = Create_Record(context);
+            var id = CreateRecord(context);
             var rec = await context.Records.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id);
             var newDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-10));
 
@@ -133,7 +133,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetRecordsService(context);
-            var id = Create_Record(context);
+            var id = CreateRecord(context);
             var rec = await context.Records.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id);
             var newName = "Some new name 123456789";
 
@@ -152,7 +152,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetRecordsService(context);
-            var id = Create_Record(context);
+            var id = CreateRecord(context);
             var rec = await context.Records.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id);
             var newText = @"Some new text <p>dfefbsbsdfbsdfbdfb</p>";
 
@@ -171,7 +171,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetRecordsService(context);
-            var id = Create_Record(context);
+            var id = CreateRecord(context);
             var rec = await context.Records.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id);
 
             await svc.UpdateRecord(id, null, null, null);
@@ -206,7 +206,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetRecordsService(context);
-            var id = Create_Record(context);
+            var id = CreateRecord(context);
             var hpSvc = new HostAndPortStub();
             var text = $@"New text with link {hpSvc.GetHostAndPort()}/index and another link {hpSvc.GetHostAndPort()}/images/12345678";
 
@@ -245,7 +245,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetRecordsService(context);
-            var recId = Create_Record(context);
+            var recId = CreateRecord(context);
             var hpSvc = new HostAndPortStub();
             var text = $@"New text with link {hpSvc.GetHostAndPortPlaceholder()}/index and another link {hpSvc.GetHostAndPortPlaceholder()}/images/12345678";
             var cogitationsList = Enumerable.Range(1, 3)
@@ -261,121 +261,6 @@ namespace RiseDiary.IntegratedTests.Services
                 c.Text.Should().Contain(hpSvc.GetHostAndPort(), Exactly.Twice());
             }
         }
-
-
-        [Test]
-        public async Task AddCogitation_WithNullParameter_ShouldThrowArgumentException()
-        {
-            var context = CreateContext();
-            var svc = GetRecordsService();
-            var recId = Create_Record(context);
-
-            Func<Task> action = async () => await svc.AddCogitation(recId, null!);
-
-            await action.Should().ThrowAsync<ArgumentException>();
-        }
-
-        [Test]
-        public async Task AddCogitation_ShouldAddNewCogitation()
-        {
-            var context = CreateContext();
-            var svc = GetRecordsService(context);
-            var recId = Create_Record(context);
-            var text = "Some text";
-
-            var cogId = await svc.AddCogitation(recId, text);
-
-            var cog = await context.Cogitations.FindAsync(cogId);
-            cog.Should().NotBeNull();
-            cog.Text.Should().Be(text);
-            cog.Date.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(500));
-            cog.RecordId.Should().Be(recId);
-        }
-
-        [Test]
-        public async Task AddCogitation_ShouldReplaceHostAndPortByPlaceholdere()
-        {
-            var context = CreateContext();
-            var svc = GetRecordsService(context);
-            var recId = Create_Record(context);
-            var hpSvc = new HostAndPortStub();
-            var text = $@"New text with link {hpSvc.GetHostAndPort()}/index and another link {hpSvc.GetHostAndPort()}/images/12345678";
-
-            var cogId = await svc.AddCogitation(recId, text);
-
-            var cog = await context.Cogitations.FindAsync(cogId);
-            cog.Text.Should().NotContain(hpSvc.GetHostAndPort());
-            cog.Text.Should().Contain(hpSvc.GetHostAndPortPlaceholder(), Exactly.Twice());
-        }
-
-        [Test]
-        public async Task UpdateCogitationText_ShouldUpdate()
-        {
-            var context = CreateContext();
-            var svc = GetRecordsService(context);
-            var recId = Create_Record(context);
-            var cId = Guid.NewGuid();
-            var cDate = DateTime.UtcNow;
-            var cText = "Some Text 81237912y0r9182ny";
-            var newText = "Some other text";
-            context.Cogitations.Add(new Cogitation { Id = cId, Date = cDate, RecordId = recId, Text = cText });
-            await context.SaveChangesAsync();
-
-            await svc.UpdateCogitationText(cId, newText);
-
-            var updatedCog = await context.Cogitations.FindAsync(cId);
-            updatedCog.Text.Should().Be(newText);
-            updatedCog.Date.Should().Be(cDate);
-        }
-
-        [Test]
-        public async Task UpdateCogitationText_ShouldReplaceHostAndPortByPlaceholdere()
-        {
-            var context = CreateContext();
-            var svc = GetRecordsService(context);
-            var recId = Create_Record(context);
-            var cId = Guid.NewGuid();
-            var cDate = DateTime.UtcNow;
-            var cText = "Some Text 81237912y0r9182ny";
-            var hpSvc = new HostAndPortStub();
-            var newText = $@"New text with link {hpSvc.GetHostAndPort()}/index and another link {hpSvc.GetHostAndPort()}/images/12345678";
-            context.Cogitations.Add(new Cogitation { Id = cId, Date = cDate, RecordId = recId, Text = cText });
-            await context.SaveChangesAsync();
-
-            await svc.UpdateCogitationText(cId, newText);
-
-            var cog = await context.Cogitations.FindAsync(cId);
-            cog.Text.Should().NotContain(hpSvc.GetHostAndPort());
-            cog.Text.Should().Contain(hpSvc.GetHostAndPortPlaceholder(), Exactly.Twice());
-        }
-
-        [Test]
-        public async Task SoftDeleting_DeleteCogitation_WithEnabledSD_ShouldMarkAsDeleted()
-        {
-            var context = CreateContext();
-            var svc = GetRecordsService(context);
-            context.SoftDeleting = true;
-            var (_, cogId) = Create_3Records_1Cogitation(context);
-
-            await svc.DeleteCogitation(cogId);
-
-            var cogitation = await context.Cogitations.FindAsync(cogId);
-            cogitation.Should().NotBeNull();
-            cogitation.Deleted.Should().BeTrue();
-        }
-
-        [Test]
-        public async Task SoftDeleting_DeleteCogitation_WithDisabledSD_ShouldDeleteRecords()
-        {
-            var context = CreateContext();
-            var svc = GetRecordsService(context);
-            context.SoftDeleting = false;
-            var (_, cogId) = Create_3Records_1Cogitation(context);
-
-            await svc.DeleteCogitation(cogId);
-
-            var cogitation = await context.Cogitations.FindAsync(cogId);
-            cogitation.Should().BeNull();
-        }
+        
     }
 }

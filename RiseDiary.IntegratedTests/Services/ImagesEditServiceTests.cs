@@ -16,7 +16,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetImagesEditService(context);
-            var imgId = Create_Image(context);
+            var imgId = CreateImage(context);
 
             Func<Task> action = async () => _ = await svc.FetchChangedImage(imgId);
 
@@ -42,7 +42,7 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             var svc = GetImagesEditService(context);
             var imgWithTemp = await CreateImageWithTempImage(context);
-            var unchangedImgId = Create_Image(context);
+            var unchangedImgId = CreateImage(context);
 
             var hasChanged1 = await svc.ImageHasChanges(imgWithTemp.Id);
             var hasChanged2 = await svc.ImageHasChanges(unchangedImgId);
@@ -68,7 +68,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetImagesEditService(context);
-            var imgId = Create_Image(context);
+            var imgId = CreateImage(context);
 
             await svc.ReplaceImage(TestFile, imgId);
 
@@ -94,7 +94,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetImagesEditService(context);
-            var imgId = Create_Image(context);
+            var imgId = CreateImage(context);
 
             await svc.ReduceImageSize(imgId, 250);
 
@@ -108,7 +108,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetImagesEditService(context);
-            var imgId = Create_Image(context);
+            var imgId = CreateImage(context);
 
             Func<Task> action = async () => await svc.ApplyChanges(imgId);
 
@@ -239,7 +239,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetImagesEditService(context);
-            var imgId = Create_Image(context, FullImage_512X341);                       
+            var imgId = CreateImage(context, FullImage_512X341);                       
 
             await svc.RotateImage(imgId, Model.Turn.Left);
 
@@ -259,7 +259,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetImagesEditService(context);
-            var imgId = Create_Image(context, FullImage_512X341);
+            var imgId = CreateImage(context, FullImage_512X341);
 
             await svc.RotateImage(imgId, Model.Turn.Right);
 

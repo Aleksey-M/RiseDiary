@@ -121,7 +121,7 @@ namespace RiseDiary.IntegratedTests
             };
         }
 
-        protected static Guid Create_Record(DiaryDbContext context)
+        protected static Guid CreateRecord(DiaryDbContext context)
         {
             var rec = GetTestRecord();
             context.Records.Add(rec);
@@ -155,10 +155,7 @@ namespace RiseDiary.IntegratedTests
             };
         }
 
-        protected static string UniqueString => Guid.NewGuid().ToString();
-        protected static byte[] ImageBytes => File.ReadAllBytes(FullImage_1280X814);
-
-        protected static Guid Create_Image(DiaryDbContext context, string imageName = FullImage_512X341)
+        protected static Guid CreateImage(DiaryDbContext context, string imageName = FullImage_512X341)
         {
             var img = GetTestImage(imageName);
             context.Images.Add(img);
@@ -166,7 +163,7 @@ namespace RiseDiary.IntegratedTests
             return img.Id;
         }
 
-        protected static (Guid recId, Guid cogId) Create_3Records_1Cogitation(DiaryDbContext context)
+        protected static (Guid recId, Guid cogId) Create3RecordsAnd1Cogitation(DiaryDbContext context)
         {
             Guid recId;
 
@@ -206,7 +203,7 @@ namespace RiseDiary.IntegratedTests
         protected static IEnumerable<DateOnly> GetDatesList(int count) => Enumerable.Range(1, count).Select(i => DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-i)));
         protected static IEnumerable<DateOnly> GetDatesListWithTwoSameDatesWeekAgo(int count) => Enumerable.Range(1, count).Select(i => i == 2 ? DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7)) : DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-i)));
 
-        protected static void Create_20Records(DiaryDbContext context, IEnumerable<string> _20recordNames, IEnumerable<DateOnly> _20recordDates, List<string>? _20recordsText = null)
+        protected static void Create20Records(DiaryDbContext context, IEnumerable<string> _20recordNames, IEnumerable<DateOnly> _20recordDates, List<string>? _20recordsText = null)
         {
             if (_20recordDates.Count() != 20) throw new ArgumentOutOfRangeException(nameof(_20recordDates));
             if (_20recordNames.Count() != 20) throw new ArgumentOutOfRangeException(nameof(_20recordNames));
@@ -225,9 +222,9 @@ namespace RiseDiary.IntegratedTests
             context.SaveChanges();
         }
 
-        protected static void Create_30Themes_20Records(DiaryDbContext context, IEnumerable<string> _20recordNames, IEnumerable<DateOnly> _20recordDates)
+        protected static void Create30ThemesAnd20Records(DiaryDbContext context, IEnumerable<string> _20recordNames, IEnumerable<DateOnly> _20recordDates)
         {
-            Create_20Records(context, _20recordNames, _20recordDates);
+            Create20Records(context, _20recordNames, _20recordDates);
 
             var scope = new DiaryScope { ScopeName = "Test" };
             context.Scopes.Add(scope);
@@ -253,29 +250,7 @@ namespace RiseDiary.IntegratedTests
             context.SaveChanges();
         }
 
-        protected static bool HasRecordWithIntName(List<DiaryRecord> records, int intName) => records.Any(r => int.Parse(r.Name, CultureInfo.InvariantCulture) == intName);
-
-        protected static List<Guid> Create_3Records_3_2_1Cogitations(DiaryDbContext context)
-        {
-            context.Records.AddRange(GetTestRecord(), GetTestRecord(), GetTestRecord());
-            context.SaveChanges();
-            var resList = context.Records.OrderBy(r => r.Id).Select(r => r.Id).ToList();
-
-            DiaryRecord rec;
-            for (int i = 0; i < 3; i++)
-            {
-                rec = context.Records.Find(resList[i]) ?? throw new Exception($"Test error^ record with Id '{resList[i]}' was not found");
-                for (int j = 3; j - i > 0; j--)
-                {
-                    var cog = new Cogitation { Date = DateTime.UtcNow.AddDays(-j), RecordId = rec.Id, Text = new string('+', j) };
-                    context.Cogitations.Add(cog);
-                    context.SaveChanges();
-                }
-            }
-            return resList;
-        }
-
-        protected static Guid Create_Scope(DiaryDbContext context, string? scopeName = null)
+        protected static Guid CreateScope(DiaryDbContext context, string? scopeName = null)
         {
             var scope = new DiaryScope { ScopeName = scopeName ?? Guid.NewGuid().ToString() };
             context.Scopes.Add(scope);
@@ -283,17 +258,9 @@ namespace RiseDiary.IntegratedTests
             return scope.Id;
         }
 
-        protected static List<Guid> Create_ThemesForScope(DiaryDbContext context, Guid scopeId, List<string> themeNames)
-        {
-            var themes = themeNames.Select(n => new DiaryTheme { ScopeId = scopeId, ThemeName = n }).ToList();
-            context.Themes.AddRange(themes);
-            context.SaveChanges();
-            return themes.Select(t => t.Id).ToList();
-        }
-
         protected static (Guid scopeId, Guid themeId) CreateThemeWithScope(DiaryDbContext context, string themeName)
         {
-            var scopeId = Create_Scope(context);
+            var scopeId = CreateScope(context);
             var theme = new DiaryTheme
             {
                 Id = Guid.NewGuid(),
@@ -307,7 +274,7 @@ namespace RiseDiary.IntegratedTests
             return (scopeId, theme.Id);
         }
 
-        protected static Guid Create_Theme(DiaryDbContext context, string themeName, Guid? scopeId = null)
+        protected static Guid CreateTheme(DiaryDbContext context, string themeName, Guid? scopeId = null)
         {
             if (scopeId == null)
             {
@@ -328,7 +295,7 @@ namespace RiseDiary.IntegratedTests
             return theme.Id;
         }
 
-        protected static List<DiaryScope> Create_3Scopes_With1ThemeForEach(DiaryDbContext context)
+        protected static List<DiaryScope> Create3ScopesWith1ThemeForEach(DiaryDbContext context)
         {
             for (int i = 0; i < 3; i++)
             {
@@ -761,7 +728,7 @@ namespace RiseDiary.IntegratedTests
                 { 19,  ".юб.б.юбс.б" } };
 
             Guid GetRecordIdByNameIndex(int index) => context.Records.First(r => r.Name == namesList[index]).Id;
-            Create_30Themes_20Records(context, namesList.Values.ToArray(), GetDatesList(20));
+            Create30ThemesAnd20Records(context, namesList.Values.ToArray(), GetDatesList(20));
             var themeId1 = context.Themes.ToList().ElementAt(10).Id;
             var themeId2 = context.Themes.ToList().ElementAt(22).Id;
             var recordsThemes = new List<DiaryRecordTheme> {
@@ -782,10 +749,10 @@ namespace RiseDiary.IntegratedTests
 
         protected async Task<(Guid rec1Id, Guid rec2Id, Guid rec3Id, Guid imgId)> CreateRecordsWithLinkedImage(DiaryDbContext context)
         {
-            var rec1Id = Create_Record(context);
-            var rec2Id = Create_Record(context);
-            var rec3Id = Create_Record(context);
-            var imgId = Create_Image(context);
+            var rec1Id = CreateRecord(context);
+            var rec2Id = CreateRecord(context);
+            var rec3Id = CreateRecord(context);
+            var imgId = CreateImage(context);
 
             context.RecordImages.Add(new DiaryRecordImage { ImageId = imgId, RecordId = rec1Id, Order = 1 });
             context.RecordImages.Add(new DiaryRecordImage { ImageId = imgId, RecordId = rec2Id, Order = 1 });
@@ -793,17 +760,17 @@ namespace RiseDiary.IntegratedTests
 
             for (int i = 2; i <= 4; i++)
             {
-                context.RecordImages.Add(new DiaryRecordImage { ImageId = Create_Image(context), RecordId = rec1Id, Order = i });
+                context.RecordImages.Add(new DiaryRecordImage { ImageId = CreateImage(context), RecordId = rec1Id, Order = i });
             }
 
             for (int i = 2; i <= 4; i++)
             {
-                context.RecordImages.Add(new DiaryRecordImage { ImageId = Create_Image(context), RecordId = rec2Id, Order = i });
+                context.RecordImages.Add(new DiaryRecordImage { ImageId = CreateImage(context), RecordId = rec2Id, Order = i });
             }
 
             for (int i = 2; i <= 4; i++)
             {
-                context.RecordImages.Add(new DiaryRecordImage { ImageId = Create_Image(context), RecordId = rec3Id, Order = i });
+                context.RecordImages.Add(new DiaryRecordImage { ImageId = CreateImage(context), RecordId = rec3Id, Order = i });
             }
 
             await context.SaveChangesAsync();
@@ -824,7 +791,7 @@ namespace RiseDiary.IntegratedTests
                 await imageSvc.AddImage(TestFile, imageName: "Image 03")
             };
 
-            var recordId = Create_Record(context);
+            var recordId = CreateRecord(context);
 
             return (recordId, imagesIds, context);
         }
@@ -852,5 +819,7 @@ namespace RiseDiary.IntegratedTests
         static protected IRecordsThemesService GetRecordsThemesService(DiaryDbContext? context = null) => TestedServices.GetRecordsThemesService(context ?? CreateContext());
 
         static protected IScopesService GetScopesService(DiaryDbContext? context = null) => TestedServices.GetScopesService(context ?? CreateContext());
+
+        static protected ICogitationsService GetCogitationsService(DiaryDbContext? context = null) => TestedServices.GetCogitationsService(context ?? CreateContext(), new AppSettingsServiceStub());
     }
 }

@@ -5,19 +5,19 @@
 
 @inject IAppSettingsService SettingsSvc
 
-@if (CriticalError is not null)
+@if (_criticalError is not null)
 {
-    <p style="color:red">Произошла критическая ошибка: @CriticalError</p>
+    <p style="color:red">Произошла критическая ошибка: @_criticalError</p>
 }
 else
 {
-    @if (StartRecordId == null)
+    @if (_startRecordId == null)
     {
         <button type="button" @onclick="@(e => SetOnStartPage())" class="btn btn-link pt-0" style="float:right" title="Поместить на стартовую страницу">
             <img src="img/calendar-plus.svg" />
         </button>
     }
-    else if (RecordId == StartRecordId)
+    else if (RecordId == _startRecordId)
     {
         <button type="button" @onclick="@(e => RemoveFromStartPage())" class="btn btn-link pt-0" style="float:right" title="Удалить со стартовой страницы">
             <img src="img/calendar-x.svg" />
@@ -36,15 +36,10 @@ else
     [Parameter]
     public Guid RecordId { get; set; }
 
-    private Guid? StartRecordId { get; set; }
+    private Guid? _startRecordId;
 
-    private string? CriticalError { get; set; }
+    private string? _criticalError;
 
-
-    private void HandleCriticalError(Exception exc)
-    {
-        CriticalError = exc.Message;
-    }
 
     private async Task SetOnStartPage()
     {
@@ -55,7 +50,7 @@ else
         }
         catch(Exception exc)
         {
-            HandleCriticalError(exc);
+            _criticalError = exc.Message;
         }
     }
 
@@ -64,12 +59,12 @@ else
         try
         {
             await SettingsSvc.UpdateAppSetting(AppSettingsKey.StartPageRecordId, "").ConfigureAwait(false);
-            StartRecordId = null;
+            _startRecordId = null;
             await ReadStartPageId().ConfigureAwait(false);
         }
         catch (Exception exc)
         {
-            HandleCriticalError(exc);
+            _criticalError = exc.Message;
         }
     }
 
@@ -79,7 +74,7 @@ else
 
         if (Guid.TryParse(s, out var id))
         {
-            StartRecordId = id;
+            _startRecordId = id;
         }
 
         await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
@@ -93,7 +88,7 @@ else
         }
         catch(Exception exc)
         {
-            HandleCriticalError(exc);
+            _criticalError = exc.Message;
         }    
     } 
 }

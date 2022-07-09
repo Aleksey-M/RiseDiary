@@ -58,6 +58,7 @@ namespace RiseDiary.WebUI
             services.AddTransient<IImagesEditService, ImagesEditService>();
             services.AddTransient<ICropImageService, CropImageService>();
             services.AddTransient<IRecordsService, RecordsService>();
+            services.AddTransient<ICogitationsService, CogitationsService>();
             services.AddTransient<IRecordsSearchService, RecordsSearchService>();
             services.AddTransient<IRecordsSearchTextService, RecordsSearchTextService>();
             services.AddTransient<IDatesService, DatesService>();

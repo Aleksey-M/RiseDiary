@@ -15,15 +15,22 @@ namespace RiseDiary.WebUI.Api
     {
         private readonly IRecordsService _recordService;
 
+        private readonly ICogitationsService _cogitationsService;
+
         private readonly IAppSettingsService _appSettingsService;
 
         private readonly IRecordsThemesService _recordsThemesService;
 
-        public RecordsController(IRecordsService recordService, IAppSettingsService appSettingsService, IRecordsThemesService recordsThemesService)
+        public RecordsController(
+            IRecordsService recordService,
+            IAppSettingsService appSettingsService,
+            IRecordsThemesService recordsThemesService,
+            ICogitationsService cogitationsService)
         {
             _recordService = recordService;
             _appSettingsService = appSettingsService;
             _recordsThemesService = recordsThemesService;
+            _cogitationsService = cogitationsService;
         }
 
         [HttpPost, Route("api/v1.0/records")]
@@ -133,7 +140,7 @@ namespace RiseDiary.WebUI.Api
 
             try
             {
-                var cogId = await _recordService.AddCogitation(recordId, createCogitationDto.Text);
+                var cogId = await _cogitationsService.AddCogitation(recordId, createCogitationDto.Text);
                 var recordUri = $@"{await _appSettingsService.GetHostAndPort()}/api/v1.0/records/{recordId}";
                 return Created(recordUri, cogId);
             }
@@ -152,7 +159,7 @@ namespace RiseDiary.WebUI.Api
 
             try
             {
-                await _recordService.UpdateCogitationText(cogitationId, updateCogitationDto.NewText);
+                await _cogitationsService.UpdateCogitationText(cogitationId, updateCogitationDto.NewText);
                 return NoContent();
             }
             catch (ArgumentException exc)
@@ -174,7 +181,7 @@ namespace RiseDiary.WebUI.Api
                 return BadRequest();
             }
 
-            await _recordService.DeleteCogitation(cogitationId);
+            await _cogitationsService.DeleteCogitation(cogitationId);
             return NoContent();
         }
     }

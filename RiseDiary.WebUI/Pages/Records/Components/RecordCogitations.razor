@@ -1,0 +1,226 @@
+﻿@using RiseDiary.Model
+@using Blazored.TextEditor
+
+@namespace RiseDiary.WebUI.Pages.Records
+
+@inject ICogitationsService CogitationsService
+@inject IJSRuntime JSRuntime
+@inject BrowserTimeOffsetService BrowserTimeOffset
+
+<div class="col-12 text-center">
+    <h4 style="color:darkgrey">Комментарии (осмысления)</h4>
+</div>
+
+@if (_criticalError is not null && _criticalErrorArea == ErrorArea.CogitationCreate)
+{
+    <div class="col-12 mt-2">
+        <p style="color:red">Произошла критическая ошибка: @_criticalError</p>
+    </div>
+}
+else
+{
+    if (_showCogitationEditor)
+    {
+        <div class="col-12 mt-2">
+            <div id="newCogitation" style="border: 1px solid black; overflow: auto; resize: vertical">
+                <ErrorBoundary>
+                    <BlazoredTextEditor @ref="@QuillHtml">
+                        <ToolbarContent>
+                            <select class="ql-header">
+                                <option selected=""></option>
+                                <option value="1"></option>
+                                <option value="2"></option>
+                                <option value="3"></option>
+                                <option value="4"></option>
+                                <option value="5"></option>
+                            </select>
+                            <span class="ql-formats">
+                                <select class="ql-font"></select>
+                                <button class="ql-bold"></button>
+                                <button class="ql-italic"></button>
+                                <button class="ql-underline"></button>
+                                <button class="ql-strike"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-list" value="ordered"></button>
+                                <button class="ql-list" value="bullet"></button>
+                                <button class="ql-indent" value="-1"></button>
+                                <button class="ql-indent" value="+1"></button>
+                                <select class="ql-align ql-picker ql-icon-picker"></select>
+                            </span>
+                            <span class="ql-formats">
+                                <select class="ql-color"></select>
+                                <select class="ql-background"></select>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-script" value="sub"></button>
+                                <button class="ql-script" value="super"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-link"></button>
+                                <button class="ql-image"></button>
+                                <button class="ql-video"></button>
+                            </span>
+                        </ToolbarContent>
+                        <EditorContent>
+
+                        </EditorContent>
+                    </BlazoredTextEditor>
+                </ErrorBoundary>
+            </div>
+        </div>
+
+        <div class="col-12 mb-2">
+            <button type="button" class="btn btn-outline-success btn-sm mt-1" title="Сохранить текст" @onclick="async _ => await CreateNewCogitation()">
+                Создать
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="col-12 mb-2">
+            <button type="button" class="btn btn-outline-success btn-sm mt-1" title="Добавить комментарий" @onclick="_ => _showCogitationEditor = true">
+                Добавить комментарий
+            </button>
+        </div>
+    }
+}
+
+@foreach (var cog in _cogitations)
+{
+    <div class="col-12 my-1">
+        @if (_criticalError is not null && _criticalErrorArea == ErrorArea.CogitationUpdate)
+        {
+            <p style="color:red">Произошла критическая ошибка: @_criticalError</p>
+        }
+        else
+        {
+            <p class="mt-2">
+                <b class="align-middle">@BrowserTimeOffset.ToLocalString(cog.Date)</b>
+                <button class="btn btn-link" title="Удалить комментарий (осмысление)" @onclick="async _ => await DeleteCogitation(cog.Id)">
+                    <img src="img/trash.svg" width="20" height="20" />
+                </button>
+            </p>
+
+            <TextEditor Text="@cog.Text" SaveText="async t => await UpdateCogitationText(cog.Id, t)" />
+        }
+    </div>
+}
+
+@code {
+
+    private enum ErrorArea { None, CogitationUpdate, CogitationCreate }
+
+    [Parameter]
+    public DiaryRecord Record { get; set; } = null!;
+
+    private string? _criticalError;
+
+    private ErrorArea _criticalErrorArea = ErrorArea.None;
+
+    private bool _showCogitationEditor;
+
+    private List<Cogitation> _cogitations = new List<Cogitation>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        try
+        {
+            _cogitations = Record.Cogitations
+                .OrderByDescending(c => c.Date)
+                .ToList();
+        }
+        catch (RecordNotFoundException)
+        {
+            await JSRuntime.InvokeVoidAsync("redirectToIndex");
+            return;
+        }
+        catch (Exception exc)
+        {
+            _criticalError = exc.Message;
+        }
+    }
+
+    private async Task UpdateCogitationText(Guid textId, string text)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                text = "[empty]";
+            }
+
+            var cog = _cogitations.SingleOrDefault(c => c.Id == textId);
+            if (cog is not null)
+            {
+                await CogitationsService.UpdateCogitationText(cog.Id, text);
+                cog.Text = text;
+            }
+        }
+        catch (Exception exc)
+        {
+            _criticalError = exc.Message;
+            _criticalErrorArea = ErrorArea.CogitationUpdate;
+        }
+
+    }
+
+    private async Task DeleteCogitation(Guid cogitationId)
+    {
+        try
+        {
+            var cog = _cogitations.SingleOrDefault(c => c.Id == cogitationId);
+            if (cog is null) return;
+
+            bool conf = await JSRuntime.InvokeAsync<bool>("confirm", "Удалить комментарий (осмысление)?");
+
+            if (conf)
+            {
+                await CogitationsService.DeleteCogitation(cogitationId);
+                _cogitations.Remove(cog);
+            }
+        }
+        catch (Exception exc)
+        {
+            _criticalError = exc.Message;
+            _criticalErrorArea = ErrorArea.CogitationUpdate;
+        }
+    }
+
+    BlazoredTextEditor QuillHtml = null!;
+
+    private async Task CreateNewCogitation()
+    {
+        try
+        {
+            var text = await QuillHtml.GetText();
+            text = text.Trim() ?? "";
+
+            if (text == "")
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Текст не введен");
+                return;
+            }
+
+            var html = await QuillHtml.GetHTML();
+            var newCogId = await CogitationsService.AddCogitation(Record.Id, html);
+
+            _cogitations.Insert(0, new Cogitation
+                {                    
+                    Date = DateTime.UtcNow,
+                    Text = html,
+                    RecordId = Record.Id
+                });
+
+            await JSRuntime.InvokeVoidAsync("setQuillHtmlText", @"<p></p>", "newCogitation");
+            _showCogitationEditor = false;
+        }
+        catch (Exception exc)
+        {
+            _criticalError = exc.Message;
+            _criticalErrorArea = ErrorArea.CogitationCreate;
+        }
+    }
+}

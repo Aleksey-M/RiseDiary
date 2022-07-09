@@ -9,5 +9,7 @@ namespace RiseDiary.Model
         Task AddRecordTheme(Guid recordId, IEnumerable<Guid> themesIds);
 
         Task RemoveRecordTheme(Guid recordId, IEnumerable<Guid> themesIds);
+
+        Task<List<DiaryRecordTheme>> GetRecordThemes(Guid recordId);
     }
 }

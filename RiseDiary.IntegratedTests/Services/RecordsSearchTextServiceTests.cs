@@ -16,7 +16,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             // mark one record as deleted
             var delRecord = await context.Records.Skip(3).FirstAsync();
@@ -35,7 +35,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             // mark one record as deleted
             var delRecord = await context.Records.Skip(3).FirstAsync();
@@ -53,7 +53,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             await Add3ImagesForEachRecord(context);
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             // mark two images for different records as deleted
@@ -71,7 +71,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             await Add3CogitationsForEachRecord(context);
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             // mark two cogitations for different records as deleted
@@ -89,7 +89,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             await Add3ThemesForEachRecord(context);
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             // mark two themes for different records as deleted
@@ -107,7 +107,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             var hostAndPortService = new HostAndPortStub();
             // add links
@@ -128,7 +128,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             var hostAndPortService = new HostAndPortStub();
             // add links
@@ -149,7 +149,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             await Add3CogitationsForEachRecord(context);
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             var hostAndPortService = new HostAndPortStub();
@@ -171,7 +171,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsListByText_ByEmptyString_ShouldReturnEmptyList()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             var filter = new RecordsTextFilter { SearchText = "" };
@@ -186,7 +186,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_ByEmptyString_ShouldReturn0()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
 
@@ -199,7 +199,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsListByText_ByWhitespaces_ShouldReturnEmptyList()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             var filter = new RecordsTextFilter { SearchText = "    " };
@@ -214,7 +214,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_ByWhitespaces_ShouldReturn0()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
 
@@ -227,7 +227,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsListByText_WithoutMatches_ShouldReturnEmptyList()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             var filter = new RecordsTextFilter { SearchText = "UniqueString" };
@@ -242,7 +242,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_WithoutMatches_ShouldReturn0()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
 
@@ -255,7 +255,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsListByText_MatchesInName_ShouldReturn4Records()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNamesList(), GetDatesList(20));
+            Create20Records(context, GetNamesList(), GetDatesList(20));
             await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             var filter = new RecordsTextFilter { SearchText = SearchSubstring4 };
@@ -275,7 +275,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_MatchesInName_ShouldReturn4()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNamesList(), GetDatesList(20));
+            Create20Records(context, GetNamesList(), GetDatesList(20));
             await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
 
@@ -288,7 +288,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsListByText_MatchesInText_ShouldReturn4Records()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20), GetNamesList().ToList());
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20), GetNamesList().ToList());
             await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             var filter = new RecordsTextFilter { SearchText = SearchSubstring4 };
@@ -308,7 +308,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_MatchesInText_ShouldReturn4()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20), GetNamesList().ToList());
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20), GetNamesList().ToList());
             await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
 
@@ -321,7 +321,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsListByText_MatchesInCogitationText_ShouldReturn4Records()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             await Add3CogitationsForEachRecord(context, "CogitationText_", GetNamesList());
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             var filter = new RecordsTextFilter { SearchText = SearchSubstring4 };
@@ -341,7 +341,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_MatchesInCogitationText_ShouldReturn4()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+            Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
             await Add3CogitationsForEachRecord(context, "CogitationText_", GetNamesList());
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
 
@@ -354,7 +354,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsListByText_SeveralMatches_ShouldReturnDistinctRecords()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNamesList(), GetDatesList(20), GetNamesList().ToList());
+            Create20Records(context, GetNamesList(), GetDatesList(20), GetNamesList().ToList());
             await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
             var filter = new RecordsTextFilter { SearchText = SearchSubstring4 };
@@ -374,7 +374,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_SeveralMatches_ShouldReturn4()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNamesList(), GetDatesList(20), GetNamesList().ToList());
+            Create20Records(context, GetNamesList(), GetDatesList(20), GetNamesList().ToList());
             await Add3CogitationsForEachRecord(context, "CogitationText_");
             var recSearchByTextSvc = GetRecordsSearchTextService(context);
 

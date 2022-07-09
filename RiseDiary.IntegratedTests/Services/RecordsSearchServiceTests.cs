@@ -18,7 +18,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             // mark one record as deleted
             var delRecord = await context.Records.Skip(3).FirstAsync();
@@ -37,7 +37,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             // mark one record as deleted
             var delRecord = await context.Records.Skip(3).FirstAsync();
@@ -55,7 +55,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             await Add3ImagesForEachRecord(context);
             var svc = GetRecordsSearchService(context);
             // mark two images for different records as deleted
@@ -73,7 +73,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             await Add3CogitationsForEachRecord(context);
             var svc = GetRecordsSearchService(context);
             // mark two cogitations for different records as deleted
@@ -91,7 +91,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             await Add3ThemesForEachRecord(context);
             var svc = GetRecordsSearchService(context);
             // mark two themes for different records as deleted
@@ -109,7 +109,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var hostAndPortService = new HostAndPortStub();
             // add links
@@ -130,7 +130,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var hostAndPortService = new HostAndPortStub();
             // add links
@@ -151,7 +151,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             context.SoftDeleting = true;
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             await Add3CogitationsForEachRecord(context);
             var svc = GetRecordsSearchService(context);
             var hostAndPortService = new HostAndPortStub();
@@ -173,7 +173,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsList_WithEmptyFilterCriterias_ShouldReturnAllPageRecords()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
 
             var pageList = await svc.GetRecordsList(RecordsFilter.Empty);
@@ -186,7 +186,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsList_WithEmptyFilterCriterias_And_CombineThemesTrue_ShouldReturnAllPageRecords()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var filters = RecordsFilter.Empty;
             filters.CombineThemes = true;
@@ -201,7 +201,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_WithEmptyFilterCriterias_ShouldReturnAllRecordsCount()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
 
             int recCount = await svc.GetRecordsCount(RecordsFilter.Empty);
@@ -213,7 +213,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_WithEmptyFilterCriterias_And_CombineThemesTrue_ShouldReturnAllRecordsCount()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var filters = RecordsFilter.Empty;
             filters.CombineThemes = true;
@@ -227,7 +227,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsList_WithWhiteSpaceInNameFilter_ShouldReturnAllPageRecords()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var filterWithWhiteSpace = new RecordsFilter { FilterName = "       " };
             var filterWithNull = new RecordsFilter { FilterName = null };
@@ -261,7 +261,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_WithWhiteSpaceInNameFilter_ShouldReturnAllRecordsCount()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var filterWithWhiteSpace = new RecordsFilter { FilterName = "       " };
             var filterWithNull = new RecordsFilter { FilterName = null };
@@ -282,7 +282,7 @@ namespace RiseDiary.IntegratedTests.Services
             string searchName = "SearchТекстІї*01";
             const int matches = 4;
             var context = CreateContext();
-            Create_20Records(context, GetNamesList(), GetDatesList(20));
+            Create20Records(context, GetNamesList(), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var filters = new RecordsFilter { FilterName = searchName };
 
@@ -302,7 +302,7 @@ namespace RiseDiary.IntegratedTests.Services
             string searchName = "SearchТекстІї*01";
             const int matches = 4;
             var context = CreateContext();
-            Create_20Records(context, GetNamesList(), GetDatesList(20));
+            Create20Records(context, GetNamesList(), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var filters = new RecordsFilter { FilterName = searchName };
 
@@ -315,7 +315,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsList_ByDate_ForBeforeLastWeek_ShouldReturn13Records()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var dateTo = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-8));
             var filters = new RecordsFilter { ToDate = dateTo };
@@ -329,7 +329,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_ByDate_ForBeforeLastWeek_ShouldReturn13()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var dateTo = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7));
             int testCount = 20 - 6; // 20 days except last week (Today date is not added)
@@ -344,7 +344,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsList_ByDate_ForLastWeek_ShouldReturn6Records()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var dateFrom = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7));
             var filters = new RecordsFilter { FromDate = dateFrom };
@@ -358,7 +358,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_ByDate_ForLastWeek_ShouldReturn7()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesList(20));
+            Create20Records(context, GetNumberList(20), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var dateFrom = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-6));
             int testCount = 6; // all records for last week, except today
@@ -373,7 +373,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsList_ByDate_ForConcreteDate_ShouldReturnWeekAgoRecords()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            Create20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var svc = GetRecordsSearchService(context);
             var concreteDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7));
             var filters = new RecordsFilter { FromDate = concreteDate, ToDate = concreteDate };
@@ -388,7 +388,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_ByDate_ForConcreteDate_ShouldReturn2()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            Create20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var svc = GetRecordsSearchService(context);
             var concreteDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7));
             int testCount = 2;
@@ -406,7 +406,7 @@ namespace RiseDiary.IntegratedTests.Services
             var dateFrom = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-14));
             var dateTo = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-9));
             var context = CreateContext();
-            Create_20Records(context, GetNamesList(), GetDatesList(20));
+            Create20Records(context, GetNamesList(), GetDatesList(20));
             var svc = GetRecordsSearchService(context);
             var filters = new RecordsFilter
             {
@@ -431,7 +431,7 @@ namespace RiseDiary.IntegratedTests.Services
             var dateFrom = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-14));
             var dateTo = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-9));
             var context = CreateContext();
-            Create_20Records(context, GetNamesList(), GetDatesList(20));
+            Create20Records(context, GetNamesList(), GetDatesList(20));
             var searchService = GetRecordsSearchService(context);
             var filters = new RecordsFilter
             {
@@ -449,7 +449,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsList_WithNotExistingThemeId_ShouldReturnEmptyList()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            Create20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var searchService = GetRecordsSearchService(context);
             var filter = new RecordsFilter();
             filter.AddThemeId(Guid.NewGuid());
@@ -463,7 +463,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsList_WithNotExistingThemeId_And_CombineThemesTrue_ShouldReturnEmptyList()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            Create20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var searchService = GetRecordsSearchService(context);
             var filter = new RecordsFilter();
             filter.AddThemeId(Guid.NewGuid());
@@ -478,7 +478,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_WithNotExistingThemeId_ShouldReturn0()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            Create20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var searchService = GetRecordsSearchService(context);
             var filter = new RecordsFilter();
             filter.AddThemeId(Guid.NewGuid());
@@ -492,7 +492,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_WithNotExistingThemeId_And_CombineThemesTrue_ShouldReturn0()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            Create20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var searchService = GetRecordsSearchService(context);
             var filter = new RecordsFilter();
             filter.AddThemeId(Guid.NewGuid());
@@ -507,7 +507,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsList_ForExistingThemeFilter_ShouldReturnAllMatches()
         {
             var context = CreateContext();
-            Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            Create30ThemesAnd20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var (themeId1, recordsNamesForTheme1, themeId2, recordsNamesForTheme2) = BindRecordsWithThemes(context, ThemesTestDataSet.ThemesOnly);
             var searchService = GetRecordsSearchService(context);
             var filter = new RecordsFilter();
@@ -537,7 +537,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsList_ForExistingThemeFilter_And_CombineThemesTrue_ShouldReturnAllMatches()
         {
             var context = CreateContext();
-            Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            Create30ThemesAnd20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var (themeId1, recordsNamesForTheme1, themeId2, recordsNamesForTheme2) = BindRecordsWithThemes(context, ThemesTestDataSet.ThemesOnly);
             var searchService = GetRecordsSearchService(context);
             var filter = new RecordsFilter
@@ -570,7 +570,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_ForExistingThemeFilter_ShouldReturnAllMatchesCount()
         {
             var context = CreateContext();
-            Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            Create30ThemesAnd20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var (themeId1, recordsNamesForTheme1, themeId2, recordsNamesForTheme2) = BindRecordsWithThemes(context, ThemesTestDataSet.ThemesOnly);
             var searchService = GetRecordsSearchService(context);
             var filter = new RecordsFilter();
@@ -600,7 +600,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_ForExistingThemeFilter_And_COmbineThemesTrue_ShouldReturnAllMatchesCount()
         {
             var context = CreateContext();
-            Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            Create30ThemesAnd20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var (themeId1, recordsNamesForTheme1, themeId2, recordsNamesForTheme2) = BindRecordsWithThemes(context, ThemesTestDataSet.ThemesOnly);
             var searchService = GetRecordsSearchService(context);
             var filter = new RecordsFilter
@@ -633,7 +633,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsList_ForDateAndTheme_ShouldReturnOnlyMatchedRecords()
         {
             var context = CreateContext();
-            Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            Create30ThemesAnd20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var (themeId1, recordsNamesForTheme1, themeId2, recordsNamesForTheme2) = BindRecordsWithThemes(context, ThemesTestDataSet.DatesAndThemesRec);
             var searchService = GetRecordsSearchService(context);
             var dateFrom = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-10));
@@ -664,7 +664,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetRecordsCount_ForDateAndTheme_ShouldReturnOnlyMatchedRecordsCount()
         {
             var context = CreateContext();
-            Create_30Themes_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            Create30ThemesAnd20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var (themeId1, _, _, _) = BindRecordsWithThemes(context, ThemesTestDataSet.DatesAndThemesCount);
             var searchService = GetRecordsSearchService(context);
             var dateFrom = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-10));

@@ -8,9 +8,9 @@
 @inject IJSRuntime JSRuntime 
 
 <div class="row">
-    @if (CriticalError is not null)
+    @if (_criticalError is not null)
     {
-        <p style="color:red">Произошла критическая ошибка: @CriticalError</p>
+        <p style="color:red">Произошла критическая ошибка: @_criticalError</p>
     }
     else
     {
@@ -18,7 +18,7 @@
         {           
             <div class="col-12">
                 <div class="row">
-                    @foreach (var image in RecordImagesRefsMutable)
+                    @foreach (var image in _recordImagesRefsMutable)
                     {
                         <div class="col-lg-3 col-md-6 col-sm-12 p-3">
                             <Thumbnail RecordId="RecordId" Image="@image?.Image">
@@ -31,7 +31,7 @@
 
                                 <button type="button" class="btn btn-sm btn-outline-secondary mx-3" @onclick="async _ => await RemoveImageLink(image?.ImageId)" title="Открепить">Открепить</button>
                                 
-                                @if ((image?.Order ?? 0) < RecordImagesRefsMutable.Select(x => x.Order).DefaultIfEmpty().Max())
+                                @if ((image?.Order ?? 0) < _recordImagesRefsMutable.Select(x => x.Order).DefaultIfEmpty().Max())
                                 {
                                     <button type="button" class="btn btn-link px-0" @onclick="async _ => await UpdateImageOrder(image?.ImageId, (image?.Order ?? 0) + 1)">
                                         <img src="img/arrow-right.svg" />
@@ -90,8 +90,7 @@
     [Parameter]
     public Guid RecordId { get; set; }
 
-    [Parameter]
-    public ICollection<DiaryRecordImage> RecordImagesRefsMutable { get; set; } = new List<DiaryRecordImage>();   
+    private ICollection<DiaryRecordImage> _recordImagesRefsMutable = Array.Empty<DiaryRecordImage>();   
 
     private bool _addMode;
 
@@ -101,12 +100,25 @@
 
     private bool _allImagesDisplayed;
 
-    private List<DiaryImage> _availableImages = new List<DiaryImage>();
+    private ICollection<DiaryImage> _availableImages = Array.Empty<DiaryImage>();
 
-    private string? CriticalError { get; set; }
+    private string? _criticalError;
 
     private string? _nameFilter;
 
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        try
+        {
+            _recordImagesRefsMutable = await RecordsImageService.GetLinkedImagesList(RecordId);
+        }
+        catch (Exception exc)
+        {
+            _criticalError = exc.Message;
+        }
+    }
 
     private async Task ShowAvailableImages(int? pagesCount = null)
     {
@@ -125,7 +137,7 @@
         }
         catch (Exception exc)
         {
-            CriticalError = exc.Message;
+            _criticalError = exc.Message;
         }
     }
 
@@ -134,7 +146,7 @@
         _addMode = false;
         _nameFilter = null;
         _pagesCount = 0;
-        _availableImages = new List<DiaryImage>();
+        _availableImages = Array.Empty<DiaryImage>();
     }
 
     private async Task LinkImage(DiaryImage image)
@@ -143,13 +155,13 @@
         {
             var newRecordImage = await RecordsImageService.AddRecordImage(RecordId, image.Id);
 
-            RecordImagesRefsMutable.Add(newRecordImage);
+            _recordImagesRefsMutable.Add(newRecordImage);
 
             _availableImages.Remove(image);
         }
         catch (Exception exc)
         {
-            CriticalError = exc.Message;
+            _criticalError = exc.Message;
         }
     }
 
@@ -161,13 +173,13 @@
             if (await JSRuntime.InvokeAsync<bool>("confirm", "Открепить изобраение от записи?"))
             {
                 await RecordsImageService.RemoveRecordImage(RecordId, imageId.Value);
-                var img = RecordImagesRefsMutable.Single(ri => ri.ImageId == imageId);
-                RecordImagesRefsMutable.Remove(img);
+                var img = _recordImagesRefsMutable.Single(ri => ri.ImageId == imageId);
+                _recordImagesRefsMutable.Remove(img);
             }
         }
         catch (Exception exc)
         {
-            CriticalError = exc.Message;
+            _criticalError = exc.Message;
         }
     }
 
@@ -177,11 +189,11 @@
 
         try
         {
-            RecordImagesRefsMutable = await RecordsImageService.ChangeRecordImageOrder(RecordId, imageId.Value, order);
+            _recordImagesRefsMutable = await RecordsImageService.ChangeRecordImageOrder(RecordId, imageId.Value, order);
         }
         catch (Exception exc)
         {
-            CriticalError = exc.Message;
+            _criticalError = exc.Message;
         }
     }
 }

@@ -30,5 +30,7 @@ namespace RiseDiary.IntegratedTests.Services
         static public IRecordsThemesService GetRecordsThemesService(DiaryDbContext context) => new RecordsThemesService(context);
         
         static public IScopesService GetScopesService(DiaryDbContext context) => new ScopesService(context);
+
+        static public ICogitationsService GetCogitationsService(DiaryDbContext context, IAppSettingsService appSettingsService) => new CogitationsService(context, appSettingsService);
     }
 }

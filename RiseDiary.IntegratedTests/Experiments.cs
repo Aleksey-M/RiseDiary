@@ -15,7 +15,7 @@ namespace RiseDiary.IntegratedTests
         public async Task CheckEntityFrameworkQuert()
         {
             var context = CreateContext();
-            Create_20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
+            Create20Records(context, GetNumberList(20), GetDatesListWithTwoSameDatesWeekAgo(20));
             var filter = new RecordsFilter();
             filter.AddThemeId(Guid.NewGuid());
 

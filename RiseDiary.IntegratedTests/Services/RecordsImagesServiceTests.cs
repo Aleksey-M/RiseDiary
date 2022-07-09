@@ -18,7 +18,7 @@ namespace RiseDiary.IntegratedTests.Services
             var recImgSvc = GetRecordsImagesService(context);
             var imageSvc = GetImagesService(context);
             var imageId = await imageSvc.AddImage(TestFile);
-            var recordId = Create_Record(context);
+            var recordId = CreateRecord(context);
             await recImgSvc.AddRecordImage(recordId, imageId);
 
             return (recordId, imageId, recImgSvc, imageSvc, context);
@@ -72,7 +72,7 @@ namespace RiseDiary.IntegratedTests.Services
             var (recId, imgId, recImgSvc, _, _) = await CreateRecordWithLinkedImage();
             await recImgSvc.RemoveRecordImage(recId, imgId);
 
-            var imagesIdList = await recImgSvc.GetLinkedImagesIdList(recId);
+            var imagesIdList = await recImgSvc.GetLinkedImagesList(recId);
 
             imagesIdList.Should().NotBeNull();
             imagesIdList.Should().BeEmpty();
@@ -82,9 +82,9 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task GetLinkedImagesIdList_ShouldReturnEmptyList()
         {
             var (_, _, recImgSvc, _, context) = await CreateRecordWithLinkedImage(); // not empty db
-            var recordId = Create_Record(context);
+            var recordId = CreateRecord(context);
 
-            var imagesIdList = await recImgSvc.GetLinkedImagesIdList(recordId);
+            var imagesIdList = await recImgSvc.GetLinkedImagesList(recordId);
 
             imagesIdList.Should().NotBeNull();
             imagesIdList.Should().BeEmpty();
@@ -95,18 +95,22 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var (recId, imgId, recImgSvc, _, _) = await CreateRecordWithLinkedImage();
 
-            var imagesIdList = await recImgSvc.GetLinkedImagesIdList(recId);
+            var imagesIdList = await recImgSvc.GetLinkedImagesList(recId);
 
             imagesIdList.Should().NotBeNull();
             imagesIdList.Should().HaveCount(1);
-            imagesIdList.Should().Contain(imgId);
+            imagesIdList.Should().AllSatisfy(
+                x => { 
+                    x.ImageId.Should().Be(imgId); 
+                    x.RecordId.Should().Be(recId);
+                });
         }
 
         [Test]
         public async Task GetLinkedRecordsInfo_ShouldReturnEmptyDictionary()
         {
             var (_, _, recImgSvc, _, context) = await CreateRecordWithLinkedImage(); // not empty db
-            var imageId = Create_Image(context);
+            var imageId = CreateImage(context);
 
             var recordsDict = await recImgSvc.GetLinkedRecordsInfo(imageId);
 

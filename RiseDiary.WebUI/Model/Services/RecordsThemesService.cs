@@ -57,6 +57,13 @@ namespace RiseDiary.Model.Services
             await _context.SaveChangesAsync().ConfigureAwait(false);
         }
 
+        public async Task<List<DiaryRecordTheme>> GetRecordThemes(Guid recordId) => await _context.RecordThemes
+            .AsNoTracking()
+            .Include(x => x.Theme)
+            .Where(x => x.RecordId == recordId)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
         public async Task RemoveRecordTheme(Guid recordId, IEnumerable<Guid> themesIds)
         {
             if (!themesIds.Any()) return;

@@ -1,10 +1,13 @@
-﻿@namespace RiseDiary.WebUI.Pages.Records
+﻿@using RiseDiary.Model
 
-@inject IJSRuntime jsRuntime 
+@namespace RiseDiary.WebUI.Pages.Records
 
-@if (CriticalError is not null)
+@inject IJSRuntime JSRuntime
+@inject IRecordsService RecordsService
+
+@if (_criticalError is not null)
 {
-    <p style="color:red">Произошла критическая ошибка: @CriticalError</p>
+    <p style="color:red">Произошла критическая ошибка: @_criticalError</p>
 }
 else
 {
@@ -34,10 +37,10 @@ else
     else
     {
         <h5 style="color:darkblue;display:inline">
-            <b>@RecordDate</b> <i>@RecordName</i>
+            <b>@_recordDate.ToString("yyyy.MM.dd")</b> <i>@_recordName.GetRecordNameDisplay()</i>
         </h5>
 
-        <button type="button" class="btn btn-link pt-0" title="Редактировать заголовок и дату" @onclick="e => SwitchToEditMode()">
+        <button type="button" class="btn btn-link pt-0" title="Редактировать заголовок и дату" @onclick="_ => _editMode = true">
             <img src="img/pen.svg" />
         </button>
     }
@@ -45,63 +48,50 @@ else
 
 @code {
 
+    [Parameter]
+    public DiaryRecord Record { get; set; } = null!;
+
     private bool _editMode;
-
-    [Parameter]
-    public string RecordName { get; set; } = "";
-
-    [Parameter]
-    public string RecordDate { get; set; } = "";
-
-    [Parameter]
-    public Func<DateOnly, string, Task>? SaveRecordHeader { get; set; } = null;
 
     private DateOnly _recordDate;
 
     private string _recordName = "";
 
-    private string? CriticalError { get; set; }
+    private string? _criticalError;
 
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        try
+        {
+            _recordDate = Record.Date;
+            _recordName = Record.Name;
+        }
+        catch (Exception exc)
+        {
+            _criticalError = exc.Message;
+        }
+    }
 
     private async Task UpdateNameAndDate()
     {
         try
         {
-            if (_recordDate == DateOnly.Parse(RecordDate) && _recordName.Trim() == (RecordName == "[ПУСТО]" ? "" : RecordName))
-            {
-                _editMode = false;
-                return;
-            }
-
             if (_recordDate == default)
             {
-                await jsRuntime.InvokeVoidAsync("alert", "Дата не введена");
+                await JSRuntime.InvokeVoidAsync("alert", "Дата не введена");
                 return;
             }
+            
+            await RecordsService.UpdateRecord(Record.Id, _recordDate, _recordName, null);
 
             _editMode = false;
-
-            SaveRecordHeader = SaveRecordHeader ?? ((_, _) => Task.CompletedTask);
-
-            await SaveRecordHeader(_recordDate, _recordName.Trim());
         }
         catch (Exception exc)
         {
-            CriticalError = exc.Message;
-        }
-    }
-
-    private void SwitchToEditMode()
-    {
-        try
-        {
-            _recordName = RecordName == "[ПУСТО]" ? "" : RecordName;
-            _recordDate = DateOnly.Parse(RecordDate);
-            _editMode = true;
-        }
-        catch (Exception exc)
-        {
-            CriticalError = exc.Message;
+            _criticalError = exc.Message;
         }
     }
 }

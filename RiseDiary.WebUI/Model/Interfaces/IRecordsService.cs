@@ -11,13 +11,7 @@ namespace RiseDiary.Model
 
         Task DeleteRecord(Guid recordId);
 
-        Task<DiaryRecord> FetchRecordById(Guid recordId);
-
-        Task<Guid> AddCogitation(Guid recordId, string cogitationText);
-
-        Task UpdateCogitationText(Guid cogitationId, string newText);
-
-        Task DeleteCogitation(Guid cogitationId);
+        Task<DiaryRecord> FetchRecordById(Guid recordId);        
     }
 
     public class RecordNotFoundException : Exception

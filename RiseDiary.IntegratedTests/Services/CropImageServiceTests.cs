@@ -28,7 +28,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetCropImageService(context);
-            var imageId = Create_Image(context, FullImage_512X341);
+            var imageId = CreateImage(context, FullImage_512X341);
             var image = GetTestImage(FullImage_512X341);
 
             var scaledImage = await svc.CreateScaledImagePreview(imageId);
@@ -42,7 +42,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetCropImageService(context);
-            var imageId = Create_Image(context, FullImage_341X512);
+            var imageId = CreateImage(context, FullImage_341X512);
             var image = GetTestImage(FullImage_341X512);
 
             var scaledImage = await svc.CreateScaledImagePreview(imageId);
@@ -56,7 +56,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetCropImageService(context);
-            var imageId = Create_Image(context, FullImage_1587X544);
+            var imageId = CreateImage(context, FullImage_1587X544);
             var image = GetTestImage(FullImage_341X512);
             var (_, h) = ImageHelper.GetImageSize(image.FullImage!.Data);
 
@@ -73,7 +73,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetCropImageService(context);
-            var imageId = Create_Image(context, FullImage_597X1300);
+            var imageId = CreateImage(context, FullImage_597X1300);
             var image = GetTestImage(FullImage_597X1300);
             var (w, _) = ImageHelper.GetImageSize(image.FullImage!.Data);
 
@@ -102,7 +102,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetCropImageService(context);
-            var imageId = Create_Image(context, FullImage_1280X814);
+            var imageId = CreateImage(context, FullImage_1280X814);
             var rectangle = new Rectangle(20, 30, 350, 250);
             double coef = 1.2;
 

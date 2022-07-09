@@ -15,8 +15,8 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             var svc = GetRecordsThemesService(context);
             var recSvc = GetRecordsService(context);
-            var themeId = new Guid[] { Create_Theme(context, "Theme Name") };
-            var recId = Create_Record(context);
+            var themeId = new Guid[] { CreateTheme(context, "Theme Name") };
+            var recId = CreateRecord(context);
             await svc.AddRecordTheme(recId, themeId);
 
             var bindRec = await context.RecordThemes.SingleOrDefaultAsync(br => br.RecordId == recId && br.ThemeId == themeId[0] && !br.Deleted);
@@ -34,8 +34,8 @@ namespace RiseDiary.IntegratedTests.Services
             var context = CreateContext();
             var svc = GetRecordsThemesService(context);
             var themesSvc = GetScopesService(context);
-            var themeId = Create_Theme(context, "Theme Name");
-            var recId = Create_Record(context);
+            var themeId = CreateTheme(context, "Theme Name");
+            var recId = CreateRecord(context);
             await svc.AddRecordTheme(recId, new Guid[] { themeId });
 
             var bindRec = await context.RecordThemes.SingleOrDefaultAsync(br => br.RecordId == recId && br.ThemeId == themeId && !br.Deleted);
@@ -52,8 +52,8 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetRecordsThemesService(context);
-            var themeId = new Guid[] { Create_Theme(context, "Theme Name") };
-            var recId = Create_Record(context);
+            var themeId = new Guid[] { CreateTheme(context, "Theme Name") };
+            var recId = CreateRecord(context);
 
             await svc.AddRecordTheme(recId, themeId);
             await svc.RemoveRecordTheme(recId, themeId);
@@ -105,6 +105,38 @@ namespace RiseDiary.IntegratedTests.Services
             await svc.AddRecordTheme(rec.Id, theme);
             recTheme = await context.RecordThemes.FirstOrDefaultAsync(rt => rt.RecordId == rec.Id && rt.ThemeId == theme[0]);
             recTheme.Should().NotBeNull();
+        }
+
+        [Test]
+        public async Task GetRecordThemes_ShouldReturnEmptyList()
+        {
+            var context = CreateContext();
+            var recordId = CreateRecord(context);
+            var svc = GetRecordsThemesService(context);
+
+            var list = await svc.GetRecordThemes(recordId);
+
+            list.Should().NotBeNull();
+            list.Should().BeEmpty();
+        }
+
+        [Test]
+        public async Task GetRecordThemes_ShouldReturn3Themes()
+        {
+            var context = CreateContext();
+            var recordId = CreateRecord(context);
+            var svc = GetRecordsThemesService(context);
+            await Add3ThemesForEachRecord(context);
+
+            var list = await svc.GetRecordThemes(recordId);
+
+            list.Should().NotBeNull();
+            list.Should().HaveCount(3);
+            list.Should().AllSatisfy(
+                x =>
+                {
+                    x.Theme.Should().NotBeNull();
+                });
         }
     }
 }

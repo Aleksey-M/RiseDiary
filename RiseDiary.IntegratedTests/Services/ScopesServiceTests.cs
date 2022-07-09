@@ -304,7 +304,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetScopesService(context);
-            var themeId = Create_Theme(context, "Theme Name");
+            var themeId = CreateTheme(context, "Theme Name");
             var scopeId = (await context.Themes.FindAsync(themeId)).ScopeId;
 
             await svc.DeleteTheme(themeId);
@@ -320,7 +320,7 @@ namespace RiseDiary.IntegratedTests.Services
         {
             var context = CreateContext();
             var svc = GetScopesService(context);
-            var scopeId = Create_Scope(context, "Test Scope");
+            var scopeId = CreateScope(context, "Test Scope");
 
             var newRecId = await svc.AddTheme(scopeId, @"!@#$%^''""&*()_+,.<><>?//[]||\\апрорпывоаъъЇЇііі.єєєйй", false);
 
@@ -387,7 +387,7 @@ namespace RiseDiary.IntegratedTests.Services
         public async Task ThemeActuality_ChangeTwice()
         {
             var context = CreateContext();
-            var scopes = Create_3Scopes_With1ThemeForEach(context);
+            var scopes = Create3ScopesWith1ThemeForEach(context);
             var themes = scopes.SelectMany(s => s.Themes).ToList();
             var svc = GetScopesService(context);
 

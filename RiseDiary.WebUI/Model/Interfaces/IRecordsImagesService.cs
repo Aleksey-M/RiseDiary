@@ -10,7 +10,7 @@ namespace RiseDiary.Model
 
         Task RemoveRecordImage(Guid recordId, Guid imageId);
 
-        Task<List<Guid>> GetLinkedImagesIdList(Guid recordId);
+        Task<List<DiaryRecordImage>> GetLinkedImagesList(Guid recordId);
 
         Task<Dictionary<Guid, string>> GetLinkedRecordsInfo(Guid imageId);
 

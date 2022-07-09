@@ -3,17 +3,19 @@
 @namespace RiseDiary.WebUI.Pages.Records
 
 @inject IJSRuntime _JSRuntime
+@inject IRecordsThemesService ThemesService
+@inject IScopesService ScopesService
 
-@if (CriticalError is not null)
+@if (_criticalError is not null)
 {
-    <p style="color:red">Произошла критическая ошибка: @CriticalError</p>
+    <p style="color:red">Произошла критическая ошибка: @_criticalError</p>
 }
 else
 {
     <div>
         <h6 style="display:inline"><i>@AllThemes</i></h6>
 
-        <button type="button" class="btn btn-link p-0" title="Фильтр по темам" data-bs-toggle="modal" data-bs-target="#themesFilter">
+        <button type="button" class="btn btn-link p-0" title="Выбор тем записи" data-bs-toggle="modal" data-bs-target="#themesFilter">
             <img src="img/pen.svg" />
         </button>
     </div>
@@ -24,7 +26,7 @@ else
         <div class="modal-content">
             <div class="modal-header">
 
-                <h5 class="modal-title" id="exampleModalLabel">Фильтр по темам</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Выбор тем записи</h5>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -32,7 +34,7 @@ else
                 <p>
                     <h6>Актуальные темы</h6>
                     <ul>
-                        @foreach (var scope in AllScopes)
+                        @foreach (var scope in _allScopes)
                         {
                             @if (scope.Themes.Count(t => t.Actual) > 0)
                             {
@@ -43,7 +45,7 @@ else
                                         {
                                             <li>
                                                 <label>
-                                                    @if (SelectedThemes.Any(t => t.ThemeId == theme.Id))
+                                                    @if (_selectedThemes.Any(t => t.ThemeId == theme.Id))
                                                     {
                                                         <input @onchange="_ => CheckboxChange(theme.Id)" type="checkbox" checked="checked" value="@theme.Id" />
                                                     }
@@ -69,7 +71,7 @@ else
 
                     <div class="collapse" id="notActualThemes">
                         <ul>
-                            @foreach (var scope in AllScopes)
+                            @foreach (var scope in _allScopes)
                             {
                                 @if (scope.Themes.Count(t => !t.Actual) > 0)
                                 {
@@ -80,7 +82,7 @@ else
                                             {
                                                 <li>
                                                     <label>
-                                                        @if (SelectedThemes.Any(t => t.ThemeId == theme.Id))
+                                                        @if (_selectedThemes.Any(t => t.ThemeId == theme.Id))
                                                         {
                                                             <input @onchange="_ => CheckboxChange(theme.Id)" type="checkbox" checked="checked" value="@theme.Id" />
                                                         }
@@ -111,47 +113,49 @@ else
 @code {
 
     [Parameter]
-    public List<DiaryScope> AllScopes { get; set; } = new List<DiaryScope>();
+    public Guid RecordId { get; set; }
 
-    [Parameter]
-    public List<DiaryRecordTheme> SelectedThemes { get; set; } = new List<DiaryRecordTheme>();
+    private ICollection<DiaryScope> _allScopes = Array.Empty<DiaryScope>();
 
-    [Parameter]
-    public Func<IEnumerable<Guid>, Task>? UpdateRecordThemes { get; set; }
+    private ICollection<DiaryRecordTheme> _selectedThemes = Array.Empty<DiaryRecordTheme>();
 
-    private List<string> ThemesList
+    private List<Guid> _changedThemesList = new List<Guid>();
+
+    private string? _criticalError;
+
+
+    private ICollection<string> ThemesList
     {
         get
         {
             try
             {                
-                return SelectedThemes?.Select(tr => tr.Theme?.ThemeName ?? "")?.ToList() ?? new List<string>();
+                return _selectedThemes?.Select(tr => tr.Theme?.ThemeName ?? "")?.ToArray() ?? Array.Empty<string>();
             }
             catch (Exception exc)
             {
-                CriticalError = exc.Message;
-                return new List<string>();
+                _criticalError = exc.Message;
+                return Array.Empty<string>();
             }
         }
     }
 
     private string AllThemes => string.Join(" | ", ThemesList);
 
-    private List<Guid> _changedThemesList = new List<Guid>();
 
-    private string? CriticalError { get; set; }
-
-
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
+        await base.OnParametersSetAsync();
+
         try
         {
-            _changedThemesList = SelectedThemes.Select(st => st.ThemeId).ToList();
-            base.OnParametersSet();
+            _allScopes = await ScopesService.GetScopes();
+            _selectedThemes = await ThemesService.GetRecordThemes(RecordId);
+            _changedThemesList = _selectedThemes.Select(st => st.ThemeId).ToList();            
         }
         catch (Exception exc)
         {
-            CriticalError = exc.Message;
+            _criticalError = exc.Message;
         }
     }
 
@@ -170,7 +174,7 @@ else
         }
         catch (Exception exc)
         {
-            CriticalError = exc.Message;
+            _criticalError = exc.Message;
         }
     }
 
@@ -180,14 +184,27 @@ else
         {
             await _JSRuntime.InvokeVoidAsync("eval", "bootstrap.Modal.getInstance(document.getElementById('themesFilter')).hide()");
 
-            if (UpdateRecordThemes != null)
+            var removed = _selectedThemes.Where(st => !_changedThemesList.Contains(st.ThemeId)).Select(st => st.ThemeId);
+            if (removed.Any())
             {
-                await UpdateRecordThemes(_changedThemesList);
-            }            
+                await ThemesService.RemoveRecordTheme(RecordId, removed);
+            }
+
+            var added = _changedThemesList.Where(tid => !_selectedThemes.Any(st => st.ThemeId == tid));
+            if (added.Any())
+            {
+                await ThemesService.AddRecordTheme(RecordId, added);
+            }
+
+            if (removed.Any() || added.Any())
+            {
+                _selectedThemes = await ThemesService.GetRecordThemes(RecordId);
+                _changedThemesList = _selectedThemes.Select(st => st.ThemeId).ToList();
+            }
         }
         catch (Exception exc)
         {
-            CriticalError = exc.Message;
+            _criticalError = exc.Message;
         }
     }
 }
