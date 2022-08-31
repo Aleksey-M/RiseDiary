@@ -3,6 +3,7 @@ using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
@@ -89,30 +90,32 @@ namespace RiseDiary.Model.Services
             }
         }
 
-        public async Task<DiaryScope?> FetchScopeById(Guid scopeId)
+        public async Task<DiaryScope?> FetchScopeById(Guid scopeId, CancellationToken cancellationToken)
         {
             return await _context.Scopes
                 .AsNoTracking()
                 .Include(s => s.Themes)
                 .ThenInclude(t => t.RecordsRefs)
-                .SingleOrDefaultAsync(s => s.Id == scopeId)
+                .SingleOrDefaultAsync(s => s.Id == scopeId, cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        public async Task<List<DiaryScope>> GetScopes(bool? themesActuality = null)
+        public async Task<List<DiaryScope>> GetScopes(bool? themesActuality, CancellationToken cancellationToken)
         {
             var scopesList = await _context.Scopes
-                    .Include(s => s.Themes)
-                    .ThenInclude(t => t.RecordsRefs)
-                    .AsNoTracking()
-                    .OrderBy(s => s.ScopeName)
-                    .ToListAsync()
-                    .ConfigureAwait(false);
+                .Include(s => s.Themes)
+                .ThenInclude(t => t.RecordsRefs)
+                .AsNoTracking()
+                .OrderBy(s => s.ScopeName)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             if (themesActuality == null) return scopesList;
 
             foreach (var scope in scopesList.ToList())
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 scope.Themes = scope.Themes.Where(t => t.Actual == themesActuality.Value).ToList();
                 if (scope.Themes.Count == 0) scopesList.Remove(scope);
             }

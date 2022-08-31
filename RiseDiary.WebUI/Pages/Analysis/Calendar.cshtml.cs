@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using RiseDiary.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using RiseDiary.Model;
 
 namespace RiseDiary.WebUI.Pages
 {
@@ -32,14 +33,20 @@ namespace RiseDiary.WebUI.Pages
         public bool CombineThemes { get; private set; }
 
 
-        public async Task OnGetAsync(int? year, Guid[] themes, bool? combineThemes)
+        public async Task OnGetAsync(int? year, Guid[] themes, bool? combineThemes, CancellationToken cancellationToken)
         {
-            CombineThemes = combineThemes ?? false;
-            SelectedThemes = themes ?? Enumerable.Empty<Guid>();
-            CurrentYear = year ?? DateTime.UtcNow.Year;
-            AllScopes = await _scopeSvc.GetScopes();
-            YearsListFiltered = await _calendarServices.GetYears(SelectedThemes, CombineThemes);
-            Records = await _calendarServices.GetCalendarItems(CurrentYear, SelectedThemes, CombineThemes);
+            try
+            {
+                CombineThemes = combineThemes ?? false;
+                SelectedThemes = themes ?? Enumerable.Empty<Guid>();
+                CurrentYear = year ?? DateTime.UtcNow.Year;
+                AllScopes = await _scopeSvc.GetScopes(cancellationToken: cancellationToken);
+                YearsListFiltered = await _calendarServices.GetYears(SelectedThemes, CombineThemes, cancellationToken);
+                Records = await _calendarServices.GetCalendarItems(CurrentYear, SelectedThemes, CombineThemes, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
         public string RecordsJsObjectsList

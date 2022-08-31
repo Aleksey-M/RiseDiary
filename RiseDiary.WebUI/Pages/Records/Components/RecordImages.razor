@@ -7,6 +7,8 @@
 @inject IAppSettingsService AppSettingsService
 @inject IJSRuntime JSRuntime 
 
+@implements IDisposable
+
 <div class="row">
     @if (_criticalError is not null)
     {
@@ -112,7 +114,10 @@
 
         try
         {
-            _recordImagesRefsMutable = await RecordsImageService.GetLinkedImagesList(RecordId);
+            _recordImagesRefsMutable = await RecordsImageService.GetLinkedImagesList(RecordId, cancellationToken: _cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
         }
         catch (Exception exc)
         {
@@ -128,12 +133,16 @@
             _pagesCount = pagesCount ?? 1;
             _pageSize ??= await AppSettingsService.GetAppSettingInt(RiseDiary.Shared.AppSettingsKey.AvailableImagesPageSize) ?? 30;
 
-            int imagesCount = await ImagesService.GetImagesCount(imageNameFilter: _nameFilter, recordId: RecordId);
+            int imagesCount = await ImagesService.GetImagesCount(imageNameFilter: _nameFilter, 
+                recordId: RecordId, cancellationToken: _cts.Token);
 
             _availableImages = await ImagesService.FetchImageSet(0, _pagesCount * _pageSize.Value, 
-                imageNameFilter: _nameFilter, recordId: RecordId);
+                imageNameFilter: _nameFilter, recordId: RecordId, cancellationToken: _cts.Token);
 
             _allImagesDisplayed = imagesCount <= _availableImages.Count;
+        }
+        catch (OperationCanceledException)
+        {
         }
         catch (Exception exc)
         {
@@ -195,5 +204,12 @@
         {
             _criticalError = exc.Message;
         }
+    }
+
+    private CancellationTokenSource _cts = new CancellationTokenSource();
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
     }
 }

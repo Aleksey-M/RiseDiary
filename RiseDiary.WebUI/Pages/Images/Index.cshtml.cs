@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using RiseDiary.Model;
-using RiseDiary.Shared;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using RiseDiary.Model;
+using RiseDiary.Shared;
 
 namespace RiseDiary.WebUI.Pages.Images
 {
@@ -22,12 +24,19 @@ namespace RiseDiary.WebUI.Pages.Images
 
         public PagesInfo? Pager { get; private set; }
 
-        public async Task OnGetAsync(int? pageNo)
+        public async Task OnGetAsync(int? pageNo, CancellationToken cancellationToken)
         {
-            var imagesCount = await _imagesService.GetImagesCount();
-            int pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.ImagesPageSize) ?? 32;
-            Pager = PagesInfo.GetPagesInfo(imagesCount, pageNo ?? 1, pageSize);
-            Images = await _imagesService.FetchImageSet(Pager.StartIndex, Pager.PageSize);
+            try
+            {
+                var imagesCount = await _imagesService.GetImagesCount(cancellationToken: cancellationToken);
+                int pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.ImagesPageSize) ?? 32;
+                Pager = PagesInfo.GetPagesInfo(imagesCount, pageNo ?? 1, pageSize);
+
+                Images = await _imagesService.FetchImageSet(Pager.StartIndex, Pager.PageSize, cancellationToken: cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
     }
 }

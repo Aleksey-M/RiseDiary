@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model
@@ -11,7 +12,7 @@ namespace RiseDiary.Model
 
         Task DeleteRecord(Guid recordId);
 
-        Task<DiaryRecord> FetchRecordById(Guid recordId);        
+        Task<DiaryRecord> FetchRecordById(Guid recordId, CancellationToken cancellationToken = default);        
     }
 
     public class RecordNotFoundException : Exception

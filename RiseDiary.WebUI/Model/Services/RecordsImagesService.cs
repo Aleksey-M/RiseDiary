@@ -3,6 +3,7 @@ using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
@@ -157,19 +158,22 @@ namespace RiseDiary.Model.Services
             return list.OrderBy(x => x.Order).ToList();
         }
 
-        public async Task<List<DiaryRecordImage>> GetLinkedImagesList(Guid recordId) => await _context.RecordImages
-            .AsNoTracking()
-            .Include(ri => ri.Image)
-            .Where(ri => ri.RecordId == recordId)
-            .OrderBy(ri => ri.Order)
-            .ToListAsync()
-            .ConfigureAwait(false);
+        public async Task<List<DiaryRecordImage>> GetLinkedImagesList(
+            Guid recordId, CancellationToken cancellationToken) => await _context.RecordImages
+                .AsNoTracking()
+                .Include(ri => ri.Image)
+                .Where(ri => ri.RecordId == recordId)
+                .OrderBy(ri => ri.Order)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
 
-        public async Task<Dictionary<Guid, string>> GetLinkedRecordsInfo(Guid imageId) => await _context.RecordImages
-            .AsNoTracking()
-            .Include(ri => ri.Record)
-            .Where(ri => ri.ImageId == imageId)
-            .ToDictionaryAsync(ri => ri.RecordId, ri => ri.Record?.Name ?? throw new Exception($"Record with id = {ri.RecordId} is not exists in db"));
+        public async Task<Dictionary<Guid, string>> GetLinkedRecordsInfo(
+            Guid imageId, CancellationToken cancellationToken) => await _context.RecordImages
+                .AsNoTracking()
+                .Include(ri => ri.Record)
+                .Where(ri => ri.ImageId == imageId)
+                .ToDictionaryAsync(ri => ri.RecordId, ri => ri.Record?.Name 
+                    ?? throw new Exception($"Record with id = {ri.RecordId} is not exists in db"), cancellationToken);
 
         public async Task RemoveRecordImage(Guid recordId, Guid imageId)
         {

@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.WebUI.Shared.Dto;
-using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Api
 {
@@ -20,23 +22,30 @@ namespace RiseDiary.WebUI.Api
 
         [HttpGet, Route("api/v1.0/sqlitedb")]
         [ProducesResponseType(typeof(SqliteDbInfoDto), StatusCodes.Status200OK)]
-        public async Task<ActionResult<SqliteDbInfoDto>> GetDbInfo()
+        public async Task<ActionResult<SqliteDbInfoDto>> GetDbInfo(CancellationToken cancellationToken)
         {
-            var db = _sqliteDb.GetSqliteDatabaseInfo();
-            var deleted = await _sqliteDb.GetDeletedEntitiesCount();
-
-            return Ok(new SqliteDbInfoDto
+            try
             {
-                FileName = db.FileName,
-                FileSize = db.FileSize,
-                DeletedCogitations = deleted.Cogitations,
-                DeletedImages = deleted.Images,
-                DeletedRecords = deleted.Records,
-                DeletedRecordImages = deleted.RecordImages,
-                DeletedRecordThemes = deleted.RecordThemes,
-                DeletedScopes = deleted.Scopes,
-                DeletedThemes = deleted.Themes
-            });
+                var db = _sqliteDb.GetSqliteDatabaseInfo();
+                var deleted = await _sqliteDb.GetDeletedEntitiesCount(cancellationToken);
+
+                return Ok(new SqliteDbInfoDto
+                {
+                    FileName = db.FileName,
+                    FileSize = db.FileSize,
+                    DeletedCogitations = deleted.Cogitations,
+                    DeletedImages = deleted.Images,
+                    DeletedRecords = deleted.Records,
+                    DeletedRecordImages = deleted.RecordImages,
+                    DeletedRecordThemes = deleted.RecordThemes,
+                    DeletedScopes = deleted.Scopes,
+                    DeletedThemes = deleted.Themes
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
+            }
         }
 
         [HttpPost, Route("api/v1.0/sqlitedb/clear")]

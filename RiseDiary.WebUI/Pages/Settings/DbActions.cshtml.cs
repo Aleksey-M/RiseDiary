@@ -1,6 +1,8 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
-using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Settings
 {
@@ -18,27 +20,45 @@ namespace RiseDiary.WebUI.Pages.Settings
         }
 
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync(CancellationToken cancellationToken)
         {
-            DeletedEntities = await _sqliteDb.GetDeletedEntitiesCount();
-            DatabaseFileInfo = _sqliteDb.GetSqliteDatabaseInfo();
+            try
+            {
+                DeletedEntities = await _sqliteDb.GetDeletedEntitiesCount(cancellationToken);
+                DatabaseFileInfo = _sqliteDb.GetSqliteDatabaseInfo();
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
-        public async Task OnPostClearBaseAsync()
+        public async Task OnPostClearBaseAsync(CancellationToken cancellationToken)
         {
-            await _sqliteDb.ClearDatabase();
-            await _sqliteDb.Vacuum();
+            try
+            {
+                await _sqliteDb.ClearDatabase();
+                await _sqliteDb.Vacuum();
 
-            DeletedEntities = await _sqliteDb.GetDeletedEntitiesCount();
-            DatabaseFileInfo = _sqliteDb.GetSqliteDatabaseInfo();
+                DeletedEntities = await _sqliteDb.GetDeletedEntitiesCount(cancellationToken);
+                DatabaseFileInfo = _sqliteDb.GetSqliteDatabaseInfo();
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
-        public async Task OnPostFile2FileMigrationAsync()
+        public async Task OnPostFile2FileMigrationAsync(CancellationToken cancellationToken)
         {
-            await _sqliteDb.File2FileMigration();
+            try
+            {
+                await _sqliteDb.File2FileMigration();
 
-            DeletedEntities = await _sqliteDb.GetDeletedEntitiesCount();
-            DatabaseFileInfo = _sqliteDb.GetSqliteDatabaseInfo();
+                DeletedEntities = await _sqliteDb.GetDeletedEntitiesCount(cancellationToken);
+                DatabaseFileInfo = _sqliteDb.GetSqliteDatabaseInfo();
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
     }
 }

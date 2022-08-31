@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using RiseDiary.Model;
-using RiseDiary.Shared;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using RiseDiary.Model;
+using RiseDiary.Shared;
 
 namespace RiseDiary.WebUI.Pages
 {
@@ -42,12 +43,13 @@ namespace RiseDiary.WebUI.Pages
 
         public async Task OnGetAsync(
             DateTime? fromDate,
-            DateTime? toDate, 
-            Guid[] themes, 
-            string? filterName, 
-            bool? combineThemes, 
+            DateTime? toDate,
+            Guid[] themes,
+            string? filterName,
+            bool? combineThemes,
             int? pageNo,
-            bool? expanded)
+            bool? expanded,
+            CancellationToken cancellationToken)
         {
             CombineThemes = combineThemes ?? false;
             Expanded = expanded ?? false;
@@ -69,10 +71,17 @@ namespace RiseDiary.WebUI.Pages
                 SelectedThemes = themes;
             }
 
-            var recordsCount = await _searchRecordsService.GetRecordsCount(Filters);
-            Pages = PagesInfo.GetPagesInfo(recordsCount, Filters.PageNo + 1, pageSize, 10);
-            Records = await _searchRecordsService.GetRecordsList(Filters);
-            AllScopes = await _scopesSvc.GetScopes();
+            try
+            {
+                var recordsCount = await _searchRecordsService.GetRecordsCount(Filters, cancellationToken);
+                Pages = PagesInfo.GetPagesInfo(recordsCount, Filters.PageNo + 1, pageSize, 10);
+                Records = await _searchRecordsService.GetRecordsList(Filters, cancellationToken);
+                AllScopes = await _scopesSvc.GetScopes(cancellationToken: cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                Pages = PagesInfo.GetPagesInfo(1);
+            }
         }
     }
 }

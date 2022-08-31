@@ -3,6 +3,7 @@ using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
@@ -19,7 +20,8 @@ namespace RiseDiary.Model.Services
             _appSettingsService = appSettingsService;
         }
 
-        public async Task<List<CalendarItem>> GetCalendarItems(int year, IEnumerable<Guid> themesId, bool combineThemes)
+        public async Task<List<CalendarItem>> GetCalendarItems(int year,
+            IEnumerable<Guid> themesId, bool combineThemes, CancellationToken cancellationToken)
         {
             var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
             var currentHostAndPort = await _appSettingsService.GetHostAndPort();
@@ -67,7 +69,7 @@ namespace RiseDiary.Model.Services
             }
         }
 
-        public async Task<List<int>> GetYears(IEnumerable<Guid> themesId, bool combineThemes)
+        public async Task<List<int>> GetYears(IEnumerable<Guid> themesId, bool combineThemes, CancellationToken cancellationToken)
         {
             if (themesId is null || !themesId.Any())
             {
@@ -76,7 +78,7 @@ namespace RiseDiary.Model.Services
                     .Select(r => r.Date.Year)
                     .Distinct()
                     .OrderBy(y => y)
-                    .ToListAsync()
+                    .ToListAsync(cancellationToken)
                     .ConfigureAwait(false);
 
                 return years;
@@ -88,7 +90,7 @@ namespace RiseDiary.Model.Services
                 var items = await _context.Records
                     .AsNoTracking()
                     .Select(r => new { r.Date, Themes = r.ThemesRefs.Select(t => t.ThemeId) })
-                    .ToListAsync()
+                    .ToListAsync(cancellationToken)
                     .ConfigureAwait(false);
 
                 var years = items

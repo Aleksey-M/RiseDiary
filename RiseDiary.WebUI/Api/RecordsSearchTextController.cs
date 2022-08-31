@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Dto;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Api
 {
@@ -25,9 +26,10 @@ namespace RiseDiary.WebUI.Api
         [ProducesResponseType(typeof(RecordsPageDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<RecordsPageDto>> GetRecordsList(
-            [FromQuery] string? searchText, 
-            [FromQuery] int? pageSize, 
-            [FromQuery] int? pageNo)
+            [FromQuery] string? searchText,
+            [FromQuery] int? pageSize,
+            [FromQuery] int? pageNo,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -42,8 +44,8 @@ namespace RiseDiary.WebUI.Api
                     PageSize = pageSize.Value
                 };
 
-                var records = await _recordsSearchService.GetRecordsList(filters);
-                int allCount = await _recordsSearchService.GetRecordsCount(filters.SearchText);
+                var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
+                int allCount = await _recordsSearchService.GetRecordsCount(filters.SearchText, cancellationToken);
 
                 var pagesInfo = PagesInfo.GetPagesInfo(allCount, pageNo.Value, pageSize.Value);
 
@@ -67,15 +69,20 @@ namespace RiseDiary.WebUI.Api
             {
                 return BadRequest(exc.Message);
             }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
+            }
         }
 
         [HttpGet, Route("api/v1.0/records/textsearch/expandedlist")]
         [ProducesResponseType(typeof(RecordsDetailPageDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<RecordsDetailPageDto>> GetRecordsListExpanded(
-            [FromQuery] string? searchText, 
-            [FromQuery] int? pageSize, 
-            [FromQuery] int? pageNo)
+            [FromQuery] string? searchText,
+            [FromQuery] int? pageSize,
+            [FromQuery] int? pageNo,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -94,8 +101,8 @@ namespace RiseDiary.WebUI.Api
                     PageSize = pageSize.Value
                 };
 
-                var records = await _recordsSearchService.GetRecordsList(filters);
-                int allCount = await _recordsSearchService.GetRecordsCount(filters.SearchText);
+                var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
+                int allCount = await _recordsSearchService.GetRecordsCount(filters.SearchText, cancellationToken);
 
                 var pagesInfo = PagesInfo.GetPagesInfo(allCount, pageNo.Value, pageSize.Value);
 
@@ -147,6 +154,10 @@ namespace RiseDiary.WebUI.Api
             catch (ArgumentException exc)
             {
                 return BadRequest(exc.Message);
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
             }
         }
     }

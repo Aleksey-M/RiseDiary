@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
 using RiseDiary.Shared;
-using System;
-using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages
 {
@@ -20,12 +21,18 @@ namespace RiseDiary.WebUI.Pages
 
         public DiaryRecord? StartPageRecord { get; private set; }
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync(CancellationToken cancellationToken)
         {
-            var (sId, _) = await _settingsSvc.GetAppSetting(AppSettingsKey.StartPageRecordId);
-            if (Guid.TryParse(sId, out var id))
+            try
             {
-                StartPageRecord = await _recordsService.FetchRecordById(id);
+                var (sId, _) = await _settingsSvc.GetAppSetting(AppSettingsKey.StartPageRecordId);
+                if (Guid.TryParse(sId, out var id))
+                {
+                    StartPageRecord = await _recordsService.FetchRecordById(id, cancellationToken);
+                }
+            }
+            catch (OperationCanceledException)
+            {
             }
         }
     }

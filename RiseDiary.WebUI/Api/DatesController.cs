@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using RiseDiary.Model;
-using RiseDiary.WebUI.Shared.Dto;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using RiseDiary.Model;
+using RiseDiary.WebUI.Shared.Dto;
 
 namespace RiseDiary.WebUI.Api
 {
@@ -22,11 +23,13 @@ namespace RiseDiary.WebUI.Api
         }
 
         [HttpGet, Route("api/v1.0/dates/all")]
-        public async Task<ActionResult<List<DateListItemDto>>> GetAllDates()
+        public async Task<ActionResult<List<DateListItemDto>>> GetAllDates(CancellationToken cancellationToken)
         {
-            var records = await _datesService.GetAllDates(DateOnly.FromDateTime(DateTime.UtcNow));
+            try
+            {
+                var records = await _datesService.GetAllDates(DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken);
 
-            var dto = records.Select(d => new DateListItemDto
+                var dto = records.Select(d => new DateListItemDto
                 {
                     Id = d.Id,
                     Date = d.Date,
@@ -36,17 +39,26 @@ namespace RiseDiary.WebUI.Api
                     Text = d.Text,
                     Themes = d.Themes
                 })
-                .ToList();
+                    .ToList();
 
-            return Ok(dto);
+                return Ok(dto);
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
+            }
         }
 
         [HttpGet, Route("api/v1.0/dates/range")]
-        public async Task<ActionResult<List<DateListItemDto>>> GetDatesRange([FromQuery] bool withEmptyDates = true)
+        public async Task<ActionResult<List<DateListItemDto>>> GetDatesRange(
+            CancellationToken cancellationToken, [FromQuery] bool withEmptyDates = true)
         {
-            var records = await _datesService.GetDatesFromRange(DateOnly.FromDateTime(DateTime.UtcNow), withEmptyDates);
+            try
+            {
+                var records = await _datesService.GetDatesFromRange(
+                    DateOnly.FromDateTime(DateTime.UtcNow), withEmptyDates, cancellationToken);
 
-            var dto = records.Select(d => new DateListItemDto
+                var dto = records.Select(d => new DateListItemDto
                 {
                     Id = d.Id,
                     Date = d.Date,
@@ -56,26 +68,38 @@ namespace RiseDiary.WebUI.Api
                     Text = d.Text,
                     Themes = d.Themes
                 })
-                .ToList();
+                    .ToList();
 
-            return Ok(dto);
+                return Ok(dto);
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
+            }
         }
 
         [HttpGet, Route("api/v1.0/dates/calendar")]
-        public async Task<ActionResult<List<CalendarDateDto>>> GetCalendarDates()
+        public async Task<ActionResult<List<CalendarDateDto>>> GetCalendarDates(CancellationToken cancellationToken)
         {
-            var records = await _datesService.GetAllDates(DateOnly.FromDateTime(DateTime.UtcNow));
+            try
+            {
+                var records = await _datesService.GetAllDates(DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken);
 
-            var dto = records.Select(d => new CalendarDateDto
+                var dto = records.Select(d => new CalendarDateDto
                 {
-                   Id = d.Id.ToString(),
-                   Name = d.Themes + ": " + d.Name,
-                   StartDate = d.TransferredDate,
-                   EndDate = d.TransferredDate
+                    Id = d.Id.ToString(),
+                    Name = d.Themes + ": " + d.Name,
+                    StartDate = d.TransferredDate,
+                    EndDate = d.TransferredDate
                 })
-                .ToList();
+                    .ToList();
 
-            return Ok(dto);
+                return Ok(dto);
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
+            }
         }
 
     }

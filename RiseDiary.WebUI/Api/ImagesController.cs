@@ -6,6 +6,7 @@ using RiseDiary.Shared;
 using RiseDiary.Shared.Dto;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Api
@@ -31,18 +32,22 @@ namespace RiseDiary.WebUI.Api
         [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetImageFile(Guid id)
+        public async Task<IActionResult> GetImageFile(Guid id, CancellationToken cancellationToken)
         {
             if (id == Guid.Empty) return BadRequest();
 
             try
             {
-                var image = await _imagesService.FetchFullImageById(id);
+                var image = await _imagesService.FetchFullImageById(id, cancellationToken);
                 return File(image, "image/jpeg");
             }
             catch (ArgumentException)
             {
                 return NotFound();
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
             }
         }
 
@@ -50,18 +55,22 @@ namespace RiseDiary.WebUI.Api
         [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetImageThumbnail(Guid id)
+        public async Task<IActionResult> GetImageThumbnail(Guid id, CancellationToken cancellationToken)
         {
             if (id == Guid.Empty) return BadRequest();
 
             try
             {
-                var image = await _imagesService.FetchImageById(id);
+                var image = await _imagesService.FetchImageById(id, cancellationToken);
                 return File(image.Thumbnail, "image/jpeg");
             }
             catch (ArgumentException)
             {
                 return NotFound();
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
             }
         }
 
@@ -121,12 +130,12 @@ namespace RiseDiary.WebUI.Api
         [HttpGet, Route("api/v1.0/images/{id}")]
         [ProducesResponseType(typeof(ImageDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ImageDto>> GetImage(Guid id)
+        public async Task<ActionResult<ImageDto>> GetImage(Guid id, CancellationToken cancellationToken)
         {
             try
             {
-                var img = await _imagesService.FetchImageById(id);
-                var fullImg = await _imagesService.FetchFullImageById(id);
+                var img = await _imagesService.FetchImageById(id, cancellationToken);
+                var fullImg = await _imagesService.FetchFullImageById(id, cancellationToken);
 
                 var dto = new ImageDto
                 {
@@ -156,23 +165,28 @@ namespace RiseDiary.WebUI.Api
             {
                 return BadRequest(exc.Message);
             }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
+            }
         }
 
         [HttpGet, Route("api/v1.0/images")]
         [ProducesResponseType(typeof(ImagesPageDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ImagesPageDto>> GetImagesPage(
-            [FromQuery] int? pageSize, [FromQuery] int? pageNo, [FromQuery] string? imageNameFilter)
+        public async Task<ActionResult<ImagesPageDto>> GetImagesPage([FromQuery] int? pageSize,
+            [FromQuery] int? pageNo, [FromQuery] string? imageNameFilter, CancellationToken cancellationToken)
         {
             try
             {
                 pageSize ??= 20;
                 pageNo ??= 1;
-                var count = await _imagesService.GetImagesCount(imageNameFilter);
+                var count = await _imagesService.GetImagesCount(imageNameFilter, cancellationToken: cancellationToken);
                 pageSize = pageSize > 100 ? 100 : pageSize;
 
                 var pagesInfo = PagesInfo.GetPagesInfo(count, pageNo.Value, pageSize.Value);
-                var images = await _imagesService.FetchImageSet(pagesInfo.StartIndex, pagesInfo.PageSize, imageNameFilter);
+                var images = await _imagesService.FetchImageSet(
+                    pagesInfo.StartIndex, pagesInfo.PageSize, imageNameFilter, cancellationToken: cancellationToken);
 
                 var dto = new ImagesPageDto
                 {
@@ -193,6 +207,10 @@ namespace RiseDiary.WebUI.Api
             catch (ArgumentException exc)
             {
                 return BadRequest(exc.Message);
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
             }
         }
     }

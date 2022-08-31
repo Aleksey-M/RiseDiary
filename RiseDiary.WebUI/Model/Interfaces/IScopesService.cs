@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model
 {
     public interface IScopesService
     {
-        Task<List<DiaryScope>> GetScopes(bool? themesActuality = null);
+        Task<List<DiaryScope>> GetScopes(bool? themesActuality = null, CancellationToken cancellationToken = default);
 
-        Task<DiaryScope?> FetchScopeById(Guid scopeId);
+        Task<DiaryScope?> FetchScopeById(Guid scopeId, CancellationToken cancellationToken = default);
 
         Task UpdateScopeName(Guid scopeId, string scopeNewName);
 

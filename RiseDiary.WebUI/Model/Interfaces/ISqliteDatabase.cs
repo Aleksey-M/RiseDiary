@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model
 {
     public record DeletedEntitiesCount(int Scopes, int Themes, int Records, int Cogitations, int Images, int RecordThemes, int RecordImages);
-    
+
     public record SqliteDatabaseFileInfo(string FileName, string FileSize);
 
     public record DeletedRecord(Guid Id, DateOnly Date, string Name, string Text);
@@ -42,7 +43,7 @@ namespace RiseDiary.Model
 
     public interface ISqliteDatabase
     {
-        Task<DeletedEntitiesCount> GetDeletedEntitiesCount();
+        Task<DeletedEntitiesCount> GetDeletedEntitiesCount(CancellationToken cancellationToken = default);
 
         SqliteDatabaseFileInfo GetSqliteDatabaseInfo();
 
@@ -52,6 +53,6 @@ namespace RiseDiary.Model
 
         Task File2FileMigration();
 
-        Task<DeletedData> GetDeletedEntitiesData();
+        Task<DeletedData> GetDeletedEntitiesData(CancellationToken cancellationToken = default);
     }
 }

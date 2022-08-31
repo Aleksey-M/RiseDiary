@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using RiseDiary.WebUI.Data;
@@ -56,7 +57,7 @@ namespace RiseDiary.Model.Services
             }
         }
 
-        public async Task<DiaryRecord> FetchRecordById(Guid recordId)
+        public async Task<DiaryRecord> FetchRecordById(Guid recordId, CancellationToken cancellationToken)
         {
             var record = await _context.Records
                .AsNoTracking()
@@ -65,7 +66,7 @@ namespace RiseDiary.Model.Services
                .ThenInclude(ir => ir.Image)
                .Include(r => r.ThemesRefs)
                .ThenInclude(rt => rt.Theme)
-               .SingleOrDefaultAsync(r => r.Id == recordId)
+               .SingleOrDefaultAsync(r => r.Id == recordId, cancellationToken)
                .ConfigureAwait(false);
 
             if (record == null) throw new RecordNotFoundException(recordId);

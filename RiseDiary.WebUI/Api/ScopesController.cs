@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.Shared.Dto;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Api
 {
@@ -79,21 +80,28 @@ namespace RiseDiary.WebUI.Api
 
         [HttpGet, Route("api/v1.0/scopes")]
         [ProducesResponseType(typeof(IEnumerable<ScopeDto>), StatusCodes.Status200OK)]
-        public async Task<List<ScopeDto>> GetScopes(bool? actual)
+        public async Task<ActionResult<List<ScopeDto>>> GetScopes(bool? actual, CancellationToken cancellationToken)
         {
-            var scopes = await _scopeService.GetScopes(actual);
-
-            return scopes.Select(s => new ScopeDto
+            try
             {
-                ScopeId = s.Id,
-                ScopeName = s.ScopeName,
-                Themes = s.Themes.Select(t => new ThemeDto
+                var scopes = await _scopeService.GetScopes(actual, cancellationToken);
+
+                return scopes.Select(s => new ScopeDto
                 {
-                    ThemeId = t.Id,
-                    Actual = t.Actual,
-                    ThemeName = t.ThemeName
-                })
-            }).ToList();
+                    ScopeId = s.Id,
+                    ScopeName = s.ScopeName,
+                    Themes = s.Themes.Select(t => new ThemeDto
+                    {
+                        ThemeId = t.Id,
+                        Actual = t.Actual,
+                        ThemeName = t.ThemeName
+                    })
+                }).ToList();
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
+            }
         }
 
         [HttpPut, Route("api/v1.0/scopes/{id}")]
@@ -157,7 +165,7 @@ namespace RiseDiary.WebUI.Api
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteTheme(Guid scopeId, Guid themeId)
         {
-            var scope = (await _scopeService.GetScopes(null)).SingleOrDefault(s => s.Id == scopeId);
+            var scope = (await _scopeService.GetScopes()).SingleOrDefault(s => s.Id == scopeId);
 
             try
             {

@@ -6,6 +6,8 @@
 @inject IRecordsThemesService ThemesService
 @inject IScopesService ScopesService
 
+@implements IDisposable
+
 @if (_criticalError is not null)
 {
     <p style="color:red">Произошла критическая ошибка: @_criticalError</p>
@@ -142,6 +144,12 @@ else
 
     private string AllThemes => string.Join(" | ", ThemesList);
 
+    private CancellationTokenSource _cts = new CancellationTokenSource();
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -149,9 +157,12 @@ else
 
         try
         {
-            _allScopes = await ScopesService.GetScopes();
-            _selectedThemes = await ThemesService.GetRecordThemes(RecordId);
+            _allScopes = await ScopesService.GetScopes(cancellationToken: _cts.Token);
+            _selectedThemes = await ThemesService.GetRecordThemes(RecordId, _cts.Token);
             _changedThemesList = _selectedThemes.Select(st => st.ThemeId).ToList();            
+        }
+        catch (OperationCanceledException)
+        {
         }
         catch (Exception exc)
         {
@@ -198,9 +209,12 @@ else
 
             if (removed.Any() || added.Any())
             {
-                _selectedThemes = await ThemesService.GetRecordThemes(RecordId);
+                _selectedThemes = await ThemesService.GetRecordThemes(RecordId, _cts.Token);
                 _changedThemesList = _selectedThemes.Select(st => st.ThemeId).ToList();
             }
+        }
+        catch (OperationCanceledException)
+        {
         }
         catch (Exception exc)
         {

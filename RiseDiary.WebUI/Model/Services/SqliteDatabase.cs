@@ -1,13 +1,14 @@
-﻿using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using RiseDiary.WebUI.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using RiseDiary.WebUI.Data;
 
 namespace RiseDiary.Model.Services
 {
@@ -58,15 +59,42 @@ namespace RiseDiary.Model.Services
             _context.SoftDeleting = oldValue;
         }
 
-        public async Task<DeletedEntitiesCount> GetDeletedEntitiesCount()
+        public async Task<DeletedEntitiesCount> GetDeletedEntitiesCount(CancellationToken cancellationToken)
         {
-            int records = await _context.Records.IgnoreQueryFilters().CountAsync(r => r.Deleted).ConfigureAwait(false);
-            int images = await _context.Images.IgnoreQueryFilters().CountAsync(i => i.Deleted).ConfigureAwait(false);
-            int scopes = await _context.Scopes.IgnoreQueryFilters().CountAsync(s => s.Deleted).ConfigureAwait(false);
-            int themes = await _context.Themes.IgnoreQueryFilters().CountAsync(t => t.Deleted).ConfigureAwait(false);
-            int recImages = await _context.RecordImages.IgnoreQueryFilters().CountAsync(ri => ri.Deleted).ConfigureAwait(false);
-            int recThemes = await _context.RecordThemes.IgnoreQueryFilters().CountAsync(rt => rt.Deleted).ConfigureAwait(false);
-            int cogitations = await _context.Cogitations.IgnoreQueryFilters().CountAsync(r => r.Deleted).ConfigureAwait(false);
+            int records = await _context.Records
+                .IgnoreQueryFilters()
+                .CountAsync(r => r.Deleted, cancellationToken)
+                .ConfigureAwait(false);
+
+            int images = await _context.Images
+                .IgnoreQueryFilters()
+                .CountAsync(i => i.Deleted, cancellationToken)
+                .ConfigureAwait(false);
+
+            int scopes = await _context.Scopes
+                .IgnoreQueryFilters()
+                .CountAsync(s => s.Deleted, cancellationToken)
+                .ConfigureAwait(false);
+
+            int themes = await _context.Themes
+                .IgnoreQueryFilters()
+                .CountAsync(t => t.Deleted, cancellationToken)
+                .ConfigureAwait(false);
+
+            int recImages = await _context.RecordImages
+                .IgnoreQueryFilters()
+                .CountAsync(ri => ri.Deleted, cancellationToken)
+                .ConfigureAwait(false);
+
+            int recThemes = await _context.RecordThemes
+                .IgnoreQueryFilters()
+                .CountAsync(rt => rt.Deleted, cancellationToken)
+                .ConfigureAwait(false);
+
+            int cogitations = await _context.Cogitations
+                .IgnoreQueryFilters()
+                .CountAsync(r => r.Deleted, cancellationToken)
+                .ConfigureAwait(false);
 
             return new DeletedEntitiesCount(scopes, themes, records, cogitations, images, recThemes, recImages);
         }
@@ -336,8 +364,8 @@ namespace RiseDiary.Model.Services
             var appSet = new List<AppSetting>();
             foreach (var (Key, Value, ModifiedDate) in appSettings.OrderBy(x => x.Key))
             {
-                var modifiedDate = string.IsNullOrWhiteSpace(ModifiedDate) 
-                    ? DateTime.UtcNow 
+                var modifiedDate = string.IsNullOrWhiteSpace(ModifiedDate)
+                    ? DateTime.UtcNow
                     : DateTime.Parse(ModifiedDate, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 
                 appSet.Add(new AppSetting
@@ -554,7 +582,7 @@ namespace RiseDiary.Model.Services
             if (columnsCount != expectedColumnsCount) throw new Exception($"В таблице {tableName} количество колонок не совпадает с ожидаемым");
         }
 
-        public async Task<DeletedData> GetDeletedEntitiesData()
+        public async Task<DeletedData> GetDeletedEntitiesData(CancellationToken cancellationToken)
         {
             var deletedData = new DeletedData();
 
@@ -562,14 +590,14 @@ namespace RiseDiary.Model.Services
                 .IgnoreQueryFilters()
                 .Where(x => x.Deleted)
                 .Select(x => new DeletedRecord(x.Id, x.Date, x.Name, x.Text))
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             deletedData.RecordsCogitations = await _context.Cogitations
                 .IgnoreQueryFilters()
                 .Where(x => x.Deleted)
                 .Select(x => new DeletedCogitation(x.Id, x.RecordId, x.Date, x.Text, x.Record != null ? x.Record.Name : ""))
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             deletedData.RecordsThemes = await _context.RecordThemes
@@ -578,7 +606,7 @@ namespace RiseDiary.Model.Services
                 .Select(x => new DeletedRecordTheme(x.RecordId, x.ThemeId,
                     x.Record != null ? x.Record.Name : "",
                     x.Theme != null ? x.Theme.ThemeName : ""))
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             deletedData.RecordsImages = await _context.RecordImages
@@ -587,28 +615,28 @@ namespace RiseDiary.Model.Services
                 .Select(x => new DeletedRecordImage(x.RecordId, x.ImageId,
                     x.Record != null ? x.Record.Name : "",
                     x.Image != null ? x.Image.GetBase64Thumbnail() : ""))
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             deletedData.Scopes = await _context.Scopes
                 .IgnoreQueryFilters()
                 .Where(x => x.Deleted)
                 .Select(x => new DeletedScope(x.Id, x.ScopeName))
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             deletedData.Themes = await _context.Themes
                 .IgnoreQueryFilters()
                 .Where(x => x.Deleted)
                 .Select(x => new DeletedTheme(x.Id, x.Scope != null ? x.Scope.ScopeName : "", x.ThemeName))
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             deletedData.Images = await _context.Images
                 .IgnoreQueryFilters()
                 .Where(x => x.Deleted)
                 .Select(x => new DeletedImage(x.Id, x.Name, x.GetBase64Thumbnail()))
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             return deletedData;

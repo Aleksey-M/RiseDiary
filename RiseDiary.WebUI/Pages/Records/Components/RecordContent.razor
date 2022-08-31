@@ -7,6 +7,8 @@
 @inject IJSRuntime JSRuntime
 @inject BrowserTimeOffsetService BrowserTimeOffset
 
+@implements IDisposable
+
 @if (_criticalError is not null)
 {
     <p style="color:red">Произошла критическая ошибка: @_criticalError</p>
@@ -82,6 +84,12 @@ else
 
     private string? _criticalError;
 
+    private CancellationTokenSource _cts = new CancellationTokenSource();
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -89,7 +97,7 @@ else
 
         try
         {
-            _record = await RecordsService.FetchRecordById(RecordId);
+            _record = await RecordsService.FetchRecordById(RecordId, _cts.Token);
 
             _createdDate = BrowserTimeOffset.ToLocalString(_record.CreateDate);
             _modifiedDate = BrowserTimeOffset.ToLocalString(_record.ModifyDate);
@@ -99,6 +107,9 @@ else
         {
             await JSRuntime.InvokeVoidAsync("redirectToIndex");
             return;
+        }
+        catch (OperationCanceledException)
+        {
         }
         catch (Exception exc)
         {

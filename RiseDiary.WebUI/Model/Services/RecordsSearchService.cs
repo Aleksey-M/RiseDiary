@@ -3,6 +3,7 @@ using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
@@ -19,7 +20,7 @@ namespace RiseDiary.Model.Services
             _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
         }
 
-        public async Task<List<DiaryRecord>> GetRecordsList(RecordsFilter filter)
+        public async Task<List<DiaryRecord>> GetRecordsList(RecordsFilter filter, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(filter);
 
@@ -28,7 +29,7 @@ namespace RiseDiary.Model.Services
                 .ThenByDescending(r => r.CreateDate)
                 .Skip(filter.PageNo * filter.PageSize)
                 .Take(filter.PageSize)
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             return await ReplaceHostAndPort(recordsPage);
@@ -52,10 +53,10 @@ namespace RiseDiary.Model.Services
             return diaryRecords;
         }
 
-        public async Task<int> GetRecordsCount(RecordsFilter filter)
+        public async Task<int> GetRecordsCount(RecordsFilter filter, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(filter);
-            return await FetchRecordsListFilteredQuery(filter).CountAsync().ConfigureAwait(false);
+            return await FetchRecordsListFilteredQuery(filter).CountAsync(cancellationToken).ConfigureAwait(false);
         }
 
         private IQueryable<DiaryRecord> FetchRecordsListFilteredQuery(RecordsFilter filter)
@@ -125,7 +126,7 @@ namespace RiseDiary.Model.Services
             return result;
         }
 
-        public async Task<List<DiaryRecord>> GetThisDayRecords(int month, int day)
+        public async Task<List<DiaryRecord>> GetThisDayRecords(int month, int day, CancellationToken cancellationToken)
         {
             var records = await _context.Records
                 .AsNoTracking()
@@ -137,7 +138,7 @@ namespace RiseDiary.Model.Services
                 .Where(x => x.Date.Month == month && x.Date.Day == day)
                 .OrderByDescending(r => r.Date)
                 .ThenByDescending(r => r.CreateDate)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return await ReplaceHostAndPort(records);
         }

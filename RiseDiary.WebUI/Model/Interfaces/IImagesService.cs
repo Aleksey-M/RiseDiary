@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model
@@ -11,13 +12,15 @@ namespace RiseDiary.Model
 
         Task DeleteImage(Guid imageId);
 
-        Task<byte[]> FetchFullImageById(Guid imageId);
+        Task<byte[]> FetchFullImageById(Guid imageId, CancellationToken cancellationToken = default);
 
-        Task<DiaryImage> FetchImageById(Guid imageId);
+        Task<DiaryImage> FetchImageById(Guid imageId, CancellationToken cancellationToken = default);
 
-        Task<List<DiaryImage>> FetchImageSet(int skip, int count, string? imageNameFilter = null, Guid? recordId = null);
+        Task<List<DiaryImage>> FetchImageSet(int skip, int count,
+            string? imageNameFilter = null, Guid? recordId = null, CancellationToken cancellationToken = default);
 
-        Task<int> GetImagesCount(string? imageNameFilter = null, Guid? recordId = null);
+        Task<int> GetImagesCount(string? imageNameFilter = null,
+            Guid? recordId = null, CancellationToken cancellationToken = default);
 
         Task UpdateImage(Guid imageId, string imageNewName);
     }

@@ -1,10 +1,11 @@
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using RiseDiary.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using RiseDiary.Model;
 
 namespace RiseDiary.WebUI.Pages.Analysis
 {
@@ -21,10 +22,16 @@ namespace RiseDiary.WebUI.Pages.Analysis
 
         public string ThisDay => DateTime.UtcNow.ToString("m", CultureInfo.GetCultureInfo("ru-RU"));
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync(CancellationToken cancellationToken)
         {
-            var today = DateTime.UtcNow;
-            Records = await _recordsSearchService.GetThisDayRecords(month: today.Month, day: today.Day);
+            try
+            {
+                var today = DateTime.UtcNow;
+                Records = await _recordsSearchService.GetThisDayRecords(month: today.Month, day: today.Day, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
     }
 }

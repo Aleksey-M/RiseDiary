@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model
@@ -10,6 +11,6 @@ namespace RiseDiary.Model
 
         Task RemoveRecordTheme(Guid recordId, IEnumerable<Guid> themesIds);
 
-        Task<List<DiaryRecordTheme>> GetRecordThemes(Guid recordId);
+        Task<List<DiaryRecordTheme>> GetRecordThemes(Guid recordId, CancellationToken cancellationToken = default);
     }
 }

@@ -5,6 +5,7 @@ using RiseDiary.Model;
 using RiseDiary.WebUI.Model;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Images
@@ -30,9 +31,9 @@ namespace RiseDiary.WebUI.Pages.Images
 
         public Guid? RecordId { get; private set; }
 
-        public DiaryImage Image { get; private set; } = null!;
+        public DiaryImage Image { get; private set; } = new DiaryImage();
 
-        public Uri ImageUrl { get; private set; } = null!;
+        public Uri ImageUrl { get; private set; } = new Uri(string.Empty);
 
         public Dictionary<Guid, string> ImageLinks { get; private set; } = new Dictionary<Guid, string>();
 
@@ -41,16 +42,22 @@ namespace RiseDiary.WebUI.Pages.Images
         public string ModifyDate => _browserTimeOffsetService.ToLocalString(Image.ModifyDate);
 
 
-        private async Task UpdateModel(Guid imageId)
+        private async Task UpdateModel(Guid imageId, CancellationToken cancellationToken)
         {
             string url = Request.GetAppBaseUrl();
 
-            Image = await _imagesService.FetchImageById(imageId);
-            ImageUrl = new Uri($@"{url}/api/v1.0/image-file/{Image.Id}");
-            ImageLinks = await _recordImagesService.GetLinkedRecordsInfo(imageId);
+            try
+            {
+                Image = await _imagesService.FetchImageById(imageId, cancellationToken);
+                ImageUrl = new Uri($@"{url}/api/v1.0/image-file/{Image.Id}");
+                ImageLinks = await _recordImagesService.GetLinkedRecordsInfo(imageId, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
-        public async Task<IActionResult> OnGetAsync(Guid? imageId, Guid? recordId)
+        public async Task<IActionResult> OnGetAsync(Guid? imageId, Guid? recordId, CancellationToken cancellationToken)
         {
             if (!imageId.HasValue || imageId.Value == default)
             {
@@ -61,7 +68,7 @@ namespace RiseDiary.WebUI.Pages.Images
 
             try
             {
-                await UpdateModel(imageId.Value);
+                await UpdateModel(imageId.Value, cancellationToken);
             }
             catch (ImageNotFoundException)
             {
@@ -89,7 +96,8 @@ namespace RiseDiary.WebUI.Pages.Images
             return (recordId != null && recordId != Guid.Empty) ? Redirect($"/Records/View?recordid={recordId.Value}") : Redirect("/images/index");
         }
 
-        public async Task OnPostReplaceImageAsync(IFormFile newImage, Guid imageId, Guid? recordId)
+        public async Task OnPostReplaceImageAsync(IFormFile newImage, 
+            Guid imageId, Guid? recordId, CancellationToken cancellationToken)
         {
             if (imageId != Guid.Empty)
             {
@@ -98,25 +106,25 @@ namespace RiseDiary.WebUI.Pages.Images
                 {
                     await _imagesEditService.ReplaceImage(newImage, imageId);
                 }
-                await UpdateModel(imageId);
+                await UpdateModel(imageId, cancellationToken);
             }
         }
 
-        public async Task OnPostCancelEditAsync(Guid imageId, Guid? recordId)
+        public async Task OnPostCancelEditAsync(Guid imageId, Guid? recordId, CancellationToken cancellationToken)
         {
             RecordId = recordId;
             await _imagesEditService.DiscardChanges(imageId);
-            await UpdateModel(imageId);
+            await UpdateModel(imageId, cancellationToken);
         }
 
-        public async Task OnPostSaveUpdatedImageAsync(Guid imageId, Guid? recordId)
+        public async Task OnPostSaveUpdatedImageAsync(Guid imageId, Guid? recordId, CancellationToken cancellationToken)
         {
             RecordId = recordId;
             await _imagesEditService.ApplyChanges(imageId);
-            await UpdateModel(imageId);
+            await UpdateModel(imageId, cancellationToken);
         }
 
-        public async Task OnPostSaveUpdatedAsNewImageAsync(Guid imageId, Guid? recordId)
+        public async Task OnPostSaveUpdatedAsNewImageAsync(Guid imageId, Guid? recordId, CancellationToken cancellationToken)
         {
             RecordId = recordId;
             var newImageId = await _imagesEditService.CreateNewImageFromChanged(imageId);
@@ -125,24 +133,21 @@ namespace RiseDiary.WebUI.Pages.Images
             {
                 await _recordImagesService.AddRecordImage(RecordId.Value, newImageId);
             }
-            await UpdateModel(newImageId);
+            await UpdateModel(newImageId, cancellationToken);
         }
 
-        public async Task OnPostScaleImageAsync(Guid imageId, int imageSize, Guid? recordId)
+        public async Task OnPostScaleImageAsync(Guid imageId, int imageSize, Guid? recordId, CancellationToken cancellationToken)
         {
             RecordId = recordId;
-            Image = await _imagesService.FetchImageById(imageId);
-            if (imageSize > 0 && imageSize <= Image.GetBiggestImageDimm())
-            {
-                await _imagesEditService.ReduceImageSize(imageId, imageSize);
-            }
-            await UpdateModel(imageId);
+
+            await _imagesEditService.ReduceImageSize(imageId, imageSize);
+            await UpdateModel(imageId, cancellationToken);
         }
 
-        public async Task OnPostRotateImageAsync(Guid imageId, Guid? recordId, string direction)
+        public async Task OnPostRotateImageAsync(Guid imageId, Guid? recordId,
+            string direction, CancellationToken cancellationToken)
         {
             RecordId = recordId;
-            Image = await _imagesService.FetchImageById(imageId);
 
             if (direction is { Length: > 0 })
             {
@@ -156,7 +161,7 @@ namespace RiseDiary.WebUI.Pages.Images
                 }
             }            
 
-            await UpdateModel(imageId);
+            await UpdateModel(imageId, cancellationToken);
         }
 
     }

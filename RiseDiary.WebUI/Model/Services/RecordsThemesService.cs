@@ -3,6 +3,7 @@ using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
@@ -57,12 +58,13 @@ namespace RiseDiary.Model.Services
             await _context.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public async Task<List<DiaryRecordTheme>> GetRecordThemes(Guid recordId) => await _context.RecordThemes
-            .AsNoTracking()
-            .Include(x => x.Theme)
-            .Where(x => x.RecordId == recordId)
-            .ToListAsync()
-            .ConfigureAwait(false);
+        public async Task<List<DiaryRecordTheme>> GetRecordThemes(
+            Guid recordId, CancellationToken cancellationToken) => await _context.RecordThemes
+                .AsNoTracking()
+                .Include(x => x.Theme)
+                .Where(x => x.RecordId == recordId)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
 
         public async Task RemoveRecordTheme(Guid recordId, IEnumerable<Guid> themesIds)
         {

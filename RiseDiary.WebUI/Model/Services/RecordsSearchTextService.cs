@@ -3,6 +3,7 @@ using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
@@ -19,14 +20,14 @@ namespace RiseDiary.Model.Services
             _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
         }
 
-        private async Task<IEnumerable<DiaryRecord>> SearchRecords(string searchText)
+        private async Task<IEnumerable<DiaryRecord>> SearchRecords(string searchText, CancellationToken cancellationToken)
         {
             searchText = searchText?.ToUpper() ?? throw new ArgumentNullException(nameof(searchText));
 
             var prelimData = await _context.Records
                 .AsNoTracking()
                 .Select(r => new { r.Id, r.Name, r.Text })
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             var recordsIds = prelimData
@@ -39,7 +40,7 @@ namespace RiseDiary.Model.Services
             var cogitationsPrelimData = await _context.Cogitations
                 .AsNoTracking()
                 .Select(c => new { c.RecordId, c.Text })
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             var recordsIds2 = cogitationsPrelimData
@@ -60,22 +61,22 @@ namespace RiseDiary.Model.Services
                 .Include(r => r.ImagesRefs.OrderBy(x => x.Order))
                 .ThenInclude(ri => ri.Image)
                 .Where(r => combinedList.Contains(r.Id))
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        public async Task<int> GetRecordsCount(string? searchText)
+        public async Task<int> GetRecordsCount(string? searchText, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(searchText)) return 0;
-            return (await SearchRecords(searchText).ConfigureAwait(false)).Count();
+            return (await SearchRecords(searchText, cancellationToken).ConfigureAwait(false)).Count();
         }
 
-        public async Task<List<DiaryRecord>> GetRecordsList(RecordsTextFilter filter)
+        public async Task<List<DiaryRecord>> GetRecordsList(RecordsTextFilter filter, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(filter);
             if (string.IsNullOrWhiteSpace(filter.SearchText)) return Enumerable.Empty<DiaryRecord>().ToList();
 
-            var list = (await SearchRecords(filter.SearchText).ConfigureAwait(false))
+            var list = (await SearchRecords(filter.SearchText, cancellationToken).ConfigureAwait(false))
                 .OrderByDescending(r => r.Date)
                 .ThenByDescending(r => r.CreateDate)
                 .Skip(filter.PageNo * filter.PageSize)
@@ -87,6 +88,8 @@ namespace RiseDiary.Model.Services
 
             foreach (var rec in list)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 rec.Text = rec.Text?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "";
                 rec.Name = rec.Name?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "";
                 foreach (var cog in rec.Cogitations)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using RiseDiary.WebUI.Data;
@@ -53,7 +54,7 @@ namespace RiseDiary.Model.Services
             }
         }
 
-        public async Task<List<Cogitation>> GetRecordCogitations(Guid recordId)
+        public async Task<List<Cogitation>> GetRecordCogitations(Guid recordId, CancellationToken cancellationToken)
         {
             var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
             var currentHostAndPort = await _appSettingsService.GetHostAndPort();
@@ -62,7 +63,7 @@ namespace RiseDiary.Model.Services
                 .AsNoTracking()
                 .Where(x => x.RecordId == recordId)
                 .OrderByDescending(x => x.Date)
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             cogitations.ForEach(

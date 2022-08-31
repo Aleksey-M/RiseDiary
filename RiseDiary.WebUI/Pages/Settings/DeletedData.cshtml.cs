@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RiseDiary.Model;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Pages.Settings
@@ -15,9 +17,15 @@ namespace RiseDiary.WebUI.Pages.Settings
 
         public DeletedData DeletedData { get; private set; } = new();
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync(CancellationToken cancellationToken)
         {
-            DeletedData = await _sqliteDatabase.GetDeletedEntitiesData();
+            try
+            {
+                DeletedData = await _sqliteDatabase.GetDeletedEntitiesData(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
     }
 }

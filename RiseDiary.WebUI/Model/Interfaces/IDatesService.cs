@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model
@@ -8,8 +9,9 @@ namespace RiseDiary.Model
 
     public interface IDatesService
     {
-        Task<List<DateListItem>> GetAllDates(DateOnly today);
+        Task<List<DateListItem>> GetAllDates(DateOnly today, CancellationToken cancellationToken = default);
 
-        Task<List<DateListItem>> GetDatesFromRange(DateOnly tuday, bool withEmptyDates);
+        Task<List<DateListItem>> GetDatesFromRange(DateOnly tuday,
+            bool withEmptyDates, CancellationToken cancellationToken = default);
     }
 }

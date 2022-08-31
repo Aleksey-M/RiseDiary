@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model
@@ -8,8 +9,10 @@ namespace RiseDiary.Model
 
     public interface ICalendarService
     {
-        Task<List<int>> GetYears(IEnumerable<Guid> themesId, bool combineThemes);
+        Task<List<int>> GetYears(IEnumerable<Guid> themesId,
+            bool combineThemes, CancellationToken cancellationToken = default);
 
-        Task<List<CalendarItem>> GetCalendarItems(int year, IEnumerable<Guid> themesId, bool combineThemes);
+        Task<List<CalendarItem>> GetCalendarItems(int year,
+            IEnumerable<Guid> themesId, bool combineThemes, CancellationToken cancellationToken = default);
     }
 }

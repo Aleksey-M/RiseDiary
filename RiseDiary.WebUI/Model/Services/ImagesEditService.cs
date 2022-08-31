@@ -79,6 +79,7 @@ namespace RiseDiary.Model.Services
 
         public async Task ReduceImageSize(Guid imageId, int newBiggestDimensionSize)
         {
+            if (newBiggestDimensionSize == 0) throw new ArgumentException(null, nameof(newBiggestDimensionSize));
             var image = await _context.Images.SingleOrDefaultAsync(i => i.Id == imageId).ConfigureAwait(false);
             if (image == null) throw new ArgumentException($"Image with Id='{imageId}' does not exists");
 

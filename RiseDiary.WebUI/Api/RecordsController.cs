@@ -5,6 +5,7 @@ using RiseDiary.Model;
 using RiseDiary.Shared.Dto;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Api
@@ -53,11 +54,12 @@ namespace RiseDiary.WebUI.Api
 
         [HttpGet, Route("api/v1.0/records/{recordId}")]
         [ProducesResponseType(typeof(RecordDto), StatusCodes.Status200OK)]
-        public async Task<ActionResult<RecordDto>> GetRecord(Guid recordId)
+        public async Task<ActionResult<RecordDto>> GetRecord(Guid recordId, CancellationToken cancellationToken)
         {
             try
             {
-                var record = await _recordService.FetchRecordById(recordId);
+                var record = await _recordService.FetchRecordById(recordId, cancellationToken);
+
                 var dto = new RecordDto
                 {
                     Id = record.Id,
@@ -102,6 +104,10 @@ namespace RiseDiary.WebUI.Api
             catch (ArgumentException exc)
             {
                 return BadRequest(exc.Message);
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
             }
         }
 

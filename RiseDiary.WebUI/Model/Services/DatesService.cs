@@ -4,6 +4,7 @@ using RiseDiary.WebUI.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model.Services
@@ -20,7 +21,7 @@ namespace RiseDiary.Model.Services
             _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
         }
 
-        public async Task<List<DateListItem>> GetAllDates(DateOnly today)
+        public async Task<List<DateListItem>> GetAllDates(DateOnly today, CancellationToken cancellationToken)
         {
             var sId = (await _appSettingsService.GetAppSetting(AppSettingsKey.ImportantDaysScopeId)).value ?? throw new Exception("Setting 'ImportantDaysScopeId' does not exists");
             var scopeId = Guid.Parse(sId);
@@ -38,7 +39,7 @@ namespace RiseDiary.Model.Services
                 .Include(r => r.ThemesRefs)
                 .ThenInclude(tr => tr.Theme)
                 .Where(r => allRecordsIds.Contains(r.Id))
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             var items = records
@@ -46,7 +47,9 @@ namespace RiseDiary.Model.Services
                     r.Id,
                     r.Date,
                     new DateOnly(today.Year, r.Date.Month, r.Date.Day),
-                    string.IsNullOrWhiteSpace(r.Name) ? "[ПУСТО]" : r.Name.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase),
+                    string.IsNullOrWhiteSpace(r.Name) 
+                        ? "[ПУСТО]"
+                        : r.Name.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase),
                     r.Text?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "",
                     string.Join(", ", r.ThemesRefs.Select(tr => tr.Theme!.ThemeName))))
                 .OrderBy(r => r.TransferredDate)
@@ -55,10 +58,12 @@ namespace RiseDiary.Model.Services
             return items;
         }
 
-        public async Task<List<DateListItem>> GetDatesFromRange(DateOnly today, bool withEmptyDates)
+        public async Task<List<DateListItem>> GetDatesFromRange(DateOnly today,
+            bool withEmptyDates, CancellationToken cancellationToken)
         {
-            var daysCount = (await _appSettingsService.GetAppSettingInt(AppSettingsKey.ImportantDaysDisplayRange)) ?? throw new Exception("Setting 'ImportantDaysDisplayRange' does not exists");
-            var allRecords = await GetAllDates(today);
+            var daysCount = (await _appSettingsService.GetAppSettingInt(AppSettingsKey.ImportantDaysDisplayRange))
+                ?? throw new Exception("Setting 'ImportantDaysDisplayRange' does not exists");
+            var allRecords = await GetAllDates(today, cancellationToken);
 
             var startDate = today.AddDays(-daysCount);
             var datesRange = Enumerable.Range(0, daysCount * 2)
@@ -71,7 +76,11 @@ namespace RiseDiary.Model.Services
 
             foreach(var rec in allRecords)
             {
-                var emptyDate = datesRange.SingleOrDefault(d => d.TransferredDate.Month == rec.TransferredDate.Month && d.TransferredDate.Day == rec.TransferredDate.Day);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var emptyDate = datesRange.SingleOrDefault(d => 
+                    d.TransferredDate.Month == rec.TransferredDate.Month 
+                    && d.TransferredDate.Day == rec.TransferredDate.Day);
                 if (emptyDate == null) continue;
 
                 datesFromRange.Add(rec with { TransferredDate = emptyDate.TransferredDate });

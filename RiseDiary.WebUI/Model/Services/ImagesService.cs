@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using RiseDiary.Shared;
-using RiseDiary.WebUI.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using RiseDiary.Shared;
+using RiseDiary.WebUI.Data;
 
 namespace RiseDiary.Model.Services
 {
@@ -51,9 +52,9 @@ namespace RiseDiary.Model.Services
             var (taken, cameraModel) = GetMetadataFromPhoto(image);
             var (width, height) = GetImageSize(image);
 
-            if(newBiggestDimensionSize is not null)
+            if (newBiggestDimensionSize is not null)
             {
-                if(width > newBiggestDimensionSize || height > newBiggestDimensionSize)
+                if (width > newBiggestDimensionSize || height > newBiggestDimensionSize)
                 {
                     image = ScaleImage(image, imageQuality, newBiggestDimensionSize.Value);
                     (width, height) = GetImageSize(image);
@@ -125,25 +126,26 @@ namespace RiseDiary.Model.Services
             await _context.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public async Task<DiaryImage> FetchImageById(Guid imageId)
+        public async Task<DiaryImage> FetchImageById(Guid imageId, CancellationToken cancellationToken)
         {
             var img = await _context.Images
                 .Include(i => i.TempImage)
                 .AsNoTracking()
-                .SingleOrDefaultAsync(i => i.Id == imageId)
+                .SingleOrDefaultAsync(i => i.Id == imageId, cancellationToken)
                 .ConfigureAwait(false);
 
             return img ?? throw new ImageNotFoundException(imageId);
         }
 
-        public async Task<byte[]> FetchFullImageById(Guid imageId)
+        public async Task<byte[]> FetchFullImageById(Guid imageId, CancellationToken cancellationToken)
         {
             var img = await _context.Images
                 .AsNoTracking()
                 .Include(i => i.FullImage)
                 .Include(i => i.TempImage)
-                .SingleOrDefaultAsync(i => i.Id == imageId)
+                .SingleOrDefaultAsync(i => i.Id == imageId, cancellationToken)
                 .ConfigureAwait(false);
+
             _ = img ?? throw new ImageNotFoundException(imageId);
 
             if (img.TempImage != null) return img.TempImage.Data;
@@ -151,7 +153,7 @@ namespace RiseDiary.Model.Services
             return img.FullImage?.Data ?? throw new Exception("Saved image is not contains image data");
         }
 
-        public async Task<int> GetImagesCount(string? imageNameFilter = null, Guid? recordId = null)
+        public async Task<int> GetImagesCount(string? imageNameFilter, Guid? recordId, CancellationToken cancellationToken)
         {
             var nameFilter = imageNameFilter?.Trim()?.ToUpper();
 
@@ -159,22 +161,23 @@ namespace RiseDiary.Model.Services
             {
                 return await _context.Images
                    .Where(x => !x.RecordsRefs.Any(y => y.RecordId == recordId))
-                   .CountAsync()
+                   .CountAsync(cancellationToken)
                    .ConfigureAwait(false);
             }
 
             var imagesNames = await _context.Images
                 .Where(x => !x.RecordsRefs.Any(y => y.RecordId == recordId))
                 .Select(x => x.Name)
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            return imagesNames                
+            return imagesNames
                 .Where(x => x.ToUpper().Contains(nameFilter))
                 .Count();
         }
 
-        public async Task<List<DiaryImage>> FetchImageSet(int skip, int count, string? imageNameFilter = null, Guid? recordId = null)
+        public async Task<List<DiaryImage>> FetchImageSet(int skip, int count,
+            string? imageNameFilter, Guid? recordId, CancellationToken cancellationToken)
         {
             var nameFilter = imageNameFilter?.Trim()?.ToUpper();
 
@@ -185,14 +188,14 @@ namespace RiseDiary.Model.Services
                     .OrderByDescending(i => i.CreateDate)
                     .Skip(skip)
                     .Take(count)
-                    .ToListAsync()
+                    .ToListAsync(cancellationToken)
                     .ConfigureAwait(false);
             }
 
             var imagesNames = await _context.Images
                .Where(x => !x.RecordsRefs.Any(y => y.RecordId == recordId))
                .Select(x => new { x.Id, x.Name })
-               .ToListAsync()
+               .ToListAsync(cancellationToken)
                .ConfigureAwait(false);
 
             var imagesIds = imagesNames
@@ -206,9 +209,9 @@ namespace RiseDiary.Model.Services
                 .OrderByDescending(i => i.CreateDate)
                 .Skip(skip)
                 .Take(count)
-                .ToListAsync()
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
-        }             
+        }
 
     }
 }

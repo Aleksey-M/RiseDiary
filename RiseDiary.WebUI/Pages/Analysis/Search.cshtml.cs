@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using RiseDiary.Model;
-using RiseDiary.Shared;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using RiseDiary.Model;
+using RiseDiary.Shared;
 
 namespace RiseDiary.WebUI.Pages.Analysis
 {
@@ -32,7 +34,7 @@ namespace RiseDiary.WebUI.Pages.Analysis
             new KeyValuePair<string, string?>(nameof(Expanded), Expanded.ToString())
         };
 
-        public async Task OnGetAsync(string? searchString, int? pageNo, bool? expanded)
+        public async Task OnGetAsync(string? searchString, int? pageNo, bool? expanded, CancellationToken cancellationToken)
         {
             pageNo ??= 1;
             Expanded = expanded.HasValue && expanded.Value;
@@ -45,10 +47,24 @@ namespace RiseDiary.WebUI.Pages.Analysis
             }
             else
             {
-                SearchString = searchString;
-                int recordsCount = await _recordsSearchTextService.GetRecordsCount(SearchString);
-                Pages = PagesInfo.GetPagesInfo(recordsCount, pageNo ?? 1, pageSize, 10);
-                Records = await _recordsSearchTextService.GetRecordsList(new RecordsTextFilter { SearchText = SearchString, PageNo = Pages.CurrentPage - 1, PageSize = Pages.PageSize });
+                try
+                {
+                    SearchString = searchString;
+                    int recordsCount = await _recordsSearchTextService.GetRecordsCount(SearchString, cancellationToken);
+                    Pages = PagesInfo.GetPagesInfo(recordsCount, pageNo ?? 1, pageSize, 10);
+                    Records = await _recordsSearchTextService.GetRecordsList(
+                        new RecordsTextFilter
+                        {
+                            SearchText = SearchString,
+                            PageNo = Pages.CurrentPage - 1,
+                            PageSize = Pages.PageSize
+                        },
+                        cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    Pages = PagesInfo.GetPagesInfo(1);
+                }
             }
         }
     }

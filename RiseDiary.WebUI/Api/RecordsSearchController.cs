@@ -6,6 +6,7 @@ using RiseDiary.Shared;
 using RiseDiary.Shared.Dto;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.WebUI.Api
@@ -31,7 +32,8 @@ namespace RiseDiary.WebUI.Api
             [FromQuery] bool? combinedThemes, 
             [FromQuery] Guid[]? themeId, 
             [FromQuery] int? pageSize, 
-            [FromQuery] int? pageNo)
+            [FromQuery] int? pageNo,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -54,8 +56,8 @@ namespace RiseDiary.WebUI.Api
                     filters.AddThemeId(themeId);
                 }
 
-                var records = await _recordsSearchService.GetRecordsList(filters);
-                int allCount = await _recordsSearchService.GetRecordsCount(filters);
+                var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
+                int allCount = await _recordsSearchService.GetRecordsCount(filters, cancellationToken);
 
                 var pagesInfo = PagesInfo.GetPagesInfo(allCount, pageNo.Value, pageSize.Value);
 
@@ -79,6 +81,10 @@ namespace RiseDiary.WebUI.Api
             {
                 return BadRequest(exc.Message);
             }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
+            }
         }
 
         [HttpGet, Route("api/v1.0/records/expandedlist")]
@@ -91,7 +97,8 @@ namespace RiseDiary.WebUI.Api
             [FromQuery] bool? combinedThemes, 
             [FromQuery] Guid[]? themeId, 
             [FromQuery] int? pageSize, 
-            [FromQuery] int? pageNo)
+            [FromQuery] int? pageNo,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -114,8 +121,8 @@ namespace RiseDiary.WebUI.Api
                     filters.AddThemeId(themeId);
                 }
 
-                var records = await _recordsSearchService.GetRecordsList(filters);
-                int allCount = await _recordsSearchService.GetRecordsCount(filters);
+                var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
+                int allCount = await _recordsSearchService.GetRecordsCount(filters, cancellationToken);
 
                 var pagesInfo = PagesInfo.GetPagesInfo(allCount, pageNo.Value, pageSize.Value);
 
@@ -167,6 +174,10 @@ namespace RiseDiary.WebUI.Api
             catch (ArgumentException exc)
             {
                 return BadRequest(exc.Message);
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499);
             }
         }
     }

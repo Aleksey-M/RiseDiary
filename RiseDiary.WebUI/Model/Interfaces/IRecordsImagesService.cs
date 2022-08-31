@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.Model
@@ -10,9 +11,9 @@ namespace RiseDiary.Model
 
         Task RemoveRecordImage(Guid recordId, Guid imageId);
 
-        Task<List<DiaryRecordImage>> GetLinkedImagesList(Guid recordId);
+        Task<List<DiaryRecordImage>> GetLinkedImagesList(Guid recordId, CancellationToken cancellationToken = default);
 
-        Task<Dictionary<Guid, string>> GetLinkedRecordsInfo(Guid imageId);
+        Task<Dictionary<Guid, string>> GetLinkedRecordsInfo(Guid imageId, CancellationToken cancellationToken = default);
 
         Task<List<DiaryRecordImage>> ChangeRecordImageOrder(Guid recordId, Guid imageId, int newOrder);
     }
