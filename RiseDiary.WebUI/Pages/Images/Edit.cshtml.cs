@@ -33,7 +33,7 @@ namespace RiseDiary.WebUI.Pages.Images
 
         public DiaryImage Image { get; private set; } = new DiaryImage();
 
-        public Uri ImageUrl { get; private set; } = new Uri(string.Empty);
+        public Uri ImageUrl { get; private set; } = new Uri("http://192.0.0.1");
 
         public Dictionary<Guid, string> ImageLinks { get; private set; } = new Dictionary<Guid, string>();
 
