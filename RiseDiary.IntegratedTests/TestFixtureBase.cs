@@ -250,22 +250,30 @@ namespace RiseDiary.IntegratedTests
             context.SaveChanges();
         }
 
-        protected static Guid CreateScope(DiaryDbContext context, string? scopeName = null)
+        protected static Guid CreateScope(DiaryDbContext context, string? scopeName = null, string? scopeDescription = null)
         {
-            var scope = new DiaryScope { ScopeName = scopeName ?? Guid.NewGuid().ToString() };
+            var scope = new DiaryScope 
+            { 
+                ScopeName = scopeName ?? Guid.NewGuid().ToString(),
+                Description = scopeDescription ?? ""
+            };
+
             context.Scopes.Add(scope);
             context.SaveChanges();
             return scope.Id;
         }
 
-        protected static (Guid scopeId, Guid themeId) CreateThemeWithScope(DiaryDbContext context, string themeName)
+        protected static (Guid scopeId, Guid themeId) CreateThemeWithScope(
+            DiaryDbContext context, string themeName, string? themeDescription = null)
         {
             var scopeId = CreateScope(context);
+
             var theme = new DiaryTheme
             {
                 Id = Guid.NewGuid(),
                 ScopeId = scopeId,
                 ThemeName = themeName,
+                Description = themeDescription ?? "",
                 Actual = true
             };
 
@@ -274,7 +282,7 @@ namespace RiseDiary.IntegratedTests
             return (scopeId, theme.Id);
         }
 
-        protected static Guid CreateTheme(DiaryDbContext context, string themeName, Guid? scopeId = null)
+        protected static Guid CreateTheme(DiaryDbContext context, string themeName, Guid? scopeId = null, string? themeDescription = null)
         {
             if (scopeId == null)
             {
@@ -287,6 +295,7 @@ namespace RiseDiary.IntegratedTests
                 Id = Guid.NewGuid(),
                 ScopeId = scopeId.Value,
                 ThemeName = themeName,
+                Description = themeDescription ?? "",
                 Actual = true
             };
 
@@ -818,7 +827,7 @@ namespace RiseDiary.IntegratedTests
 
         static protected IRecordsThemesService GetRecordsThemesService(DiaryDbContext? context = null) => TestedServices.GetRecordsThemesService(context ?? CreateContext());
 
-        static protected IScopesService GetScopesService(DiaryDbContext? context = null) => TestedServices.GetScopesService(context ?? CreateContext());
+        static protected IScopesService GetScopesService(DiaryDbContext? context = null) => TestedServices.GetScopesService(context ?? CreateContext(), new AppSettingsServiceStub());
 
         static protected ICogitationsService GetCogitationsService(DiaryDbContext? context = null) => TestedServices.GetCogitationsService(context ?? CreateContext(), new AppSettingsServiceStub());
     }

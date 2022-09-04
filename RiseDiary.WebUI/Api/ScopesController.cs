@@ -113,7 +113,7 @@ namespace RiseDiary.WebUI.Api
 
             try
             {
-                await _scopeService.UpdateScopeName(dto.ScopeId, dto.NewScopeName);
+                await _scopeService.UpdateScope(dto.ScopeId, dto.NewScopeName);
             }
             catch (ArgumentException exc)
             {

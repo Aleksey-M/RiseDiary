@@ -11,6 +11,8 @@ namespace RiseDiary.Model
 
         public bool Deleted { get; set; }
 
+        public string Description { get; set; } = "";
+
         public ICollection<DiaryTheme> Themes { get; set; } = null!;
     }
 
@@ -25,6 +27,8 @@ namespace RiseDiary.Model
         public bool Actual { get; set; }
 
         public bool Deleted { get; set; }
+
+        public string Description { get; set; } = "";
 
         public DiaryScope? Scope { get; set; }
 

@@ -15,7 +15,16 @@
 else
 {
     <div>
-        <h6 style="display:inline"><i>@AllThemes</i></h6>
+        <h6 style="display:inline">
+            @for (int i = 0; i < _selectedThemes.Count; i++)
+            {
+                @GetThemeHtmlElement(_selectedThemes.ElementAt(i))
+                @if (i != _selectedThemes.Count - 1)
+                {
+                    @:&nbsp;|&nbsp;
+                }
+            }
+        </h6>
 
         <button type="button" class="btn btn-link p-0" title="Выбор тем записи" data-bs-toggle="modal" data-bs-target="#themesFilter">
             <img src="img/pen.svg" />
@@ -126,23 +135,12 @@ else
     private string? _criticalError;
 
 
-    private ICollection<string> ThemesList
+    private MarkupString GetThemeHtmlElement(DiaryRecordTheme theme) => (theme?.Theme?.Description) switch
     {
-        get
-        {
-            try
-            {                
-                return _selectedThemes?.Select(tr => tr.Theme?.ThemeName ?? "")?.ToArray() ?? Array.Empty<string>();
-            }
-            catch (Exception exc)
-            {
-                _criticalError = exc.Message;
-                return Array.Empty<string>();
-            }
-        }
-    }
-
-    private string AllThemes => string.Join(" | ", ThemesList);
+        var x when (x != null && x.Length > 0) =>
+            new MarkupString(@$"<i data-bs-toggle=""tooltip"" data-bs-html=""true"" title=""{x}"" style=""color:blue;text-decoration:underline"">{theme?.Theme?.ThemeName ?? "empty"}</i>"),
+        _ => new MarkupString(@$"<i>{theme?.Theme?.ThemeName ?? "empty"}</i>")
+    };
 
     private CancellationTokenSource _cts = new CancellationTokenSource();
 
@@ -220,5 +218,10 @@ else
         {
             _criticalError = exc.Message;
         }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await _JSRuntime.InvokeVoidAsync("initializeTooltips");
     }
 }

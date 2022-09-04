@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using RiseDiary.WebUI.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using RiseDiary.WebUI.Data;
 
 namespace RiseDiary.Model.Services
 {
@@ -12,40 +12,84 @@ namespace RiseDiary.Model.Services
     {
         private readonly DiaryDbContext _context;
 
-        public ScopesService(DiaryDbContext context)
+        private readonly IAppSettingsService _appSettingsService;
+
+        public ScopesService(DiaryDbContext context, IAppSettingsService appSettingsService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
         }
 
-        public async Task<Guid> AddScope(string newScopeName)
+        public async Task<Guid> AddScope(string newScopeName, string newScopeDescription)
         {
-            if (string.IsNullOrWhiteSpace(newScopeName)) throw new ArgumentException($"Parameter {nameof(newScopeName)} should not be null or empty");
-            newScopeName = newScopeName.Trim();
+            if (string.IsNullOrWhiteSpace(newScopeName))
+                throw new ArgumentException($"Parameter {nameof(newScopeName)} should not be null or empty");
 
-            if (await _context.Scopes.AnyAsync(s => s.ScopeName == newScopeName)) throw new ArgumentException($"Scope with name {newScopeName} already exists");
+            newScopeName = newScopeName.Trim();
+            newScopeDescription = newScopeDescription?.Trim() ?? "";
+
+            if (await _context.Scopes.AnyAsync(s => s.ScopeName == newScopeName))
+                throw new ArgumentException($"Scope with name {newScopeName} already exists");
+
+            if (newScopeDescription != "")
+            {
+                var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
+                var currentHostAndPort = await _appSettingsService.GetHostAndPort();
+
+                newScopeDescription =
+                    newScopeDescription.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
+            }
 
             var scope = new DiaryScope
             {
                 Id = Guid.NewGuid(),
-                ScopeName = newScopeName.Trim()
+                ScopeName = newScopeName,
+                Description = newScopeDescription
             };
+
             await _context.Scopes.AddAsync(scope).ConfigureAwait(false);
             await _context.SaveChangesAsync().ConfigureAwait(false);
 
             return scope.Id;
         }
 
-        public async Task<Guid> AddTheme(Guid scopeId, string newThemeName, bool actual)
+        public async Task<Guid> AddTheme(Guid scopeId, string newThemeName, bool actual, string newThemeDescription)
         {
-            if (string.IsNullOrWhiteSpace(newThemeName)) throw new ArgumentException($"Parameter {nameof(newThemeName)} should not be null or empty");
-            newThemeName = newThemeName.Trim();
+            if (string.IsNullOrWhiteSpace(newThemeName))
+                throw new ArgumentException($"Parameter {nameof(newThemeName)} should not be null or empty");
 
-            var scope = await _context.Scopes.AsNoTracking().Include(s => s.Themes).SingleOrDefaultAsync(s => s.Id == scopeId).ConfigureAwait(false);
+            newThemeName = newThemeName.Trim();
+            newThemeDescription = newThemeDescription?.Trim() ?? "";
+
+            var scope = await _context.Scopes
+                .AsNoTracking()
+                .Include(s => s.Themes)
+                .SingleOrDefaultAsync(s => s.Id == scopeId)
+                .ConfigureAwait(false);
+
             if (scope == null) throw new ArgumentException($"Scope with id={scopeId} is not exists");
 
-            if (scope.Themes.Any(t => t.ThemeName == newThemeName)) throw new ArgumentException($"Theme with name '{newThemeName}' already exists in '{scope.ScopeName}' scope");
+            if (scope.Themes.Any(t => t.ThemeName == newThemeName))
+                throw new ArgumentException($"Theme with name '{newThemeName}' already exists in '{scope.ScopeName}' scope");
 
-            var theme = new DiaryTheme { Id = Guid.NewGuid(), ScopeId = scopeId, ThemeName = newThemeName.Trim(), Actual = actual };
+            if (newThemeDescription != "")
+            {
+                var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
+                var currentHostAndPort = await _appSettingsService.GetHostAndPort();
+
+                newThemeDescription =
+                    newThemeDescription.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
+            }
+
+            var theme = new DiaryTheme
+            {
+                Id = Guid.NewGuid(),
+                ScopeId = scopeId,
+                ThemeName = newThemeName.Trim(),
+                Actual = actual,
+                Description = newThemeDescription
+            };
+
             await _context.Themes.AddAsync(theme).ConfigureAwait(false);
             await _context.SaveChangesAsync().ConfigureAwait(false);
 
@@ -110,37 +154,69 @@ namespace RiseDiary.Model.Services
                 .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            if (themesActuality == null) return scopesList;
+            if (themesActuality != null)
+            {
+                foreach (var scope in scopesList.ToList())
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
 
-            foreach (var scope in scopesList.ToList())
+                    scope.Themes = scope.Themes.Where(t => t.Actual == themesActuality.Value).ToList();
+                    if (scope.Themes.Count == 0) scopesList.Remove(scope);
+                }
+            }
+
+            var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
+            var currentHostAndPort = await _appSettingsService.GetHostAndPort();
+
+            foreach (var scope in scopesList)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                scope.Description = scope.Description.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase);
 
-                scope.Themes = scope.Themes.Where(t => t.Actual == themesActuality.Value).ToList();
-                if (scope.Themes.Count == 0) scopesList.Remove(scope);
+                foreach (var theme in scope.Themes)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    theme.Description =
+                        theme.Description.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase);
+                }
             }
 
             return scopesList;
         }
 
-        public async Task UpdateScopeName(Guid scopeId, string scopeNewName)
+        public async Task UpdateScope(Guid scopeId, string? scopeNewName, string? scopeNewDescription)
         {
-            if (string.IsNullOrWhiteSpace(scopeNewName)) throw new ArgumentException("Scope name should not be empty", nameof(scopeNewName));
-            scopeNewName = scopeNewName.Trim();
-
-            if (await _context.Scopes.AnyAsync(s => s.ScopeName == scopeNewName && s.Id != scopeId)) throw new ArgumentException($"Scope with name {scopeNewName} already exists");
+            if (string.IsNullOrWhiteSpace(scopeNewName) && scopeNewDescription == null) return;
 
             var targetScope = await _context.Scopes.FindAsync(scopeId).ConfigureAwait(false);
             if (targetScope == null) throw new ArgumentException($"Scope with id = {scopeId} is not exists");
             if (targetScope.Deleted) throw new ArgumentException($"Scope with id = {scopeId} is deleted");
 
-            targetScope.ScopeName = scopeNewName.Trim();
+            if (!string.IsNullOrWhiteSpace(scopeNewName))
+            {
+                scopeNewName = scopeNewName.Trim();
+
+                if (await _context.Scopes.AnyAsync(s => s.ScopeName == scopeNewName && s.Id != scopeId))
+                    throw new ArgumentException($"Scope with name {scopeNewName} already exists");
+
+                targetScope.ScopeName = scopeNewName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(scopeNewDescription))
+            {
+                var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
+                var currentHostAndPort = await _appSettingsService.GetHostAndPort();
+
+                targetScope.Description = scopeNewDescription.Trim()
+                    .Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
+            }
+
             await _context.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public async Task UpdateTheme(Guid themeId, string? themeNewName = null, bool? themeActuality = null)
+        public async Task UpdateTheme(Guid themeId, string? themeNewName, bool? themeActuality, string? themeNewDescription)
         {
-            if (string.IsNullOrWhiteSpace(themeNewName) && themeActuality == null) return;
+            if (string.IsNullOrWhiteSpace(themeNewName) && themeActuality == null && themeNewDescription == null) return;
 
             var targetTheme = await _context.Themes.FindAsync(themeId);
             if (targetTheme == null) throw new ArgumentException($"Theme with id = {themeId} is not exists");
@@ -148,8 +224,22 @@ namespace RiseDiary.Model.Services
 
             if (!string.IsNullOrWhiteSpace(themeNewName))
             {
-                if (await _context.Themes.AnyAsync(t => t.ScopeId == targetTheme.ScopeId && t.Id != targetTheme.Id && t.ThemeName == themeNewName)) throw new ArgumentException($"Theme with name {themeNewName} already exists");
+                themeNewName = themeNewName.Trim();
+
+                if (await _context.Themes
+                    .AnyAsync(t => t.ScopeId == targetTheme.ScopeId && t.Id != targetTheme.Id && t.ThemeName == themeNewName))
+                    throw new ArgumentException($"Theme with name {themeNewName} already exists");
+
                 targetTheme.ThemeName = themeNewName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(themeNewDescription))
+            {
+                var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
+                var currentHostAndPort = await _appSettingsService.GetHostAndPort();
+
+                targetTheme.Description = themeNewDescription.Trim()
+                    .Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
             }
 
             if (themeActuality != null && targetTheme.Actual != themeActuality)

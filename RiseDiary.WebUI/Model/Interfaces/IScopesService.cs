@@ -11,17 +11,19 @@ namespace RiseDiary.Model
 
         Task<DiaryScope?> FetchScopeById(Guid scopeId, CancellationToken cancellationToken = default);
 
-        Task UpdateScopeName(Guid scopeId, string scopeNewName);
+        /// <summary> Обновление полей, параметры для которых не равны null </summary>
+        Task UpdateScope(Guid scopeId, string? scopeNewName = null, string? scopeNewDescription = null);
 
         Task<bool> CanDeleteScope(Guid scopeId);
 
         Task DeleteScope(Guid scopeId);
 
-        Task<Guid> AddScope(string newScopeName);
+        Task<Guid> AddScope(string newScopeName, string newScopeDescription = "");
 
-        Task<Guid> AddTheme(Guid scopeId, string newThemeName, bool actual);
+        Task<Guid> AddTheme(Guid scopeId, string newThemeName, bool actual, string newThemeDescription = "");
 
-        Task UpdateTheme(Guid themeId, string? themeNewName = null, bool? themeActuality = null);
+        /// <summary> Обновление полей, параметры для которых не равны null </summary>
+        Task UpdateTheme(Guid themeId, string? themeNewName = null, bool? themeActuality = null, string? themeNewDescription = null);
 
         Task DeleteTheme(Guid themeId);
     }

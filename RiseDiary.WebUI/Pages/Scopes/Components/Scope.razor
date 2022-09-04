@@ -27,19 +27,39 @@ else
                         <img src="img/trash.svg" width="20" height="20" alt="Удалить" title="Удалить" />
                     </button>
 
-                    <button type="submit" class="btn btn-link" @onclick="UpdateScopeName">
+                    <button type="submit" class="btn btn-link" @onclick="UpdateScope">
                         <img src="img/check2-square.svg" widtn="20" height="20" title="Обновить" alt="Обновить" />
                     </button>
+                </div>
+
+                <div style="width:100%">
+                    <div id="description-@CurrentScope.Id.ToString()" class="p-1 mt-2"
+                        style="width: 100%; border:1px solid silver;overflow: auto; resize: vertical"
+                        contenteditable="true">
+
+                        @CurrentScope.Description
+                    </div>
                 </div>
             }
             else
             {
                 <div class="row">
-                    <h5 class="col-11 mt-1" style="color:blue">@CurrentScope.ScopeName</h5>
+                    <div class="col-11 mt-1">
+                        <h5 style="color:blue">@CurrentScope.ScopeName</h5>
+                    </div>                    
 
                     <button type="button" @onclick="ShowScopeNameEditField" class="btn btn-link col-1">
                         <img src="img/pencil-square.svg" widtn="20" height="20" title="Изменить" alt="Изменить" />
                     </button>
+
+                    @if (!string.IsNullOrEmpty(CurrentScope.Description))
+                    {
+                        <div style="width:100%">
+                            <div class="p-1 mt-2" style="width: 100%">
+                                @(new MarkupString(CurrentScope.Description))
+                            </div>
+                        </div>
+                    }                    
                 </div>
             }
         </div>
@@ -75,6 +95,15 @@ else
                                         <img src="img/pencil-square.svg" widtn="20" height="20" />
                                     </button>
                                 </div>
+
+                                @if (!string.IsNullOrEmpty(th.Description))
+                                {
+                                    <div style="width:100%">
+                                        <div class="p-1 mt-2" style="width: 100%">
+                                            @(new MarkupString(th.Description))
+                                        </div>
+                                    </div>
+                                }
                             }
                             else
                             {
@@ -93,6 +122,15 @@ else
                                     <button type="button" @onclick="UpdateThemeName" class="btn btn-link">
                                         <img src="img/check2-square.svg" widtn="20" height="20" title="Обновить" alt="Обновить" />
                                     </button>
+                                </div>
+
+                                <div style="width:100%">
+                                    <div id="themeDescription-@th.Id.ToString()" class="p-1 mt-2"
+                                        style="width: 100%; border:1px solid silver;overflow: auto; resize: vertical"
+                                        contenteditable="true">
+
+                                        @th.Description
+                                    </div>
                                 </div>
                             }
                         </div>
@@ -114,6 +152,12 @@ else
                 <button type="button" class="btn btn-link" @onclick="CreateNewTheme">
                     <img src="img/plus-square.svg" widtn="20" height="20" title="Создать" alt="Создать" />
                 </button>
+            </div>
+
+            <div style="width:100%">
+                <div id="newThemeDescription-@CurrentScope.Id.ToString()" class="p-1 mt-2"
+                 style="width: 100%; border:1px solid silver;overflow: auto; resize: vertical" contenteditable="true">
+                </div>
             </div>
         </div>
     </div>
@@ -181,7 +225,7 @@ else
         }       
     }
 
-    private async Task UpdateScopeName()
+    private async Task UpdateScope()
     {
         if (string.IsNullOrWhiteSpace(ScopeNewName))
         {
@@ -192,7 +236,10 @@ else
         try
         {
             CurrentScope.ScopeName = ScopeNewName.Trim();
-            await ScopesSvc.UpdateScopeName(CurrentScope.Id, CurrentScope.ScopeName);
+            CurrentScope.Description = (await JSRuntime
+                .InvokeAsync<string>("getHtmlText", $"description-{CurrentScope.Id.ToString()}")).Trim();
+
+            await ScopesSvc.UpdateScope(CurrentScope.Id, CurrentScope.ScopeName, CurrentScope.Description);
             EditMode = false;
             ErrorMessage = null;
         }
@@ -220,8 +267,12 @@ else
 
         try
         {
-            await ScopesSvc.UpdateTheme(EditedThemeId.Value, themeNewName: ThemeNewName);
+            var descriptionId = "themeDescription-" + EditedThemeId.Value.ToString();
+            var description = await JSRuntime.InvokeAsync<string>("getHtmlText", descriptionId);
+
+            await ScopesSvc.UpdateTheme(EditedThemeId.Value, themeNewName: ThemeNewName, themeNewDescription: description);
             CurrentScope.Themes.Single(t => t.Id == EditedThemeId.Value).ThemeName = ThemeNewName;
+            CurrentScope.Themes.Single(t => t.Id == EditedThemeId.Value).Description = description;
             ThemeNewName = null;
             EditThemeErrorMessage = null;
             EditedThemeId = null;
@@ -294,7 +345,11 @@ else
 
         try
         {
-            await ScopesSvc.AddTheme(CurrentScope.Id, NewThemeName, true);
+            var descriptionId = "newThemeDescription-" + CurrentScope.Id.ToString();
+            var description = await JSRuntime.InvokeAsync<string>("getHtmlText", descriptionId);
+            await JSRuntime.InvokeVoidAsync("clearInnerText", descriptionId);
+
+            await ScopesSvc.AddTheme(CurrentScope.Id, NewThemeName, true, description);
             NewThemeName = null;
             CreateThemeErrorMessage = null;
             CurrentScope = await ScopesSvc.FetchScopeById(CurrentScope.Id) 

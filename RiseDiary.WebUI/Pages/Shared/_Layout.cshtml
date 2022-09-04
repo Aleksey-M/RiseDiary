@@ -28,6 +28,24 @@
             return new Date().getTimezoneOffset();
         }
 
+        function getHtmlText(id) {
+            return document.getElementById(id).innerText;
+        }
+
+        function clearInnerText(id) {
+            document.getElementById(id).innerText = '';
+        }
+
+        let tooltipList;
+
+        function initializeTooltips() {
+            tooltipList = [].slice
+                .call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                .map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl)
+                });
+        }
+
         function loadImageOnThumbnailClick(imageId) {            
             const popupBodySelector = 'div#fullImage-' + imageId;
 
