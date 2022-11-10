@@ -23,17 +23,10 @@ public sealed class ScopesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<Guid>> CreateScope(NewScopeDto newScopeDto)
     {
-        try
-        {
-            var newScopeName = newScopeDto.NewScopeName.Trim();
-            var id = await _scopeService.AddScope(newScopeName);
-            var newScopeUri = $@"{await _appSettingsService.GetHostAndPort()}/api/scopes/{id}";
-            return Created(newScopeUri, id);
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        var newScopeName = newScopeDto.NewScopeName.Trim();
+        var id = await _scopeService.AddScope(newScopeName);
+        var newScopeUri = $@"{await _appSettingsService.GetHostAndPort()}/api/scopes/{id}";
+        return Created(newScopeUri, id);
     }
 
     [HttpGet, Route("{id}")]
@@ -48,7 +41,12 @@ public sealed class ScopesController : ControllerBase
         {
             ScopeId = scope.Id,
             ScopeName = scope.ScopeName,
-            Themes = scope.Themes.Select(t => new ThemeDto { ThemeId = t.Id, ThemeName = t.ThemeName, Actual = t.Actual })
+            Themes = scope.Themes.Select(t => new ThemeDto
+            {
+                ThemeId = t.Id,
+                ThemeName = t.ThemeName,
+                Actual = t.Actual
+            })
         };
     }
 
@@ -59,42 +57,29 @@ public sealed class ScopesController : ControllerBase
     {
         if (sid != dto.ScopeId) return BadRequest("Not consistent request");
 
-        try
-        {
-            var newThemeId = await _scopeService.AddTheme(sid, dto.NewThemeName.Trim(), dto.Actual);
-            var scopeUri = $@"{await _appSettingsService.GetHostAndPort()}/api/scopes/{sid}";
-            return Created(scopeUri, newThemeId);
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        var newThemeId = await _scopeService.AddTheme(sid, dto.NewThemeName.Trim(), dto.Actual);
+        var scopeUri = $@"{await _appSettingsService.GetHostAndPort()}/api/scopes/{sid}";
+        return Created(scopeUri, newThemeId);
     }
 
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<ScopeDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<ScopeDto>>> GetScopes(bool? actual, CancellationToken cancellationToken)
     {
-        try
-        {
-            var scopes = await _scopeService.GetScopes(actual, cancellationToken);
+        var scopes = await _scopeService.GetScopes(actual, cancellationToken);
 
-            return scopes.Select(s => new ScopeDto
-            {
-                ScopeId = s.Id,
-                ScopeName = s.ScopeName,
-                Themes = s.Themes.Select(t => new ThemeDto
-                {
-                    ThemeId = t.Id,
-                    Actual = t.Actual,
-                    ThemeName = t.ThemeName
-                })
-            }).ToList();
-        }
-        catch (OperationCanceledException)
+        return scopes.Select(s => new ScopeDto
         {
-            return StatusCode(499);
-        }
+            ScopeId = s.Id,
+            ScopeName = s.ScopeName,
+            Themes = s.Themes.Select(t => new ThemeDto
+            {
+                ThemeId = t.Id,
+                Actual = t.Actual,
+                ThemeName = t.ThemeName
+            })
+        })
+        .ToList();
     }
 
     [HttpPut, Route("{id}")]
@@ -104,15 +89,7 @@ public sealed class ScopesController : ControllerBase
     {
         if (id != dto.ScopeId) return BadRequest("Not consistent request");
 
-        try
-        {
-            await _scopeService.UpdateScope(dto.ScopeId, dto.NewScopeName);
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
-
+        await _scopeService.UpdateScope(dto.ScopeId, dto.NewScopeName);
         return NoContent();
     }
 
@@ -123,16 +100,9 @@ public sealed class ScopesController : ControllerBase
     {
         if (!await _scopeService.CanDeleteScope(id)) return BadRequest("Scope can not be deleted. Associated themes exists");
 
-        try
-        {
-            var scope = await _scopeService.FetchScopeById(id);
-            if (scope != null) await _scopeService.DeleteScope(id);
-            return NoContent();
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        var scope = await _scopeService.FetchScopeById(id);
+        if (scope != null) await _scopeService.DeleteScope(id);
+        return NoContent();
     }
 
     [HttpPut, Route("{scopeId}/themes/{themeId}")]
@@ -142,15 +112,8 @@ public sealed class ScopesController : ControllerBase
     {
         if (scopeId != dto.ScopeId || themeId != dto.ThemeId) return BadRequest("Not consistent request");
 
-        try
-        {
-            await _scopeService.UpdateTheme(dto.ThemeId, dto.ThemeNewName, dto.NewActual);
-            return NoContent();
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        await _scopeService.UpdateTheme(dto.ThemeId, dto.ThemeNewName, dto.NewActual);
+        return NoContent();
     }
 
     [HttpDelete, Route("{scopeId}/themes/{themeId}")]
@@ -160,14 +123,7 @@ public sealed class ScopesController : ControllerBase
     {
         var scope = (await _scopeService.GetScopes()).SingleOrDefault(s => s.Id == scopeId);
 
-        try
-        {
-            if (scope != null) await _scopeService.DeleteTheme(themeId);
-            return NoContent();
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        if (scope != null) await _scopeService.DeleteTheme(themeId);
+        return NoContent();
     }
 }

@@ -25,48 +25,37 @@ public sealed class RecordsSearchTextController : ControllerBase
         [FromQuery] int? pageNo,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            pageSize ??= 20;
-            pageSize = pageSize > 100 ? 100 : pageSize;
-            pageNo ??= 0;
 
-            var filters = new RecordsTextFilter
+        pageSize ??= 20;
+        pageSize = pageSize > 100 ? 100 : pageSize;
+        pageNo ??= 0;
+
+        var filters = new RecordsTextFilter
+        {
+            SearchText = searchText,
+            PageNo = pageNo.Value,
+            PageSize = pageSize.Value
+        };
+
+        var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
+        int allCount = await _recordsSearchService.GetRecordsCount(filters.SearchText, cancellationToken);
+
+        var pagesInfo = PagesInfo.GetPagesInfo(allCount, pageNo.Value, pageSize.Value);
+
+        return new RecordsPageDto
+        {
+            PagesInfo = pagesInfo,
+            Records = records.Select(r => new RecordListItemDto
             {
-                SearchText = searchText,
-                PageNo = pageNo.Value,
-                PageSize = pageSize.Value
-            };
-
-            var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
-            int allCount = await _recordsSearchService.GetRecordsCount(filters.SearchText, cancellationToken);
-
-            var pagesInfo = PagesInfo.GetPagesInfo(allCount, pageNo.Value, pageSize.Value);
-
-            var dto = new RecordsPageDto
-            {
-                PagesInfo = pagesInfo,
-                Records = records.Select(r => new RecordListItemDto
-                {
-                    Date = r.Date,
-                    CreatedDate = r.CreateDate,
-                    ModifiedDate = r.ModifyDate,
-                    DisplayedName = r.GetRecordNameDisplay(),
-                    DisplayedText = r.GetRecordTextShort(),
-                    RecordId = r.Id
-                }).ToList()
-            };
-
-            return Ok(dto);
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
-        catch (OperationCanceledException)
-        {
-            return StatusCode(499);
-        }
+                Date = r.Date,
+                CreatedDate = r.CreateDate,
+                ModifiedDate = r.ModifyDate,
+                DisplayedName = r.GetRecordNameDisplay(),
+                DisplayedText = r.GetRecordTextShort(),
+                RecordId = r.Id
+            })
+            .ToList()
+        };
     }
 
     [HttpGet, Route("expandedlist")]
@@ -78,40 +67,38 @@ public sealed class RecordsSearchTextController : ControllerBase
         [FromQuery] int? pageNo,
         CancellationToken cancellationToken)
     {
-        try
+        pageSize ??= 20;
+        pageSize = pageSize > 100 ? 100 : pageSize;
+        pageNo ??= 0;
+
+        pageSize ??= 20;
+        pageSize = pageSize > 100 ? 100 : pageSize;
+        pageNo ??= 0;
+
+        var filters = new RecordsTextFilter
         {
-            pageSize ??= 20;
-            pageSize = pageSize > 100 ? 100 : pageSize;
-            pageNo ??= 0;
+            SearchText = searchText,
+            PageNo = pageNo.Value,
+            PageSize = pageSize.Value
+        };
 
-            pageSize ??= 20;
-            pageSize = pageSize > 100 ? 100 : pageSize;
-            pageNo ??= 0;
+        var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
+        int allCount = await _recordsSearchService.GetRecordsCount(filters.SearchText, cancellationToken);
 
-            var filters = new RecordsTextFilter
+        var pagesInfo = PagesInfo.GetPagesInfo(allCount, pageNo.Value, pageSize.Value);
+
+        return new RecordsDetailPageDto
+        {
+            PagesInfo = pagesInfo,
+            Records = records.Select(record => new RecordDto
             {
-                SearchText = searchText,
-                PageNo = pageNo.Value,
-                PageSize = pageSize.Value
-            };
-
-            var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
-            int allCount = await _recordsSearchService.GetRecordsCount(filters.SearchText, cancellationToken);
-
-            var pagesInfo = PagesInfo.GetPagesInfo(allCount, pageNo.Value, pageSize.Value);
-
-            var dto = new RecordsDetailPageDto
-            {
-                PagesInfo = pagesInfo,
-                Records = records.Select(record => new RecordDto
-                {
-                    Id = record.Id,
-                    Date = record.Date,
-                    CreatedDate = record.CreateDate,
-                    ModifiedDate = record.ModifyDate,
-                    Name = record.Name,
-                    Text = record.Text,
-                    Cogitations = record.Cogitations
+                Id = record.Id,
+                Date = record.Date,
+                CreatedDate = record.CreateDate,
+                ModifiedDate = record.ModifyDate,
+                Name = record.Name,
+                Text = record.Text,
+                Cogitations = record.Cogitations
                     .Select(c => new CogitationDto
                     {
                         Id = c.Id,
@@ -119,7 +106,7 @@ public sealed class RecordsSearchTextController : ControllerBase
                         Text = c.Text
                     })
                     .ToArray(),
-                    Themes = record.ThemesRefs
+                Themes = record.ThemesRefs
                     .Select(rt => rt.Theme)
                     .Select(t => new ThemeDto
                     {
@@ -128,7 +115,7 @@ public sealed class RecordsSearchTextController : ControllerBase
                         Actual = t.Actual
                     })
                     .ToArray(),
-                    Images = record.ImagesRefs
+                Images = record.ImagesRefs
                     .Select(ri => ri.Image)
                     .Select(i => new ImageListItemDto
                     {
@@ -140,18 +127,8 @@ public sealed class RecordsSearchTextController : ControllerBase
                         Base64Thumbnail = i.GetBase64Thumbnail()
                     })
                     .ToArray()
-                }).ToList()
-            };
-
-            return Ok(dto);
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
-        catch (OperationCanceledException)
-        {
-            return StatusCode(499);
-        }
+            })
+            .ToList()
+        };
     }
 }

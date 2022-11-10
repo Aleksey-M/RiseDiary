@@ -33,80 +33,56 @@ public sealed class RecordsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateRecord(CreateRecordDto createDto)
     {
-        try
-        {
-            var recId = await _recordService.AddRecord(createDto.Date, createDto.RecordName, createDto.RecordText);
-            if (createDto.ThemesIds.Length > 0) await _recordsThemesService.AddRecordTheme(recId, createDto.ThemesIds);
-            var newRecordUri = $@"{await _appSettingsService.GetHostAndPort()}/api/records/{recId}";
-            return Created(newRecordUri, recId);
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        var recId = await _recordService.AddRecord(createDto.Date, createDto.RecordName, createDto.RecordText);
+        if (createDto.ThemesIds.Length > 0) await _recordsThemesService.AddRecordTheme(recId, createDto.ThemesIds);
+        var newRecordUri = $@"{await _appSettingsService.GetHostAndPort()}/api/records/{recId}";
+        return Created(newRecordUri, recId);
     }
 
     [HttpGet, Route("{recordId}")]
     [ProducesResponseType(typeof(RecordDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<RecordDto>> GetRecord(Guid recordId, CancellationToken cancellationToken)
     {
-        try
-        {
-            var record = await _recordService.FetchRecordById(recordId, cancellationToken);
+        var record = await _recordService.FetchRecordById(recordId, cancellationToken);
 
-            var dto = new RecordDto
-            {
-                Id = record.Id,
-                Date = record.Date,
-                CreatedDate = record.CreateDate,
-                ModifiedDate = record.ModifyDate,
-                Name = record.Name,
-                Text = record.Text,
-                Cogitations = record.Cogitations
-                    .Select(c => new CogitationDto
-                    {
-                        Id = c.Id,
-                        CreateDate = c.Date,
-                        Text = c.Text
-                    })
-                    .ToArray(),
-                Themes = record.ThemesRefs
-                    .Select(rt => rt.Theme)
-                    .Select(t => new ThemeDto
-                    {
-                        ThemeId = t!.Id,
-                        ThemeName = t.ThemeName,
-                        Actual = t.Actual
-                    })
-                    .ToArray(),
-                Images = record.ImagesRefs
-                    .Select(ri => ri.Image)
-                    .Select(i => new ImageListItemDto
-                    {
-                        Id = i!.Id,
-                        Name = i.Name,
-                        Width = i.Width,
-                        Height = i.Height,
-                        SizeKb = i.GetSizeKbString(),
-                        Base64Thumbnail = i.GetBase64Thumbnail()
-                    })
-                    .ToArray()
-            };
-
-            return Ok(dto);
-        }
-        catch (RecordNotFoundException)
+        return new RecordDto
         {
-            return NotFound();
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
-        catch (OperationCanceledException)
-        {
-            return StatusCode(499);
-        }
+            Id = record.Id,
+            Date = record.Date,
+            CreatedDate = record.CreateDate,
+            ModifiedDate = record.ModifyDate,
+            Name = record.Name,
+            Text = record.Text,
+            Cogitations = record.Cogitations
+                .Select(c => new CogitationDto
+                {
+                    Id = c.Id,
+                    CreateDate = c.Date,
+                    Text = c.Text
+                })
+                .ToArray(),
+            Themes = record.ThemesRefs
+                .Select(rt => rt.Theme)
+                .Select(t => new ThemeDto
+                {
+                    ThemeId = t!.Id,
+                    ThemeName = t.ThemeName,
+                    Actual = t.Actual
+                })
+                .ToArray(),
+            Images = record.ImagesRefs
+                .Select(ri => ri.Image)
+                .Select(i => new ImageListItemDto
+                {
+                    Id = i!.Id,
+                    Name = i.Name,
+                    Width = i.Width,
+                    Height = i.Height,
+                    SizeKb = i.GetSizeKbString(),
+                    Base64Thumbnail = i.GetBase64Thumbnail()
+                })
+                .ToArray()
+        };
     }
 
     [HttpDelete, Route("{recordId}")]
@@ -124,15 +100,8 @@ public sealed class RecordsController : ControllerBase
     {
         if (recordId != updateRecordDto.Id) return BadRequest("Not consistent request");
 
-        try
-        {
-            await _recordService.UpdateRecord(recordId, updateRecordDto.NewDate, updateRecordDto.NewName, updateRecordDto.NewText);
-            return NoContent();
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        await _recordService.UpdateRecord(recordId, updateRecordDto.NewDate, updateRecordDto.NewName, updateRecordDto.NewText);
+        return NoContent();
     }
 
     [HttpPost, Route("{recordId}/cogitations")]
@@ -142,16 +111,9 @@ public sealed class RecordsController : ControllerBase
     {
         if (recordId != createCogitationDto.RecordId) return BadRequest("Not consistent request");
 
-        try
-        {
-            var cogId = await _cogitationsService.AddCogitation(recordId, createCogitationDto.Text);
-            var recordUri = $@"{await _appSettingsService.GetHostAndPort()}/api/v1.0/records/{recordId}";
-            return Created(recordUri, cogId);
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        var cogId = await _cogitationsService.AddCogitation(recordId, createCogitationDto.Text);
+        var recordUri = $@"{await _appSettingsService.GetHostAndPort()}/api/v1.0/records/{recordId}";
+        return Created(recordUri, cogId);
     }
 
     [HttpPut, Route("{recordId}/cogitations/{cogitationId}")]
@@ -161,15 +123,8 @@ public sealed class RecordsController : ControllerBase
     {
         if (recordId != updateCogitationDto.RecordId || cogitationId != updateCogitationDto.CogitationId) return BadRequest("Not consistent request");
 
-        try
-        {
-            await _cogitationsService.UpdateCogitationText(cogitationId, updateCogitationDto.NewText);
-            return NoContent();
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        await _cogitationsService.UpdateCogitationText(cogitationId, updateCogitationDto.NewText);
+        return NoContent();
     }
 
     [HttpDelete, Route("{recordId}/cogitations/{cogitationId}")]

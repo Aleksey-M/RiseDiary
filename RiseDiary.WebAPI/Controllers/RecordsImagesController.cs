@@ -19,31 +19,17 @@ public sealed class RecordsImagesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddImageToRecord(Guid recordId, Guid imageId, [FromQuery] int? order)
     {
-        try
-        {
-            await _recordImagesService.AddRecordImage(recordId, imageId, order);
-            return Ok();
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        await _recordImagesService.AddRecordImage(recordId, imageId, order);
+        return Ok();
     }
 
     [HttpPut, Route("{recordId}/images/{imageId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ChangeRecordImageOrder(Guid recordId, Guid imageId, [FromQuery] int order)
     {
-        try
-        {
-            await _recordImagesService.ChangeRecordImageOrder(recordId, imageId, order);
-            return Ok();
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        await _recordImagesService.ChangeRecordImageOrder(recordId, imageId, order);
+        return NoContent();
     }
 
     [HttpDelete, Route("{recordId}/images/{imageId}")]
@@ -51,14 +37,7 @@ public sealed class RecordsImagesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> DeleteRecordImage(Guid recordId, Guid imageId)
     {
-        try
-        {
-            await _recordImagesService.RemoveRecordImage(recordId, imageId);
-            return NoContent();
-        }
-        catch (Exception exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        await _recordImagesService.RemoveRecordImage(recordId, imageId);
+        return NoContent();
     }
 }

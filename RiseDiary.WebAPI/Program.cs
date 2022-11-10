@@ -4,6 +4,7 @@ using RiseDiary.Model;
 using RiseDiary.Model.Services;
 using RiseDiary.WebAPI.Config;
 using RiseDiary.WebAPI.Data;
+using RiseDiary.WebAPI.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +59,8 @@ app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseAuthorization();
+
+app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.MapControllers();
 app.MapFallbackToFile("index.html");

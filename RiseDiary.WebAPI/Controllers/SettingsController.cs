@@ -20,20 +20,14 @@ public sealed class SettingsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AppSettingDto>> GetSettings(AppSettingsKey key)
     {
-        try
+        var (value, modifiedDate) = await _settingsSvc.GetAppSetting(key);
+
+        return new AppSettingDto
         {
-            var (value, modifiedDate) = await _settingsSvc.GetAppSetting(key);
-            return new AppSettingDto
-            {
-                Key = key,
-                Value = value ?? "",
-                ModifiedDate = modifiedDate ?? default
-            };
-        }
-        catch (Exception exc)
-        {
-            return BadRequest(exc.Message);
-        }
+            Key = key,
+            Value = value ?? "",
+            ModifiedDate = modifiedDate ?? default
+        };
     }
 
     [HttpPut, Route("{key}")]
@@ -41,14 +35,7 @@ public sealed class SettingsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateSettingValue(AppSettingsKey key, string value)
     {
-        try
-        {
-            await _settingsSvc.UpdateAppSetting(key, value);
-        }
-        catch (Exception exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        await _settingsSvc.UpdateAppSetting(key, value);
 
         return NoContent();
     }

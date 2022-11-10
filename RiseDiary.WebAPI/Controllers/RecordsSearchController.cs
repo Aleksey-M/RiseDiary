@@ -29,56 +29,45 @@ public sealed class RecordsSearchController : ControllerBase
         [FromQuery] int? pageNo,
         CancellationToken cancellationToken)
     {
-        try
+
+        pageSize ??= 20;
+        pageSize = pageSize > 100 ? 100 : pageSize;
+        pageNo ??= 0;
+
+        var filters = new RecordsFilter
         {
-            pageSize ??= 20;
-            pageSize = pageSize > 100 ? 100 : pageSize;
-            pageNo ??= 0;
+            CombineThemes = combinedThemes ?? false,
+            PageSize = pageSize.Value,
+            PageNo = pageNo.Value,
+            FromDate = from.HasValue ? DateOnly.FromDateTime(from.Value) : null,
+            ToDate = to.HasValue ? DateOnly.FromDateTime(to.Value) : null,
+            FilterName = name
+        };
 
-            var filters = new RecordsFilter
-            {
-                CombineThemes = combinedThemes ?? false,
-                PageSize = pageSize.Value,
-                PageNo = pageNo.Value,
-                FromDate = from.HasValue ? DateOnly.FromDateTime(from.Value) : null,
-                ToDate = to.HasValue ? DateOnly.FromDateTime(to.Value) : null,
-                FilterName = name
-            };
-
-            if (themeId != null && themeId.Length > 0)
-            {
-                filters.AddThemeId(themeId);
-            }
-
-            var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
-            int allCount = await _recordsSearchService.GetRecordsCount(filters, cancellationToken);
-
-            var pagesInfo = PagesInfo.GetPagesInfo(allCount, pageNo.Value, pageSize.Value);
-
-            var dto = new RecordsPageDto
-            {
-                PagesInfo = pagesInfo,
-                Records = records.Select(r => new RecordListItemDto
-                {
-                    Date = r.Date,
-                    CreatedDate = r.CreateDate,
-                    ModifiedDate = r.ModifyDate,
-                    DisplayedName = r.GetRecordNameDisplay(),
-                    DisplayedText = r.GetRecordTextShort(),
-                    RecordId = r.Id
-                }).ToList()
-            };
-
-            return Ok(dto);
-        }
-        catch (ArgumentException exc)
+        if (themeId != null && themeId.Length > 0)
         {
-            return BadRequest(exc.Message);
+            filters.AddThemeId(themeId);
         }
-        catch (OperationCanceledException)
+
+        var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
+        int allCount = await _recordsSearchService.GetRecordsCount(filters, cancellationToken);
+
+        var pagesInfo = PagesInfo.GetPagesInfo(allCount, pageNo.Value, pageSize.Value);
+
+        return new RecordsPageDto
         {
-            return StatusCode(499);
-        }
+            PagesInfo = pagesInfo,
+            Records = records.Select(r => new RecordListItemDto
+            {
+                Date = r.Date,
+                CreatedDate = r.CreateDate,
+                ModifiedDate = r.ModifyDate,
+                DisplayedName = r.GetRecordNameDisplay(),
+                DisplayedText = r.GetRecordTextShort(),
+                RecordId = r.Id
+            })
+            .ToList()
+        };
     }
 
     [HttpGet, Route("expandedlist")]
@@ -94,44 +83,43 @@ public sealed class RecordsSearchController : ControllerBase
         [FromQuery] int? pageNo,
         CancellationToken cancellationToken)
     {
-        try
+
+        pageSize ??= 20;
+        pageSize = pageSize > 100 ? 100 : pageSize;
+        pageNo ??= 0;
+
+        var filters = new RecordsFilter
         {
-            pageSize ??= 20;
-            pageSize = pageSize > 100 ? 100 : pageSize;
-            pageNo ??= 0;
+            CombineThemes = combinedThemes ?? false,
+            PageSize = pageSize.Value,
+            PageNo = pageNo.Value,
+            FromDate = from.HasValue ? DateOnly.FromDateTime(from.Value) : null,
+            ToDate = to.HasValue ? DateOnly.FromDateTime(to.Value) : null,
+            FilterName = name
+        };
 
-            var filters = new RecordsFilter
+        if (themeId != null && themeId.Length > 0)
+        {
+            filters.AddThemeId(themeId);
+        }
+
+        var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
+        int allCount = await _recordsSearchService.GetRecordsCount(filters, cancellationToken);
+
+        var pagesInfo = PagesInfo.GetPagesInfo(allCount, pageNo.Value, pageSize.Value);
+
+        return new RecordsDetailPageDto
+        {
+            PagesInfo = pagesInfo,
+            Records = records.Select(record => new RecordDto
             {
-                CombineThemes = combinedThemes ?? false,
-                PageSize = pageSize.Value,
-                PageNo = pageNo.Value,
-                FromDate = from.HasValue ? DateOnly.FromDateTime(from.Value) : null,
-                ToDate = to.HasValue ? DateOnly.FromDateTime(to.Value) : null,
-                FilterName = name
-            };
-
-            if (themeId != null && themeId.Length > 0)
-            {
-                filters.AddThemeId(themeId);
-            }
-
-            var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
-            int allCount = await _recordsSearchService.GetRecordsCount(filters, cancellationToken);
-
-            var pagesInfo = PagesInfo.GetPagesInfo(allCount, pageNo.Value, pageSize.Value);
-
-            var dto = new RecordsDetailPageDto
-            {
-                PagesInfo = pagesInfo,
-                Records = records.Select(record => new RecordDto
-                {
-                    Id = record.Id,
-                    Date = record.Date,
-                    CreatedDate = record.CreateDate,
-                    ModifiedDate = record.ModifyDate,
-                    Name = record.Name,
-                    Text = record.Text,
-                    Cogitations = record.Cogitations
+                Id = record.Id,
+                Date = record.Date,
+                CreatedDate = record.CreateDate,
+                ModifiedDate = record.ModifyDate,
+                Name = record.Name,
+                Text = record.Text,
+                Cogitations = record.Cogitations
                     .Select(c => new CogitationDto
                     {
                         Id = c.Id,
@@ -139,7 +127,7 @@ public sealed class RecordsSearchController : ControllerBase
                         Text = c.Text
                     })
                     .ToArray(),
-                    Themes = record.ThemesRefs
+                Themes = record.ThemesRefs
                     .Select(rt => rt.Theme)
                     .Select(t => new ThemeDto
                     {
@@ -148,7 +136,7 @@ public sealed class RecordsSearchController : ControllerBase
                         Actual = t.Actual
                     })
                     .ToArray(),
-                    Images = record.ImagesRefs
+                Images = record.ImagesRefs
                     .Select(ri => ri.Image)
                     .Select(i => new ImageListItemDto
                     {
@@ -160,18 +148,8 @@ public sealed class RecordsSearchController : ControllerBase
                         Base64Thumbnail = i.GetBase64Thumbnail()
                     })
                     .ToArray()
-                }).ToList()
-            };
-
-            return Ok(dto);
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
-        catch (OperationCanceledException)
-        {
-            return StatusCode(499);
-        }
+            })
+            .ToList()
+        };
     }
 }

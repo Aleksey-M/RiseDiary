@@ -23,22 +23,16 @@ public sealed class CalendarItemsController : ControllerBase
         bool ct = combinedThemes ?? false;
         var themesIds = themeId ?? Enumerable.Empty<Guid>();
 
-        try
-        {
-            var items = await _calendarService.GetCalendarItems(year, themesIds, ct, cancellationToken);
+        var items = await _calendarService.GetCalendarItems(year, themesIds, ct, cancellationToken);
 
-            return items.Select(i => new CalendarDateDto
-            {
-                Id = i.Id.ToString(),
-                Name = i?.Name ?? "",
-                StartDate = i!.StartDate,
-                EndDate = i.EndDate
-            }).ToList();
-        }
-        catch (OperationCanceledException)
+        return items.Select(i => new CalendarDateDto
         {
-            return StatusCode(499);
-        }
+            Id = i.Id.ToString(),
+            Name = i?.Name ?? "",
+            StartDate = i!.StartDate,
+            EndDate = i.EndDate
+        })
+        .ToList();
     }
 
     [HttpGet, Route("years")]
@@ -49,13 +43,6 @@ public sealed class CalendarItemsController : ControllerBase
         bool ct = combinedThemes ?? false;
         var themesIds = themeId ?? Enumerable.Empty<Guid>();
 
-        try
-        {
-            return await _calendarService.GetYears(themesIds, ct, cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            return StatusCode(499);
-        }
+        return await _calendarService.GetYears(themesIds, ct, cancellationToken);
     }
 }

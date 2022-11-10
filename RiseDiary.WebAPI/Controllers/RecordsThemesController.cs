@@ -22,15 +22,8 @@ public sealed class RecordsThemesController : ControllerBase
     {
         if (recordId != themes.RecordId) return BadRequest("Not consistent request");
 
-        try
-        {
-            await _recordsThemesService.AddRecordTheme(recordId, themes.ThemesIds);
-            return Ok();
-        }
-        catch (ArgumentException exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        await _recordsThemesService.AddRecordTheme(recordId, themes.ThemesIds);
+        return Ok();
     }
 
     [HttpDelete, Route("{recordId}/themes")]
@@ -40,14 +33,7 @@ public sealed class RecordsThemesController : ControllerBase
     {
         if (recordId != themes.RecordId) return BadRequest("Not consistent request");
 
-        try
-        {
-            await _recordsThemesService.RemoveRecordTheme(recordId, themes.ThemesIds);
-            return NoContent();
-        }
-        catch (Exception exc)
-        {
-            return BadRequest(exc.Message);
-        }
+        await _recordsThemesService.RemoveRecordTheme(recordId, themes.ThemesIds);
+        return NoContent();
     }
 }

@@ -19,28 +19,21 @@ public sealed class SqliteDbController : ControllerBase
     [ProducesResponseType(typeof(SqliteDbInfoDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<SqliteDbInfoDto>> GetDbInfo(CancellationToken cancellationToken)
     {
-        try
-        {
-            var db = _sqliteDb.GetSqliteDatabaseInfo();
-            var deleted = await _sqliteDb.GetDeletedEntitiesCount(cancellationToken);
+        var db = _sqliteDb.GetSqliteDatabaseInfo();
+        var deleted = await _sqliteDb.GetDeletedEntitiesCount(cancellationToken);
 
-            return Ok(new SqliteDbInfoDto
-            {
-                FileName = db.FileName,
-                FileSize = db.FileSize,
-                DeletedCogitations = deleted.Cogitations,
-                DeletedImages = deleted.Images,
-                DeletedRecords = deleted.Records,
-                DeletedRecordImages = deleted.RecordImages,
-                DeletedRecordThemes = deleted.RecordThemes,
-                DeletedScopes = deleted.Scopes,
-                DeletedThemes = deleted.Themes
-            });
-        }
-        catch (OperationCanceledException)
+        return new SqliteDbInfoDto
         {
-            return StatusCode(499);
-        }
+            FileName = db.FileName,
+            FileSize = db.FileSize,
+            DeletedCogitations = deleted.Cogitations,
+            DeletedImages = deleted.Images,
+            DeletedRecords = deleted.Records,
+            DeletedRecordImages = deleted.RecordImages,
+            DeletedRecordThemes = deleted.RecordThemes,
+            DeletedScopes = deleted.Scopes,
+            DeletedThemes = deleted.Themes
+        };
     }
 
     [HttpPost, Route("clear")]
