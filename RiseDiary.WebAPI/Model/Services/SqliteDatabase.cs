@@ -1,19 +1,21 @@
 ﻿using System.Globalization;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using RiseDiary.Data;
+using RiseDiary.WebAPI.Config;
 
 namespace RiseDiary.Model.Services;
 
 internal sealed class SqliteDatabase : ISqliteDatabase
 {
-    private readonly IConfiguration _config;
+    private readonly SqliteOptions _options;
 
     private readonly DiaryDbContext _context;
 
-    public SqliteDatabase(IConfiguration config, DiaryDbContext context)
+    public SqliteDatabase(IOptions<SqliteOptions> options, DiaryDbContext context)
     {
-        _config = config;
+        _options = options.Value;
         _context = context;
     }
 
@@ -94,7 +96,7 @@ internal sealed class SqliteDatabase : ISqliteDatabase
 
     public SqliteDatabaseFileInfo GetSqliteDatabaseInfo()
     {
-        var dataBaseFileName = _config.GetValue<string>("dbFile");
+        var dataBaseFileName = _options.FileName;
         var dataBaseFileSize = Math.Round(new FileInfo(dataBaseFileName).Length / 1024f / 1024f, 2).ToString(CultureInfo.InvariantCulture) + " Mb";
 
         return new SqliteDatabaseFileInfo(dataBaseFileName, dataBaseFileSize);
@@ -104,7 +106,7 @@ internal sealed class SqliteDatabase : ISqliteDatabase
 
     public async Task File2FileMigration()
     {
-        var sourceFile = _config.GetValue<string>("dbFile");
+        var sourceFile = _options.FileName;
         var path = Path.GetDirectoryName(sourceFile) ?? throw new Exception("Directory does not exists for file: " + sourceFile);
         var backupFolder = Path.Combine(path, "backup");
         if (!Directory.Exists(backupFolder))

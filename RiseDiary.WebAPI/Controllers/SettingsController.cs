@@ -1,0 +1,55 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using RiseDiary.Model;
+using RiseDiary.WebAPI.Shared;
+
+namespace RiseDiary.Api;
+
+[ApiController]
+[Route("api/settings")]
+public sealed class SettingsController : ControllerBase
+{
+    private readonly IAppSettingsService _settingsSvc;
+
+    public SettingsController(IAppSettingsService settingsSvc)
+    {
+        _settingsSvc = settingsSvc;
+    }
+
+    [HttpGet, Route("{key}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<AppSettingDto>> GetSettings(AppSettingsKey key)
+    {
+        try
+        {
+            var (value, modifiedDate) = await _settingsSvc.GetAppSetting(key);
+            return new AppSettingDto
+            {
+                Key = key,
+                Value = value ?? "",
+                ModifiedDate = modifiedDate ?? default
+            };
+        }
+        catch (Exception exc)
+        {
+            return BadRequest(exc.Message);
+        }
+    }
+
+    [HttpPut, Route("{key}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateSettingValue(AppSettingsKey key, string value)
+    {
+        try
+        {
+            await _settingsSvc.UpdateAppSetting(key, value);
+        }
+        catch (Exception exc)
+        {
+            return BadRequest(exc.Message);
+        }
+
+        return NoContent();
+    }
+}

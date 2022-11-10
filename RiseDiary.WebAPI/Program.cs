@@ -1,13 +1,40 @@
+using Microsoft.EntityFrameworkCore;
+using RiseDiary.Data;
+using RiseDiary.Model;
+using RiseDiary.Model.Services;
+using RiseDiary.WebAPI.Config;
+using RiseDiary.WebAPI.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
-var port = GetCustomPort(args);
-if (port != null)
-{
-    builder.WebHost.UseUrls("http://localhost:" + port + "/");
-}
+builder.SetLocalhostPort(args);
 
+// set db context
+builder.Services.Configure<SqliteOptions>(builder.Configuration.GetSection(SqliteOptions.SectionName));
 
-// Add services to the container.
+var dbFileName = builder.Configuration
+    .GetSection(SqliteOptions.SectionName)
+    .GetValue<string>(nameof(SqliteOptions.FileName)) ?? throw new Exception("Database file name is not set");
+
+builder.Services.AddDbContext<DiaryDbContext>(options => options.UseSqlite(
+    $"Data Source={dbFileName};", o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+
+await DataSeed.CheckData(dbFileName);
+
+builder.Services.AddScoped<IScopesService, ScopesService>();
+builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
+builder.Services.AddScoped<IRecordsThemesService, RecordsThemesService>();
+builder.Services.AddScoped<IImagesService, ImagesService>();
+builder.Services.AddScoped<IRecordsImagesService, RecordsImagesService>();
+builder.Services.AddScoped<IImagesEditService, ImagesEditService>();
+builder.Services.AddScoped<ICropImageService, CropImageService>();
+builder.Services.AddScoped<IRecordsService, RecordsService>();
+builder.Services.AddScoped<ICogitationsService, CogitationsService>();
+builder.Services.AddScoped<IRecordsSearchService, RecordsSearchService>();
+builder.Services.AddScoped<IRecordsSearchTextService, RecordsSearchTextService>();
+builder.Services.AddScoped<IDatesService, DatesService>();
+builder.Services.AddScoped<ICalendarService, CalendarService>();
+builder.Services.AddScoped<ISqliteDatabase, SqliteDatabase>();
 
 builder.Services.AddControllers();
 
@@ -34,27 +61,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapFallbackToFile("index.html");
+
 app.Run();
-
-
-
-static string? GetCustomPort(string[] args)
-{
-    try
-    {
-        if (args.Length == 1 && args[0].StartsWith("port="))
-        {
-            var port = args[0].Split("=")[1].Trim();
-            if (int.TryParse(port, out int p))
-            {
-                return p.ToString();
-            }
-        }
-
-        return null;
-    }
-    catch
-    {
-        return null;
-    }
-}
