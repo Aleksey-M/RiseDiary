@@ -1,17 +1,42 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+<div class="container">
+    <div class="row">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light col-12">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="Records/Create">Создать запись</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                    <div class="navbar-nav">
+                        <NavLink href="Scopes" class="nav-link">Темы</NavLink>
+                        <NavLink href="Images" class="nav-link">Изображения</NavLink>
+                        <NavLink href="Dates" class="nav-link">Даты</NavLink>
+                        <NavLink href="Analysis/ThisDay" class="nav-link">Этот день</NavLink>
+                        <NavLink href="Records?expanded=true" class="nav-link">Все записи</NavLink>
+                        <NavLink href="Analysis/Search" class="nav-link">Поиск по тексту</NavLink>
+                        <NavLink href="Analysis/Calendar" class="nav-link">Календарь</NavLink>
+                    </div>
+                </div>
+            </div>
+        </nav>
     </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
+    <component type="typeof(BrowserTimeOffset)" render-mode="Server" />
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+    <hr class="my-2" />
+
+    <div class="row">
+        @Body
+    </div>
+
+    <hr />
+
+    <h6>
+        Rise Diary V 8.0
+        <NavLink href="config">
+            <img src="img/wrench.svg" width="20" height="20" alt="Настройки" title="Настройки" />
+        </NavLink>
+    </h6>
 </div>

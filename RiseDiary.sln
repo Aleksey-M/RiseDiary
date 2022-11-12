@@ -16,11 +16,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RiseDiary.WebUI.Shared", "R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pwd", "Pwd\Pwd.csproj", "{2593E53D-2D04-4758-A197-F328CAC2B6AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiseDiary.WebAPI", "RiseDiary.WebAPI\RiseDiary.WebAPI.csproj", "{F9E4CB61-63EB-479A-A9A1-5F6A389C6DCC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RiseDiary.WebAPI", "RiseDiary.WebAPI\RiseDiary.WebAPI.csproj", "{F9E4CB61-63EB-479A-A9A1-5F6A389C6DCC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiseDiary.WebAPI.Shared", "RiseDiary.WebAPI.Shared\RiseDiary.WebAPI.Shared.csproj", "{62B51749-1AC7-4DDC-8956-9896A88D7551}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RiseDiary.WebAPI.Shared", "RiseDiary.WebAPI.Shared\RiseDiary.WebAPI.Shared.csproj", "{62B51749-1AC7-4DDC-8956-9896A88D7551}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiseDiary.Front", "RiseDiary.Front\RiseDiary.Front.csproj", "{903DB26A-9E77-493F-A15E-2D9D566E4F5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RiseDiary.Front", "RiseDiary.Front\RiseDiary.Front.csproj", "{903DB26A-9E77-493F-A15E-2D9D566E4F5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
