@@ -1,6 +1,62 @@
 ﻿@page "/"
 @page "/index.html"
 
-<PageTitle>Index</PageTitle>
+@using RiseDiary.Front.AppServices
+@using RiseDiary.Shared.Records
 
-<h1>Hello, world!</h1>
+@inject MarkdownService MdService
+@inject HttpClient Http
+
+@inherits UIComponentBase
+
+<PageTitle>Дневник</PageTitle>
+
+ <div class="col-12 p-2">
+
+    @if (_startPageRecord == null)
+    {
+        <Spinner />
+    }
+    else
+    {
+        @if (HasError)
+        {
+            <p style="color:red;">@ErrorMessage</p>
+        }
+
+        @if (_startPageRecord?.RecordId != null)
+        {
+            @RecordHtml
+
+            <br />
+
+            <NavLink href="@RecordUrl">Открыть запись</NavLink>
+        }
+        else
+        {
+            <h3 class="p-3" style="color:silver">Стартовая страница не выбрана</h3>
+        }
+    }
+</div>
+
+@code {
+    private StartPageRecordDto? _startPageRecord;
+
+    private MarkupString RecordHtml => MdService.ToHtml(_startPageRecord?.RecordMdText);
+
+    private string RecordUrl => $@"records/view/{_startPageRecord?.RecordId?.ToString()}";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _startPageRecord = await Http.GetFromJsonAsync<StartPageRecordDto>("api/records/startpage", Token);
+        }
+        catch (Exception exc)
+        {
+            ErrorMessage = exc.Message;
+            _startPageRecord = new();
+        }
+    }
+}

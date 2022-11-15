@@ -1,0 +1,94 @@
+﻿@using RiseDiary.Shared
+@using RiseDiary.Shared.Scopes
+@using RiseDiary.Front.AppServices
+
+@inject HttpClient Http
+@inject ThemeValidator Validator
+
+@inherits UIComponentBase
+
+@if (Loading)
+{
+    <Spinner />
+}
+else
+{
+    @if (HasError)
+    {
+        <p style="color:red">@ErrorMessage</p>
+    }
+
+    <div class="input-group">
+        <input type="text" @bind-value="_newThemeDto.ThemeName" @bind-value:event="onchange" class="form-control" 
+            placeholder='Название новой темы для области "@Scope.ScopeName"' />
+
+        <button type="button" class="btn btn-link" @onclick="CreateNewTheme">
+            <img src="img/plus-square.svg" widtn="20" height="20" title="Создать" alt="Создать" />
+        </button>
+    </div>
+
+    <div style="width:100%">
+        <textarea @bind="_newThemeDto.ThemeDescription" @bind:event="onchange" rows="2" class="p-1 mt-2 multiline-input" />
+    </div>
+}
+
+@code {
+
+    [Parameter, EditorRequired]
+    public ScopeDto Scope { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public Action<ThemeDto> NewThemeCreated { get; set; } = null!;
+
+    private ThemeDto _newThemeDto = new();
+
+
+    private async Task CreateNewTheme()
+    {
+        try
+        {
+            if (Scope.Themes!.Any(x => x.ThemeName!.Trim().ToUpper() == _newThemeDto.ThemeName!.Trim().ToUpper()))
+            {
+                ErrorMessage = $"Тема '{_newThemeDto.ThemeName}' уже существует";
+                return;
+            }
+
+            _newThemeDto.ScopeId = Scope.ScopeId;
+            _newThemeDto.Actual = true;
+
+            var validationResult = Validator.ValidateForCreate(_newThemeDto);
+
+            if (!validationResult.IsValid)
+            {
+                ErrorMessage = validationResult.ToString();
+                return;
+            }
+
+            await StartApiRequest();
+
+            var response = await Http.PostAsJsonAsync($"api/scopes/{_newThemeDto.ScopeId.ToString()}/themes", _newThemeDto);
+
+            var responseContent = await GetCheckedResponseContent<string?>(response);
+            if (responseContent == null) return;
+
+            if (!Guid.TryParse(responseContent, out var newId))
+            {
+                await FinishApiRequest($"Неверный формат Id: {responseContent}");
+                return;
+            }
+
+            _newThemeDto.ThemeId = newId;
+
+            NewThemeCreated(_newThemeDto);
+
+            _newThemeDto = new();
+
+            await FinishApiRequest(null);
+
+        }
+        catch(Exception exc)
+        {
+            await FinishApiRequest(exc.Message);
+        }
+    }
+}

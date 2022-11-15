@@ -1,4 +1,4 @@
-﻿using RiseDiary.WebAPI.Shared;
+﻿using RiseDiary.Shared;
 
 namespace RiseDiary.Model;
 

@@ -1,0 +1,87 @@
+﻿@using RiseDiary.Shared
+@using RiseDiary.Shared.Scopes
+@using RiseDiary.Front.AppServices
+
+@inject HttpClient Http
+@inject IDtoValidator<ScopeDto> ScopeValidator
+
+@inherits UIComponentBase
+
+@if (Loading)
+{
+    <Spinner />
+}
+else
+{
+    <div class="card">
+        <div class="card-header">
+            @if (HasError)
+            {
+                <p style="color:red;">@ErrorMessage</p>
+            }
+
+            <div class="input-group">
+                <input type="text" @bind-value="_newScopeDto.ScopeName" @bind-value:event="onchange"
+                   class="form-control" placeholder="Введите название новой области интересов" />
+
+                <button type="button" @onclick="CreateNewScope" class="btn btn-link">
+                    <img src="img/plus-square.svg" width="20" height="20" title="Создать" alt="Создать" />
+                </button>
+            </div>
+
+            <div style="width:100%">
+                <textarea @bind="_newScopeDto.ScopeDescription" @bind:event="onchange" rows="2" class="p-1 mt-2 multiline-input" />
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+
+    [Parameter, EditorRequired]
+    public Action<ScopeDto> NewScopeCreated { get; set; } = null!;
+
+    private ScopeDto _newScopeDto = new();
+
+
+    private async Task CreateNewScope()
+    {
+        try
+        {
+            var validationResult = ScopeValidator.ValidateForCreate(_newScopeDto);
+
+            if (!validationResult.IsValid)
+            {
+                ErrorMessage = validationResult.ToString();
+                return;
+            }
+
+            await StartApiRequest();
+
+            var response = await Http.PostAsJsonAsync("api/scopes", _newScopeDto);
+
+            var responseContent = await GetCheckedResponseContent<string?>(response);
+            if (responseContent == null) return;
+
+            if (!Guid.TryParse(responseContent, out var newScopeId))
+            {
+                await FinishApiRequest($"Неверный формат Id: {responseContent}");
+                return;
+            }
+
+            _newScopeDto.ScopeId = newScopeId;
+            _newScopeDto.Themes = new();
+
+            NewScopeCreated(_newScopeDto);
+
+            _newScopeDto = new();            
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            await FinishApiRequest(exc.Message);
+        }
+    }
+}

@@ -67,3 +67,17 @@ ul {
     margin: 10% auto;
     width: auto;
 }
+
+.content-editable-div {
+    width: 100%;
+    border: 1px solid silver;
+    overflow: auto;
+    resize: vertical;
+}
+
+.multiline-input {
+    width: 100%;
+    border: 1px solid silver;
+    overflow: auto;
+    resize: vertical;
+}

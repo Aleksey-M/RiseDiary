@@ -1,0 +1,181 @@
+﻿@using RiseDiary.Shared
+@using RiseDiary.Shared.Scopes
+@using RiseDiary.Front.AppServices
+@using RiseDiary.Front.Pages
+
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject MarkdownService MdService
+@inject IDtoValidator<ScopeDto> ScopeValidator
+
+@inherits UIComponentBase
+
+<div class="card mt-3">
+    <div class="card-header">
+
+        @if (Loading)
+        {
+            <Spinner />
+        }
+        else
+        {
+
+            @if (HasError)
+            {
+                <p style="color:red">@ErrorMessage</p>
+            }
+
+            @if (_editMode)
+            {
+                <div class="input-group">
+                    <input type="text" @bind-value="_editedScope.ScopeName" @bind-value:event="onchange" class="form-control" />
+
+                    <button type="submit" class="btn btn-link" @onclick="TryRemoveScope">
+                        <img src="img/trash.svg" width="20" height="20" alt="Удалить" title="Удалить" />
+                    </button>
+
+                    <button type="submit" class="btn btn-link" @onclick="UpdateScope">
+                        <img src="img/check2-square.svg" widtn="20" height="20" title="Обновить" alt="Обновить" />
+                    </button>
+                </div>
+
+                <div style="width:100%">
+                    <textarea @bind="_editedScope.ScopeDescription" @bind:event="onchange"
+                        rows="2" class="p-1 mt-2 multiline-input" />
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col-11 mt-1">
+                        <h5 style="color:blue">@CurrentScope?.ScopeName</h5>
+                    </div>
+
+                    <button type="button" @onclick="ShowEditForm" class="btn btn-link col-1">
+                        <img src="img/pencil-square.svg" widtn="20" height="20" title="Изменить" alt="Изменить" />
+                    </button>
+
+                    @if (!string.IsNullOrEmpty(CurrentScope?.ScopeDescription))
+                    {
+                        <div style="width:100%">
+                            <div class="p-1 mt-2" style="width: 100%">
+                                @MdService.ToHtml(CurrentScope.ScopeDescription)
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+
+    @if (CurrentScope?.Themes != null && CurrentScope.Themes.Count > 0)
+    {
+        <ul class="list-group list-group-flush">
+            @foreach (var th in CurrentScope.Themes)
+            {
+                <ThemeListItem Scope="CurrentScope" CurrentTheme="th" DeleteThemeFromList="DeleteThemeFronList" @key="th.ThemeId" />
+            }
+        </ul>
+    }
+
+    <div class="card-footer">
+
+        <CreateThemeForm NewThemeCreated="AddTheme" Scope="CurrentScope" />
+
+    </div>
+</div>
+
+@code{
+    [Parameter, EditorRequired]
+    public ScopeDto CurrentScope { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public Action<Guid> DeleteScopeFromList { get; set; } = null!;
+
+    private ScopeDto _editedScope = new();
+
+    private bool _editMode;
+
+
+    private void ShowEditForm()
+    {
+        _editedScope = CurrentScope.Copy();
+        ErrorMessage = null;
+        _editMode = true;
+    }
+
+    public void AddTheme(ThemeDto theme)
+    {
+        if (CurrentScope.Themes == null)
+        {
+            CurrentScope.Themes = new();
+        }
+
+        CurrentScope.Themes.Add(theme);
+        StateHasChanged();
+    }
+
+    public void DeleteThemeFronList(Guid themeId)
+    {
+        var theme = CurrentScope?.Themes?.FirstOrDefault(x => x.ThemeId == themeId);
+
+        if (theme != null)
+        {
+            CurrentScope?.Themes?.Remove(theme);
+            StateHasChanged();
+        }
+    }
+
+    private async Task UpdateScope()
+    {
+        try
+        {
+            var validationResult = ScopeValidator.ValidateForUpdate(_editedScope);
+
+            if (!validationResult.IsValid)
+            {
+                ErrorMessage = validationResult.ToString();
+                return;
+            }
+
+            await StartApiRequest();
+
+            var response = await Http.PutAsJsonAsync($"api/scopes/{_editedScope.ScopeId.ToString()}", _editedScope);
+            var isSuccess = await CheckSuccessResponse(response);
+
+            if (!isSuccess) return;
+
+            CurrentScope.FillFrom(_editedScope);
+            _editedScope = new();
+            _editMode = false;
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+
+    private async Task TryRemoveScope()
+    {
+        try
+        {
+            if (!(await JSRuntime.InvokeAsync<bool>("confirm", $"Удалить '{CurrentScope.ScopeName}'?"))) return;
+
+            await StartApiRequest();
+
+            var response = await Http.DeleteAsync($"api/scopes/{_editedScope.ScopeId.ToString()}");
+            var isSuccess = await CheckSuccessResponse(response);
+
+            if (!isSuccess) return;
+
+            DeleteScopeFromList(CurrentScope.ScopeId!.Value);
+        }
+        catch (Exception exc)
+        {
+            await FinishApiRequest(exc.Message);
+        }
+    }
+}

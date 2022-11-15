@@ -1,0 +1,192 @@
+﻿@using RiseDiary.Shared
+@using RiseDiary.Shared.Scopes
+@using RiseDiary.Front.AppServices
+
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject MarkdownService MdService
+@inject ThemeValidator Validator
+
+@inherits UIComponentBase
+
+<li class="list-group-item">
+    <div class="row">
+
+        @if (Loading)
+        {
+            <Spinner />
+        }
+        else
+        {
+            @if (HasError)
+            {
+                <p style="color:red" class="col-12">@ErrorMessage</p>
+            }
+
+            @if (_editMode)
+            {
+                <div class="input-group">
+                    <input type="text" @bind-value="_edited.ThemeName" @bind-value:event="onchange" class="form-control" />
+
+                    <button type="button" @onclick="DeleteTheme" class="btn btn-link">
+                        <img src="img/trash.svg" width="20" height="20" alt="Удалить" title="Удалить" />
+                    </button>
+
+                    <button type="button" @onclick="UpdateTheme" class="btn btn-link">
+                        <img src="img/check2-square.svg" widtn="20" height="20" title="Обновить" alt="Обновить" />
+                    </button>
+                </div>
+
+                <div style="width:100%">
+                    <textarea @bind="_edited.ThemeDescription" @bind:event="onchange" rows="2" class="p-1 mt-2 multiline-input" />
+                </div>
+            }
+            else
+            {
+                <div class="col-lg-10 col-md-8 col-sm-12">
+                    <h5>@CurrentTheme.ThemeName</h5>
+                </div>
+
+                <div class="col-lg-1 col-md-2 col-sm-6 text-center">
+                    <button type="button" @onclick="ToggleActuality" class="btn btn-link" title="Актуальность темы">
+                        @if (CurrentTheme.Actual.HasValue && CurrentTheme.Actual.Value)
+                        {
+                            <img src="img/star-fill.svg" widtn="20" height="20" />
+                        }
+                        else
+                        {
+                            <img src="img/star.svg" widtn="20" height="20" />
+                        }
+                    </button>
+                </div>
+
+                <div class="col-lg-1 col-md-2 col-sm-6 text-center">
+                    <button type="button" @onclick="ShowEditForm" class="btn btn-link" title="Открыть на редактирование">
+                        <img src="img/pencil-square.svg" widtn="20" height="20" />
+                    </button>
+                </div>
+
+                @if (!string.IsNullOrEmpty(CurrentTheme.ThemeDescription))
+                {
+                    <div style="width:100%">
+                        <div class="p-1 mt-2" style="width: 100%">
+                            @MdService.ToHtml(CurrentTheme.ThemeDescription)
+                        </div>
+                    </div>
+                }
+            }
+        }
+    </div>
+</li>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public ThemeDto CurrentTheme { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public ScopeDto Scope { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public Action<Guid> DeleteThemeFromList { get; set; } = null!;
+
+    private ThemeDto _edited = new();
+
+    private bool _editMode;
+
+
+    private void ShowEditForm()
+    {
+        _edited = CurrentTheme.Copy();
+        ErrorMessage = null;
+        _editMode = true;
+    }
+
+    private async Task UpdateTheme()
+    {
+        try
+        {
+            if (Scope.Themes!.Any(x => x.ThemeName!.Trim().ToUpper() == _edited.ThemeName!.Trim().ToUpper()
+                && x.ThemeId != _edited.ThemeId))
+            {
+                ErrorMessage = $"Тема '{_edited.ThemeName}' уже существует";
+                return;
+            }
+
+            var validationResult = Validator.ValidateForUpdate(_edited);
+
+            if (!validationResult.IsValid)
+            {
+                ErrorMessage = validationResult.ToString();
+                return;
+            }
+
+            await StartApiRequest();
+
+            var response = await Http.PutAsJsonAsync($"api/scopes/{Scope.ScopeId}/themes/{_edited.ThemeId}", _edited);
+            var isSuccess = await CheckSuccessResponse(response);
+
+            if (!isSuccess) return;
+
+            CurrentTheme.FillFrom(_edited);
+            _edited = new();
+            _editMode = false;
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private async Task DeleteTheme()
+    {
+        try
+        {
+            if (!(await JSRuntime.InvokeAsync<bool>("confirm", $"Удалить '{CurrentTheme.ThemeName}'?"))) return;
+
+            await StartApiRequest();
+
+            var response = await Http.DeleteAsync($"api/scopes/{Scope.ScopeId}/themes/{CurrentTheme.ThemeId}");
+            var isSuccess = await CheckSuccessResponse(response);
+
+            if (!isSuccess) return;
+
+            DeleteThemeFromList(CurrentTheme.ThemeId!.Value);
+        }
+        catch (Exception exc)
+        {
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    public async Task ToggleActuality()
+    {
+        try
+        {
+            var actualityDto = new ThemeDto
+            {
+                ScopeId = CurrentTheme.ScopeId,
+                ThemeId = CurrentTheme.ThemeId,
+                Actual = !CurrentTheme.Actual
+            };
+
+            await StartApiRequest();
+
+            var response = await Http.PutAsJsonAsync($"api/scopes/{Scope.ScopeId}/themes/{actualityDto.ThemeId}/actuality", actualityDto);
+            var isSuccess = await CheckSuccessResponse(response);
+
+            if (!isSuccess) return;
+
+            CurrentTheme.Actual = !CurrentTheme.Actual;
+            _editMode = false;
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            await FinishApiRequest(exc.Message);
+        }
+    }
+}

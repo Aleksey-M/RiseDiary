@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using RiseDiary.Data;
 using RiseDiary.Model;
 using RiseDiary.Model.Services;
+using RiseDiary.Shared.Scopes;
+using RiseDiary.Shared;
 using RiseDiary.WebAPI.Config;
 using RiseDiary.WebAPI.Data;
 using RiseDiary.WebAPI.Middleware;
@@ -36,6 +38,10 @@ builder.Services.AddScoped<IRecordsSearchTextService, RecordsSearchTextService>(
 builder.Services.AddScoped<IDatesService, DatesService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<ISqliteDatabase, SqliteDatabase>();
+
+builder.Services.AddScoped<IDtoValidator<ScopeDto>, ScopeValidator>();
+builder.Services.AddScoped<ThemeValidator>();
+
 
 builder.Services.AddControllers();
 

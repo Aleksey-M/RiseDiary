@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
+using RiseDiary.Shared;
+using RiseDiary.Shared.Records;
+using RiseDiary.Shared.Scopes;
 using RiseDiary.WebAPI.Shared.Dto;
 
 namespace RiseDiary.Api;
@@ -142,5 +145,24 @@ public sealed class RecordsController : ControllerBase
 
         await _cogitationsService.DeleteCogitation(cogitationId);
         return NoContent();
+    }
+
+    [HttpGet, Route("startpage")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<StartPageRecordDto>> GetStartPageRecord(CancellationToken token)
+    {
+        var (recordId, _) = await _appSettingsService.GetAppSetting(AppSettingsKey.StartPageRecordId);
+
+        if (recordId != null && Guid.TryParse(recordId, out var id))
+        {
+            var rec = await _recordService.FetchRecordById(id, token);
+            return Ok(new StartPageRecordDto
+            {
+                RecordId = id,
+                RecordMdText = rec.Text
+            });
+        }
+
+        return Ok(new StartPageRecordDto());
     }
 }

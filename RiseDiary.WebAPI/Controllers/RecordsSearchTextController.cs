@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
+using RiseDiary.Shared.Scopes;
 using RiseDiary.WebAPI.Shared;
 using RiseDiary.WebAPI.Shared.Dto;
 

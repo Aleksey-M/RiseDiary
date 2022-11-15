@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RiseDiary.Data;
-using RiseDiary.WebAPI.Shared;
+using RiseDiary.Shared;
 
 namespace RiseDiary.Model.Services;
 

@@ -1,0 +1,71 @@
+﻿@page "/scopes"
+
+@using RiseDiary.Shared
+@using RiseDiary.Shared.Scopes
+@using RiseDiary.Front.Pages
+
+@inject HttpClient Http
+
+@inherits UIComponentBase
+
+<PageTitle>Области интересов и темы</PageTitle>
+
+
+<div class="offset-md-2 col-md-8 col-sm-12 mt-2">
+
+    @if (_scopes == null)
+    {
+        <Spinner />
+    }
+    else
+    {
+        @if (HasError)
+        {
+            <p style="color:red;">@ErrorMessage</p>
+        }
+
+        <CreateScopeCard NewScopeCreated="AddScope" />
+
+        @foreach (var sc in _scopes)
+        {
+            <ScopeCard CurrentScope="sc" DeleteScopeFromList="DeleteScopeFromList" @key="sc.ScopeId" />
+        }
+    }
+
+</div>
+
+
+@code {
+
+    private List<ScopeDto>? _scopes;
+
+    private void AddScope(ScopeDto scope)
+    {
+        _scopes?.Insert(0, scope);
+        StateHasChanged();
+    }
+
+    private void DeleteScopeFromList(Guid scopeId)
+    {
+        var s = _scopes?.FirstOrDefault(x => x.ScopeId == scopeId);
+
+        if (s != null)
+        {
+            _scopes?.Remove(s);
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _scopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", Token);
+        }
+        catch (Exception exc)
+        {
+            ErrorMessage = exc.Message;
+            _scopes = new();
+        }        
+    }
+}

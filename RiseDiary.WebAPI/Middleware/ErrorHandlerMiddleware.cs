@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using FluentValidation;
 using RiseDiary.Model;
 
 namespace RiseDiary.WebAPI.Middleware;
@@ -26,6 +27,7 @@ internal sealed class ErrorHandlerMiddleware
 
             (response.StatusCode, var contentData) = error switch
             {
+                ValidationException => ((int)HttpStatusCode.BadRequest, new { error.Message }),
                 RecordNotFoundException => ((int)HttpStatusCode.NotFound, new { Message = "Запись не найдена" }),
                 ImageNotFoundException => ((int)HttpStatusCode.NotFound, new { Message = "Изображение не найдено" }),
                 ArgumentException => ((int)HttpStatusCode.BadRequest, new { error.Message }),

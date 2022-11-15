@@ -1,4 +1,4 @@
-﻿namespace RiseDiary.WebAPI.Shared;
+﻿namespace RiseDiary.Shared;
 
 public enum AppSettingsKey
 {
@@ -16,14 +16,6 @@ public enum AppSettingsKey
     AvailableImagesPageSize
 }
 
-public sealed class AppSettingDto
-{
-    public AppSettingsKey Key { get; set; }
-
-    public string Value { get; set; } = "";
-
-    public DateTime ModifiedDate { get; set; }
-}
 
 public static class SettingsValidator
 {
