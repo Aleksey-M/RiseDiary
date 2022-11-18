@@ -20,8 +20,6 @@ public sealed class ScopesController : ControllerBase
     }
 
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<Guid>> CreateScope([FromServices] IDtoValidator<ScopeDto> validator, ScopeDto dto)
     {
         validator.ValidateForCreate(dto, true);
@@ -35,34 +33,7 @@ public sealed class ScopesController : ControllerBase
         return Created(newScopeUri, id);
     }
 
-    [HttpGet, Route("{id}")]
-    [ProducesResponseType(typeof(ScopeDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ScopeDto>> GetScope(Guid id, CancellationToken token)
-    {
-        var scope = await _scopeService.FetchScopeById(id, token);
-        if (scope == null) return NotFound();
-
-        return new ScopeDto
-        {
-            ScopeId = scope.Id,
-            ScopeName = scope.ScopeName,
-            ScopeDescription = scope.Description,
-            Themes = scope.Themes.Select(t => new ThemeDto
-            {
-                ThemeId = t.Id,
-                ScopeId = t.ScopeId,
-                ThemeName = t.ThemeName,
-                ThemeDescription = t.Description,
-                Actual = t.Actual
-            })
-            .ToList()
-        };
-    }
-
-    [HttpPost, Route("{sid}/themes")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPost("{sid}/themes")]
     public async Task<ActionResult<Guid>> CreateTheme([FromServices] ThemeValidator validator, Guid sid, ThemeDto dto)
     {
         validator.ValidateForCreate(dto, true);
@@ -81,7 +52,6 @@ public sealed class ScopesController : ControllerBase
     }
 
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<ScopeDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<ScopeDto>>> GetScopes(bool? actual, CancellationToken cancellationToken)
     {
         var scopes = await _scopeService.GetScopes(actual, cancellationToken);
@@ -104,9 +74,7 @@ public sealed class ScopesController : ControllerBase
         .ToList();
     }
 
-    [HttpPut, Route("{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPut("{id}")]
     public async Task<IActionResult> UpdateScope([FromServices] IDtoValidator<ScopeDto> validator, Guid id, ScopeDto dto)
     {
         validator.ValidateForUpdate(dto, true);
@@ -121,9 +89,7 @@ public sealed class ScopesController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete, Route("{id}")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteScope(Guid id)
     {
         if (!await _scopeService.CanDeleteScope(id)) return BadRequest(new { Message = "Нельзя удалить сферу интересов с темами" });
@@ -133,9 +99,7 @@ public sealed class ScopesController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut, Route("{scopeId}/themes/{themeId}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPut("{scopeId}/themes/{themeId}")]
     public async Task<ActionResult> UpdateTheme([FromServices] ThemeValidator validator, Guid scopeId, Guid themeId, ThemeDto dto)
     {
         validator.ValidateForUpdate(dto, true);
@@ -151,9 +115,7 @@ public sealed class ScopesController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut, Route("{scopeId}/themes/{themeId}/actuality")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPut("{scopeId}/themes/{themeId}/actuality")]
     public async Task<ActionResult> UpdateThemeActuality([FromServices] ThemeValidator validator, Guid scopeId, Guid themeId, ThemeDto dto)
     {
         validator.ValidateForActuality(dto, true);
@@ -165,9 +127,7 @@ public sealed class ScopesController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete, Route("{scopeId}/themes/{themeId}")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [HttpDelete("{scopeId}/themes/{themeId}")]
     public async Task<IActionResult> DeleteTheme(Guid scopeId, Guid themeId)
     {
         await _scopeService.DeleteTheme(themeId);

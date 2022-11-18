@@ -1,4 +1,4 @@
-﻿namespace RiseDiary.WebAPI.Shared.Dto;
+﻿namespace RiseDiary.Shared.Dto;
 
 public sealed class RecordListItemDto
 {

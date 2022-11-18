@@ -25,7 +25,7 @@
 	
   <ItemGroup>
     <ProjectReference Include="..\RiseDiary.Front\RiseDiary.Front.csproj" />
-    <ProjectReference Include="..\RiseDiary.WebAPI.Shared\RiseDiary.WebAPI.Shared.csproj" />
+    <ProjectReference Include="..\RiseDiary.Shared\RiseDiary.Shared.csproj" />
   </ItemGroup>
 
 </Project>

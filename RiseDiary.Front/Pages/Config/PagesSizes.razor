@@ -1,0 +1,105 @@
+﻿@page "/settings/pagesizes"
+
+@using RiseDiary.Shared.Settings
+
+@inject HttpClient Http
+@inject PagesSizesSettingsValidator Validator
+
+@inherits UIComponentBase
+
+
+<PageTitle>Настройки размеров страниц</PageTitle>
+
+@if (_settings == null || Loading)
+{
+    <Spinner />
+}
+else
+{
+    if (HasError)
+    {
+        <pre style="color:red;">@ErrorMessage</pre>
+    }
+
+    <div class="row mt-2 mb-3">
+        <div class="offset-lg-1 col-lg-8 col-md-9 col-sm-12 pt-2">
+            <b>Количество миниатюр картинок, выводимое на одну страницу</b>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 mt-1">
+            <input type="number" class="form-control" @bind-value="_settings.ImagesPageSize" @bind-value:event="onchange" />
+        </div>
+    </div>
+
+    <div class="row mt-2 mb-3">
+        <div class="offset-lg-1 col-lg-8 col-md-9 col-sm-12 pt-2">
+            <b>Количество миниатюр картинок, выводимое на одну страницу в окне выбора картинок при добавлении к записи</b>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 mt-1">
+            <input type="number" class="form-control" @bind-value="_settings.AvailableImagesPageSize" @bind-value:event="onchange" />
+        </div>
+    </div>
+
+    <div class="row mt-2 mb-3">
+        <div class="offset-lg-1 col-lg-8 col-md-9 col-sm-12 pt-2">
+            <b>Количество записей, выводимое на одну страницу</b>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 mt-1">
+            <input type="number" class="form-control" @bind-value="_settings.RecordsPageSize" @bind-value:event="onchange" />
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="text-center">
+            <button type="button" @onclick="UpdateSettings" class="btn btn-outline-success">Сохранить</button>
+        </div>
+    </div>
+}
+
+
+@code {
+    private PagesSizesSettings? _settings;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            _settings = await Http.GetFromJsonAsync<PagesSizesSettings>("api/settings/pages", Token);
+        }
+        catch (Exception exc)
+        {
+            await FinishApiRequest(exc.Message);
+            _settings = new();
+        }
+    }
+
+    private async Task UpdateSettings()
+    {
+        try
+        {
+            var validationResult = Validator.Validate(_settings!);
+
+            if (!validationResult.IsValid)
+            {
+                ErrorMessage = validationResult.ToString();
+                return;
+            }
+
+            await StartApiRequest();
+
+            var resp = await Http.PutAsJsonAsync($"api/settings/pages", _settings);
+            await CheckSuccessResponse(resp);
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            await FinishApiRequest(exc.Message);
+            _settings = new();
+        }
+    }
+}

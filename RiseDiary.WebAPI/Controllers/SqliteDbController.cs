@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
-using RiseDiary.WebAPI.Shared.Dto;
+using RiseDiary.Shared.Database;
 
 namespace RiseDiary.Api;
 
@@ -15,8 +15,7 @@ public sealed class SqliteDbController : ControllerBase
         _sqliteDb = sqliteDb;
     }
 
-    [HttpGet]
-    [ProducesResponseType(typeof(SqliteDbInfoDto), StatusCodes.Status200OK)]
+    [HttpGet("info")]
     public async Task<ActionResult<SqliteDbInfoDto>> GetDbInfo(CancellationToken cancellationToken)
     {
         var db = _sqliteDb.GetSqliteDatabaseInfo();
@@ -36,7 +35,7 @@ public sealed class SqliteDbController : ControllerBase
         };
     }
 
-    [HttpPost, Route("clear")]
+    [HttpPost("cleanup")]
     public async Task<IActionResult> ClearDb()
     {
         await _sqliteDb.ClearDatabase();
@@ -45,11 +44,7 @@ public sealed class SqliteDbController : ControllerBase
         return Ok();
     }
 
-    [HttpPost, Route("file2file")]
-    public async Task<IActionResult> File2FileMigration()
-    {
-        await _sqliteDb.File2FileMigration();
-
-        return Ok();
-    }
+    [HttpGet("deleted-data")]
+    public async Task<ActionResult<DeletedDataInfo>> GetDeletedData(CancellationToken cancellationToken) =>
+        await _sqliteDb.GetDeletedEntitiesData(cancellationToken);
 }

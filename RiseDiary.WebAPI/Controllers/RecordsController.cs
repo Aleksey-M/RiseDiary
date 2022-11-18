@@ -3,7 +3,7 @@ using RiseDiary.Model;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Records;
 using RiseDiary.Shared.Scopes;
-using RiseDiary.WebAPI.Shared.Dto;
+using RiseDiary.Shared.Dto;
 
 namespace RiseDiary.Api;
 
@@ -32,8 +32,6 @@ public sealed class RecordsController : ControllerBase
     }
 
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateRecord(CreateRecordDto createDto)
     {
         var recId = await _recordService.AddRecord(createDto.Date, createDto.RecordName, createDto.RecordText);
@@ -42,8 +40,7 @@ public sealed class RecordsController : ControllerBase
         return Created(newRecordUri, recId);
     }
 
-    [HttpGet, Route("{recordId}")]
-    [ProducesResponseType(typeof(RecordDto), StatusCodes.Status200OK)]
+    [HttpGet("{recordId}")]
     public async Task<ActionResult<RecordDto>> GetRecord(Guid recordId, CancellationToken cancellationToken)
     {
         var record = await _recordService.FetchRecordById(recordId, cancellationToken);
@@ -88,17 +85,14 @@ public sealed class RecordsController : ControllerBase
         };
     }
 
-    [HttpDelete, Route("{recordId}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [HttpDelete("{recordId}")]
     public async Task<IActionResult> DeleteRecord(Guid recordId)
     {
         await _recordService.DeleteRecord(recordId);
         return NoContent();
     }
 
-    [HttpPut, Route("{recordId}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPut("{recordId}")]
     public async Task<IActionResult> UpdateRecord(Guid recordId, UpdateRecordDto updateRecordDto)
     {
         if (recordId != updateRecordDto.Id) return BadRequest("Not consistent request");
@@ -107,9 +101,7 @@ public sealed class RecordsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost, Route("{recordId}/cogitations")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [HttpPost("{recordId}/cogitations")]
     public async Task<IActionResult> AddCogitation(Guid recordId, CreateCogitationDto createCogitationDto)
     {
         if (recordId != createCogitationDto.RecordId) return BadRequest("Not consistent request");
@@ -119,9 +111,7 @@ public sealed class RecordsController : ControllerBase
         return Created(recordUri, cogId);
     }
 
-    [HttpPut, Route("{recordId}/cogitations/{cogitationId}")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [HttpPut("{recordId}/cogitations/{cogitationId}")]
     public async Task<IActionResult> UpdateCogitation(Guid recordId, Guid cogitationId, UpdateCogitationDto updateCogitationDto)
     {
         if (recordId != updateCogitationDto.RecordId || cogitationId != updateCogitationDto.CogitationId) return BadRequest("Not consistent request");
@@ -130,9 +120,7 @@ public sealed class RecordsController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete, Route("{recordId}/cogitations/{cogitationId}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpDelete("{recordId}/cogitations/{cogitationId}")]
     public async Task<IActionResult> DeleteCogitation(Guid recordId, Guid cogitationId)
     {
         var record = await _recordService.FetchRecordById(recordId);
@@ -147,8 +135,7 @@ public sealed class RecordsController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet, Route("startpage")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [HttpGet("startpage")]
     public async Task<ActionResult<StartPageRecordDto>> GetStartPageRecord(CancellationToken token)
     {
         var (recordId, _) = await _appSettingsService.GetAppSetting(AppSettingsKey.StartPageRecordId);

@@ -1,0 +1,38 @@
+﻿@page "/config"
+
+<PageTitle>Настройки</PageTitle>
+
+<div class="offset-md-1 col-md-10 col-sm-12">
+    <table class="table table-striped mt-3">
+        <tbody>
+            <tr>
+                <td>Информация о базе данных и дополнительные функции для работы с базой</td>
+                <td><NavLink href="settings/db" class="btn btn-link">Открыть</NavLink></td>
+            </tr>
+            <tr>
+                <td>Просмотр удаленных данных</td>
+                <td><NavLink href="settings/deleteddata" class="btn btn-link">Открыть</NavLink></td>
+            </tr>
+            <tr>
+                <td>Значениe base Url</td>
+                <td><NavLink href="settings/hostandport" class="btn btn-link">Открыть</NavLink></td>
+            </tr>
+            <tr>
+                <td>Настройки раздела "Даты"</td>
+                <td><NavLink href="settings/dates" class="btn btn-link">Открыть</NavLink></td>
+            </tr>
+            <tr>
+                <td>Настройки изображений</td>
+                <td><NavLink href="settings/images" class="btn btn-link">Открыть</NavLink></td>
+            </tr>           
+            <tr>
+                <td>Количество записей или картинок на страницу</td>
+                <td><NavLink href="settings/pagesizes" class="btn btn-link">Открыть</NavLink></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@code {
+
+}

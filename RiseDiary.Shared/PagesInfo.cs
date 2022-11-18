@@ -1,4 +1,4 @@
-﻿namespace RiseDiary.WebAPI.Shared;
+﻿namespace RiseDiary.Shared;
 
 public sealed class PagesInfo
 {

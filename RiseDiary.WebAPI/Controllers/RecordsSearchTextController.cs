@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.Shared.Scopes;
-using RiseDiary.WebAPI.Shared;
-using RiseDiary.WebAPI.Shared.Dto;
+using RiseDiary.Shared;
+using RiseDiary.Shared.Dto;
 
 namespace RiseDiary.Api;
 
@@ -17,9 +17,7 @@ public sealed class RecordsSearchTextController : ControllerBase
         _recordsSearchService = recordsSearchService;
     }
 
-    [HttpGet, Route("list")]
-    [ProducesResponseType(typeof(RecordsPageDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpGet("list")]
     public async Task<ActionResult<RecordsPageDto>> GetRecordsList(
         [FromQuery] string? searchText,
         [FromQuery] int? pageSize,
@@ -59,9 +57,7 @@ public sealed class RecordsSearchTextController : ControllerBase
         };
     }
 
-    [HttpGet, Route("expandedlist")]
-    [ProducesResponseType(typeof(RecordsDetailPageDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpGet("expandedlist")]
     public async Task<ActionResult<RecordsDetailPageDto>> GetRecordsListExpanded(
         [FromQuery] string? searchText,
         [FromQuery] int? pageSize,

@@ -1,0 +1,118 @@
+﻿@page "/settings/images"
+
+@using RiseDiary.Shared.Settings
+
+@inject HttpClient Http
+@inject ImagesSettingsValidator Validator
+
+@inherits UIComponentBase
+
+
+<PageTitle>Настройки изображений</PageTitle>
+
+@if (_settings == null || Loading)
+{
+    <Spinner />
+}
+else
+{
+    if (HasError)
+    {
+        <pre style="color:red;">@ErrorMessage</pre>
+    }
+
+    <div class="row mt-2 mb-3">
+        <div class="offset-lg-1 col-lg-8 col-md-9 col-sm-12 pt-2">
+            <b>Настройка качества сжатия Jpeg изображений при изменении размеров и обрезке</b>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 mt-1">
+            <input type="number" class="form-control" @bind-value="_settings.ImageQuality" @bind-value:event="onchange" />
+        </div>
+    </div>
+
+    <div class="row mt-2 mb-3">
+        <div class="offset-lg-1 col-lg-8 col-md-9 col-sm-12 pt-2">
+            <b>Размер бОльшей стороны превью-изображения в пикселях</b>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 mt-1">
+            <input type="number" class="form-control" @bind-value="_settings.ThumbnailSize" @bind-value:event="onchange" />
+        </div>
+    </div>
+
+    <div class="row mt-2 mb-3">
+        <div class="offset-lg-1 col-lg-8 col-md-9 col-sm-12 pt-2">
+            <b>Значение максимальной ширины превью-изображения на странице обрезки.
+                Если исходное изображение будет иметь бОльшую ширину, то оно будет пропорционально уменьшено</b>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 mt-1">
+            <input type="number" class="form-control" @bind-value="_settings.CropImageMaxScaledWidth" @bind-value:event="onchange" />
+        </div>
+    </div>
+
+    <div class="row mt-2 mb-3">
+        <div class="offset-lg-1 col-lg-8 col-md-9 col-sm-12 pt-2">
+            <b>Значение максимальной высоты превью-изображения на странице обрезки.
+                Если исходное изображение будет иметь бОльшую высоту, то оно будет пропорционально уменьшено</b>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 mt-1">
+            <input type="number" class="form-control" @bind-value="_settings.CropImageMaxScaledHeight" @bind-value:event="onchange" />
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="text-center">
+            <button type="button" @onclick="UpdateSettings" class="btn btn-outline-success">Сохранить</button>
+        </div>
+    </div>
+}
+
+
+@code {
+
+    private ImagesSettings? _settings;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            _settings = await Http.GetFromJsonAsync<ImagesSettings>("api/settings/images", Token);
+        }
+        catch (Exception exc)
+        {
+            await FinishApiRequest(exc.Message);
+            _settings = new();
+        }
+    }
+
+    private async Task UpdateSettings()
+    {
+        try
+        {
+            var validationResult = Validator.Validate(_settings!);
+
+            if (!validationResult.IsValid)
+            {
+                ErrorMessage = validationResult.ToString();
+                return;
+            }
+
+            await StartApiRequest();
+
+            var resp = await Http.PutAsJsonAsync($"api/settings/images", _settings);
+            await CheckSuccessResponse(resp);
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            await FinishApiRequest(exc.Message);
+            _settings = new();
+        }
+    }
+}

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using RiseDiary.Model;
-using RiseDiary.WebAPI.Shared;
+using RiseDiary.Shared;
 
 namespace RiseDiary.IntegratedTests.Stubs;
 

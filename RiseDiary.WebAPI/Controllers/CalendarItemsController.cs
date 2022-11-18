@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
-using RiseDiary.WebAPI.Shared.Dto;
+using RiseDiary.Shared.Dto;
 
 namespace RiseDiary.Api;
 
@@ -15,8 +15,7 @@ public sealed class CalendarItemsController : ControllerBase
         _calendarService = calendarService;
     }
 
-    [HttpGet, Route("{year}")]
-    [ProducesResponseType(typeof(CalendarDateDto), StatusCodes.Status200OK)]
+    [HttpGet("{year}")]
     public async Task<ActionResult<List<CalendarDateDto>>> GetCalendarDates([FromRoute] int year,
         [FromQuery] IEnumerable<Guid>? themeId, [FromQuery] bool? combinedThemes, CancellationToken cancellationToken)
     {
@@ -35,8 +34,7 @@ public sealed class CalendarItemsController : ControllerBase
         .ToList();
     }
 
-    [HttpGet, Route("years")]
-    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [HttpGet("years")]
     public async Task<ActionResult<IEnumerable<int>>> GetCalendarYears([FromQuery] IEnumerable<Guid>? themeId,
         [FromQuery] bool? combinedThemes, CancellationToken cancellationToken)
     {

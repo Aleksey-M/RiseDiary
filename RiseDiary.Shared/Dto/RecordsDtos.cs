@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using RiseDiary.Shared.Scopes;
 
-namespace RiseDiary.WebAPI.Shared.Dto;
+namespace RiseDiary.Shared.Dto;
 
 public sealed class UpdateRecordThemesDto
 {

@@ -1,9 +1,15 @@
 ﻿@namespace RiseDiary.Front.Pages
 
 <div style="width:100%">
-    <img src="img/loader.gif" style="width:3.5rem;display:block;margin:1rem auto" />
+    <img src="img/loader.gif" style="@Css" />
 </div>
 
 @code {
 
+    [Parameter]
+    public bool Small { get; set; }
+
+    private string Css => Small
+        ? "width:2rem;display:block;margin:0.3rem auto"
+        : "width:3.5rem;display:block;margin:1rem auto";
 }

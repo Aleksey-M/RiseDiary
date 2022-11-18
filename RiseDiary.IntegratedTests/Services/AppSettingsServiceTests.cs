@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 using RiseDiary.Model;
-using RiseDiary.WebAPI.Shared;
+using RiseDiary.Shared;
 
 namespace RiseDiary.IntegratedTests.Services;
 

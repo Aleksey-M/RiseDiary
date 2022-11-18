@@ -1,4 +1,9 @@
-﻿namespace RiseDiary.WebAPI.Shared.Dto;
+﻿namespace RiseDiary.Shared.Database;
+
+public record DeletedEntitiesCount(int Scopes, int Themes, int Records, int Cogitations, int Images, int RecordThemes, int RecordImages);
+
+public record SqliteDatabaseFileInfo(string FileName, string FileSize);
+
 
 public sealed class SqliteDbInfoDto
 {

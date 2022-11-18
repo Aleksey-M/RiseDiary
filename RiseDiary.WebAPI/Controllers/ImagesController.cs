@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
-using RiseDiary.WebAPI.Shared;
-using RiseDiary.WebAPI.Shared.Dto;
+using RiseDiary.Shared;
+using RiseDiary.Shared.Dto;
 
 namespace RiseDiary.Api;
 
@@ -21,10 +21,7 @@ public sealed class ImagesController : ControllerBase
         _appSettingsService = appSettingsService;
     }
 
-    [HttpGet, Route("api/image-file/{id}")]
-    [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpGet("api/image-file/{id}")]
     public async Task<IActionResult> GetImageFile(Guid id, CancellationToken cancellationToken)
     {
         if (id == Guid.Empty) return BadRequest();
@@ -33,10 +30,7 @@ public sealed class ImagesController : ControllerBase
         return File(image, "image/jpeg");
     }
 
-    [HttpGet, Route("api/image-thumbnail/{id}")]
-    [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpGet("api/image-thumbnail/{id}")]
     public async Task<IActionResult> GetImageThumbnail(Guid id, CancellationToken cancellationToken)
     {
         if (id == Guid.Empty) return BadRequest();
@@ -45,9 +39,7 @@ public sealed class ImagesController : ControllerBase
         return File(image.Thumbnail, "image/jpeg");
     }
 
-    [HttpPost, Route("api/images")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPost("api/images")]
     public async Task<IActionResult> UploadImages([FromForm] UploadImageDto imageDto)
     {
         if (imageDto.Image == null) return BadRequest("Image file should be selected");
@@ -65,17 +57,14 @@ public sealed class ImagesController : ControllerBase
         return Created(newImageUri, newImageId);
     }
 
-    [HttpDelete, Route("api/images/{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [HttpDelete("api/images/{id}")]
     public async Task<IActionResult> DeleteImage(Guid id)
     {
         await _imagesService.DeleteImage(id);
         return NoContent();
     }
 
-    [HttpPut, Route("api/images/{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPut("api/images/{id}")]
     public async Task<IActionResult> UpdateImage(Guid id, UpdateImageDto updateImageDto)
     {
         if (id != updateImageDto.ImageId) return BadRequest("Not consistent request");
@@ -84,9 +73,7 @@ public sealed class ImagesController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet, Route("api/images/{id}")]
-    [ProducesResponseType(typeof(ImageDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpGet("api/images/{id}")]
     public async Task<ActionResult<ImageDto>> GetImage(Guid id, CancellationToken cancellationToken)
     {
         var img = await _imagesService.FetchImageById(id, cancellationToken);
@@ -115,9 +102,7 @@ public sealed class ImagesController : ControllerBase
         };
     }
 
-    [HttpGet, Route("api/images")]
-    [ProducesResponseType(typeof(ImagesPageDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpGet("api/images")]
     public async Task<ActionResult<ImagesPageDto>> GetImagesPage([FromQuery] int? pageSize,
         [FromQuery] int? pageNo, [FromQuery] string? imageNameFilter, CancellationToken cancellationToken)
     {

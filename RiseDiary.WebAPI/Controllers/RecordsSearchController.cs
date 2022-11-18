@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
+using RiseDiary.Shared;
+using RiseDiary.Shared.Dto;
 using RiseDiary.Shared.Scopes;
-using RiseDiary.WebAPI.Shared;
-using RiseDiary.WebAPI.Shared.Dto;
 
 namespace RiseDiary.Api;
 
@@ -17,9 +17,7 @@ public sealed class RecordsSearchController : ControllerBase
         _recordsSearchService = recordsSearchService;
     }
 
-    [HttpGet, Route("list")]
-    [ProducesResponseType(typeof(RecordsPageDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpGet("list")]
     public async Task<ActionResult<RecordsPageDto>> GetRecordsList(
         [FromQuery] DateTime? from,
         [FromQuery] DateTime? to,
@@ -71,9 +69,7 @@ public sealed class RecordsSearchController : ControllerBase
         };
     }
 
-    [HttpGet, Route("expandedlist")]
-    [ProducesResponseType(typeof(RecordsDetailPageDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpGet("expandedlist")]
     public async Task<ActionResult<RecordsDetailPageDto>> GetRecordsListExpanded(
         [FromQuery] DateTime? from,
         [FromQuery] DateTime? to,

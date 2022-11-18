@@ -35,10 +35,10 @@ public class UIComponentBase : ComponentBase, IDisposable
     {
         if (response.IsSuccessStatusCode)
         {
-            return await response.Content.ReadFromJsonAsync<T>();
+            return await response.Content.ReadFromJsonAsync<T>(cancellationToken: Token);
         }
 
-        var msg = await response.Content.ReadFromJsonAsync<MessageResponse>();
+        var msg = await response.Content.ReadFromJsonAsync<MessageResponse>(cancellationToken: Token);
 
         ErrorMessage = $"{response.StatusCode}: {msg?.Message ?? string.Empty}";
         Loading = false;
@@ -52,7 +52,7 @@ public class UIComponentBase : ComponentBase, IDisposable
     {
         if (response.IsSuccessStatusCode) return true;
 
-        var msg = await response.Content.ReadFromJsonAsync<MessageResponse>();
+        var msg = await response.Content.ReadFromJsonAsync<MessageResponse>(cancellationToken: Token);
 
         ErrorMessage = $"{response.StatusCode}: {msg?.Message ?? string.Empty}";
         Loading = false;
@@ -67,6 +67,9 @@ public class UIComponentBase : ComponentBase, IDisposable
         if (_cts.IsValueCreated)
         {
             _cts.Value.Cancel();
+            _cts.Value.Dispose();            
         }
+
+        GC.SuppressFinalize(this);
     }
 }

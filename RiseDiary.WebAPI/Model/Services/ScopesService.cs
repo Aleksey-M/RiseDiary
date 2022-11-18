@@ -205,6 +205,10 @@ internal sealed class ScopesService : IScopesService
             targetScope.Description = scopeNewDescription.Trim()
                 .Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
         }
+        else
+        {
+            targetScope.Description = string.Empty;
+        }
 
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }
@@ -235,6 +239,10 @@ internal sealed class ScopesService : IScopesService
 
             targetTheme.Description = themeNewDescription.Trim()
                 .Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
+        }
+        else
+        {
+            targetTheme.Description = string.Empty;
         }
 
         if (themeActuality != null && targetTheme.Actual != themeActuality)

@@ -12,18 +12,18 @@
 <li class="list-group-item">
     <div class="row">
 
-        @if (Loading)
+        @if (HasError)
         {
-            <Spinner />
+            <pre style="color:red" class="col-12">@ErrorMessage</pre>
         }
-        else
-        {
-            @if (HasError)
-            {
-                <p style="color:red" class="col-12">@ErrorMessage</p>
-            }
 
-            @if (_editMode)
+        @if (_editMode)
+        {
+            @if (Loading)
+            {
+                <Spinner />
+            }
+            else
             {
                 <div class="input-group">
                     <input type="text" @bind-value="_edited.ThemeName" @bind-value:event="onchange" class="form-control" />
@@ -41,41 +41,42 @@
                     <textarea @bind="_edited.ThemeDescription" @bind:event="onchange" rows="2" class="p-1 mt-2 multiline-input" />
                 </div>
             }
-            else
+        }
+        else
+        {
+            <div class="col-lg-10 col-md-8 col-sm-12">
+                <h5>@CurrentTheme.ThemeName</h5>
+            </div>
+
+            <div class="col-lg-1 col-md-2 col-sm-6 text-center">
+                <button type="button" @onclick="ToggleActuality" class="btn btn-link" title="Актуальность темы">
+                    @if (CurrentTheme.Actual.HasValue && CurrentTheme.Actual.Value)
+                    {
+                        <img src="img/star-fill.svg" widtn="20" height="20" />
+                    }
+                    else
+                    {
+                        <img src="img/star.svg" widtn="20" height="20" />
+                    }
+                </button>
+            </div>
+
+            <div class="col-lg-1 col-md-2 col-sm-6 text-center">
+                <button type="button" @onclick="ShowEditForm" class="btn btn-link" title="Открыть на редактирование">
+                    <img src="img/pencil-square.svg" widtn="20" height="20" />
+                </button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(CurrentTheme.ThemeDescription))
             {
-                <div class="col-lg-10 col-md-8 col-sm-12">
-                    <h5>@CurrentTheme.ThemeName</h5>
-                </div>
-
-                <div class="col-lg-1 col-md-2 col-sm-6 text-center">
-                    <button type="button" @onclick="ToggleActuality" class="btn btn-link" title="Актуальность темы">
-                        @if (CurrentTheme.Actual.HasValue && CurrentTheme.Actual.Value)
-                        {
-                            <img src="img/star-fill.svg" widtn="20" height="20" />
-                        }
-                        else
-                        {
-                            <img src="img/star.svg" widtn="20" height="20" />
-                        }
-                    </button>
-                </div>
-
-                <div class="col-lg-1 col-md-2 col-sm-6 text-center">
-                    <button type="button" @onclick="ShowEditForm" class="btn btn-link" title="Открыть на редактирование">
-                        <img src="img/pencil-square.svg" widtn="20" height="20" />
-                    </button>
-                </div>
-
-                @if (!string.IsNullOrEmpty(CurrentTheme.ThemeDescription))
-                {
-                    <div style="width:100%">
-                        <div class="p-1 mt-2" style="width: 100%">
-                            @MdService.ToHtml(CurrentTheme.ThemeDescription)
-                        </div>
+                <div style="width:100%">
+                    <div class="p-1 mt-2" style="width: 100%">
+                        @MdService.ToHtml(CurrentTheme.ThemeDescription)
                     </div>
-                }
+                </div>
             }
         }
+
     </div>
 </li>
 

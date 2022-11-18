@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
-using RiseDiary.WebAPI.Shared.Dto;
+using RiseDiary.Shared.Dto;
 
 namespace RiseDiary.Api;
 
@@ -19,18 +19,14 @@ public sealed class EditImagesController : ControllerBase
         _cropImageService = cropImageService;
     }
 
-    [HttpPost, Route("scale-down")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [HttpPost("scale-down")]
     public async Task<IActionResult> ScaleDownImage(ScaleDownDto scaleDownDto)
     {
         await _imagesEditService.ReduceImageSize(scaleDownDto.ImageId, scaleDownDto.NewImageBiggestSide);
         return Ok();
     }
 
-    [HttpPost, Route("replace-image")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [HttpPost("replace-image")]
     public async Task<IActionResult> ReplaceImage([FromForm] ReplaceImageDto replaceImageDto)
     {
         if (replaceImageDto.Image == null) return BadRequest("New image should be selected");
@@ -39,9 +35,7 @@ public sealed class EditImagesController : ControllerBase
         return Ok();
     }
 
-    [HttpGet, Route("{imageId}/scaled-preview")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ScaledImagePreviewDto), StatusCodes.Status200OK)]
+    [HttpGet("{imageId}/scaled-preview")]
     public async Task<ActionResult<ScaledImagePreviewDto>> GetScaledPreview(Guid imageId)
     {
         var scaled = await _cropImageService.CreateScaledImagePreview(imageId);
@@ -52,9 +46,7 @@ public sealed class EditImagesController : ControllerBase
         };
     }
 
-    [HttpPost, Route("crop-image")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [HttpPost("crop-image")]
     public async Task<IActionResult> CropImage(CropImageDto cropImageDto)
     {
         var rect = new Rectangle(cropImageDto.Left, cropImageDto.Top, cropImageDto.Width, cropImageDto.Height);
@@ -62,26 +54,20 @@ public sealed class EditImagesController : ControllerBase
         return Ok();
     }
 
-    [HttpPost, Route("{imageId}/save-changes-as-new-image")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    [HttpPost("{imageId}/save-changes-as-new-image")]
     public async Task<ActionResult<Guid>> SaveChangesAsNewImage(Guid imageId)
     {
         return await _imagesEditService.CreateNewImageFromChanged(imageId);
     }
 
-    [HttpPost, Route("{imageId}/apply-changes")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [HttpPost("{imageId}/apply-changes")]
     public async Task<IActionResult> ApplyChanges(Guid imageId)
     {
         await _imagesEditService.ApplyChanges(imageId);
         return Ok();
     }
 
-    [HttpPost, Route("{imageId}/discard-changes")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [HttpPost("{imageId}/discard-changes")]
     public async Task<IActionResult> DiscardChanges(Guid imageId)
     {
         await _imagesEditService.DiscardChanges(imageId);
