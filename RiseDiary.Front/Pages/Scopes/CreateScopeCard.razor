@@ -7,12 +7,7 @@
 
 @inherits UIComponentBase
 
-@if (Loading)
-{
-    <Spinner />
-}
-else
-{
+<Spinner Loading="Loading">
     <div class="card">
         <div class="card-header">
             @if (HasError)
@@ -34,7 +29,7 @@ else
             </div>
         </div>
     </div>
-}
+</Spinner>
 
 
 @code {

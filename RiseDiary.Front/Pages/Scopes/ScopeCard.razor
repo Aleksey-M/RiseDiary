@@ -10,15 +10,9 @@
 
 @inherits UIComponentBase
 
-<div class="card mt-3">
-    <div class="card-header">
-
-        @if (Loading)
-        {
-            <Spinner />
-        }
-        else
-        {
+<Spinner Loading="Loading">
+    <div class="card mt-3">
+        <div class="card-header">
 
             @if (HasError)
             {
@@ -41,7 +35,7 @@
 
                 <div style="width:100%">
                     <textarea @bind="_editedScope.ScopeDescription" @bind:event="onchange"
-                        rows="2" class="p-1 mt-2 multiline-input" />
+                          rows="2" class="p-1 mt-2 multiline-input" />
                 </div>
             }
             else
@@ -65,25 +59,25 @@
                     }
                 </div>
             }
+        </div>
+
+        @if (CurrentScope?.Themes != null && CurrentScope.Themes.Count > 0)
+        {
+            <ul class="list-group list-group-flush">
+                @foreach (var th in CurrentScope.Themes)
+                {
+                    <ThemeListItem Scope="CurrentScope" CurrentTheme="th" DeleteThemeFromList="DeleteThemeFronList" @key="th.ThemeId" />
+                }
+            </ul>
         }
+
+        <div class="card-footer">
+
+            <CreateThemeForm NewThemeCreated="AddTheme" Scope="CurrentScope" />
+
+        </div>
     </div>
-
-    @if (CurrentScope?.Themes != null && CurrentScope.Themes.Count > 0)
-    {
-        <ul class="list-group list-group-flush">
-            @foreach (var th in CurrentScope.Themes)
-            {
-                <ThemeListItem Scope="CurrentScope" CurrentTheme="th" DeleteThemeFromList="DeleteThemeFronList" @key="th.ThemeId" />
-            }
-        </ul>
-    }
-
-    <div class="card-footer">
-
-        <CreateThemeForm NewThemeCreated="AddTheme" Scope="CurrentScope" />
-
-    </div>
-</div>
+</Spinner>
 
 @code{
     [Parameter, EditorRequired]

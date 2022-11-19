@@ -19,12 +19,7 @@
 
         @if (_editMode)
         {
-            @if (Loading)
-            {
-                <Spinner />
-            }
-            else
-            {
+            <Spinner Loading="Loading">
                 <div class="input-group">
                     <input type="text" @bind-value="_edited.ThemeName" @bind-value:event="onchange" class="form-control" />
 
@@ -40,7 +35,7 @@
                 <div style="width:100%">
                     <textarea @bind="_edited.ThemeDescription" @bind:event="onchange" rows="2" class="p-1 mt-2 multiline-input" />
                 </div>
-            }
+            </Spinner>
         }
         else
         {

@@ -7,12 +7,7 @@
 
 @inherits UIComponentBase
 
-@if (Loading)
-{
-    <Spinner />
-}
-else
-{
+<Spinner Loading="Loading">
     @if (HasError)
     {
         <pre style="color:red">@ErrorMessage</pre>
@@ -30,7 +25,7 @@ else
     <div style="width:100%">
         <textarea @bind="_newThemeDto.ThemeDescription" @bind:event="onchange" rows="2" class="p-1 mt-2 multiline-input" />
     </div>
-}
+</Spinner>
 
 @code {
 

@@ -11,20 +11,20 @@
 
 <PageTitle>Дневник</PageTitle>
 
- <div class="col-12 p-2">
+<div class="col-12 p-2">
+    <Spinner Loading="_startPageRecord == null">
 
-    @if (_startPageRecord == null)
-    {
-        <Spinner />
-    }
-    else
-    {
         @if (HasError)
         {
             <pre style="color:red;">@ErrorMessage</pre>
         }
 
-        @if (_startPageRecord?.RecordId != null)
+        @if (_startPageRecord != null && _startPageRecord.RecordId == null)
+        {
+            <h3 class="p-3" style="color:silver">Стартовая страница не выбрана</h3>            
+        }
+        
+        @if (_startPageRecord?.RecordId != null )
         {
             @RecordHtml
 
@@ -32,11 +32,8 @@
 
             <NavLink href="@RecordUrl">Открыть запись</NavLink>
         }
-        else
-        {
-            <h3 class="p-3" style="color:silver">Стартовая страница не выбрана</h3>
-        }
-    }
+
+    </Spinner>
 </div>
 
 @code {

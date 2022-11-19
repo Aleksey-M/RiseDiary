@@ -9,188 +9,187 @@
 
 <PageTitle>Просмотр удаленных данных</PageTitle>
 
-@if (_deletedDataInfo == null || Loading)
-{
-    <Spinner />
-}
-else
-{
 
-    if (HasError)
+<Spinner Loading="Loading">
+    @if (_deletedDataInfo != null)
     {
-        <pre style="color:red;">@ErrorMessage</pre>
-    }
-    else
-    {
-        @if (_deletedDataInfo.Records.Count() > 0)
+
+        if (HasError)
         {
-            <br />
-            <h4 style="color:darkblue">Удаленные записи</h4>
-
-            foreach (var x in _deletedDataInfo.Records)
+            <pre style="color:red;">@ErrorMessage</pre>
+        }
+        else
+        {
+            @if (_deletedDataInfo.Records.Count() > 0)
             {
+                <br />
+                <h4 style="color:darkblue">Удаленные записи</h4>
+
+                foreach (var x in _deletedDataInfo.Records)
+                {
+                    <hr />
+                    <h5>@x.Id: <i>@x.Date</i> @x.Name</h5>
+                    <p>@x.Text</p>
+                }
+            }
+
+            @if (_deletedDataInfo.RecordsCogitations.Count() > 0)
+            {
+                <br />
+                <h4 style="color:darkblue">Удаленные осмысления (комментарии)</h4>
+
+                foreach (var x in _deletedDataInfo.RecordsCogitations)
+                {
+                    <hr />
+                    <h5>@x.CogitationId: <i>@x.Date</i> <b>(Запись @x.RecordId: "@x.RecordName")</b></h5>
+                    <p>@x.Text</p>
+                }
+            }
+
+            @if (_deletedDataInfo.RecordsThemes.Count() > 0)
+            {
+                <br />
                 <hr />
-                <h5>@x.Id: <i>@x.Date</i> @x.Name</h5>
-                <p>@x.Text</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="4"><h4 style="color:darkblue">Исключенные темы записей</h4></th>
+                        </tr>
+                        <tr>
+                            <th>Id темы</th>
+                            <th>Название темы</th>
+                            <th>Id записи</th>
+                            <th>Название записи</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var x in _deletedDataInfo.RecordsThemes)
+                        {
+                            <tr>
+                                <td>@x.ThemeId</td>
+                                <td>@x.ThemeName</td>
+                                <td>@x.RecordId</td>
+                                <td>@x.RecordName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            @if (_deletedDataInfo.RecordsImages.Count() > 0)
+            {
+                <br />
+                <hr />
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="4"><h4 style="color:darkblue">Открепленные от записей изображения</h4></th>
+                        </tr>
+                        <tr>
+                            <th>Id изображения</th>
+                            <th>Изображение</th>
+                            <th>Id записи</th>
+                            <th>Название записи</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var x in _deletedDataInfo.RecordsImages)
+                        {
+                            <tr>
+                                <td>@x.ImageId</td>
+                                <td><img src="data:image/png;base64,@x.ImageThumbnail" /> </td>
+                                <td>@x.RecordId</td>
+                                <td>@x.RecordName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            @if (_deletedDataInfo.Scopes.Count() > 0)
+            {
+                <br />
+                <hr />
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="2"><h4 style="color:darkblue">Удаленные сферы интересов</h4></th>
+                        </tr>
+                        <tr>
+                            <th>Id сферы интересов</th>
+                            <th>Название</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var x in _deletedDataInfo.Scopes)
+                        {
+                            <tr>
+                                <td>@x.Id</td>
+                                <td>@x.Name</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            @if (_deletedDataInfo.Themes.Count() > 0)
+            {
+                <br />
+                <hr />
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="3"><h4 style="color:darkblue">Удаленные темы</h4></th>
+                        </tr>
+                        <tr>
+                            <th>Id Темы</th>
+                            <th>Название темы</th>
+                            <th>Название сферы интересов</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var x in _deletedDataInfo.Themes)
+                        {
+                            <tr>
+                                <td>@x.Id</td>
+                                <td>@x.ThemeName</td>
+                                <td>@x.ScopeName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            @if (_deletedDataInfo.Images.Count() > 0)
+            {
+                <br />
+                <hr />
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="3"><h4 style="color:darkblue">Удаленные изображения</h4></th>
+                        </tr>
+                        <tr>
+                            <th>Id изображения</th>
+                            <th>Название изображения</th>
+                            <th>Изображение</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var x in _deletedDataInfo.Images)
+                        {
+                            <tr>
+                                <td>@x.Id</td>
+                                <td>@x.Name</td>
+                                <td><img src="data:image/png;base64,@x.Thumbnail" /> </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             }
         }
-
-        @if (_deletedDataInfo.RecordsCogitations.Count() > 0)
-        {
-            <br />
-            <h4 style="color:darkblue">Удаленные осмысления (комментарии)</h4>
-
-            foreach (var x in _deletedDataInfo.RecordsCogitations)
-            {
-                <hr />
-                <h5>@x.CogitationId: <i>@x.Date</i> <b>(Запись @x.RecordId: "@x.RecordName")</b></h5>
-                <p>@x.Text</p>
-            }
-        }
-
-        @if (_deletedDataInfo.RecordsThemes.Count() > 0)
-        {
-            <br />
-            <hr />
-            <table>
-                <thead>
-                    <tr>
-                        <th colspan="4"><h4 style="color:darkblue">Исключенные темы записей</h4></th>
-                    </tr>
-                    <tr>
-                        <th>Id темы</th>
-                        <th>Название темы</th>
-                        <th>Id записи</th>
-                        <th>Название записи</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var x in _deletedDataInfo.RecordsThemes)
-                    {
-                        <tr>
-                            <td>@x.ThemeId</td>
-                            <td>@x.ThemeName</td>
-                            <td>@x.RecordId</td>
-                            <td>@x.RecordName</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
-
-        @if (_deletedDataInfo.RecordsImages.Count() > 0)
-        {
-            <br />
-            <hr />
-            <table>
-                <thead>
-                    <tr>
-                        <th colspan="4"><h4 style="color:darkblue">Открепленные от записей изображения</h4></th>
-                    </tr>
-                    <tr>
-                        <th>Id изображения</th>
-                        <th>Изображение</th>
-                        <th>Id записи</th>
-                        <th>Название записи</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var x in _deletedDataInfo.RecordsImages)
-                    {
-                        <tr>
-                            <td>@x.ImageId</td>
-                            <td><img src="data:image/png;base64,@x.ImageThumbnail" /> </td>
-                            <td>@x.RecordId</td>
-                            <td>@x.RecordName</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
-
-        @if (_deletedDataInfo.Scopes.Count() > 0)
-        {
-            <br />
-            <hr />
-            <table>
-                <thead>
-                    <tr>
-                        <th colspan="2"><h4 style="color:darkblue">Удаленные сферы интересов</h4></th>
-                    </tr>
-                    <tr>
-                        <th>Id сферы интересов</th>
-                        <th>Название</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var x in _deletedDataInfo.Scopes)
-                    {
-                        <tr>
-                            <td>@x.Id</td>
-                            <td>@x.Name</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
-
-        @if (_deletedDataInfo.Themes.Count() > 0)
-        {
-            <br />
-            <hr />
-            <table>
-                <thead>
-                    <tr>
-                        <th colspan="3"><h4 style="color:darkblue">Удаленные темы</h4></th>
-                    </tr>
-                    <tr>
-                        <th>Id Темы</th>
-                        <th>Название темы</th>
-                        <th>Название сферы интересов</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var x in _deletedDataInfo.Themes)
-                    {
-                        <tr>
-                            <td>@x.Id</td>
-                            <td>@x.ThemeName</td>
-                            <td>@x.ScopeName</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
-
-        @if (_deletedDataInfo.Images.Count() > 0)
-        {
-            <br />
-            <hr />
-            <table>
-                <thead>
-                    <tr>
-                        <th colspan="3"><h4 style="color:darkblue">Удаленные изображения</h4></th>
-                    </tr>
-                    <tr>
-                        <th>Id изображения</th>
-                        <th>Название изображения</th>
-                        <th>Изображение</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var x in _deletedDataInfo.Images)
-                    {
-                        <tr>
-                            <td>@x.Id</td>
-                            <td>@x.Name</td>
-                            <td><img src="data:image/png;base64,@x.Thumbnail" /> </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
     }
-}
+</Spinner>
 
 @code {
 
@@ -202,12 +201,15 @@ else
 
         try
         {
+            await StartApiRequest();
             _deletedDataInfo = await Http.GetFromJsonAsync<DeletedDataInfo>("api/sqlitedb/deleted-data", Token);
+
+            await FinishApiRequest(null);
         }
         catch (Exception exc)
         {
-            await FinishApiRequest(exc.Message);
             _deletedDataInfo = new();
+            await FinishApiRequest(exc.Message);            
         }
     }
 }

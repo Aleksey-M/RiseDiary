@@ -1,15 +1,22 @@
 ﻿@namespace RiseDiary.Front.Pages
 
-<div style="width:100%">
-    <img src="img/loader.gif" style="@Css" />
+<div class="@ContainerClass">
+    @if (Loading)
+    {
+        <div class="loader-image"></div>
+    }
+
+    @ChildContent
+
 </div>
 
 @code {
 
     [Parameter]
-    public bool Small { get; set; }
+    public bool Loading { get; set; }
 
-    private string Css => Small
-        ? "width:2rem;display:block;margin:0.3rem auto"
-        : "width:3.5rem;display:block;margin:1rem auto";
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string ContainerClass => Loading ? "disabled" : "enabled";
 }

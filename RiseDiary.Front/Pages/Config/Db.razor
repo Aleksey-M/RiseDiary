@@ -10,73 +10,71 @@
 
 <PageTitle>Файл базы данных</PageTitle>
 
-@if (_dbInfo == null || Loading)
-{
-    <Spinner />
-}
-else
-{
-    <div class="offset-md-2 col-md-8 col-sm-12">
+<Spinner Loading="Loading">
+    @if (_dbInfo != null)
+    {
+        <div class="offset-md-2 col-md-8 col-sm-12">
 
-        @if (HasError)
-        {
-            <pre style="color:red;">@ErrorMessage</pre>
-        }
-        else
-        {
+            @if (HasError)
+            {
+                <pre style="color:red;">@ErrorMessage</pre>
+            }
+            else
+            {
 
-            <div class="mt-3 mb-3">
-                <p style="word-break:break-word"><b>Файл базы данных:</b> <i>@_dbInfo.FileName (<b>@_dbInfo.FileSize</b>)</i></p>
-            </div>
+                <div class="mt-3 mb-3">
+                    <p style="word-break:break-word"><b>Файл базы данных:</b> <i>@_dbInfo.FileName (<b>@_dbInfo.FileSize</b>)</i></p>
+                </div>
 
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Удаленные данные</th>
-                        <th>Количество</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Записи</td>
-                        <td><i>@_dbInfo.DeletedRecords</i></td>
-                    </tr>
-                    <tr>
-                        <td>Осмысления (комментарии)</td>
-                        <td><i>@_dbInfo.DeletedCogitations</i></td>
-                    </tr>
-                    <tr>
-                        <td>Области интересов</td>
-                        <td><i>@_dbInfo.DeletedScopes</i></td>
-                    </tr>
-                    <tr>
-                        <td>Темы</td>
-                        <td><i>@_dbInfo.DeletedThemes</i></td>
-                    </tr>
-                    <tr>
-                        <td>Изображения</td>
-                        <td><i>@_dbInfo.DeletedImages</i></td>
-                    </tr>
-                    <tr>
-                        <td>Связи запись-тема</td>
-                        <td><i>@_dbInfo.DeletedRecordThemes</i></td>
-                    </tr>
-                    <tr>
-                        <td>Связи запись-изображение</td>
-                        <td><i>@_dbInfo.DeletedRecordImages</i></td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2">
-                            <input type="button" class="btn btn-danger btn-sm" value="Очистить базу" @onclick=CleanupDatabase />
-                        </td>
-                    </tr>
-                </tfoot>
-            </table>
-        }
-    </div>
-}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Удаленные данные</th>
+                            <th>Количество</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Записи</td>
+                            <td><i>@_dbInfo.DeletedRecords</i></td>
+                        </tr>
+                        <tr>
+                            <td>Осмысления (комментарии)</td>
+                            <td><i>@_dbInfo.DeletedCogitations</i></td>
+                        </tr>
+                        <tr>
+                            <td>Области интересов</td>
+                            <td><i>@_dbInfo.DeletedScopes</i></td>
+                        </tr>
+                        <tr>
+                            <td>Темы</td>
+                            <td><i>@_dbInfo.DeletedThemes</i></td>
+                        </tr>
+                        <tr>
+                            <td>Изображения</td>
+                            <td><i>@_dbInfo.DeletedImages</i></td>
+                        </tr>
+                        <tr>
+                            <td>Связи запись-тема</td>
+                            <td><i>@_dbInfo.DeletedRecordThemes</i></td>
+                        </tr>
+                        <tr>
+                            <td>Связи запись-изображение</td>
+                            <td><i>@_dbInfo.DeletedRecordImages</i></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2">
+                                <input type="button" class="btn btn-danger btn-sm" value="Очистить базу" @onclick=CleanupDatabase />
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            }
+        </div>
+    }
+</Spinner>
 
 
 @code {
@@ -89,12 +87,15 @@ else
 
         try
         {
+            await StartApiRequest();
             _dbInfo = await Http.GetFromJsonAsync<SqliteDbInfoDto>("api/sqlitedb/info", Token);
+
+            await FinishApiRequest(null);
         }
         catch (Exception exc)
         {
-            await FinishApiRequest(exc.Message);
             _dbInfo = new();
+            await FinishApiRequest(exc.Message);
         }
     }
 
@@ -120,8 +121,8 @@ else
         }
         catch (Exception exc)
         {
-            await FinishApiRequest(exc.Message);
             _dbInfo = new();
+            await FinishApiRequest(exc.Message);            
         }
     }
 }

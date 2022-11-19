@@ -10,35 +10,32 @@
 
 <PageTitle>Базовый HOST и PORT</PageTitle>
 
-@if (_hostAndPortInfo == null || Loading)
-{
-    <Spinner />
-}
-else
-{
-    if (HasError)
+<Spinner Loading="Loading">
+    @if (_hostAndPortInfo != null)
     {
-        <pre style="color:red;">@ErrorMessage</pre>
+        if (HasError)
+        {
+            <pre style="color:red;">@ErrorMessage</pre>
+        }
+
+        <div class="row mt-2 mb-3">
+            <div class="col-lg-9 col-md-8 col-sm-12 mt-1">
+                <b>Значение базового url приложения, которое будет заменяться при сохранении внутренних ссылок для обеспечения их корректности нa разных средах</b>
+                <p>Базовый URI текущей страницы: <i>@_hostAndPortInfo.CurrentHostAndPort</i></p>
+            </div>
+
+            <div class="col-lg-3 col-md-4 col-sm-12 mt-1">
+                <input type="text" required="required" class="form-control" @bind-value="_hostAndPortInfo.HostAndPortSetting" @bind-value:event="onchange" />
+            </div>
+        </div>
+
+        <div class="row mt-1">
+            <div class="text-center">
+                <button @onclick="UpdateHostAndPort" type="button" class="btn btn-outline-success">Сохранить</button>
+            </div>
+        </div>
     }
-
-    <div class="row mt-2 mb-3">
-        <div class="col-lg-9 col-md-8 col-sm-12 mt-1">
-            <b>Значение базового url приложения, которое будет заменяться при сохранении внутренних ссылок для обеспечения их корректности нa разных средах</b>
-            <p>Базовый URI текущей страницы: <i>@_hostAndPortInfo.CurrentHostAndPort</i></p>
-        </div>
-
-        <div class="col-lg-3 col-md-4 col-sm-12 mt-1">
-            <input type="text" required="required" class="form-control" @bind-value="_hostAndPortInfo.HostAndPortSetting" @bind-value:event="onchange" />
-        </div>        
-    </div>
-
-    <div class="row mt-1">
-        <div class="text-center">
-            <button @onclick="UpdateHostAndPort" type="button" class="btn btn-outline-success">Сохранить</button>
-        </div>
-    </div>
-}
-
+</Spinner>
 
 @code {
 
@@ -50,12 +47,15 @@ else
 
         try
         {
+            await StartApiRequest();
             _hostAndPortInfo = await Http.GetFromJsonAsync<HostAndPortInfo>("api/settings/host", Token);
+
+            await FinishApiRequest(null);
         }
         catch (Exception exc)
         {
-            ErrorMessage = exc.Message;
             _hostAndPortInfo = new();
+            await FinishApiRequest(exc.Message);
         }
     }
 
@@ -86,8 +86,8 @@ else
         }
         catch (Exception exc)
         {
-            await FinishApiRequest(exc.Message);
             _hostAndPortInfo = new();
+            await FinishApiRequest(exc.Message);
         }
     }
 }
