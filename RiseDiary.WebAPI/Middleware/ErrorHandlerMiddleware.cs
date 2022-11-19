@@ -23,11 +23,12 @@ internal sealed class ErrorHandlerMiddleware
         catch (Exception error)
         {
             var response = context.Response;
+            response.Clear();
             response.ContentType = "application/json";
 
             (response.StatusCode, var contentData) = error switch
             {
-                ValidationException => ((int)HttpStatusCode.BadRequest, new { error.Message }),
+                ValidationException => ((int)HttpStatusCode.BadRequest, new { Message = $"Ошибка валидации: {error.Message}" }),
                 RecordNotFoundException => ((int)HttpStatusCode.NotFound, new { Message = "Запись не найдена" }),
                 ImageNotFoundException => ((int)HttpStatusCode.NotFound, new { Message = "Изображение не найдено" }),
                 ArgumentException => ((int)HttpStatusCode.BadRequest, new { error.Message }),
@@ -36,6 +37,7 @@ internal sealed class ErrorHandlerMiddleware
             };
 
             var result = JsonSerializer.Serialize(contentData);
+
             await response.WriteAsync(result);
         }
     }
