@@ -63,7 +63,7 @@ app.UseHttpsRedirection();
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
-app.UseAuthorization();
+app.UseRouting();
 
 app.UseMiddleware<ErrorHandlerMiddleware>();
 
