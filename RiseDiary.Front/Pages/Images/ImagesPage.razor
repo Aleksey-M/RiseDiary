@@ -1,10 +1,93 @@
 ﻿@page "/images"
+@page "/images/{CurrentPage:int}"
 
+@using RiseDiary.Front.Shared
+@using RiseDiary.Shared
+@using RiseDiary.Shared.Images
+@using RiseDiary.Front.Pages
 
+@inherits UIComponentBase
+
+@inject HttpClient Http
 
 <PageTitle>Фотографии и рисунки</PageTitle>
 
+<Spinner Loading="Loading">
+    <div class="col-12 row">
+        @if (_pageData != null)
+        {
+            @if (OpenedImageId.HasValue)
+            {
+                <ImageView ImageId="OpenedImageId.Value" ShowButtons="true" CloseImageView="CloseImage" />
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="my-3 px-3">
+                        <a class="btn btn-outline-primary" href="/Images/Upload">Загрузить</a>
+                        <Pager AreaName="images" Pages="@_pageData.PagesInfo" FloatRight="true" />
+                    </div>
+                </div>
+
+                @foreach (var image in _pageData.Images)
+                {
+                    <div class="col-lg-3 col-md-6 col-sm-12 p-3">
+                        <Thumbnail Image="image" ImageClick="OpenImage" />
+                    </div>
+                }
+
+                <div class="col-12">
+                    <div class="my-3 px-3">
+                        <i class="pt-3">@_totalCount</i>
+                        <Pager AreaName="images" Pages="@_pageData.PagesInfo" FloatRight="true" />
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</Spinner>
 
 @code {
+    [Parameter]
+    public int CurrentPage { get; set; }
 
+    private ImagesPageDto? _pageData;
+
+    private Guid? OpenedImageId;
+
+    private string _totalCount = $"Всего изображений: 0";
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        try
+        {
+            await StartApiRequest();
+            var uri = $"api/images?pageNo={CurrentPage}";
+            _pageData = await Http.GetFromJsonAsync<ImagesPageDto>(uri, Token);
+
+            _totalCount = $"Всего изображений: {_pageData?.PagesInfo?.TotalItems ?? 0}";
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            _pageData = new();
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private void OpenImage(Guid imageId)
+    {
+        OpenedImageId = imageId;
+        StateHasChanged();
+    }
+
+    private void CloseImage()
+    {
+        OpenedImageId = default;
+        StateHasChanged();
+    }
 }

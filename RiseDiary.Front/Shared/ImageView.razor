@@ -1,0 +1,29 @@
+﻿<div class="text-center mb-3">
+    <img id="img" name="img" src="/api/image-file/@ImageId.ToString()" class="img-fluid" />
+</div>
+
+@if (ShowButtons)
+{
+    <div class="row mt-1">
+        <div class="text-center">
+            <button @onclick="() => CloseImageView()" type="button" class="btn btn-sm btn-outline-secondary mx-2">Закрыть</button>
+            <NavLink href="@EditImageUri"  class="btn btn-sm btn-outline-secondary mx-2">Изменить</NavLink>
+        </div>
+    </div>    
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid ImageId { get; set; }
+
+    [Parameter]
+    public bool ShowButtons { get; set; }
+
+    [Parameter]
+    public Action CloseImageView { get; set; } = () => { };
+
+    [Parameter]
+    public Guid? RecordId { get; set; }
+
+    private string EditImageUri => $"/images/Edit?imageId={ImageId.ToString()}&recordId{RecordId?.ToString() ?? ""}";
+}

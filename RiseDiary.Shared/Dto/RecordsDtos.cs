@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using RiseDiary.Shared.Images;
 using RiseDiary.Shared.Scopes;
 
 namespace RiseDiary.Shared.Dto;

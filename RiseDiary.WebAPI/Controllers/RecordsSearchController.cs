@@ -2,6 +2,7 @@
 using RiseDiary.Model;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Dto;
+using RiseDiary.Shared.Images;
 using RiseDiary.Shared.Scopes;
 
 namespace RiseDiary.Api;

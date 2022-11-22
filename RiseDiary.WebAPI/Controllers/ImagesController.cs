@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.Shared;
-using RiseDiary.Shared.Dto;
+using RiseDiary.Shared.Images;
 
 namespace RiseDiary.Api;
 
@@ -103,15 +103,15 @@ public sealed class ImagesController : ControllerBase
     }
 
     [HttpGet("api/images")]
-    public async Task<ActionResult<ImagesPageDto>> GetImagesPage([FromQuery] int? pageSize,
-        [FromQuery] int? pageNo, [FromQuery] string? imageNameFilter, CancellationToken cancellationToken)
+    public async Task<ActionResult<ImagesPageDto>> GetImagesPage([FromQuery] int? pageNo,
+        [FromQuery] string? imageNameFilter, CancellationToken cancellationToken)
     {
-        pageSize ??= 20;
+        var pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.ImagesPageSize) ?? 20;
         pageNo ??= 1;
         var count = await _imagesService.GetImagesCount(imageNameFilter, cancellationToken: cancellationToken);
-        pageSize = pageSize > 100 ? 100 : pageSize;
 
-        var pagesInfo = PagesInfo.GetPagesInfo(count, pageNo.Value, pageSize.Value);
+        var pagesInfo = PagesInfo.GetPagesInfo(count, pageNo.Value, pageSize);
+
         var images = await _imagesService.FetchImageSet(
             pagesInfo.StartIndex, pagesInfo.PageSize, imageNameFilter, cancellationToken: cancellationToken);
 

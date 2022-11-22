@@ -1,0 +1,52 @@
+﻿@using RiseDiary.Shared
+
+
+<nav aria-label="navigation" style="@(FloatRight ? "float:right" : "")">
+    @if (Pages.TotalPages > 1)
+    {
+        <ul class="pagination mb-1">
+            @foreach (var (c, h, p) in LinksList)
+            {
+                <li class="@c">
+                    <NavLink href="@h" class="page-link">@p</NavLink>
+                </li>
+            }
+        </ul>
+    }
+</nav>
+
+
+@code{
+    [Parameter, EditorRequired]
+    public PagesInfo Pages { get; set; } = null!;
+
+    [Parameter]
+    public bool FloatRight { get; set; }
+
+    [Parameter]
+    public string AreaName { get; set; } = "";
+
+    [Parameter]
+    public List<KeyValuePair<string, string?>>? GetParametersList { get; set; }
+
+    private IEnumerable<(string classes, string href, int page)> LinksList
+    {
+        get
+        {            
+            var getParams = GetParametersList ?? new List<KeyValuePair<string, string?>>();
+
+            foreach (var p in Pages.Pages)
+            {                              
+
+                if(p == Pages.CurrentPage)
+                {
+                    yield return ("page-item disabled", "#", p);
+                }
+                else
+                {
+                    yield return ("page-item", $"/{AreaName}/{p}", p);
+                }
+            }
+        }
+    }
+}

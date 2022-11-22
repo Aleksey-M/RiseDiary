@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
-namespace RiseDiary.Shared.Dto;
+namespace RiseDiary.Shared.Images;
 
 public sealed class ScaleDownDto
 {

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
-namespace RiseDiary.Shared.Dto;
+namespace RiseDiary.Shared.Images;
 
 public sealed class UploadImageDto
 {
@@ -80,7 +80,7 @@ public sealed class ImageListItemDto
 
 public sealed class ImagesPageDto
 {
-    public PagesInfo PagesInfo { get; set; } = null!;
+    public PagesInfo PagesInfo { get; set; } = new();
 
-    public List<ImageListItemDto> Images { get; set; } = null!;
+    public List<ImageListItemDto> Images { get; set; } = new();
 }

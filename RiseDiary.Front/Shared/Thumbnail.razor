@@ -1,0 +1,54 @@
+﻿@using RiseDiary.Shared.Images
+
+<div class="card">
+    @if (!OnlyImage)
+    {
+        <div class="card-header text-wrap text-center">
+            <a href="@EditImageUri">@(Image.Name)</a>
+        </div>
+    }
+
+    <div class="card-body">
+        <div class="text-center">
+            <a style="cursor:pointer" @onclick="() => ImageClick(Image.Id)">
+                <img src="data:image/jpg;base64,@Image.Base64Thumbnail" class="img-thumbnail" />
+            </a>
+        </div>
+    </div>
+
+    @if (!OnlyImage)
+    {
+        <div class="card-footer text-center">
+            @if (ChildContent != null)
+            {
+                @ChildContent
+            }
+            else
+            {
+                @ImageShortInfo
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public ImageListItemDto Image { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public Action<Guid> ImageClick { get; set; } = _ => { };
+
+    [Parameter]
+    public bool OnlyImage { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public Guid? RecordId { get; set; }
+
+    private MarkupString ImageShortInfo => new MarkupString(
+        $"{Image?.Width ?? 0} / {Image?.Height ?? 0} <b>{Image?.SizeKb ?? "?"}</b>");
+
+    private string EditImageUri => $"/images/Edit?imageId={Image.Id.ToString()}&recordId{RecordId?.ToString() ?? ""}";
+}

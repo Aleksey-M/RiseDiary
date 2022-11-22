@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
-using RiseDiary.Shared.Dto;
+using RiseDiary.Shared.Images;
 
 namespace RiseDiary.Api;
 
