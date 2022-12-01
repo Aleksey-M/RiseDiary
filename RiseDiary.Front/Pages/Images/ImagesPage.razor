@@ -1,5 +1,4 @@
 ﻿@page "/images"
-@page "/images/{CurrentPage:int}"
 
 @using RiseDiary.Front.Shared
 @using RiseDiary.Shared
@@ -13,18 +12,18 @@
 <PageTitle>Фотографии и рисунки</PageTitle>
 
 <Spinner Loading="Loading">
-    <div class="col-12 row">
-        @if (_pageData != null)
+    @if (_pageData != null)
+    {
+        @if (OpenedImageId.HasValue)
         {
-            @if (OpenedImageId.HasValue)
-            {
-                <ImageView ImageId="OpenedImageId.Value" ShowButtons="true" CloseImageView="CloseImage" />
-            }
-            else
-            {
+            <ImageView ImageId="OpenedImageId.Value" ShowButtons="true" CloseImageView="CloseImage" />
+        }
+        else
+        {
+            <div class="col-12 row">
                 <div class="col-12">
                     <div class="my-3 px-3">
-                        <a class="btn btn-outline-primary" href="/Images/Upload">Загрузить</a>
+                        <NavLink class="btn btn-outline-primary" href="/images/upload">Загрузить</NavLink>
                         <Pager AreaName="images" Pages="@_pageData.PagesInfo" FloatRight="true" />
                     </div>
                 </div>
@@ -42,14 +41,16 @@
                         <Pager AreaName="images" Pages="@_pageData.PagesInfo" FloatRight="true" />
                     </div>
                 </div>
-            }
+            </div>
         }
-    </div>
+    }
 </Spinner>
 
 @code {
+
     [Parameter]
-    public int CurrentPage { get; set; }
+    [SupplyParameterFromQuery]
+    public int Page { get; set; } = 1;
 
     private ImagesPageDto? _pageData;
 
@@ -65,7 +66,7 @@
         try
         {
             await StartApiRequest();
-            var uri = $"api/images?pageNo={CurrentPage}";
+            var uri = $"api/images?pageNo={Page}";
             _pageData = await Http.GetFromJsonAsync<ImagesPageDto>(uri, Token);
 
             _totalCount = $"Всего изображений: {_pageData?.PagesInfo?.TotalItems ?? 0}";

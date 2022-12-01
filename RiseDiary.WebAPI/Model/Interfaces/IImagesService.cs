@@ -2,7 +2,8 @@
 
 public interface IImagesService
 {
-    Task<Guid> AddImage(IFormFile formFile, string imageName = "", int? newBiggestDimensionSize = null);
+    Task<Guid> AddImage(IFormFile formFile, string imageName = "", int? newBiggestDimensionSize = null,
+        string? cameraModel = null, DateTime? taken = null, string? contentType = null);
 
     Task DeleteImage(Guid imageId);
 

@@ -1,5 +1,6 @@
 ﻿@using RiseDiary.Shared
 
+@inject NavigationManager NavManager
 
 <nav aria-label="navigation" style="@(FloatRight ? "float:right" : "")">
     @if (Pages.TotalPages > 1)
@@ -17,6 +18,7 @@
 
 
 @code{
+
     [Parameter, EditorRequired]
     public PagesInfo Pages { get; set; } = null!;
 
@@ -44,7 +46,8 @@
                 }
                 else
                 {
-                    yield return ("page-item", $"/{AreaName}/{p}", p);
+                    yield return ("page-item", 
+                        NavManager.GetUriWithQueryParameters(AreaName, new Dictionary<string, object?> { ["page"] = p}), p);
                 }
             }
         }

@@ -1,5 +1,7 @@
 ﻿@using RiseDiary.Shared.Images
 
+@inject NavigationManager NavManager
+
 <div class="card">
     @if (!OnlyImage)
     {
@@ -50,5 +52,9 @@
     private MarkupString ImageShortInfo => new MarkupString(
         $"{Image?.Width ?? 0} / {Image?.Height ?? 0} <b>{Image?.SizeKb ?? "?"}</b>");
 
-    private string EditImageUri => $"/images/Edit?imageId={Image.Id.ToString()}&recordId{RecordId?.ToString() ?? ""}";
+    private string EditImageUri => 
+        NavManager.GetUriWithQueryParameters($"images/edit/{Image.Id}", new Dictionary<string, object?>
+        { 
+            ["recordId"] = RecordId
+        });
 }

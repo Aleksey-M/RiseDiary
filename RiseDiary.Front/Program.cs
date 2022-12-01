@@ -5,6 +5,8 @@ using RiseDiary.Front.AppServices;
 using RiseDiary.Shared.Scopes;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Settings;
+using RiseDiary.Front.JsHelpers;
+using RiseDiary.Shared.Images;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -13,11 +15,18 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
 builder.Services.AddScoped<MarkdownService>();
+builder.Services.AddScoped<PrepareImageService>();
 
+// validators
 builder.Services.AddScoped<IDtoValidator<ScopeDto>, ScopeValidator>();
 builder.Services.AddScoped<ThemeValidator>();
 builder.Services.AddScoped<ImportantDaysSettingsValidator>();
 builder.Services.AddScoped<ImagesSettingsValidator>();
 builder.Services.AddScoped<PagesSizesSettingsValidator>();
+builder.Services.AddScoped<UploadImageDtoValidator>();
+
+// js helpers
+builder.Services.AddScoped<JsImgHelper>();
+
 
 await builder.Build().RunAsync();

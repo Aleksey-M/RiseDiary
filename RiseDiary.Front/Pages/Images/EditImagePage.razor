@@ -1,0 +1,15 @@
+﻿@page "/images/edit"
+
+<h3>EditImagePage</h3>
+
+@code {
+
+    [Parameter]
+    public Guid ImageId { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public Guid? RecordId { get; set; }
+
+
+}

@@ -27,11 +27,11 @@ public sealed class EditImagesController : ControllerBase
     }
 
     [HttpPost("replace-image")]
-    public async Task<IActionResult> ReplaceImage([FromForm] ReplaceImageDto replaceImageDto)
+    public async Task<IActionResult> ReplaceImage([FromForm] ReplaceImageDto replaceImageDto, [FromForm] IFormFile newImage)
     {
-        if (replaceImageDto.Image == null) return BadRequest("New image should be selected");
+        if (newImage == null) return BadRequest("New image should be selected");
 
-        await _imagesEditService.ReplaceImage(replaceImageDto.Image, replaceImageDto.ImageId);
+        await _imagesEditService.ReplaceImage(newImage, replaceImageDto.ImageId);
         return Ok();
     }
 

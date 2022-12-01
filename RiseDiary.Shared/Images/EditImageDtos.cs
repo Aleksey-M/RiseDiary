@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
 
 namespace RiseDiary.Shared.Images;
 
@@ -26,8 +25,8 @@ public sealed class ReplaceImageDto
     [Required]
     public Guid ImageId { get; set; }
 
-    [Required]
-    public IFormFile? Image { get; set; }
+    //[Required]
+    //public IFormFile? Image { get; set; }
 }
 
 public sealed class ScaledImagePreviewDto

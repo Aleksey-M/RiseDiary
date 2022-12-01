@@ -28,7 +28,7 @@ internal class ImagesEditService : ImagesService, IImagesEditService
         image.ModifyDate = DateTime.UtcNow;
         image.SizeByte = image.TempImage.Data.Length;
         (image.Width, image.Height) = GetImageSize(image.TempImage.Data);
-
+        image.ContentType = "image/jpeg";
         image.FullImage.Data = image.TempImage.Data;
 
         _context.TempImages.Remove(image.TempImage);
@@ -46,7 +46,13 @@ internal class ImagesEditService : ImagesService, IImagesEditService
         if (image == null) throw new ArgumentException($"Image with Id='{imageId}' does not exists");
         if (image.TempImage == null) throw new ArgumentException($"Image with Id='{imageId}' does not have any changes to apply");
 
-        var newImage = await AddImageWithoutSaving(image.TempImage.Data, $"{image.Name} ({image.TempImage.Modification})");
+        var newImage = await AddImageWithoutSaving(
+            image.TempImage.Data, 
+            $"{image.Name} ({image.TempImage.Modification})",
+            null,
+            image.CameraModel,
+            image.Taken,
+            "image/jpeg");
 
         _context.TempImages.Remove(image.TempImage);
         await _context.SaveChangesAsync();

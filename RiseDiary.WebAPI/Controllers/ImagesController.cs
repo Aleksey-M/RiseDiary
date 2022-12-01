@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Images;
@@ -14,11 +15,22 @@ public sealed class ImagesController : ControllerBase
 
     private readonly IAppSettingsService _appSettingsService;
 
-    public ImagesController(IImagesService imagesService, IRecordsImagesService recordsImagesService, IAppSettingsService appSettingsService)
+    private readonly ILogger<ImagesController> _logger;
+
+    private readonly UploadImageDtoValidator _uploadValidator;
+
+    public ImagesController(
+        IImagesService imagesService,
+        IRecordsImagesService recordsImagesService,
+        IAppSettingsService appSettingsService,
+        ILogger<ImagesController> logger,
+        UploadImageDtoValidator uploadValidator)
     {
         _imagesService = imagesService;
         _recordsImagesService = recordsImagesService;
         _appSettingsService = appSettingsService;
+        _logger = logger;
+        _uploadValidator = uploadValidator;
     }
 
     [HttpGet("api/image-file/{id}")]
@@ -27,7 +39,8 @@ public sealed class ImagesController : ControllerBase
         if (id == Guid.Empty) return BadRequest();
 
         var image = await _imagesService.FetchFullImageById(id, cancellationToken);
-        return File(image, "image/jpeg");
+        var img = await _imagesService.FetchImageById(id, cancellationToken);
+        return File(image, img.ContentType);
     }
 
     [HttpGet("api/image-thumbnail/{id}")]
@@ -40,19 +53,28 @@ public sealed class ImagesController : ControllerBase
     }
 
     [HttpPost("api/images")]
-    public async Task<IActionResult> UploadImages([FromForm] UploadImageDto imageDto)
+    public async Task<IActionResult> UploadImage([FromForm] UploadImageDto imageDto, [FromForm] IFormFile newImage)
     {
-        if (imageDto.Image == null) return BadRequest("Image file should be selected");
-        if (imageDto.NewBiggestDimension < 100 || imageDto.NewBiggestDimension > 10000) return BadRequest("Dimension size should be between 100 and 10 000");
+        if (newImage == null) return BadRequest("Image file should be selected");
+        _uploadValidator.ValidateAndThrow(imageDto);
+       
+        var newImageId = await _imagesService.AddImage(
+            formFile: newImage,
+            imageName: imageDto.ImageName,
+            newBiggestDimensionSize: imageDto.NewBiggestDimension,
+            cameraModel: imageDto.CameraModel,
+            taken: imageDto.Taken,
+            contentType: imageDto.ContentType ?? newImage.ContentType);
 
-        var newImageId = await _imagesService.AddImage(imageDto.Image, imageDto.ImageName, imageDto.NewBiggestDimension);
+        _logger.LogInformation("New image created with Id = '{imageId}'", newImageId);
 
         if (imageDto.TargetRecordId != null && imageDto.TargetRecordId != Guid.Empty)
         {
             await _recordsImagesService.AddRecordImage(imageDto.TargetRecordId.Value, newImageId);
+            _logger.LogInformation("Image with Id = '{imageId}' attached to record with Id = '{recordId}'", newImageId, imageDto.TargetRecordId );
         }
 
-        var newImageUri = $@"{await _appSettingsService.GetHostAndPort()}/api/v1.0/images/{newImageId}";
+        var newImageUri = $@"{await _appSettingsService.GetHostAndPort()}/api/images/{newImageId}";
 
         return Created(newImageUri, newImageId);
     }
@@ -65,7 +87,7 @@ public sealed class ImagesController : ControllerBase
     }
 
     [HttpPut("api/images/{id}")]
-    public async Task<IActionResult> UpdateImage(Guid id, UpdateImageDto updateImageDto)
+    public async Task<IActionResult> UpdateImage(Guid id, UpdateImageNameDto updateImageDto)
     {
         if (id != updateImageDto.ImageId) return BadRequest("Not consistent request");
 
@@ -90,6 +112,7 @@ public sealed class ImagesController : ControllerBase
             CameraModel = img.CameraModel ?? "",
             Taken = img.Taken,
             SizeKb = img.GetSizeKbString(),
+            ContentType = img.ContentType,
             Base64Image = Convert.ToBase64String(fullImg),
             TempImage = img.TempImage == null ? null : new TempImageDto
             {

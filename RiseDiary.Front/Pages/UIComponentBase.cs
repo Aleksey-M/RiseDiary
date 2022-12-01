@@ -10,7 +10,7 @@ public class UIComponentBase : ComponentBase, IDisposable
 
     protected CancellationToken Token => _cts.Value.Token;
 
-    protected bool Loading { get; private set; }
+    protected bool Loading { get; set; }
 
     protected string? ErrorMessage { get; set; }
 

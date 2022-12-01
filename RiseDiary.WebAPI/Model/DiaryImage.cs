@@ -26,6 +26,8 @@ public sealed class DiaryImage : IDeletedEntity
 
     public string? CameraModel { get; set; }
 
+    public string ContentType { get; set; } = string.Empty;
+
     public DiaryImageFull? FullImage { get; set; }
 
     public TempImage? TempImage { get; set; }

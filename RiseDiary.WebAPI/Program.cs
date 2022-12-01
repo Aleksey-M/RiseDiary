@@ -3,6 +3,7 @@ using RiseDiary.Data;
 using RiseDiary.Model;
 using RiseDiary.Model.Services;
 using RiseDiary.Shared;
+using RiseDiary.Shared.Images;
 using RiseDiary.Shared.Scopes;
 using RiseDiary.Shared.Settings;
 using RiseDiary.WebAPI.Config;
@@ -25,6 +26,7 @@ builder.Services.AddDbContext<DiaryDbContext>(options => options.UseSqlite(
 
 await DataSeed.CheckData(dbFileName);
 
+// app services
 builder.Services.AddScoped<IScopesService, ScopesService>();
 builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
 builder.Services.AddScoped<IRecordsThemesService, RecordsThemesService>();
@@ -40,12 +42,13 @@ builder.Services.AddScoped<IDatesService, DatesService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<ISqliteDatabase, SqliteDatabase>();
 
-
+// validators
 builder.Services.AddScoped<IDtoValidator<ScopeDto>, ScopeValidator>();
 builder.Services.AddScoped<ThemeValidator>();
 builder.Services.AddScoped<ImportantDaysSettingsValidator>();
 builder.Services.AddScoped<ImagesSettingsValidator>();
 builder.Services.AddScoped<PagesSizesSettingsValidator>();
+builder.Services.AddScoped<UploadImageDtoValidator>();
 
 
 builder.Services.AddControllers();

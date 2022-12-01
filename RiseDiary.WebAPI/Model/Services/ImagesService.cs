@@ -16,7 +16,8 @@ internal class ImagesService : SkiaImageHandler, IImagesService
         _appSettings = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
     }
 
-    public async Task<Guid> AddImage(IFormFile formFile, string imageName = "", int? newBiggestDimensionSize = null)
+    public async Task<Guid> AddImage(IFormFile formFile, string imageName = "", int? newBiggestDimensionSize = null,
+        string? cameraModel = null, DateTime? taken = null, string? contentType = null)
     {
         if (string.IsNullOrWhiteSpace(imageName))
         {
@@ -28,13 +29,16 @@ internal class ImagesService : SkiaImageHandler, IImagesService
         using var ms = new MemoryStream();
         await formFile.CopyToAsync(ms).ConfigureAwait(false);
 
-        var image = await AddImageWithoutSaving(ms.ToArray(), imageName, newBiggestDimensionSize).ConfigureAwait(false);
+        var image = await AddImageWithoutSaving(ms.ToArray(), imageName, newBiggestDimensionSize, cameraModel, taken, contentType)
+            .ConfigureAwait(false);
+
         await _context.SaveChangesAsync().ConfigureAwait(false);
 
         return image.Id;
     }
 
-    protected async Task<DiaryImage> AddImageWithoutSaving(byte[] image, string imageName, int? newBiggestDimensionSize = null)
+    protected async Task<DiaryImage> AddImageWithoutSaving(byte[] image, string imageName, int? newBiggestDimensionSize = null,
+        string? cameraModel = null, DateTime? taken = null, string? contentType = null)
     {
         if (string.IsNullOrWhiteSpace(imageName)) throw new ArgumentException("Image Name should not be empty");
         ArgumentNullException.ThrowIfNull(image);
@@ -42,7 +46,7 @@ internal class ImagesService : SkiaImageHandler, IImagesService
         int imageQuality = await _appSettings.GetAppSettingInt(AppSettingsKey.ImageQuality) ?? throw new Exception("Setting Value ImageQuality not set");
         int thumbnailSize = await _appSettings.GetAppSettingInt(AppSettingsKey.ThumbnailSize) ?? throw new Exception("Setting Value ThumbnailSize not set");
 
-        var (taken, cameraModel) = GetMetadataFromPhoto(image);
+        var (file_taken, file_cameraModel) = GetMetadataFromPhoto(image);
         var (width, height) = GetImageSize(image);
 
         if (newBiggestDimensionSize is not null)
@@ -62,10 +66,11 @@ internal class ImagesService : SkiaImageHandler, IImagesService
             ModifyDate = DateTime.UtcNow,
             SizeByte = image.Length,
             Thumbnail = ScaleImage(image, imageQuality, thumbnailSize),
-            Taken = taken,
-            CameraModel = cameraModel,
+            Taken = taken ?? file_taken,
+            CameraModel = cameraModel ?? file_cameraModel,
             Height = height,
             Width = width,
+            ContentType = contentType,
             FullImage = new DiaryImageFull
             {
                 Data = image

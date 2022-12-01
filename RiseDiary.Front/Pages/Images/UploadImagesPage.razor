@@ -1,0 +1,194 @@
+﻿@page "/images/upload"
+
+@using RiseDiary.Front.AppServices;
+@using RiseDiary.Shared.Images;
+@using RiseDiary.Shared;
+
+@inherits UIComponentBase
+
+@inject HttpClient Http
+@inject ILogger<UploadImagesPage> Logger
+@inject NavigationManager NavManager
+@inject UploadImageDtoValidator Validator
+@inject PrepareImageService ImageService
+
+<Spinner Loading="Loading">
+    <div class="row">
+        @if (HasError)
+        {
+            <pre style="color:red;">@ErrorMessage</pre>
+        }
+
+
+        <div class="col-lg-4 col-md-5 col-sm-12 p-2">
+            <InputFile accept="image/*" OnChange="@SelectFiles" multiple="multiple" class="form-control-file" />
+        </div>
+
+        <div class="col-lg-5 col-md-7 col-sm-12 p-2">
+            <input type="text" placeholder="Название нового изображения" @bind-value="_imageName" class="form-control" />
+        </div>
+
+        <div class="col-lg-1 col-md-3 col-sm-6 p-2">
+            <input type="number" placeholder="Сжимать, если сторона больше чем" @bind-value="_biggestDimmension" class="form-control" />
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-sm-6 p-2">
+            <button @onclick="async _ => await Upload()" class="btn btn-outline-success form-control">Загрузить</button>
+        </div>
+
+
+        <div class="col-12">
+            <ul class="list-group">
+                @foreach (var file in loadedFiles)
+                {
+                    <li class="list-group-item">
+                        @file.Name <i><b>@ImagesHelper.GetSizeString(file.Size)</b> (@file.ContentType)</i>
+
+                        <button class="btn-close" type="button" @onclick="_ => loadedFiles.Remove(file)"></button>
+                    </li>
+                }
+            </ul>
+        </div>
+
+    </div>
+</Spinner>
+
+
+
+@code {
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public Guid? RecordId { get; set; }
+
+    private List<IBrowserFile> loadedFiles = new();
+
+    private const int FilesMaxCount = 10;
+    private const long MaxFileSize = 1024 * 1024 * 15;
+
+    private string? _imageName;
+    private int? _biggestDimmension;
+
+    private async Task SelectFiles(InputFileChangeEventArgs e)
+    {
+        Loading = true;
+        loadedFiles.Clear();
+        ErrorMessage = null;
+
+        try
+        {
+            foreach (var file in e.GetMultipleFiles(FilesMaxCount))
+            {
+                try
+                {
+                    loadedFiles.Add(file);
+                    StateHasChanged();
+                    await Task.Yield();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, "Error on uploading file: {fileName}", file.Name);
+                }
+            }
+        }
+        catch(Exception exc)
+        {
+            ErrorMessage = exc.Message;
+            Logger.LogWarning(exc, "Error on uploading: {Message}", exc.Message);
+        }        
+
+        Loading = false;
+    }
+
+    private async Task Upload()
+    {
+        if (loadedFiles.Count == 0)
+        {
+            ErrorMessage = "Файл изображения не выбран";
+            Logger.LogWarning("Uploading images list is empty");
+            return;
+        }
+
+        if (loadedFiles.Any(x => x.Size > MaxFileSize))
+        {
+            ErrorMessage = "Размер загружаемых файлов не должен превышать 15Мб";
+            Logger.LogWarning("Files sizes should be less then 15mb");
+            return;
+        }
+
+        string? imageName = null;
+        if (!string.IsNullOrWhiteSpace(_imageName))
+        {
+            imageName = _imageName.Trim();
+        }
+
+        await StartApiRequest();
+       
+        Guid newImageId = default;
+
+        try
+        {
+            foreach (var (img, index) in loadedFiles.Select((x, i) => (x, i)))
+            {
+                var uploadDto = ImageService.CreateUploadDto(img, _imageName, index, _biggestDimmension, RecordId);
+                var validationResult = Validator.Validate(uploadDto);
+
+                if (!validationResult.IsValid)
+                {
+                    Logger.LogWarning("Validation error {validationResult}", validationResult.ToString());
+                    await FinishApiRequest(validationResult.ToString());
+                    break;
+                };
+
+                var preparedImageStream = await ImageService.PrepareImage(img, uploadDto);
+
+                var formData = ImageService.PrepareFormContent(preparedImageStream, uploadDto);
+
+                var response = await Http.PostAsync("api/images", formData);
+
+                if(loadedFiles.Count > 1)
+                {
+                    await CheckSuccessResponse(response);
+                }
+                else
+                {
+                    var responseContent = await GetCheckedResponseContent<string?>(response);
+                    if (responseContent == null)
+                    {
+                        Logger.LogWarning("New image Id wosn't returned by api. File name: '{fileName}'", img.Name);
+                    }
+
+                    if (!Guid.TryParse(responseContent, out newImageId))
+                    {
+                        Logger.LogWarning("Returned new image Id has icorrect format. File name: '{fileName}'. Id: '{incorrectId}'", img.Name, responseContent);
+                    }
+                }                
+            }
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on adding image");
+            await FinishApiRequest(exc.Message);
+        }
+
+
+        if (HasError) return;
+
+        var redirectUri = ((loadedFiles.Count == 1 && newImageId != default), (RecordId.HasValue && RecordId.Value != default)) switch
+        {
+            (true, _) => NavManager.GetUriWithQueryParameters("images/edit", new Dictionary<string, object?>
+                {
+                    ["recordId"] = RecordId,
+                    ["imageId"] = newImageId
+                }),
+            (false, true) => NavManager.GetUriWithQueryParameters("records/view", new Dictionary<string, object?>
+                {
+                    ["recordId"] = RecordId
+                }),
+            (false, false) => NavManager.GetUriWithQueryParameters("images", new Dictionary<string, object?>())
+        };
+
+        NavManager.NavigateTo(redirectUri);
+    }
+
+}
