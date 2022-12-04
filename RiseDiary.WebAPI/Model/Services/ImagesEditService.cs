@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Drawing;
+using Microsoft.EntityFrameworkCore;
 using RiseDiary.Data;
 using RiseDiary.Shared;
 
@@ -30,6 +31,7 @@ internal class ImagesEditService : ImagesService, IImagesEditService
         (image.Width, image.Height) = GetImageSize(image.TempImage.Data);
         image.ContentType = "image/jpeg";
         image.FullImage.Data = image.TempImage.Data;
+        image.ContentType = image.TempImage.ContentType;
 
         _context.TempImages.Remove(image.TempImage);
 
@@ -52,10 +54,10 @@ internal class ImagesEditService : ImagesService, IImagesEditService
             null,
             image.CameraModel,
             image.Taken,
-            "image/jpeg");
+            image.TempImage.ContentType);
 
         _context.TempImages.Remove(image.TempImage);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync().ConfigureAwait(false);
 
         return newImage.Id;
     }
@@ -72,11 +74,13 @@ internal class ImagesEditService : ImagesService, IImagesEditService
 
     public async Task<TempImage> FetchChangedImage(Guid imageId) => await _context.TempImages
         .AsNoTracking()
-        .FirstOrDefaultAsync(t => t.SourceImageId == imageId).ConfigureAwait(false) ?? throw new ArgumentException($"Image with id='{imageId}' does not have any changes");
+        .FirstOrDefaultAsync(t => t.SourceImageId == imageId)
+        .ConfigureAwait(false) ?? throw new ArgumentException($"Image with id='{imageId}' does not have any changes");
 
     public async Task<bool> ImageHasChanges(Guid imageId) => await _context.TempImages
         .AsNoTracking()
-        .AnyAsync(t => t.SourceImageId == imageId).ConfigureAwait(false);
+        .AnyAsync(t => t.SourceImageId == imageId)
+        .ConfigureAwait(false);
 
     public async Task ReduceImageSize(Guid imageId, int newBiggestDimensionSize)
     {
@@ -103,14 +107,16 @@ internal class ImagesEditService : ImagesService, IImagesEditService
             SourceImageId = image.Id,
             Modification = "Сжатие изображения",
             Data = result,
-            SizeByte = result.Length
+            SizeByte = result.Length,
+            ContentType = "image/jpeg"
         };
+
         (temp.Width, temp.Height) = GetImageSize(result);
 
         await SaveModifiedImage(temp).ConfigureAwait(false);
     }
 
-    public async Task ReplaceImage(IFormFile newImage, Guid imageId)
+    public async Task ReplaceImage(IFormFile newImage, Guid imageId, string? contentType = null)
     {
         ArgumentNullException.ThrowIfNull(newImage);
 
@@ -129,8 +135,10 @@ internal class ImagesEditService : ImagesService, IImagesEditService
             SourceImageId = image.Id,
             Modification = "Замена изображения",
             Data = imageArray,
-            SizeByte = imageArray.Length
+            SizeByte = imageArray.Length,
+            ContentType = contentType ?? newImage.ContentType
         };
+
         (temp.Width, temp.Height) = GetImageSize(imageArray);
 
         await SaveModifiedImage(temp).ConfigureAwait(false);
@@ -138,7 +146,10 @@ internal class ImagesEditService : ImagesService, IImagesEditService
 
     public async Task RotateImage(Guid imageId, Turn direction)
     {
-        var image = await _context.Images.SingleOrDefaultAsync(i => i.Id == imageId).ConfigureAwait(false);
+        var image = await _context.Images
+            .SingleOrDefaultAsync(i => i.Id == imageId)
+            .ConfigureAwait(false);
+
         if (image == null) throw new ArgumentException($"Image with Id='{imageId}' does not exists");
 
         bool changesAlreadyExists = await ImageHasChanges(imageId);
@@ -168,8 +179,10 @@ internal class ImagesEditService : ImagesService, IImagesEditService
                 _ => ""
             },
             Data = result,
-            SizeByte = result.Length
+            SizeByte = result.Length,
+            ContentType = "image/jpeg"
         };
+
         (temp.Width, temp.Height) = GetImageSize(result);
 
         await SaveModifiedImage(temp).ConfigureAwait(false);
@@ -178,11 +191,57 @@ internal class ImagesEditService : ImagesService, IImagesEditService
     protected async Task SaveModifiedImage(TempImage image)
     {
         var oldImages = _context.TempImages.Where(t => t.SourceImageId == image.SourceImageId);
+
         if (oldImages.Any())
         {
             _context.TempImages.RemoveRange(oldImages);
         }
+
         await _context.TempImages.AddAsync(image);
         await _context.SaveChangesAsync().ConfigureAwait(false);
+    }
+
+    public async Task CropImage(Guid imageId, Rectangle selectedPreviewRect)
+    {
+        if (selectedPreviewRect.Left < 0 
+            || selectedPreviewRect.Top < 0
+            || selectedPreviewRect.Width <= 0
+            || selectedPreviewRect.Height <= 0) throw new ArgumentException("Incorrect selection");
+
+        var image = await _context.Images
+            .AsNoTracking()
+            .Include(i => i.FullImage)
+            .Include(i => i.TempImage)
+            .SingleOrDefaultAsync(i => i.Id == imageId)
+            .ConfigureAwait(false);
+
+        if (image is null) throw new ArgumentException($"Image with id='{imageId}' was not found");
+        if (image.TempImage != null) throw new ArgumentException($"Image with id='{imageId}' has unsaved changes");
+
+        int top = selectedPreviewRect.Top;
+        int left = selectedPreviewRect.Left;
+        int width = selectedPreviewRect.Width;
+        int height = selectedPreviewRect.Height;
+
+        if (top + height > image.Height) height = image.Height - top;
+        if (left + width > image.Width) width = image.Width - left;
+
+        int imageQuality = await _appSettings.GetAppSettingInt(AppSettingsKey.ImageQuality) ?? throw new Exception("Setting Value ImageQuality not set");
+        if (image.FullImage == null) throw new Exception($"Full image for Id='{imageId}' is not found! Database is inconsist");
+
+        var result = CropImage(image.FullImage.Data, left, top, width, height, imageQuality);
+
+        var tmpImage = new TempImage
+        {
+            SourceImageId = image.Id,
+            Modification = "Обрезка изображения",
+            Data = result,
+            SizeByte = result.Length,
+            ContentType = "image/jpeg"
+        };
+
+        (tmpImage.Width, tmpImage.Height) = GetImageSize(result);
+
+        await SaveModifiedImage(tmpImage);
     }
 }

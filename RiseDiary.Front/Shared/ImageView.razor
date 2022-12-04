@@ -1,4 +1,6 @@
-﻿<div class="text-center mb-3">
+﻿@inject NavigationManager NavManager
+
+<div class="text-center mb-3">
     <img id="img" name="img" src="/api/image-file/@ImageId.ToString()" class="img-fluid" />
 </div>
 
@@ -25,5 +27,9 @@
     [Parameter]
     public Guid? RecordId { get; set; }
 
-    private string EditImageUri => $"/images/Edit?imageId={ImageId.ToString()}&recordId{RecordId?.ToString() ?? ""}";
+    private string EditImageUri => NavManager.GetUriWithQueryParameters("/images/edit", new Dictionary<string, object?>
+        {
+            ["ImageId"] = ImageId,
+            ["recordId"] = RecordId
+        });
 }

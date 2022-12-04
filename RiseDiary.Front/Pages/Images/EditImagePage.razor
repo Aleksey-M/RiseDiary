@@ -1,15 +1,496 @@
 ﻿@page "/images/edit"
 
-<h3>EditImagePage</h3>
+@using RiseDiary.Front.JsHelpers;
+@using RiseDiary.Shared.Images
+
+@inherits UIComponentBase
+
+@inject HttpClient Http
+@inject ILogger<EditImagePage> Logger
+@inject NavigationManager NavManager
+@inject IJSRuntime JsRuntime
+@inject ScaleDownImageDtoValidator ScaleImageValidator
+@inject CropImageDtoValidator CropImageValidator
+@inject Jcrop JsCrop
+
+@if (@_imageDto == null)
+{
+    <Spinner Loading="true" />
+}
+else
+{
+    <Spinner Loading="Loading">
+        <div class="row">
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-7 pt-1">
+                        <ImageNameEditor CurrentImageName="@_imageDto.Name" ImageId="@_imageDto.Id" />
+                    </div>
+
+                    <div class="col-3">
+                        <div class="pt-2">
+                            <i>@_imageDto.Width / @_imageDto.Height (@_imageDto.SizeKb)</i>
+                        </div>
+                    </div>
+
+                    <div class="col-2">
+                        <div style="float:right;">
+                            @if (RedirectRecordId.HasValue && RedirectRecordId.Value != default)
+                            {
+                                <NavLink href="@GetFullRecordUri(RedirectRecordId.Value)" class="btn btn-link" title="Венуться к записи">
+                                    <img src="img/arrow-left-square.svg" width="20" height="20" alt="Венуться к записи" />
+                                </NavLink>
+                            }
+                            else
+                            {
+                                <NavLink href="/images" class="btn btn-close pt-3" title="Закрыть"></NavLink>
+                            }
+                        </div>
+                    </div>
+
+                    @if (_imageDto.TempImage == null)
+                    {
+                        <div class="col-12">
+
+                            @if (HasError)
+                            {
+                                <p style="color:red">@ErrorMessage</p>
+                            }
+
+                            <div class="pagination mt-2 mb-3">
+                                <div class="me-2">
+                                    <InputFile accept="image/*" style="display:none" OnChange="@ReplaceFile" id="addNewImageInput" />
+
+                                    <button type="button" class="btn" title="Заменить изображение">
+                                        <img src="img/arrow-repeat.svg" width="20" height="20" alt="Заменить изображение" onclick="document.getElementById('addNewImageInput').click()" />
+                                    </button>
+                                </div>
+
+                                <div class="mx-2">
+                                    <button type="submit" class="btn" @onclick="async _ => await ScaleImage()" title="Уменьшить размер изображения">
+                                        <img src="img/aspect-ratio.svg" width="20" height="20" alt="Уменьшить размер изображения" />
+                                    </button>
+                                </div>
+
+                                <div class="mx-2">
+                                    <button class="btn" title="Обрезать изображение" @onclick="async _ => await CropImage()">
+                                        <img src="@ScissorsIcon" width="20" height="20" alt="Обрезать изображение" />
+                                    </button>
+                                </div>
+
+                                <div class="mx-2">
+                                    <button class="btn" title="Повернуть влево" @onclick="async _ => await RotateImage(false)">
+                                        <img src="img/arrow-counterclockwise.svg" width="20" height="20" alt="Повернуть влево" />
+                                    </button>
+                                </div>
+
+                                <div class="mx-2">
+                                    <button class="btn" title="Повернуть вправо" @onclick="async _ => await RotateImage(true)">
+                                        <img src="img/arrow-clockwise.svg" width="20" height="20" alt="Повернуть вправо" />
+                                    </button>
+                                </div>
+
+                                <div class="mx-2">
+                                    <button class="btn" title="Удалить изображение" @onclick="async _ => await DeleteImage()">
+                                        <img src="img/trash.svg" width="20" height="20" alt="Удалить" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-7">
+                            Редактирование: <b style="color:brown">@_imageDto.TempImage.Modification</b>
+                        </div>
+
+                        <div class="col-3">
+                            <i>@_imageDto.TempImage.Width / @_imageDto.TempImage.Height (@_imageDto.TempImage.SizeKb)</i>
+                        </div>
+
+                        <div class="col-12 m-2">
+                            <div class="pagination">
+                                <button type="submit" @onclick="async _ => await SaveUpdatedImage()" class="btn me-1" title="Сохранить изменения">
+                                    <img src="img/clipboard-check.svg" width="20" height="20" alt="Сохранить изменения" />
+                                </button>
+
+                                <button type="submit" @onclick="async _ => await SaveUpdatedAsNewImage()" class="btn mx-1" title="Сохранить как новое изображение">
+                                    <img src="img/front.svg" width="20" height="20" alt="Сохранить как новое" />
+                                </button>
+
+                                <button type="submit" @onclick="async _ => await CancelEdit()" class="btn mx-1" title="Отменить изменения">
+                                    <img src="img/clipboard-x.svg" width="20" height="20" alt="Отменить изменения" />
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="offset-lg-3 col-lg-6 offset-md-2 col-md-8 col-sm-12 text-center mb-3">
+                <img id="image-view" src="@ImageUri" class="img-fluid" />
+            </div>
+
+            <div class="col-lg-6 col-md-12">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <b>URI:</b> <i>@ImageUri.Split("?")[0]</i>
+                    </li>
+
+                    <li class="list-group-item">
+                        @if (_imageDto.ImageLinks != null && (_imageDto.ImageLinks.Count > 0))
+                        {
+                            <b>Прикреплено к:</b>
+                            foreach (var lnk in _imageDto.ImageLinks)
+                            {
+                                @:|&nbsp;
+                                <NavLink href="@GetFullRecordUri(@lnk.Key)">@lnk.Value</NavLink>
+                            }
+                            @:&nbsp;|
+                        }
+                        else
+                        {
+                            <b>Не прикреплено</b>
+                        }
+                    </li>
+
+                    <li class="list-group-item">
+                        <i><b>Камера:</b> @(string.IsNullOrEmpty(_imageDto.CameraModel) ? "[НЕТ]" : @_imageDto.CameraModel)</i>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-lg-6 col-md-12">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <i><b>Создано: </b>@_imageDto.CreateDate</i>
+                    </li>
+
+                    <li class="list-group-item">
+                        <i><b>Изменено: </b>@_imageDto.ModifyDate</i>
+                    </li>
+
+                    <li class="list-group-item">
+                        <i><b>Дата съемки: </b>@(_imageDto.Taken?.ToString("yyyy.MM.dd HH:mm:ss") ?? "[НЕТ]")</i>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </Spinner>
+}
 
 @code {
 
     [Parameter]
+    [SupplyParameterFromQuery]
     public Guid ImageId { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
-    public Guid? RecordId { get; set; }
+    public Guid? RedirectRecordId { get; set; }
 
 
+    private ImageDto _imageDto = null!;
+
+    private string ImageUri { get; set; } = string.Empty;
+
+
+    private string GetFullRecordUri(Guid recordId) => NavManager.GetUriWithQueryParameters("records/view",
+        new Dictionary<string, object?> 
+        { 
+            ["recordId"] = recordId.ToString() 
+        });
+
+    private async Task LoadImage()
+    {
+        if (_jcrop != null)
+        {
+            await JsCrop.DisposeJcropInstance(_jcrop);
+            _jcrop = null;
+        }
+
+        var dto = await Http.GetFromJsonAsync<ImageDto>($"api/images/{ImageId}");
+
+        if (dto == null)
+        {
+            Logger.LogWarning("Image with Id = '{imageId}' does not exists", ImageId);
+            Redirect();
+        }
+
+        _imageDto = dto!;        
+
+        // viewId - for reloading image after any changing
+        ImageUri = NavManager.GetUriWithQueryParameters($"{NavManager.BaseUri}api/image-file/{ImageId}",
+            new Dictionary<string, object?>
+            { 
+                ["viewId"] = Guid.NewGuid()
+            });
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (ImageId == default)
+        {
+            Logger.LogWarning("Image Id not passed");
+            Redirect();
+        }
+
+        try
+        {
+            await LoadImage();
+            await FinishApiRequest(null); 
+        }
+        catch(Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on Edit Iage Page loading");
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private void Redirect()
+    {
+        if (RedirectRecordId.HasValue)
+        {
+            NavManager.NavigateTo(NavManager.GetUriWithQueryParameters("records/view",
+                new Dictionary<string, object?> { ["recordId"] = RedirectRecordId.Value.ToString() }));
+        }
+
+        NavManager.NavigateTo("images");
+    }
+
+    private async Task ReplaceFile(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        try
+        {
+            await StartApiRequest();
+
+            var formContent = new MultipartFormDataContent
+            {
+                { new StreamContent(file.OpenReadStream(file.Size)), "newImage", file.Name },
+                { new StringContent(file.ContentType), "ContentType" },
+                { new StringContent(ImageId.ToString()), "ImageId" }
+            };
+
+            await Http.PostAsync($"api/images/{ImageId}/replace", formContent);
+
+            await LoadImage();
+            await FinishApiRequest(null);
+        }
+        catch(Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on replacing image. Id = '{imageId}'. New image file name = '{imageFileName}'", ImageId, file.Name);
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private async Task SaveUpdatedImage()
+    {
+        try
+        {
+            await StartApiRequest();
+
+            await Http.PostAsync($"api/images/{ImageId}/apply-changes", null);
+
+            await LoadImage();
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on saving image. Id = '{imageId}'", ImageId);
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private async Task SaveUpdatedAsNewImage()
+    {
+        try
+        {
+            await StartApiRequest();
+
+            var dto = new SaveAsNewImageDto
+                {
+                    ImageId = ImageId,
+                    RecordId = RedirectRecordId
+                };
+
+            var response = await Http.PostAsJsonAsync($"api/images/{ImageId}/save-as-new", dto);
+
+            var responseContent = await GetCheckedResponseContent<string?>(response);
+
+            if (!Guid.TryParse(responseContent, out var newImageId))
+            {
+                Logger.LogWarning("Неверный формат Id: {incorrectImageId}", responseContent);
+                await FinishApiRequest($"Неверный формат Id: {responseContent}");
+                return;
+            }
+
+            ImageId = newImageId;
+
+            await LoadImage();
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Saving image error. Id = '{imageId}'", ImageId);
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private async Task CancelEdit()
+    {
+        try
+        {
+            await StartApiRequest();
+
+            await Http.PostAsync($"api/images/{ImageId}/discard-changes", null);
+
+            await LoadImage();
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on changes rollback. Id='{imageId}'", ImageId);
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private async Task DeleteImage()
+    {
+        try
+        {
+            var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Удалить изображение?");
+            if (!confirmed) return;
+
+            await StartApiRequest();
+
+            var response = await Http.DeleteAsync($"api/images/{ImageId}");
+            if (await CheckSuccessResponse(response))
+            {
+                Redirect();
+            }
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Image deleting error. Id='{imageId}'", ImageId);
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private async Task RotateImage(bool right)
+    {
+        try
+        {
+            await StartApiRequest();
+
+            var dto = new RotateImageDto
+                {
+                    ImageId = ImageId,
+                    RotateRight = right
+                };
+
+            await Http.PostAsJsonAsync($"api/images/{ImageId}/rotate", dto);
+
+            await LoadImage();
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Image deleting error. Id='{imageId}'", ImageId);
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private async Task ScaleImage()
+    {
+        try
+        {
+            var biggestDim = _imageDto.GetBiggestDimension();
+            var inputValue = await JsRuntime.InvokeAsync<string>("prompt", "Введите новый размер большей стороны картинки для сжатия", biggestDim - 1);
+
+            if (!int.TryParse(inputValue, out int newDim))
+            {
+                Logger.LogInformation("Incorrect input value");
+                return;
+            }
+
+            var dto = new ScaleDownImageDto
+                {
+                    ImageId = ImageId,
+                    ImageMaxDimension = biggestDim,
+                    DimensionMaxLimit = newDim
+                };
+
+            var validationResult = ScaleImageValidator.Validate(dto);
+
+            if (!validationResult.IsValid)
+            {
+                ErrorMessage = validationResult.ToString();
+                return;
+            }
+
+            await StartApiRequest();
+
+            await Http.PostAsJsonAsync($"api/images/{ImageId}/scale-down", dto);
+
+            await LoadImage();
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Image scaling error. Id='{imageId}'", ImageId);
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private JcropInstance? _jcrop;
+
+    private string ScissorsIcon => _jcrop == null ? "img/scissors.svg" : "img/scissors-red.svg";
+
+    public async Task CropImage()
+    {
+        if (_imageDto.TempImage == null)
+        {
+            if (_jcrop == null)
+            {
+                _jcrop = await JsCrop.Init("image-view");
+                return;
+            }
+
+            var selection = await JsCrop.GetSelection(_jcrop);
+            if (selection == null || (selection.SelWidth <= 0 || selection.SelHeight <= 0))
+            {
+                ErrorMessage = "Не выбрана область изображения для обрезки";
+                return;
+            }
+
+            try
+            {
+                var dto = selection.CreateDto(ImageId);
+
+                var validationResult = CropImageValidator.Validate(dto);
+
+                if (!validationResult.IsValid)
+                {
+                    ErrorMessage = validationResult.ToString();
+                    return;
+                }
+
+                await StartApiRequest();
+
+                await Http.PostAsJsonAsync($"api/images/{ImageId}/crop", dto);
+
+                await LoadImage();
+                await FinishApiRequest(null);
+            }
+            catch (Exception exc)
+            {
+                Logger.LogWarning(exc, "Crop image error. Id='{imageId}'", ImageId);
+                await FinishApiRequest(exc.Message);
+            }
+        }
+    }
 }

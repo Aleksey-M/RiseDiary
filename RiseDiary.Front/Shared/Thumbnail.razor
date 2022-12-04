@@ -53,8 +53,9 @@
         $"{Image?.Width ?? 0} / {Image?.Height ?? 0} <b>{Image?.SizeKb ?? "?"}</b>");
 
     private string EditImageUri => 
-        NavManager.GetUriWithQueryParameters($"images/edit/{Image.Id}", new Dictionary<string, object?>
-        { 
-            ["recordId"] = RecordId
+        NavManager.GetUriWithQueryParameters($"images/edit", new Dictionary<string, object?>
+        {
+            ["ImageId"] = Image.Id,
+            ["redirectRecordId"] = RecordId
         });
 }

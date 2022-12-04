@@ -79,7 +79,7 @@ public sealed class RecordsController : ControllerBase
                     Name = i.Name,
                     Width = i.Width,
                     Height = i.Height,
-                    SizeKb = i.GetSizeKbString(),
+                    SizeKb = i.SizeByte.ToFileSizeString(),
                     Base64Thumbnail = i.GetBase64Thumbnail()
                 })
                 .ToArray()

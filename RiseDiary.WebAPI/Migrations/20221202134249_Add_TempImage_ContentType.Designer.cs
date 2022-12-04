@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RiseDiary.Data;
 
@@ -10,9 +11,11 @@ using RiseDiary.Data;
 namespace RiseDiary.WebAPI.Migrations
 {
     [DbContext(typeof(DiaryDbContext))]
-    partial class DiaryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221202134249_Add_TempImage_ContentType")]
+    partial class AddTempImageContentType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.0");
@@ -89,7 +92,7 @@ namespace RiseDiary.WebAPI.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<long>("SizeByte")
+                    b.Property<int>("SizeByte")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("Taken")
@@ -275,7 +278,7 @@ namespace RiseDiary.WebAPI.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<long>("SizeByte")
+                    b.Property<int>("SizeByte")
                         .HasColumnType("INTEGER");
 
                     b.Property<Guid>("SourceImageId")

@@ -126,7 +126,7 @@ public class PrepareImageService
         var formContent = new MultipartFormDataContent
         {
             { new StreamContent(imageStream), "newImage", dto.ImageName },
-            { new StringContent(dto.ContentType), nameof(dto.ContentType) },
+            { new StringContent(dto.ContentType ?? "image/jpeg"), nameof(dto.ContentType) },
             { new StringContent(dto.ImageName), nameof(dto.ImageName) }
         };
 

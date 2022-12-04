@@ -25,8 +25,6 @@ public sealed class ImageDto
 
     public string SizeKb { get; set; } = "";
 
-    public string Base64Image { get; set; } = "";
-
     public int Width { get; set; }
 
     public int Height { get; set; }
@@ -37,5 +35,9 @@ public sealed class ImageDto
 
     public string CameraModel { get; set; } = "";
 
+    public Dictionary<Guid, string> ImageLinks { get; set; } = new();
+
     public TempImageDto? TempImage { get; set; }
+
+    public int GetBiggestDimension() => Math.Max(Width, Height);
 }

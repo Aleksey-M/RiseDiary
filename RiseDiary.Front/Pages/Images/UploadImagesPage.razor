@@ -42,7 +42,7 @@
                 @foreach (var file in loadedFiles)
                 {
                     <li class="list-group-item">
-                        @file.Name <i><b>@ImagesHelper.GetSizeString(file.Size)</b> (@file.ContentType)</i>
+                        @file.Name <i><b>@file.Size.ToFileSizeString())</b> (@file.ContentType)</i>
 
                         <button class="btn-close" type="button" @onclick="_ => loadedFiles.Remove(file)"></button>
                     </li>

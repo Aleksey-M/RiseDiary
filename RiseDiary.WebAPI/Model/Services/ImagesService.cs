@@ -41,7 +41,9 @@ internal class ImagesService : SkiaImageHandler, IImagesService
         string? cameraModel = null, DateTime? taken = null, string? contentType = null)
     {
         if (string.IsNullOrWhiteSpace(imageName)) throw new ArgumentException("Image Name should not be empty");
+
         ArgumentNullException.ThrowIfNull(image);
+        ArgumentNullException.ThrowIfNullOrEmpty(contentType);
 
         int imageQuality = await _appSettings.GetAppSettingInt(AppSettingsKey.ImageQuality) ?? throw new Exception("Setting Value ImageQuality not set");
         int thumbnailSize = await _appSettings.GetAppSettingInt(AppSettingsKey.ThumbnailSize) ?? throw new Exception("Setting Value ThumbnailSize not set");

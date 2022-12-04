@@ -1,0 +1,91 @@
+﻿@using RiseDiary.Shared.Images
+
+@inherits UIComponentBase
+
+@inject UpdateImageNameDtoValidator Validator
+@inject HttpClient Http
+@inject ILogger<ImageNameEditor> Logger
+
+
+
+@if (HasError)
+{
+    <p style="color:red">@ErrorMessage</p>
+}
+
+<Spinner Loading="@Loading" ShowAnimation="false">
+    @if (EditMode)
+    {
+        <div class="form form-horizontal">
+            <div class="input-group">
+                <input type="text" class="form-control" @bind-value="CurrentImageName" @bind-value:event="onchange" />
+
+                <button type="button" class="btn btn-link" @onclick="SaveImageName">
+                    <img src="img/check2-square.svg" widtn="20" height="20" title="Сохранить название" alt="Сохранить название" />
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <span>@CurrentImageName</span>
+
+        <button type="button" class="btn btn-link" @onclick="ToEditMode">
+            <img src="img/pencil-square.svg" widtn="20" height="20" title="Изменить" alt="Изменить" />
+        </button>
+    }
+</Spinner>
+
+
+@code{
+
+    [Parameter, EditorRequired]
+    public string CurrentImageName { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public Guid ImageId { get; set; }
+
+    public bool EditMode { get; set; }
+
+
+    public void ToEditMode()
+    {
+        EditMode = true;
+    }
+
+    public async Task SaveImageName()
+    {
+        try
+        {
+            var imageName = CurrentImageName.Trim();
+
+            var dto = new UpdateImageNameDto
+                {
+                    ImageId = ImageId,
+                    ImageName = imageName
+                };
+
+            var validationResult = Validator.Validate(dto);
+
+            if (!validationResult.IsValid)
+            {
+                ErrorMessage = validationResult.ToString();
+                return;
+            }
+
+            await StartApiRequest();
+
+            await Http.PutAsJsonAsync($"api/images/{ImageId}", dto);
+
+            CurrentImageName = imageName;
+            EditMode = false;
+
+            await FinishApiRequest(null);
+        }
+        catch(Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on updating image name. Image Id='{imageId}'", ImageId);
+            await FinishApiRequest(exc.Message);
+        }        
+    }
+}

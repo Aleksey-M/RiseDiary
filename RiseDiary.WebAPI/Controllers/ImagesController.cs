@@ -17,20 +17,16 @@ public sealed class ImagesController : ControllerBase
 
     private readonly ILogger<ImagesController> _logger;
 
-    private readonly UploadImageDtoValidator _uploadValidator;
-
     public ImagesController(
         IImagesService imagesService,
         IRecordsImagesService recordsImagesService,
         IAppSettingsService appSettingsService,
-        ILogger<ImagesController> logger,
-        UploadImageDtoValidator uploadValidator)
+        ILogger<ImagesController> logger)
     {
         _imagesService = imagesService;
         _recordsImagesService = recordsImagesService;
         _appSettingsService = appSettingsService;
         _logger = logger;
-        _uploadValidator = uploadValidator;
     }
 
     [HttpGet("api/image-file/{id}")]
@@ -40,6 +36,7 @@ public sealed class ImagesController : ControllerBase
 
         var image = await _imagesService.FetchFullImageById(id, cancellationToken);
         var img = await _imagesService.FetchImageById(id, cancellationToken);
+
         return File(image, img.ContentType);
     }
 
@@ -53,11 +50,13 @@ public sealed class ImagesController : ControllerBase
     }
 
     [HttpPost("api/images")]
-    public async Task<IActionResult> UploadImage([FromForm] UploadImageDto imageDto, [FromForm] IFormFile newImage)
+    public async Task<IActionResult> UploadImage([FromForm] UploadImageDto imageDto,
+        [FromForm] IFormFile newImage, UploadImageDtoValidator uploadValidator)
     {
         if (newImage == null) return BadRequest("Image file should be selected");
-        _uploadValidator.ValidateAndThrow(imageDto);
-       
+
+        uploadValidator.ValidateAndThrow(imageDto);
+
         var newImageId = await _imagesService.AddImage(
             formFile: newImage,
             imageName: imageDto.ImageName,
@@ -71,7 +70,7 @@ public sealed class ImagesController : ControllerBase
         if (imageDto.TargetRecordId != null && imageDto.TargetRecordId != Guid.Empty)
         {
             await _recordsImagesService.AddRecordImage(imageDto.TargetRecordId.Value, newImageId);
-            _logger.LogInformation("Image with Id = '{imageId}' attached to record with Id = '{recordId}'", newImageId, imageDto.TargetRecordId );
+            _logger.LogInformation("Image with Id = '{imageId}' attached to record with Id = '{recordId}'", newImageId, imageDto.TargetRecordId);
         }
 
         var newImageUri = $@"{await _appSettingsService.GetHostAndPort()}/api/images/{newImageId}";
@@ -87,11 +86,14 @@ public sealed class ImagesController : ControllerBase
     }
 
     [HttpPut("api/images/{id}")]
-    public async Task<IActionResult> UpdateImage(Guid id, UpdateImageNameDto updateImageDto)
+    public async Task<IActionResult> UpdateImage(Guid id, UpdateImageNameDto dto,
+        [FromServices] UpdateImageNameDtoValidator validator)
     {
-        if (id != updateImageDto.ImageId) return BadRequest("Not consistent request");
+        if (id != dto.ImageId) return BadRequest("Not consistent request");
 
-        await _imagesService.UpdateImage(updateImageDto.ImageId, updateImageDto.ImageNewName);
+        validator.ValidateAndThrow(dto);
+
+        await _imagesService.UpdateImage(dto.ImageId, dto.ImageName);
         return NoContent();
     }
 
@@ -99,7 +101,7 @@ public sealed class ImagesController : ControllerBase
     public async Task<ActionResult<ImageDto>> GetImage(Guid id, CancellationToken cancellationToken)
     {
         var img = await _imagesService.FetchImageById(id, cancellationToken);
-        var fullImg = await _imagesService.FetchFullImageById(id, cancellationToken);
+        var imageLinks = await _recordsImagesService.GetLinkedRecordsInfo(id, cancellationToken);
 
         return new ImageDto
         {
@@ -111,16 +113,16 @@ public sealed class ImagesController : ControllerBase
             Height = img.Height,
             CameraModel = img.CameraModel ?? "",
             Taken = img.Taken,
-            SizeKb = img.GetSizeKbString(),
+            SizeKb = img.SizeByte.ToFileSizeString(),
             ContentType = img.ContentType,
-            Base64Image = Convert.ToBase64String(fullImg),
+            ImageLinks = imageLinks,
             TempImage = img.TempImage == null ? null : new TempImageDto
             {
                 Id = img.TempImage.Id,
                 Modification = img.TempImage.Modification,
                 Width = img.TempImage.Width,
                 Height = img.TempImage.Height,
-                SizeKb = img.TempImage.GetSizeKbString()
+                SizeKb = img.TempImage.SizeByte.ToFileSizeString()
             }
         };
     }
@@ -147,7 +149,7 @@ public sealed class ImagesController : ControllerBase
                 Name = i.Name,
                 Width = i.Width,
                 Height = i.Height,
-                SizeKb = i.GetSizeKbString(),
+                SizeKb = i.SizeByte.ToFileSizeString(),
                 Base64Thumbnail = i.GetBase64Thumbnail()
             })
             .ToList()

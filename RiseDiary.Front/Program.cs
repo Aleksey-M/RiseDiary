@@ -16,6 +16,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 builder.Services.AddScoped<MarkdownService>();
 builder.Services.AddScoped<PrepareImageService>();
+builder.Services.AddScoped<Jcrop>();
 
 // validators
 builder.Services.AddScoped<IDtoValidator<ScopeDto>, ScopeValidator>();
@@ -24,6 +25,10 @@ builder.Services.AddScoped<ImportantDaysSettingsValidator>();
 builder.Services.AddScoped<ImagesSettingsValidator>();
 builder.Services.AddScoped<PagesSizesSettingsValidator>();
 builder.Services.AddScoped<UploadImageDtoValidator>();
+builder.Services.AddScoped<UpdateImageNameDtoValidator>();
+builder.Services.AddScoped<ScaleDownImageDtoValidator>();
+builder.Services.AddScoped<CropImageDtoValidator>();
+
 
 // js helpers
 builder.Services.AddScoped<JsImgHelper>();

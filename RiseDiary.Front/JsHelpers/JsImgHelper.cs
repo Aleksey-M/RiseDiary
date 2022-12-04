@@ -18,7 +18,7 @@ public class JsImgHelper : IAsyncDisposable
     public JsImgHelper(IJSRuntime jsRuntime)
     {
         moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-            "import", "./js/getImageDimensions.js").AsTask());
+            "import", "./js/images-helper.js").AsTask());
     }
 
     public async Task<ImgDimensions> GetImgDimensions(Stream imageDataStream)

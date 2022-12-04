@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace RiseDiary.Model;
+﻿namespace RiseDiary.Model;
 
 public sealed class DiaryImage : IDeletedEntity
 {
@@ -18,7 +16,7 @@ public sealed class DiaryImage : IDeletedEntity
 
     public int Height { get; set; }
 
-    public int SizeByte { get; set; }
+    public long SizeByte { get; set; }
 
     public bool Deleted { get; set; }
 
@@ -58,7 +56,9 @@ public sealed class TempImage
 
     public int Height { get; set; }
 
-    public int SizeByte { get; set; }
+    public long SizeByte { get; set; }
+
+    public string ContentType { get; set; } = string.Empty;
 }
 
 public static class ImageExtensions
@@ -66,10 +66,6 @@ public static class ImageExtensions
     public static int GetBiggestImageDimm(this DiaryImage image) => image.Width > image.Height ? image.Width : image.Height;
 
     public static string GetBase64Thumbnail(this DiaryImage image) => Convert.ToBase64String(image.Thumbnail);
-
-    public static string GetSizeKbString(this DiaryImage image) => Math.Round(image.SizeByte / 1024f, 2).ToString(CultureInfo.InvariantCulture) + " Kb";
-
-    public static string GetSizeKbString(this TempImage tempImage) => Math.Round(tempImage.SizeByte / 1024f, 2).ToString(CultureInfo.InvariantCulture) + " Kb";
 }
 
 public sealed class ScaledImagePreview

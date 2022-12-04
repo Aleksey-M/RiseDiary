@@ -1,10 +1,10 @@
 {
   "version": "1.0",
-  "defaultProvider": "cdnjs",
+  "defaultProvider": "unpkg",
   "libraries": [
     {
-      "library": "bootstrap@5.2.2",
-      "files": [ "css/bootstrap.min.css", "js/bootstrap.bundle.min.js" ],
+      "library": "bootstrap@5.2.3",
+      "files": [ "dist/css/bootstrap.min.css", "dist/js/bootstrap.bundle.min.js" ],
       "destination": "wwwroot/lib/bootstrap"
     }
   ]

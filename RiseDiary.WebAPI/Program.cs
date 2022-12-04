@@ -49,7 +49,9 @@ builder.Services.AddScoped<ImportantDaysSettingsValidator>();
 builder.Services.AddScoped<ImagesSettingsValidator>();
 builder.Services.AddScoped<PagesSizesSettingsValidator>();
 builder.Services.AddScoped<UploadImageDtoValidator>();
-
+builder.Services.AddScoped<UpdateImageNameDtoValidator>();
+builder.Services.AddScoped<ScaleDownImageDtoValidator>();
+builder.Services.AddScoped<CropImageDtoValidator>();
 
 builder.Services.AddControllers();
 

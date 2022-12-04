@@ -20,6 +20,11 @@
         }
         else
         {
+            @if (!_deletedDataInfo.HasData())
+            {
+                <h3>Нет удаленных данных</h3>
+            }
+
             @if (_deletedDataInfo.Records.Count() > 0)
             {
                 <br />

@@ -1,13 +1,23 @@
 ﻿using Microsoft.JSInterop;
 
-namespace RiseDiary.Front.Helpers;
+namespace RiseDiary.Front.JsHelpers;
+
+/// <summary>
+/// Ошибка, возникшая при ожидании завершения js-кода
+/// </summary>
+public class JsException : Exception
+{
+    public JsException(string message) : base(message)
+    {
+    }
+}
 
 /// <summary>
 /// Класс для ожидания завершения асинхронного js-кода
 /// </summary>
 public class CallbacksTask
 {
-    private readonly TaskCompletionSource _tcs = new();
+    private TaskCompletionSource _tcs = new();
 
     public DotNetObjectReference<CallbacksTask> CreateRefForJs() => DotNetObjectReference.Create(this);
 
@@ -23,7 +33,7 @@ public class CallbacksTask
     [JSInvokable]
     public Task Error(string message)
     {
-        _tcs.SetException(new Exception(message));
+        _tcs.SetException(new JsException(message));
         return Task.CompletedTask;
     }
 }
@@ -34,7 +44,7 @@ public class CallbacksTask
 /// <typeparam name="T">Тип возвращающегося из js значения</typeparam>
 public class CallbacksTask<T>
 {
-    private readonly TaskCompletionSource<T> _tcs = new();
+    private TaskCompletionSource<T> _tcs = new();
 
     public DotNetObjectReference<CallbacksTask<T>> CreateRefForJs() => DotNetObjectReference.Create(this);
 
@@ -50,7 +60,7 @@ public class CallbacksTask<T>
     [JSInvokable]
     public Task Error(string message)
     {
-        _tcs.SetException(new Exception(message));
+        _tcs.SetException(new JsException(message));
         return Task.CompletedTask;
     }
 }

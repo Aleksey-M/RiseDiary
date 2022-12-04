@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.Shared.Images;
@@ -11,53 +12,107 @@ public sealed class EditImagesController : ControllerBase
 {
     private readonly IImagesEditService _imagesEditService;
 
-    private readonly ICropImageService _cropImageService;
+    private readonly ILogger<EditImagesController> _logger;
 
-    public EditImagesController(IImagesEditService imagesEditService, ICropImageService cropImageService)
+    private readonly IRecordsImagesService _recordsImagesService;
+
+    public EditImagesController(
+        IImagesEditService imagesEditService,
+        IRecordsImagesService recordsImagesService,
+        ILogger<EditImagesController> logger)
     {
         _imagesEditService = imagesEditService;
-        _cropImageService = cropImageService;
+        _logger = logger;
+        _recordsImagesService = recordsImagesService;
     }
 
-    [HttpPost("scale-down")]
-    public async Task<IActionResult> ScaleDownImage(ScaleDownDto scaleDownDto)
+    [HttpPost("{id}/scale-down")]
+    public async Task<IActionResult> ScaleDownImage(Guid id, ScaleDownImageDto dto)
     {
-        await _imagesEditService.ReduceImageSize(scaleDownDto.ImageId, scaleDownDto.NewImageBiggestSide);
-        return Ok();
-    }
-
-    [HttpPost("replace-image")]
-    public async Task<IActionResult> ReplaceImage([FromForm] ReplaceImageDto replaceImageDto, [FromForm] IFormFile newImage)
-    {
-        if (newImage == null) return BadRequest("New image should be selected");
-
-        await _imagesEditService.ReplaceImage(newImage, replaceImageDto.ImageId);
-        return Ok();
-    }
-
-    [HttpGet("{imageId}/scaled-preview")]
-    public async Task<ActionResult<ScaledImagePreviewDto>> GetScaledPreview(Guid imageId)
-    {
-        var scaled = await _cropImageService.CreateScaledImagePreview(imageId);
-        return new ScaledImagePreviewDto
+        if (id != dto.ImageId)
         {
-            Coefficient = scaled.Coefficient,
-            ImageBase64String = Convert.ToBase64String(scaled.Image)
-        };
-    }
+            _logger.LogWarning(
+                "Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
+                id,
+                dto.ImageId);
 
-    [HttpPost("crop-image")]
-    public async Task<IActionResult> CropImage(CropImageDto cropImageDto)
-    {
-        var rect = new Rectangle(cropImageDto.Left, cropImageDto.Top, cropImageDto.Width, cropImageDto.Height);
-        await _cropImageService.CropImage(cropImageDto.ImageId, rect, cropImageDto.Coefficient);
+            return BadRequest("Not consistent request");
+        }
+
+        await _imagesEditService.ReduceImageSize(dto.ImageId, dto.DimensionMaxLimit);
         return Ok();
     }
 
-    [HttpPost("{imageId}/save-changes-as-new-image")]
-    public async Task<ActionResult<Guid>> SaveChangesAsNewImage(Guid imageId)
+    [HttpPost("{id}/replace")]
+    public async Task<IActionResult> ReplaceImage(Guid id, [FromForm] ReplaceImageDto replaceImageDto, [FromForm] IFormFile newImage)
     {
-        return await _imagesEditService.CreateNewImageFromChanged(imageId);
+        if (newImage == null)
+        {
+            _logger.LogWarning("New image does not selected for replacing");
+            return BadRequest("New image does not selected for replacing");
+        }
+
+        if (id != replaceImageDto.ImageId)
+        {
+            _logger.LogWarning(
+                "Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
+                id,
+                replaceImageDto.ImageId);
+
+            return BadRequest("Not consistent request");
+        }
+
+        await _imagesEditService.ReplaceImage(newImage, replaceImageDto.ImageId, replaceImageDto.ContentType);
+        _logger.LogInformation("Image replaced. Id = '{imageId}'", replaceImageDto.ImageId);
+
+        return Ok();
+    }
+
+    [HttpPost("{id}/crop")]
+    public async Task<IActionResult> CropImage(Guid id, CropImageDto dto, [FromServices] CropImageDtoValidator validator)
+    {
+        if (id != dto.ImageId)
+        {
+            _logger.LogWarning(
+                "Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
+                id,
+                dto.ImageId);
+
+            return BadRequest("Not consistent request");
+        }
+
+        validator.ValidateAndThrow(dto);
+
+        var rect = new Rectangle(dto.Left, dto.Top, dto.Width, dto.Height);
+
+        await _imagesEditService.CropImage(dto.ImageId, rect);
+
+        return Ok();
+    }
+
+    [HttpPost("{id}/save-as-new")]
+    public async Task<IActionResult> SaveChangesAsNewImage(Guid id, SaveAsNewImageDto dto)
+    {
+        if (id != dto.ImageId)
+        {
+            _logger.LogWarning(
+                "Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
+                id,
+                dto.ImageId);
+
+            return BadRequest("Not consistent request");
+        }
+
+        var newImageId = await _imagesEditService.CreateNewImageFromChanged(dto.ImageId);
+
+        if (dto.RecordId.HasValue && dto.RecordId.Value != default)
+        {
+            await _recordsImagesService.AddRecordImage(dto.RecordId.Value, newImageId);
+        }
+
+        var newImageUri = $@"api/images/{newImageId}";
+
+        return Created(newImageUri, newImageId);
     }
 
     [HttpPost("{imageId}/apply-changes")]
@@ -71,6 +126,24 @@ public sealed class EditImagesController : ControllerBase
     public async Task<IActionResult> DiscardChanges(Guid imageId)
     {
         await _imagesEditService.DiscardChanges(imageId);
+        return Ok();
+    }
+
+    [HttpPost("{id}/rotate")]
+    public async Task<IActionResult> Rotate(Guid id, RotateImageDto dto)
+    {
+        if (id != dto.ImageId)
+        {
+            _logger.LogWarning(
+                "Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
+                id,
+                dto.ImageId);
+
+            return BadRequest("Not consistent request");
+        }
+
+        await _imagesEditService.RotateImage(dto.ImageId, dto.RotateRight ? Turn.Right : Turn.Left);
+
         return Ok();
     }
 }

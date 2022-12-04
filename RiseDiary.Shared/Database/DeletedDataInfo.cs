@@ -30,5 +30,8 @@ public sealed class DeletedDataInfo
     public IEnumerable<DeletedScope> Scopes { get; set; } = Enumerable.Empty<DeletedScope>();
 
     public IEnumerable<DeletedTheme> Themes { get; set; } = Enumerable.Empty<DeletedTheme>();
+
+    public bool HasData() => Records.Any() || RecordsImages.Any() || RecordsThemes.Any() || RecordsCogitations.Any()
+        || Images.Any() || Scopes.Any() || Themes.Any(); 
 }
 
