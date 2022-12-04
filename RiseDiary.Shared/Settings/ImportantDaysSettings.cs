@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using FluentValidation;
 
 namespace RiseDiary.Shared.Settings;
 
@@ -27,5 +28,15 @@ public sealed class ImportantDaysSettings
             yield return (ImportantDaysScopeId ?? Guid.Empty).ToString();
             yield return ImportantDaysDisplayRange.ToString();
         }
+    }
+}
+
+public sealed class ImportantDaysSettingsValidator : AbstractValidator<ImportantDaysSettings>
+{
+    public ImportantDaysSettingsValidator()
+    {
+        RuleFor(x => x.ImportantDaysDisplayRange)
+            .Cascade(CascadeMode.Stop)
+            .InclusiveBetween(1, 35).WithMessage("Значение диапазона отображаемых дат должно быть от 1 до 35");
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using FluentValidation;
 
 namespace RiseDiary.Shared.Settings;
 
@@ -8,16 +9,10 @@ public sealed class ImagesSettings
 
     public int ThumbnailSize { get; set; }
 
-    public int CropImageMaxScaledHeight { get; set; }
-
-    public int CropImageMaxScaledWidth { get; set; }
-
     public static IEnumerable<string> SettingsKeys
     {
         get
         {
-            yield return nameof(AppSettingsKey.CropImageMaxScaledHeight);
-            yield return nameof(AppSettingsKey.CropImageMaxScaledWidth);
             yield return nameof(AppSettingsKey.ImageQuality);
             yield return nameof(AppSettingsKey.ThumbnailSize);
         }
@@ -28,10 +23,22 @@ public sealed class ImagesSettings
     {
         get
         {
-            yield return CropImageMaxScaledHeight.ToString();
-            yield return CropImageMaxScaledWidth.ToString();
             yield return ImageQuality.ToString();
             yield return ThumbnailSize.ToString();
         }
+    }
+}
+
+public sealed class ImagesSettingsValidator : AbstractValidator<ImagesSettings>
+{
+    public ImagesSettingsValidator()
+    {
+        RuleFor(x => x.ImageQuality)
+            .Cascade(CascadeMode.Stop)
+            .InclusiveBetween(1, 100).WithMessage("Значение сжатия Jpeg должно быть в пределах от 1 до 100");
+
+        RuleFor(x => x.ThumbnailSize)
+            .Cascade(CascadeMode.Stop)
+            .InclusiveBetween(50, 500).WithMessage("Размер превью-изображений должен быть в предлах от 50 до 500");
     }
 }

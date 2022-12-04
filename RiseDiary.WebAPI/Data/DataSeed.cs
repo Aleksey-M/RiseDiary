@@ -49,20 +49,6 @@ internal static class DataSeed
 
         context.AppSettings.Add(new AppSetting
         {
-            Key = AppSettingsKey.CropImageMaxScaledHeight.ToString(),
-            Value = "600",
-            ModifiedDate = DateTime.UtcNow
-        });
-
-        context.AppSettings.Add(new AppSetting
-        {
-            Key = AppSettingsKey.CropImageMaxScaledWidth.ToString(),
-            Value = "800",
-            ModifiedDate = DateTime.UtcNow
-        });
-
-        context.AppSettings.Add(new AppSetting
-        {
             Key = AppSettingsKey.ThumbnailSize.ToString(),
             Value = "140",
             ModifiedDate = DateTime.UtcNow

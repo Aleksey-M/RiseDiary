@@ -22,14 +22,6 @@ public static class SettingsValidator
         (AppSettingsKey.ThumbnailSize, _) => int.Parse(value) <= 50 ? "Thumbnail Size value must be greater than 50" :
                                                          int.Parse(value) > 500 ? "Thumbnail Size value must be less than 500" : "",
 
-        (AppSettingsKey.CropImageMaxScaledWidth, _) when !int.TryParse(value, out _) => "Value should be set as int",
-        (AppSettingsKey.CropImageMaxScaledWidth, _) => int.Parse(value) <= 200 ? "Max Scaled Width value must be greater than 200" :
-                                                         int.Parse(value) > 2000 ? "Max Scaled Width value must be less than 2000" : "",
-
-        (AppSettingsKey.CropImageMaxScaledHeight, _) when !int.TryParse(value, out _) => "Value should be set as int",
-        (AppSettingsKey.CropImageMaxScaledHeight, _) => int.Parse(value) <= 200 ? "Max Scaled Height value must be greater than 200" :
-                                                         int.Parse(value) > 2000 ? "Max Scaled Height value must be less than 2000" : "",
-
         (AppSettingsKey.RecordsPageSize, _) when !int.TryParse(value, out _) => "Range value should be set as int",
         (AppSettingsKey.RecordsPageSize, _) => int.Parse(value) <= 1 ? "Range value must be greater than 1" :
                                                int.Parse(value) > 200 ? "Range value must be less than 200" : "",

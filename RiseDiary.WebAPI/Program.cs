@@ -33,7 +33,6 @@ builder.Services.AddScoped<IRecordsThemesService, RecordsThemesService>();
 builder.Services.AddScoped<IImagesService, ImagesService>();
 builder.Services.AddScoped<IRecordsImagesService, RecordsImagesService>();
 builder.Services.AddScoped<IImagesEditService, ImagesEditService>();
-builder.Services.AddScoped<ICropImageService, CropImageService>();
 builder.Services.AddScoped<IRecordsService, RecordsService>();
 builder.Services.AddScoped<ICogitationsService, CogitationsService>();
 builder.Services.AddScoped<IRecordsSearchService, RecordsSearchService>();

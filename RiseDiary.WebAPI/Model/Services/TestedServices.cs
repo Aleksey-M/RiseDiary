@@ -17,8 +17,6 @@ public static class TestedServices
 
     static public IRecordsService GetRecordsService(DiaryDbContext context, IAppSettingsService appSettingsService) => new RecordsService(context, appSettingsService);
 
-    static public ICropImageService GetCropImageService(DiaryDbContext context, IAppSettingsService appSettingsService) => new CropImageService(context, appSettingsService);
-
     static public IImagesEditService GetImagesEditService(DiaryDbContext context, IAppSettingsService appSettingsService) => new ImagesEditService(context, appSettingsService);
 
     static public IImagesService GetImagesService(DiaryDbContext context, IAppSettingsService appSettingsService) => new ImagesService(context, appSettingsService);

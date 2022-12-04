@@ -7,8 +7,6 @@ public enum AppSettingsKey
     ImportantDaysDisplayRange,
     StartPageRecordId,
     ImageQuality,
-    CropImageMaxScaledWidth,
-    CropImageMaxScaledHeight,
     ThumbnailSize,
     HostAndPort,
     RecordsPageSize,

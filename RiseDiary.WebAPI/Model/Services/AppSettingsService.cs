@@ -46,9 +46,7 @@ internal sealed class AppSettingsService : IAppSettingsService
         return new ImagesSettings
         {
             ThumbnailSize = ValueOf(settings, AppSettingsKey.ThumbnailSize),
-            ImageQuality = ValueOf(settings, AppSettingsKey.ImageQuality),
-            CropImageMaxScaledHeight = ValueOf(settings, AppSettingsKey.CropImageMaxScaledHeight),
-            CropImageMaxScaledWidth = ValueOf(settings, AppSettingsKey.CropImageMaxScaledWidth)
+            ImageQuality = ValueOf(settings, AppSettingsKey.ImageQuality)
         };
     }
 
