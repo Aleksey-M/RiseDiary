@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.Shared.Images;
 
-namespace RiseDiary.Api;
+namespace RiseDiary.WebAPI.Controllers.ImagesArea;
 
 [ApiController]
 [Route("api/images")]
@@ -31,10 +31,8 @@ public sealed class EditImagesController : ControllerBase
     {
         if (id != dto.ImageId)
         {
-            _logger.LogWarning(
-                "Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
-                id,
-                dto.ImageId);
+            _logger.LogWarning("Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
+                id, dto.ImageId);
 
             return BadRequest("Not consistent request");
         }
@@ -54,10 +52,8 @@ public sealed class EditImagesController : ControllerBase
 
         if (id != replaceImageDto.ImageId)
         {
-            _logger.LogWarning(
-                "Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
-                id,
-                replaceImageDto.ImageId);
+            _logger.LogWarning("Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
+                id, replaceImageDto.ImageId);
 
             return BadRequest("Not consistent request");
         }
@@ -73,10 +69,8 @@ public sealed class EditImagesController : ControllerBase
     {
         if (id != dto.ImageId)
         {
-            _logger.LogWarning(
-                "Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
-                id,
-                dto.ImageId);
+            _logger.LogWarning("Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
+                id, dto.ImageId);
 
             return BadRequest("Not consistent request");
         }
@@ -95,10 +89,8 @@ public sealed class EditImagesController : ControllerBase
     {
         if (id != dto.ImageId)
         {
-            _logger.LogWarning(
-                "Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
-                id,
-                dto.ImageId);
+            _logger.LogWarning("Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
+                id, dto.ImageId);
 
             return BadRequest("Not consistent request");
         }
@@ -134,10 +126,8 @@ public sealed class EditImagesController : ControllerBase
     {
         if (id != dto.ImageId)
         {
-            _logger.LogWarning(
-                "Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
-                id,
-                dto.ImageId);
+            _logger.LogWarning("Not consistent request. Request image Id='{requestImageId}'. Dto image Id='{dtoImageId}'",
+                id, dto.ImageId);
 
             return BadRequest("Not consistent request");
         }

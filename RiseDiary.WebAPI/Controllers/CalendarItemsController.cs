@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
-using RiseDiary.Shared.Dates;
+using RiseDiary.Shared.Calendar;
 
 namespace RiseDiary.Api;
 
@@ -24,14 +24,7 @@ public sealed class CalendarItemsController : ControllerBase
 
         var items = await _calendarService.GetCalendarItems(year, themesIds, ct, cancellationToken);
 
-        return items.Select(i => new CalendarDateDto
-        {
-            Id = i.Id.ToString(),
-            Name = i?.Name ?? "",
-            StartDate = i!.StartDate,
-            EndDate = i.EndDate
-        })
-        .ToList();
+        return items.Select(x => x.ToDto()).ToList();
     }
 
     [HttpGet("years")]
@@ -43,4 +36,16 @@ public sealed class CalendarItemsController : ControllerBase
 
         return await _calendarService.GetYears(themesIds, ct, cancellationToken);
     }
+}
+
+
+internal static class DtoExtensions
+{
+    public static CalendarDateDto ToDto(this CalendarItem calendarItem) => new()
+    {
+        Id = calendarItem.Id.ToString(),
+        Name = calendarItem?.Name ?? "",
+        StartDate = calendarItem!.StartDate,
+        EndDate = calendarItem.EndDate
+    };
 }

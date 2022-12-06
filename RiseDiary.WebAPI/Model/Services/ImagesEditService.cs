@@ -91,7 +91,7 @@ internal class ImagesEditService : ImagesService, IImagesEditService
         bool changesAlreadyExists = await ImageHasChanges(imageId);
         if (changesAlreadyExists) throw new ArgumentException($"Image with id='{imageId}' has unsaved changes");
 
-        if (image.GetBiggestImageDimm() < newBiggestDimensionSize) throw new Exception("New dimension should be less than actual");
+        if (Math.Max(image.Width, image.Height) < newBiggestDimensionSize) throw new Exception("New dimension should be less than actual");
 
         var sourceImage = await _context.FullSizeImages
             .AsNoTracking()

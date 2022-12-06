@@ -1,4 +1,4 @@
-﻿namespace RiseDiary.Shared.Dates;
+﻿namespace RiseDiary.Shared.Calendar;
 
 public sealed class DateListItemDto
 {

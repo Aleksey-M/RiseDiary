@@ -4,7 +4,7 @@ using RiseDiary.Model;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Images;
 
-namespace RiseDiary.Api;
+namespace RiseDiary.WebAPI.Controllers.ImagesArea;
 
 [ApiController]
 public sealed class ImagesController : ControllerBase
@@ -103,28 +103,7 @@ public sealed class ImagesController : ControllerBase
         var img = await _imagesService.FetchImageById(id, cancellationToken);
         var imageLinks = await _recordsImagesService.GetLinkedRecordsInfo(id, cancellationToken);
 
-        return new ImageDto
-        {
-            Id = img.Id,
-            Name = img.Name,
-            CreateDate = img.CreateDate,
-            ModifyDate = img.ModifyDate,
-            Width = img.Width,
-            Height = img.Height,
-            CameraModel = img.CameraModel ?? "",
-            Taken = img.Taken,
-            SizeKb = img.SizeByte.ToFileSizeString(),
-            ContentType = img.ContentType,
-            ImageLinks = imageLinks,
-            TempImage = img.TempImage == null ? null : new TempImageDto
-            {
-                Id = img.TempImage.Id,
-                Modification = img.TempImage.Modification,
-                Width = img.TempImage.Width,
-                Height = img.TempImage.Height,
-                SizeKb = img.TempImage.SizeByte.ToFileSizeString()
-            }
-        };
+        return img.ToDto(imageLinks);
     }
 
     [HttpGet("api/images")]
@@ -143,16 +122,7 @@ public sealed class ImagesController : ControllerBase
         return new ImagesPageDto
         {
             PagesInfo = pagesInfo,
-            Images = images.Select(i => new ImageListItemDto
-            {
-                Id = i.Id,
-                Name = i.Name,
-                Width = i.Width,
-                Height = i.Height,
-                SizeKb = i.SizeByte.ToFileSizeString(),
-                Base64Thumbnail = i.GetBase64Thumbnail()
-            })
-            .ToList()
+            Images = images.Select(x => x.ToListDto()).ToList()
         };
     }
 }

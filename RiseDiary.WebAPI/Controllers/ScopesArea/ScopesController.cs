@@ -3,7 +3,7 @@ using RiseDiary.Model;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Scopes;
 
-namespace RiseDiary.Api;
+namespace RiseDiary.WebAPI.Controllers.ScopesArea;
 
 [ApiController]
 [Route("api/scopes")]
@@ -55,23 +55,7 @@ public sealed class ScopesController : ControllerBase
     public async Task<ActionResult<List<ScopeDto>>> GetScopes(bool? actual, CancellationToken cancellationToken)
     {
         var scopes = await _scopeService.GetScopes(actual, cancellationToken);
-
-        return scopes.Select(s => new ScopeDto
-        {
-            ScopeId = s.Id,
-            ScopeName = s.ScopeName,
-            ScopeDescription = s.Description,
-            Themes = s.Themes.Select(t => new ThemeDto
-            {
-                ThemeId = t.Id,
-                ScopeId = t.ScopeId,
-                ThemeName = t.ThemeName,
-                ThemeDescription = t.Description,
-                Actual = t.Actual
-            })
-            .ToList()
-        })
-        .ToList();
+        return scopes.Select(s => s.ToDto()).ToList();
     }
 
     [HttpPut("{id}")]

@@ -1,0 +1,30 @@
+﻿@page "/records/this-day"
+
+<PageTitle>Этот день</PageTitle>
+
+@inject ILogger<ThisDay> Logger
+
+@inherits UIComponentBase
+
+
+@code {
+    public string ThisDay => DateTime.UtcNow.ToString("m");
+
+    //private List<>
+
+    protected override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            //_startPageRecord = await Http.GetFromJsonAsync<StartPageRecordDto>("api/records/startpage", Token);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc);
+            ErrorMessage = exc.Message;
+            //_startPageRecord = new();
+        }
+    }
+}

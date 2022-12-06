@@ -50,7 +50,7 @@
 
         try
         {
-            _startPageRecord = await Http.GetFromJsonAsync<StartPageRecordDto>("api/records/startpage", Token);
+            _startPageRecord = await Http.GetFromJsonAsync<StartPageRecordDto>("api/startpage", Token);
         }
         catch (Exception exc)
         {

@@ -63,20 +63,5 @@ public sealed class TempImage
 
 public static class ImageExtensions
 {
-    public static int GetBiggestImageDimm(this DiaryImage image) => image.Width > image.Height ? image.Width : image.Height;
-
     public static string GetBase64Thumbnail(this DiaryImage image) => Convert.ToBase64String(image.Thumbnail);
-}
-
-public sealed class ScaledImagePreview
-{
-    public double Coefficient { get; }
-
-    public byte[] Image { get; }
-
-    public ScaledImagePreview(double coefficient, byte[] image)
-    {
-        Coefficient = coefficient;
-        Image = image;
-    }
 }

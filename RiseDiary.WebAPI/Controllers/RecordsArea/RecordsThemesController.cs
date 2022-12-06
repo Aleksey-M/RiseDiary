@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
-using RiseDiary.Shared.Dto;
+using RiseDiary.Shared.Records;
 
-namespace RiseDiary.Api;
+namespace RiseDiary.WebAPI.Controllers.RecordsArea;
 
 [ApiController]
 [Route("api/records")]

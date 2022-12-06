@@ -23,11 +23,10 @@ public sealed class DiaryRecord : IDeletedEntity
     public ICollection<DiaryRecordImage> ImagesRefs { get; private set; } = null!;
 }
 
+
 public static class DiaryRecordExtensions
 {
     public static string GetRecordNameDisplay(this DiaryRecord rec) => string.IsNullOrWhiteSpace(rec.Name) ? "[ПУСТО]" : rec.Name;
-
-    public static string GetRecordNameDisplay(this string recName) => string.IsNullOrWhiteSpace(recName) ? "[ПУСТО]" : recName;
 
     public static string GetRecordTextShort(this DiaryRecord rec)
     {
@@ -35,6 +34,7 @@ public static class DiaryRecordExtensions
         return rec.Text.Length < 35 ? rec.Text : string.Concat(rec.Text.AsSpan(0, 35), "[...]");
     }
 }
+
 
 public sealed class Cogitation : IDeletedEntity
 {
@@ -51,6 +51,7 @@ public sealed class Cogitation : IDeletedEntity
     public DiaryRecord? Record { get; set; }
 }
 
+
 public sealed class DiaryRecordTheme : IDeletedEntity
 {
     public Guid ThemeId { get; set; }
@@ -63,6 +64,7 @@ public sealed class DiaryRecordTheme : IDeletedEntity
 
     public DiaryRecord? Record { get; set; }
 }
+
 
 public sealed class DiaryRecordImage : IDeletedEntity
 {

@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
-using RiseDiary.Shared;
-using RiseDiary.Shared.Dto;
-using RiseDiary.Shared.Images;
 using RiseDiary.Shared.Records;
-using RiseDiary.Shared.Scopes;
 
-namespace RiseDiary.Api;
+namespace RiseDiary.WebAPI.Controllers.RecordsArea;
 
 [ApiController]
 [Route("api/records")]
@@ -45,45 +41,7 @@ public sealed class RecordsController : ControllerBase
     public async Task<ActionResult<RecordDto>> GetRecord(Guid recordId, CancellationToken cancellationToken)
     {
         var record = await _recordService.FetchRecordById(recordId, cancellationToken);
-
-        return new RecordDto
-        {
-            Id = record.Id,
-            Date = record.Date,
-            CreatedDate = record.CreateDate,
-            ModifiedDate = record.ModifyDate,
-            Name = record.Name,
-            Text = record.Text,
-            Cogitations = record.Cogitations
-                .Select(c => new CogitationDto
-                {
-                    Id = c.Id,
-                    CreateDate = c.Date,
-                    Text = c.Text
-                })
-                .ToArray(),
-            Themes = record.ThemesRefs
-                .Select(rt => rt.Theme)
-                .Select(t => new ThemeDto
-                {
-                    ThemeId = t!.Id,
-                    ThemeName = t.ThemeName,
-                    Actual = t.Actual
-                })
-                .ToArray(),
-            Images = record.ImagesRefs
-                .Select(ri => ri.Image)
-                .Select(i => new ImageListItemDto
-                {
-                    Id = i!.Id,
-                    Name = i.Name,
-                    Width = i.Width,
-                    Height = i.Height,
-                    SizeKb = i.SizeByte.ToFileSizeString(),
-                    Base64Thumbnail = i.GetBase64Thumbnail()
-                })
-                .ToArray()
-        };
+        return record.ToDto();
     }
 
     [HttpDelete("{recordId}")]
@@ -134,23 +92,5 @@ public sealed class RecordsController : ControllerBase
 
         await _cogitationsService.DeleteCogitation(cogitationId);
         return NoContent();
-    }
-
-    [HttpGet("startpage")]
-    public async Task<ActionResult<StartPageRecordDto>> GetStartPageRecord(CancellationToken token)
-    {
-        var (recordId, _) = await _appSettingsService.GetAppSetting(AppSettingsKey.StartPageRecordId);
-
-        if (recordId != null && Guid.TryParse(recordId, out var id))
-        {
-            var rec = await _recordService.FetchRecordById(id, token);
-            return Ok(new StartPageRecordDto
-            {
-                RecordId = id,
-                RecordMdText = rec.Text
-            });
-        }
-
-        return Ok(new StartPageRecordDto());
     }
 }
