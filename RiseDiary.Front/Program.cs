@@ -17,6 +17,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddScoped<MarkdownService>();
 builder.Services.AddScoped<PrepareImageService>();
 builder.Services.AddScoped<Jcrop>();
+builder.Services.AddScoped<CalendarComponent>();
 
 // validators
 builder.Services.AddScoped<IDtoValidator<ScopeDto>, ScopeValidator>();

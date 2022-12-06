@@ -1,0 +1,24 @@
+﻿<div class="col-12 mt-1 mb-2">
+    @foreach (var kv in _pagesLinks)
+    {
+        @if (!kv.Key.Contains(CurrentPageUriPart, StringComparison.OrdinalIgnoreCase))
+        {
+            <NavLink href="@kv.Key" class="btn btn-link">@kv.Value</NavLink>
+        }
+        else
+        {
+            <NavLink href="@kv.Key" class="btn btn-link disabled">@kv.Value</NavLink>
+        }
+    }
+</div>
+
+@code {
+
+    private Dictionary<string, string> _pagesLinks = new Dictionary<string, string>() {
+        { "dates/nearest", "Ближайшие даты" },
+        { "dates/fulllist", "Все даты года" },
+        { "dates/oncalendar", "Даты на календаре" } };
+
+    [Parameter, EditorRequired]
+    public string CurrentPageUriPart { get; set; } = null!;
+}

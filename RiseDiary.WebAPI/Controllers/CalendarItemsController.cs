@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
-using RiseDiary.Shared.Dto;
+using RiseDiary.Shared.Dates;
 
 namespace RiseDiary.Api;
 

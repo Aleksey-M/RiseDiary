@@ -1,0 +1,73 @@
+﻿@page "/dates/fulllist"
+
+@using RiseDiary.Shared.Dates;
+
+@inherits UIComponentBase
+
+@inject NavigationManager NavManager
+@inject HttpClient Http
+
+<PageTitle>Все даты</PageTitle>
+
+
+<Spinner Loading="Loading">
+    <div class="row">
+        @if (_datesList != null)
+        {
+            <DatesSubmenu CurrentPageUriPart="fulllist" />
+
+            <div class="col-12">
+                <table class="table table-striped">
+                    <tbody>
+                        @foreach (var date in _datesList)
+                        {
+                            <tr>
+                                <td>
+                                    @date.TransferredDate.ToString("yyyy.MM.dd ddd")
+                                </td>
+                                <td style="color:darkred">
+                                    @date.Date.ToString("yyyy.MM.dd")
+                                </td>
+                                <td>
+                                    <NavLink href="@GetRecordLink(date)">@date.Name</NavLink>
+                                    <p class="small"><i>@date.Themes</i></p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+</Spinner>
+
+@code {
+    private List<DateListItemDto>? _datesList;
+
+    private DateOnly Today { get; } = DateOnly.FromDateTime(DateTime.UtcNow);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            await StartApiRequest();
+
+            _datesList = await Http.GetFromJsonAsync<List<DateListItemDto>>("api/dates/fulllist", Token);
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            _datesList = new();
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    public string GetRecordLink(DateListItemDto dto) => NavManager.GetUriWithQueryParameters("records/view", new Dictionary<string, object?>
+    {
+        ["recordId"] = dto.Id
+    });
+}

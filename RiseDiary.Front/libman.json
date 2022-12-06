@@ -6,6 +6,16 @@
       "library": "bootstrap@5.2.3",
       "files": [ "dist/css/bootstrap.min.css", "dist/js/bootstrap.bundle.min.js" ],
       "destination": "wwwroot/lib/bootstrap"
+    },
+    {
+      "library": "js-year-calendar@1.0.2",
+      "files": [ "dist/js-year-calendar.min.css", "dist/js-year-calendar.min.js" ],
+      "destination": "wwwroot/lib/calendar"
+    },
+    {
+      "library": "jcrop@3.0.1",
+      "files": [ "dist/jcrop.js", "dist/jcrop.css" ],
+      "destination": "wwwroot/lib/jcrop"
     }
   ]
 }

@@ -59,19 +59,31 @@ public sealed class JcropInstance
     public string ImageCssId { get; set; } = string.Empty;
 }
 
-public class Jcrop : IAsyncDisposable
+public sealed class Jcrop : IAsyncDisposable
 {
     private readonly Lazy<Task<IJSObjectReference>> moduleTask;
 
     public Jcrop(IJSRuntime jsRuntime)
     {
         moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-            "import", "./js/jcrop.js").AsTask());
+            "import", "./js/jcrop-component.js").AsTask());
+    }
+
+    private async Task<IJSObjectReference> LoadModule()
+    {
+        var module = await moduleTask.Value;
+
+        var callbacks = new CallbacksTask();
+        using var callbacksJsRef = callbacks.CreateRefForJs();
+        await module.InvokeVoidAsync("loadLib", callbacksJsRef);
+        await callbacks.WaitTask;
+
+        return module;
     }
 
     public async Task<JcropInstance> Init(string imageElementId)
-    {
-        var module = await moduleTask.Value;
+    {        
+        var module = await LoadModule();
 
         var callbacks = new CallbacksTask<IJSObjectReference>();
         using var callbacksJsRef = callbacks.CreateRefForJs();
@@ -90,7 +102,7 @@ public class Jcrop : IAsyncDisposable
 
     public async Task<ImageSelection> GetSelection(JcropInstance jcrop)
     {
-        var module = await moduleTask.Value;
+        var module = await LoadModule();
 
         var callbacks = new CallbacksTask<ImageSelection>();
         using var callbacksJsRef = callbacks.CreateRefForJs();
@@ -101,7 +113,7 @@ public class Jcrop : IAsyncDisposable
 
     public async Task DisposeJcropInstance(JcropInstance jcrop)
     {
-        var module = await moduleTask.Value;
+        var module = await LoadModule();
 
         var callbacks = new CallbacksTask();
         using var callbacksJsRef = callbacks.CreateRefForJs();

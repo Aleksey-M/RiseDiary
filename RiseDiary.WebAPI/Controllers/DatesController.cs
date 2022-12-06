@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
-using RiseDiary.Shared.Dto;
+using RiseDiary.Shared.Dates;
 
 namespace RiseDiary.Api;
 
@@ -16,7 +16,7 @@ public sealed class DatesController : ControllerBase
         _datesService = datesService;
     }
 
-    [HttpGet("all")]
+    [HttpGet("fulllist")]
     public async Task<ActionResult<List<DateListItemDto>>> GetAllDates(CancellationToken cancellationToken)
     {
         var records = await _datesService.GetAllDates(DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken);
@@ -34,12 +34,11 @@ public sealed class DatesController : ControllerBase
         .ToList();
     }
 
-    [HttpGet("range")]
-    public async Task<ActionResult<List<DateListItemDto>>> GetDatesRange(
-        CancellationToken cancellationToken, [FromQuery] bool withEmptyDates = true)
+    [HttpGet("nearest")]
+    public async Task<ActionResult<List<DateListItemDto>>> GetDatesRange(CancellationToken cancellationToken)
     {
         var records = await _datesService.GetDatesFromRange(
-            DateOnly.FromDateTime(DateTime.UtcNow), withEmptyDates, cancellationToken);
+            DateOnly.FromDateTime(DateTime.UtcNow), true, cancellationToken);
 
         return records.Select(d => new DateListItemDto
         {
