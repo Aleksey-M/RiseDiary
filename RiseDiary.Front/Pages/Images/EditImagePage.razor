@@ -1,6 +1,6 @@
 ﻿@page "/images/edit"
 
-@using RiseDiary.Front.JsHelpers;
+@using RiseDiary.Front.JsComponents;
 @using RiseDiary.Shared.Images
 
 @inherits UIComponentBase
@@ -69,13 +69,13 @@ else
                                 </div>
 
                                 <div class="mx-2">
-                                    <button type="submit" class="btn" @onclick="async _ => await ScaleImage()" title="Уменьшить размер изображения">
+                                    <button type="submit" class="btn" @onclick="ScaleImage" title="Уменьшить размер изображения">
                                         <img src="img/aspect-ratio.svg" width="20" height="20" alt="Уменьшить размер изображения" />
                                     </button>
                                 </div>
 
                                 <div class="mx-2">
-                                    <button class="btn" title="Обрезать изображение" @onclick="async _ => await CropImage()">
+                                    <button class="btn" title="Обрезать изображение" @onclick="CropImage">
                                         <img src="@ScissorsIcon" width="20" height="20" alt="Обрезать изображение" />
                                     </button>
                                 </div>
@@ -93,7 +93,7 @@ else
                                 </div>
 
                                 <div class="mx-2">
-                                    <button class="btn" title="Удалить изображение" @onclick="async _ => await DeleteImage()">
+                                    <button class="btn" title="Удалить изображение" @onclick="DeleteImage">
                                         <img src="img/trash.svg" width="20" height="20" alt="Удалить" />
                                     </button>
                                 </div>
@@ -112,15 +112,15 @@ else
 
                         <div class="col-12 m-2">
                             <div class="pagination">
-                                <button type="submit" @onclick="async _ => await SaveUpdatedImage()" class="btn me-1" title="Сохранить изменения">
+                                <button type="submit" @onclick="SaveUpdatedImage" class="btn me-1" title="Сохранить изменения">
                                     <img src="img/clipboard-check.svg" width="20" height="20" alt="Сохранить изменения" />
                                 </button>
 
-                                <button type="submit" @onclick="async _ => await SaveUpdatedAsNewImage()" class="btn mx-1" title="Сохранить как новое изображение">
+                                <button type="submit" @onclick="SaveUpdatedAsNewImage" class="btn mx-1" title="Сохранить как новое изображение">
                                     <img src="img/front.svg" width="20" height="20" alt="Сохранить как новое" />
                                 </button>
 
-                                <button type="submit" @onclick="async _ => await CancelEdit()" class="btn mx-1" title="Отменить изменения">
+                                <button type="submit" @onclick="CancelEdit" class="btn mx-1" title="Отменить изменения">
                                     <img src="img/clipboard-x.svg" width="20" height="20" alt="Отменить изменения" />
                                 </button>
                             </div>

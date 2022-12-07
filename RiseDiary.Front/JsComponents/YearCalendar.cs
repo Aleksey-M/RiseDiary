@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace RiseDiary.Front.JsHelpers;
+namespace RiseDiary.Front.JsComponents;
 
 public sealed class DateClickHandler
 {
@@ -21,18 +21,18 @@ public sealed class DateClickHandler
     public DotNetObjectReference<DateClickHandler> CreateRefForJs() => DotNetObjectReference.Create(this);
 }
 
-public sealed class CalendarComponent : IAsyncDisposable
+public sealed class YearCalendar : IAsyncDisposable
 {
     private readonly Lazy<Task<IJSObjectReference>> moduleTask;
     private readonly Lazy<Task<IJSObjectReference>> calendarLibTask;
 
-    public CalendarComponent(IJSRuntime jsRuntime)
+    public YearCalendar(IJSRuntime jsRuntime)
     {
         calendarLibTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
             "import", "./lib/calendar/dist/js-year-calendar.min.js").AsTask());
 
         moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-            "import", "./js/calendar-component.js").AsTask());
+            "import", "./js/YearCalendar.cs.js").AsTask());
     }
 
     private async Task<IJSObjectReference> LoadModule()

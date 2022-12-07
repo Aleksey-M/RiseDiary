@@ -1,7 +1,6 @@
-﻿@using RiseDiary.Model
-@using RiseDiary.WebUI
+﻿@using RiseDiary.Shared.Records
 
-@inject BrowserTimeOffsetService _browserTimeOffsetService
+@inject NavigationManager NavManager
 
 @if (Records.Count() == 0)
 {
@@ -9,90 +8,7 @@
         <h3 style="color:silver">Нет записей</h3>
     </div>
 }
-
-
-@if (Expanded && Records.Count() > 0)
-{
-    <div class="offset-lg-2 col-lg-8 col-md-12">
-        <table class="table">
-            <tbody>
-                <tr>
-                    <td colspan="5">
-                        <div class="row">
-                            @foreach (var rec in Records)
-                            {
-                                <div class="col-12 p-1">
-                                    <hr />
-                                    <div class="px-2">
-
-                                        <p>
-                                            <b>
-                                                <i><a href="/Records/View?recordId=@rec.Id">@rec.Date.ToString("yyyy.MM.dd")</a></i>
-                                                &nbsp;@rec.GetRecordNameDisplay()
-                                            </b>
-                                        </p>
-
-                                        <p>
-                                            <small><i>@GetAllThemes(rec)</i></small>
-                                        </p>
-
-                                        <p>
-                                            @((MarkupString)rec.Text)
-                                        </p>
-
-                                        <div class="row">
-                                            @foreach (var image in rec.ImagesRefs)
-                                            {
-                                                <div class="col-lg-2 col-md-4 col-sm-6 p-3">
-                                                    <Thumbnail  Image="image.Image" OnlyImage="true" />
-                                                </div>
-                                            }
-                                        </div>
-                                    </div>
-
-                                    @if (rec.Cogitations.Any())
-                                    {
-                                        <div class="row p-3">
-                                            @foreach (var cog in rec.Cogitations)
-                                            {
-                                                <div class="offset-2 col-10 mt-2">
-
-                                                    <p>
-                                                        <b>
-                                                            <i>
-                                                                <a href="/Records/View?recordId=@rec.Id">
-                                                                    @_browserTimeOffsetService.ToLocalString(cog.Date)                                                                    
-                                                                </a>
-                                                            </i>
-                                                        </b>
-                                                    </p>
-
-                                                    <p>
-                                                        @((MarkupString)cog.Text)
-                                                    </p>
-                                                </div>
-                                            }
-                                        </div>
-                                    }
-                                </div>
-                            }
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-            @if (TotalCount.HasValue)
-            {
-                <tfoot>
-                    <tr>
-                        <td colspan="5"><b><i>Записей отфильтровано : @TotalCount.Value</i></b></td>
-                    </tr>
-                </tfoot>
-            }
-        </table>
-    </div>
-}
-
-@if (!Expanded && Records.Count() > 0)
+else
 {
     <div class="col-12">
         <table class="table table-striped">
@@ -101,20 +17,21 @@
                 {
                     <tr>
                         <td class="main-date-column">@rec.Date.ToString("yyyy.MM.dd")</td>
-                        <td><a href="/Records/View?recordId=@rec.Id">@rec.GetRecordNameDisplay()</a></td>
-                        <td class="date-column">@_browserTimeOffsetService.ToLocalString(rec.CreateDate)</td>
-                        <td class="date-column">@_browserTimeOffsetService.ToLocalString(rec.ModifyDate)</td>
+                        <td><NavLink href="@GetRecordLink(rec)">@rec.DisplayedName</NavLink></td>
+                        <td class="date-column">@rec.CreatedDate.ToLocalTime().ToString("yyyy.MM.dd HH.mm.ss")</td>
+                        <td class="date-column">@rec.ModifiedDate.ToLocalTime().ToString("yyyy.MM.dd HH.mm.ss")</td>
                     </tr>
                 }
             </tbody>
+
             @if (TotalCount.HasValue)
             {
                 <tfoot>
-                <tr>
-                    <td colspan="5"><b><i>Записей отфильтровано : @TotalCount.Value</i></b></td>
-                </tr>
-            </tfoot>
-            }            
+                    <tr>
+                        <td colspan="4"><b><i>Записей отфильтровано : @TotalCount.Value</i></b></td>
+                    </tr>
+                </tfoot>
+            }
         </table>
     </div>
 }
@@ -122,24 +39,13 @@
 @code {
 
     [Parameter]
-    public IEnumerable<DiaryRecord> Records { get; set; } = Enumerable.Empty<DiaryRecord>();
+    public IEnumerable<RecordListItemDto> Records { get; set; } = Enumerable.Empty<RecordListItemDto>();
 
     [Parameter]
     public int? TotalCount { get; set; }
 
-    [Parameter]
-    public bool Expanded { get; set; }
-
-    private string GetAllThemes(DiaryRecord record)
-    {
-        try
-        {                
-            var themesNames = record.ThemesRefs.Select(tr => tr.Theme?.ThemeName ?? "").ToList();
-            return string.Join(" | ", themesNames);
-        }
-        catch
+    public string GetRecordLink(RecordListItemDto dto) => NavManager.GetUriWithQueryParameters("records/view", new Dictionary<string, object?>
         {
-            return "ERROR!";
-        }
-    }
+            ["recordId"] = dto.RecordId
+        });
 }

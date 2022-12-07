@@ -38,8 +38,7 @@ internal static class DtoExtensions
         Date = record.Date,
         CreatedDate = record.CreateDate,
         ModifiedDate = record.ModifyDate,
-        DisplayedName = record.GetRecordNameDisplay(),
-        DisplayedText = record.GetRecordTextShort(),
+        DisplayedName = record.Name,
         RecordId = record.Id
     };
 }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using RiseDiary.Shared.Images;
 
-namespace RiseDiary.Front.JsHelpers;
+namespace RiseDiary.Front.JsComponents;
 
 public sealed class ImageSelection
 {
@@ -66,7 +66,7 @@ public sealed class Jcrop : IAsyncDisposable
     public Jcrop(IJSRuntime jsRuntime)
     {
         moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-            "import", "./js/jcrop-component.js").AsTask());
+            "import", "./js/Jcrop.cs.js").AsTask());
     }
 
     private async Task<IJSObjectReference> LoadModule()

@@ -23,19 +23,6 @@ public sealed class DiaryRecord : IDeletedEntity
     public ICollection<DiaryRecordImage> ImagesRefs { get; private set; } = null!;
 }
 
-
-public static class DiaryRecordExtensions
-{
-    public static string GetRecordNameDisplay(this DiaryRecord rec) => string.IsNullOrWhiteSpace(rec.Name) ? "[ПУСТО]" : rec.Name;
-
-    public static string GetRecordTextShort(this DiaryRecord rec)
-    {
-        if (string.IsNullOrEmpty(rec.Text)) return "[ПУСТО]";
-        return rec.Text.Length < 35 ? rec.Text : string.Concat(rec.Text.AsSpan(0, 35), "[...]");
-    }
-}
-
-
 public sealed class Cogitation : IDeletedEntity
 {
     public Guid Id { get; set; }

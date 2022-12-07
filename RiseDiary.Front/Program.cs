@@ -5,7 +5,7 @@ using RiseDiary.Front.AppServices;
 using RiseDiary.Shared.Scopes;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Settings;
-using RiseDiary.Front.JsHelpers;
+using RiseDiary.Front.JsComponents;
 using RiseDiary.Shared.Images;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -17,7 +17,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddScoped<MarkdownService>();
 builder.Services.AddScoped<PrepareImageService>();
 builder.Services.AddScoped<Jcrop>();
-builder.Services.AddScoped<CalendarComponent>();
+builder.Services.AddScoped<YearCalendar>();
 
 // validators
 builder.Services.AddScoped<IDtoValidator<ScopeDto>, ScopeValidator>();
@@ -32,7 +32,7 @@ builder.Services.AddScoped<CropImageDtoValidator>();
 
 
 // js helpers
-builder.Services.AddScoped<JsImgHelper>();
+builder.Services.AddScoped<ImageDimensionsReader>();
 
 
 await builder.Build().RunAsync();

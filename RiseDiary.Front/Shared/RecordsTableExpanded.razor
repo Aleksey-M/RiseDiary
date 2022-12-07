@@ -1,0 +1,116 @@
+﻿@using RiseDiary.Front.AppServices;
+@using RiseDiary.Shared.Records
+
+@inject NavigationManager NavManager
+@inject MarkdownService MdService
+
+@if (Records.Count() == 0)
+{
+    <div class="col-12 p-5">
+        <h3 style="color:silver">Нет записей</h3>
+    </div>
+}
+else
+{
+    <div class="offset-lg-2 col-lg-8 col-md-12">
+        <div class="row">
+            @foreach (var rec in Records)
+            {
+                <div class="col-12 p-1">
+                    <hr />
+                    <div class="px-2">
+
+                        <p>
+                            <b>
+                                <i><NavLink href="@GetRecordLink(rec)">@rec.Date.ToString("yyyy.MM.dd")</NavLink></i>
+                                &nbsp;@rec.Name
+                            </b>
+                        </p>
+
+                        <p>
+                            <small><i>@GetAllThemes(rec)</i></small>
+                        </p>
+
+                        <p>
+                            @(MdService.ToHtml(rec.Text))
+                        </p>
+
+                        <div class="row">
+                            @foreach (var image in rec.Images)
+                            {
+                                <div class="col-lg-2 col-md-4 col-sm-6 p-3">
+                                    <Thumbnail Image="image" OnlyImage="true" ImageClick="_ => {}" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    @if (rec.Cogitations.Any())
+                    {
+                        <div class="row p-3">
+                            @foreach (var cog in rec.Cogitations)
+                            {
+                                <div class="offset-2 col-10 mt-2">
+
+                                    <p>
+                                        <b>
+                                            <i>
+                                                <NavLink href="@GetRecordLink(rec)">
+                                                    @cog.CreateDate.ToLocalTime().ToString("yyyy.MM.dd HH.mm.ss")
+                                                </NavLink>
+                                            </i>
+                                        </b>
+                                    </p>
+
+                                    <p>
+                                        @MdService.ToHtml(cog.Text)
+                                    </p>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+    </div>
+
+    @if (TotalCount.HasValue)
+    {
+        <div class="row">
+            <div class="col-12 p-1">
+                <hr class="mb-2" />
+
+                <b><i>Записей отфильтровано : @TotalCount.Value</i></b>
+            </div>
+        </div>
+    }
+}
+
+@code {
+
+    [Parameter]
+    public IEnumerable<RecordDto> Records { get; set; } = Enumerable.Empty<RecordDto>();
+
+    [Parameter]
+    public int? TotalCount { get; set; }
+
+
+    private string GetAllThemes(RecordDto record)
+    {
+        try
+        {
+            var themesNames = record.Themes.Select(tr => tr.ThemeName).ToList();
+            return string.Join(" | ", themesNames);
+        }
+        catch
+        {
+            return "ERROR!";
+        }
+    }
+
+    public string GetRecordLink(RecordDto dto) => NavManager.GetUriWithQueryParameters("records/view", new Dictionary<string, object?>
+        {
+            ["recordId"] = dto.Id
+        });
+}

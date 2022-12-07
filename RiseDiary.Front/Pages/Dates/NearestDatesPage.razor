@@ -12,6 +12,12 @@
 
 <Spinner Loading="Loading">
     <div class="row">
+
+        @if (HasError)
+        {
+            <p style="color:red">@ErrorMessage</p>
+        }
+
         @if (_datesList != null)
         {
             <DatesSubmenu CurrentPageUriPart="nearest" />

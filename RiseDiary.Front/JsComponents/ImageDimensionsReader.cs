@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace RiseDiary.Front.JsHelpers;
+namespace RiseDiary.Front.JsComponents;
 
 public class ImgDimensions
 {
@@ -11,14 +11,14 @@ public class ImgDimensions
     public int GetBiggest() => Width > Height ? Width : Height;
 }
 
-public class JsImgHelper : IAsyncDisposable
+public class ImageDimensionsReader : IAsyncDisposable
 {
     private readonly Lazy<Task<IJSObjectReference>> moduleTask;
 
-    public JsImgHelper(IJSRuntime jsRuntime)
+    public ImageDimensionsReader(IJSRuntime jsRuntime)
     {
         moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-            "import", "./js/images-helper.js").AsTask());
+            "import", "./js/ImageDimensionsReader.cs.js").AsTask());
     }
 
     public async Task<ImgDimensions> GetImgDimensions(Stream imageDataStream)

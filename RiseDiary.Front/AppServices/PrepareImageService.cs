@@ -1,17 +1,17 @@
 ﻿using ExifLibrary;
 using Microsoft.AspNetCore.Components.Forms;
-using RiseDiary.Front.JsHelpers;
+using RiseDiary.Front.JsComponents;
 using RiseDiary.Shared.Images;
 
 namespace RiseDiary.Front.AppServices;
 
 public class PrepareImageService
 {
-    private protected JsImgHelper _jsImgHelper;
+    private protected ImageDimensionsReader _jsImgHelper;
 
     private readonly ILogger<PrepareImageService> _logger;
 
-    public PrepareImageService(JsImgHelper jsImgHelper, ILogger<PrepareImageService> logger)
+    public PrepareImageService(ImageDimensionsReader jsImgHelper, ILogger<PrepareImageService> logger)
     {
         _logger = logger;
         _jsImgHelper = jsImgHelper;

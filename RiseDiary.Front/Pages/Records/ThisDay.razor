@@ -1,0 +1,55 @@
+﻿@page "/records/this-day"
+
+@using RiseDiary.Shared.Records;
+
+@inject ILogger<ThisDay> Logger
+@inject HttpClient Http
+
+@inherits UIComponentBase
+
+
+<PageTitle>Этот день</PageTitle>
+
+<div class="col-12 p-3 text-center"><h3>@ThisDayCaption</h3></div>
+
+@if (HasError)
+{
+    <p style="color:red">@ErrorMessage</p>
+}
+
+<Spinner Loading="Loading">
+    @if (_records != null)
+    {
+        <div class="row">
+            <RecordsTableExpanded Records="_records" TotalCount="3" />
+        </div>
+    }
+</Spinner>
+
+
+@code {
+    public string ThisDayCaption => DateTime.UtcNow.ToString("m");
+
+    private List<RecordDto>? _records;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            await StartApiRequest();
+
+            _records = await Http.GetFromJsonAsync<List<RecordDto>>("api/records/this-day", Token) ?? new();
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            _records = new();
+            Logger.LogWarning(exc, "Eror on 'This Day' page initialization");
+            await FinishApiRequest(exc.Message);
+        }
+    }
+}

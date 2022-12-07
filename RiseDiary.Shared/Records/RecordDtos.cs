@@ -37,9 +37,7 @@ public sealed class RecordListItemDto
 {
     public Guid RecordId { get; set; }
 
-    public string DisplayedName { get; set; } = null!;
-
-    public string DisplayedText { get; set; } = null!;
+    public string DisplayedName { get; set; } = string.Empty;
 
     public DateOnly Date { get; set; }
 

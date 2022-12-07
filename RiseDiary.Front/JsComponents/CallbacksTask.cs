@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace RiseDiary.Front.JsHelpers;
+namespace RiseDiary.Front.JsComponents;
 
 /// <summary>
 /// Ошибка, возникшая при ожидании завершения js-кода
