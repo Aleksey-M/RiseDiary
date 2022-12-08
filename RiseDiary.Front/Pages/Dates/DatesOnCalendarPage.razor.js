@@ -1,6 +1,6 @@
-﻿"use strict"
+﻿'use strict'
 
-export function initCalendar(elementCssSelector, dates, onClickEventHandler, dotnetCallbacks) {
+export function initCalendar(elementCssSelector, dates, onClickEventHandler) {
     try {
 
         const displayDates = dates.map((d) => ({
@@ -30,11 +30,8 @@ export function initCalendar(elementCssSelector, dates, onClickEventHandler, dot
             minDate: new Date(year, 0, 1),
             dataSource: displayDates
         });
-
-        dotnetCallbacks.invokeMethodAsync('Completed');
     }
-    catch (e) {
-        console.log(e.message);
-        dotnetCallbacks.invokeMethodAsync('Error', e.message);
-    }    
+    catch (err) {
+        console.error(err);
+    }
 }

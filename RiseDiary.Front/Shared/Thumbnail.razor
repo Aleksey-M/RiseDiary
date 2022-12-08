@@ -6,15 +6,15 @@
     @if (!OnlyImage)
     {
         <div class="card-header text-wrap text-center">
-            <a href="@EditImageUri">@(Image.Name)</a>
+            <NavLink href="@EditImageUri">@Image.Name</NavLink>
         </div>
     }
 
     <div class="card-body">
         <div class="text-center">
-            <a style="cursor:pointer" @onclick="() => ImageClick(Image.Id)">
+            <NavLink style="cursor:pointer" @onclick="_ => ImageClick(Image.Id)">
                 <img src="data:image/jpg;base64,@Image.Base64Thumbnail" class="img-thumbnail" />
-            </a>
+            </NavLink>
         </div>
     </div>
 
@@ -56,6 +56,6 @@
         NavManager.GetUriWithQueryParameters($"images/edit", new Dictionary<string, object?>
         {
             ["ImageId"] = Image.Id,
-            ["redirectRecordId"] = RecordId
+            ["RedirectRecordId"] = RecordId
         });
 }

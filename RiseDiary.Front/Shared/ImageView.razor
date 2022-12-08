@@ -30,6 +30,6 @@
     private string EditImageUri => NavManager.GetUriWithQueryParameters("/images/edit", new Dictionary<string, object?>
         {
             ["ImageId"] = ImageId,
-            ["recordId"] = RecordId
+            ["redirectRecordId"] = RecordId
         });
 }

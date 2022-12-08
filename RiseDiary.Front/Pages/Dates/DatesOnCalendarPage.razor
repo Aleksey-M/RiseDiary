@@ -1,15 +1,6 @@
 ﻿@page "/dates/oncalendar"
 
-@using RiseDiary.Front.JsComponents;
-@using RiseDiary.Shared.Calendar;
-
 @inherits UIComponentBase
-@implements IDisposable
-
-@inject NavigationManager NavManager
-@inject HttpClient Http
-@inject YearCalendar Calendar
-@inject ILogger<DatesOnCalendarPage> Logger
 
 <PageTitle>Все даты</PageTitle>
 
@@ -59,72 +50,3 @@
     </div>
 
 </Spinner>
-
-
-@code {
-    private List<CalendarDateDto>? _datesList;
-
-    private DotNetObjectReference<DateClickHandler>? _handlerRef;
-
-    private List<CalendarDateDto>? _selectedDates;
-    private string? _selectedDatesHeader;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-
-        try
-        {
-            await StartApiRequest();
-
-            _datesList = await Http.GetFromJsonAsync<List<CalendarDateDto>>("api/dates/calendar", Token);
-
-            var datesOnly = (_datesList ?? new())
-                .Select(x => x.StartDate)
-                .Distinct()
-                .ToList();
-
-            _handlerRef = await Calendar.CreateCalendar(datesOnly, OnDateClick);
-
-            await FinishApiRequest(null);
-        }
-        catch (Exception exc)
-        {
-            _datesList = new();
-            Logger.LogWarning(exc, "Error on initializing");
-            await FinishApiRequest(exc.Message);
-        }
-    }
-
-    private void OnDateClick(DateOnly date)
-    {
-        _selectedDates = null;
-        _selectedDatesHeader = null;
-
-        if (_datesList != null && _datesList.Any(x => x.StartDate == date))
-        {
-            _selectedDates = _datesList.Where(x => x.StartDate == date).ToList();
-            _selectedDatesHeader = $"События {date:yyyy.MM.dd}";
-        }
-
-        StateHasChanged();
-    }
-
-    private void ClearSelected()
-    {
-        _selectedDates = null;
-        _selectedDatesHeader = null;
-    }
-
-    public string GetRecordLink(CalendarDateDto dto) => NavManager.GetUriWithQueryParameters("records/view", new Dictionary<string, object?>
-        {
-            ["recordId"] = dto.Id
-        });
-
-    public new void Dispose()
-    {
-        _handlerRef?.Dispose();
-        _handlerRef = null;
-        base.Dispose();
-    }   
-}

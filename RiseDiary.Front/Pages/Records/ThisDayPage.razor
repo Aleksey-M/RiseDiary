@@ -1,8 +1,9 @@
 ﻿@page "/records/this-day"
 
-@using RiseDiary.Shared.Records;
+@using RiseDiary.Shared.Records
+@using RiseDiary.Front.Shared
 
-@inject ILogger<ThisDay> Logger
+@inject ILogger<ThisDayPage> Logger
 @inject HttpClient Http
 
 @inherits UIComponentBase
@@ -21,7 +22,7 @@
     @if (_records != null)
     {
         <div class="row">
-            <RecordsTableExpanded Records="_records" TotalCount="3" />
+            <RecordsTableExpanded Records="_records" />
         </div>
     }
 </Spinner>

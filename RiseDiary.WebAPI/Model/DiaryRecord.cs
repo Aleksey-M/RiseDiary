@@ -23,6 +23,7 @@ public sealed class DiaryRecord : IDeletedEntity
     public ICollection<DiaryRecordImage> ImagesRefs { get; private set; } = null!;
 }
 
+
 public sealed class Cogitation : IDeletedEntity
 {
     public Guid Id { get; set; }

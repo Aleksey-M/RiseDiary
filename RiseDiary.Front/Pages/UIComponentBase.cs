@@ -4,7 +4,7 @@ using RiseDiary.Shared;
 
 namespace RiseDiary.Front.Pages;
 
-public class UIComponentBase : ComponentBase, IDisposable
+public class UIComponentBase : ComponentBase, IAsyncDisposable
 {
     private readonly Lazy<CancellationTokenSource> _cts = new(() => new CancellationTokenSource(), isThreadSafe: false);
 
@@ -62,14 +62,18 @@ public class UIComponentBase : ComponentBase, IDisposable
         return false;
     }
 
-    public void Dispose()
+    protected virtual ValueTask DisposeComponent() => ValueTask.CompletedTask;
+
+    public async ValueTask DisposeAsync()
     {
         if (_cts.IsValueCreated)
         {
             _cts.Value.Cancel();
-            _cts.Value.Dispose();            
+            _cts.Value.Dispose();
         }
 
         GC.SuppressFinalize(this);
+
+        await DisposeComponent();
     }
 }

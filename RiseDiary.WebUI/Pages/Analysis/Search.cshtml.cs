@@ -38,7 +38,7 @@ namespace RiseDiary.WebUI.Pages.Analysis
         {
             pageNo ??= 1;
             Expanded = expanded.HasValue && expanded.Value;
-            int pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.ImagesPageSize) ?? 50;
+            int pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.RecordsPageSize) ?? 50;
 
             if (string.IsNullOrWhiteSpace(searchString))
             {
