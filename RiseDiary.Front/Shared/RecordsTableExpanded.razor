@@ -1,6 +1,5 @@
 ﻿@using RiseDiary.Front.AppServices;
 @using RiseDiary.Shared.Records
-@using RiseDiary.Front.Shared
 
 @inject NavigationManager NavManager
 @inject MarkdownService MdService
@@ -46,7 +45,7 @@ else
                                 @foreach (var image in rec.Images)
                                 {
                                     <div class="col-lg-2 col-md-4 col-sm-6 p-3">
-                                        <Thumbnail Image="image" RecordId="rec.Id" OnlyImage="true" ImageClick="_ => OpenImage(image.Id)" />
+                                        <Thumbnail Image="image" RecordId="rec.RecordId" OnlyImage="true" ImageClick="_ => OpenImage(image.Id)" />
                                     </div>
                                 }
                             </div>
@@ -106,6 +105,12 @@ else
     private Guid? OpenedImageId;
 
 
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        OpenedImageId = null;
+    }
+
     private string GetAllThemes(RecordDto record)
     {
         try
@@ -133,6 +138,6 @@ else
 
     public string GetRecordLink(RecordDto dto) => NavManager.GetUriWithQueryParameters("records/view", new Dictionary<string, object?>
         {
-            ["recordId"] = dto.Id
+            ["recordId"] = dto.RecordId
         });
 }

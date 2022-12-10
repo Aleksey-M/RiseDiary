@@ -2,6 +2,14 @@
 
 public sealed class PagesInfo
 {
+    /// <summary>
+    /// Calculate pages info
+    /// </summary>
+    /// <param name="totalItems"></param>
+    /// <param name="currentPage">should be >= 1</param>
+    /// <param name="pageSize"></param>
+    /// <param name="maxPages"></param>
+    /// <returns></returns>
     public static PagesInfo GetPagesInfo(int totalItems, int currentPage = 1, int pageSize = 10, int maxPages = 10)
     {
         if (pageSize <= 0) pageSize = 10;

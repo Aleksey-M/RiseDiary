@@ -9,7 +9,7 @@ internal static class DtoExtensions
 {
     public static RecordDto ToDto(this DiaryRecord record) => new RecordDto
     {
-        Id = record.Id,
+        RecordId = record.Id,
         Date = record.Date,
         CreatedDate = record.CreateDate,
         ModifiedDate = record.ModifyDate,
@@ -38,7 +38,7 @@ internal static class DtoExtensions
         Date = record.Date,
         CreatedDate = record.CreateDate,
         ModifiedDate = record.ModifyDate,
-        DisplayedName = record.Name,
+        Name = record.Name,
         RecordId = record.Id
     };
 }

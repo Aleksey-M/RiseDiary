@@ -17,7 +17,7 @@ else
                 {
                     <tr>
                         <td class="main-date-column">@rec.Date.ToString("yyyy.MM.dd")</td>
-                        <td><NavLink href="@GetRecordLink(rec)">@rec.DisplayedName</NavLink></td>
+                        <td><NavLink href="@GetRecordLink(rec)">@rec.Name</NavLink></td>
                         <td class="date-column">@rec.CreatedDate.ToLocalTime().ToString("yyyy.MM.dd HH.mm.ss")</td>
                         <td class="date-column">@rec.ModifiedDate.ToLocalTime().ToString("yyyy.MM.dd HH.mm.ss")</td>
                     </tr>

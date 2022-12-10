@@ -13,10 +13,14 @@ public sealed class RecordsSearchController : ControllerBase
 
     private readonly IRecordsSearchTextService _recordsTextSearchService;
 
+    private readonly IAppSettingsService _appSettingsService;
+
     public RecordsSearchController(
         IRecordsSearchService recordsSearchService,
-        IRecordsSearchTextService recordsTextSearchService)
+        IRecordsSearchTextService recordsTextSearchService,
+        IAppSettingsService appSettingsService)
     {
+        _appSettingsService = appSettingsService;
         _recordsSearchService = recordsSearchService;
         _recordsTextSearchService = recordsTextSearchService;
     }
@@ -28,16 +32,15 @@ public sealed class RecordsSearchController : ControllerBase
         [FromQuery] string? name,
         [FromQuery] bool? combinedThemes,
         [FromQuery] Guid[]? themeId,
-        [FromQuery] int? pageSize,
-        [FromQuery] int? pageNo,
-        [FromQuery] bool? extended,
+        [FromQuery] int? page,
+        [FromQuery] bool? expanded,
         CancellationToken cancellationToken)
     {
         var filters = new RecordsFilter
         {
             CombineThemes = combinedThemes ?? false,
-            PageSize = pageSize ?? default,
-            PageNo = pageNo ?? default,
+            PageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.RecordsPageSize) ?? 50,
+            PageNo = page ?? 0,
             FromDate = from,
             ToDate = to,
             FilterName = name
@@ -53,31 +56,31 @@ public sealed class RecordsSearchController : ControllerBase
 
         var pagesInfo = PagesInfo.GetPagesInfo(allCount, filters.PageNo, filters.PageSize);
 
-        return ReturnResult(pagesInfo, records, extended);
+        return ReturnResult(pagesInfo, records, expanded);
     }
 
 
     [HttpGet("search")]
     public async Task<IActionResult> GetRecordsList(
         [FromQuery] string? searchText,
-        [FromQuery] int? pageSize,
-        [FromQuery] int? pageNo,
-        [FromQuery] bool? extended,
+        [FromQuery] int? page,
+        [FromQuery] bool? expanded,
         CancellationToken cancellationToken)
     {
+        int pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.RecordsPageSize) ?? 50;
+        int allCount = await _recordsTextSearchService.GetRecordsCount(searchText, cancellationToken);
+        var pagesInfo = PagesInfo.GetPagesInfo(allCount, page ?? 1, pageSize);
+
         var filters = new RecordsTextFilter
         {
             SearchText = searchText,
-            PageNo = pageNo ?? default,
-            PageSize = pageSize ?? default
+            PageNo = pagesInfo.CurrentPage - 1,
+            PageSize = pagesInfo.PageSize
         };
 
         var records = await _recordsTextSearchService.GetRecordsList(filters, cancellationToken);
-        int allCount = await _recordsTextSearchService.GetRecordsCount(filters.SearchText, cancellationToken);
 
-        var pagesInfo = PagesInfo.GetPagesInfo(allCount, filters.PageNo, filters.PageSize);
-
-        return ReturnResult(pagesInfo, records, extended);
+        return ReturnResult(pagesInfo, records, expanded);
     }
 
     [HttpGet("this-day")]

@@ -1,5 +1,144 @@
 ﻿@page "/records/search"
+@using RiseDiary.Shared.Records;
+
+@inherits UIComponentBase
+@inject HttpClient Http
+@inject NavigationManager NavManager
+
+<PageTitle>Поиск записей по фрагменту названия или текста</PageTitle>
+
+
+<Spinner Loading="@Loading">
+    @if (_displayTypeParameters != null && _displayType != null)
+    {
+        <div class="col-12">
+            <div class="px-3">
+                <Pager AreaName="records/search" Pages="@_pages" GetParametersList="@SearchParams.ToList()" />
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="px-3">
+                <div class="row">
+                    <div class="offset-lg-2 col-lg-4 col-md-7 col-sm-12 my-2">
+                        <input type="text" placeholder="Строка поиска" @bind-value="_searchText" class="form-control" />
+                    </div>
+
+                    <div class="col-lg-2 col-md-3 col-sm-6 my-2 py-2">
+                        <InputCheckbox @bind-Value="_expanded" name="expanded" id="expanded" />
+                        <label for="expanded">Развернуто</label>
+                    </div>
+
+                    <div class="col-lg-2 col-md-2 col-sm-6 my-2">
+                        <button class="btn btn-outline-info" @onclick="Search">Поиск</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <DynamicComponent Type="@_displayType" Parameters="@_displayTypeParameters" />
+
+        <div class="col-12">
+            <div class="px-3">
+                <Pager AreaName="records/search" Pages="@_pages" GetParametersList="@SearchParams.ToList()" />
+            </div>
+        </div>
+    }
+</Spinner>
 
 @code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int Page { get; set; } = 1;
 
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string SearchText { get; set; } = string.Empty;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Expanded { get; set; } = true;
+
+    private string _searchText = string.Empty;
+    private bool _expanded;
+
+    private PagesInfo _pages = null!;
+
+
+    private Type? _displayType;
+
+    private Dictionary<string, object>? _displayTypeParameters;
+
+
+    private Dictionary<string, string> SearchParams => new()
+        {
+            ["searchText"] = SearchText,
+            ["expanded"] = Expanded.ToString()
+        };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _expanded = Expanded;
+        _searchText = SearchText;
+
+        try
+        {
+            await StartApiRequest();
+
+            var uri = NavManager.GetUriWithQueryParameters("api/records/search", new Dictionary<string, object?>()
+                {
+                    ["searchText"] = SearchText,
+                    ["expanded"] = Expanded,
+                    ["page"] = Page
+                });
+
+            if (Expanded)
+            {
+                _displayType = typeof(RecordsTableExpanded);
+
+                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordDto>>(uri, Token);
+                _pages = response?.PagesInfo ?? new();
+
+                _displayTypeParameters = new()
+                    {
+                        ["Records"] = response?.Records ?? new List<RecordDto>(),
+                        ["TotalCount"] = _pages.TotalItems
+                    };
+            }
+            else
+            {
+                _displayType = typeof(RecordsTable);
+
+                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordListItemDto>>(uri, Token);
+                _pages = response?.PagesInfo ?? new();
+
+                _displayTypeParameters = new()
+                    {
+                        ["Records"] = response?.Records ?? new List<RecordListItemDto>(),
+                        ["TotalCount"] = _pages.TotalItems
+                    };
+            }
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            _displayTypeParameters = null;
+            _pages = new();
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private void Search()
+    {
+        NavManager.NavigateTo(NavManager.GetUriWithQueryParameters(new Dictionary<string, object?>
+            {
+                ["searchText"] = _searchText,
+                ["expanded"] = _expanded,
+                ["page"] = 1
+            }));
+    }
 }

@@ -3,19 +3,23 @@ using RiseDiary.Shared.Scopes;
 
 namespace RiseDiary.Shared.Records;
 
-public sealed class RecordDto
+public class RecordListItemDto
 {
-    public Guid Id { get; set; }
+    public Guid RecordId { get; set; }
+
+    public string Name { get; set; } = string.Empty;
 
     public DateOnly Date { get; set; }
 
     public DateTime CreatedDate { get; set; }
 
     public DateTime ModifiedDate { get; set; }
+}
 
-    public string? Name { get; set; }
 
-    public string Text { get; set; } = "";
+public sealed class RecordDto : RecordListItemDto
+{
+    public string Text { get; set; } = string.Empty;
 
     public ThemeDto[] Themes { get; set; } = Array.Empty<ThemeDto>();
 
@@ -23,6 +27,7 @@ public sealed class RecordDto
 
     public CogitationDto[] Cogitations { get; set; } = Array.Empty<CogitationDto>();
 }
+
 
 public sealed class CogitationDto
 {
@@ -33,18 +38,6 @@ public sealed class CogitationDto
     public string Text { get; set; } = "";
 }
 
-public sealed class RecordListItemDto
-{
-    public Guid RecordId { get; set; }
-
-    public string DisplayedName { get; set; } = string.Empty;
-
-    public DateOnly Date { get; set; }
-
-    public DateTime CreatedDate { get; set; }
-
-    public DateTime ModifiedDate { get; set; }
-}
 
 public sealed class RecordsPageDto<T>
 {

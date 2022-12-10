@@ -26,7 +26,7 @@
     public bool FloatRight { get; set; }
 
     [Parameter]
-    public string AreaName { get; set; } = "";
+    public string AreaName { get; set; } = string.Empty;
 
     [Parameter]
     public List<KeyValuePair<string, string?>>? GetParametersList { get; set; }
@@ -46,8 +46,10 @@
                 }
                 else
                 {
-                    yield return ("page-item", 
-                        NavManager.GetUriWithQueryParameters(AreaName, new Dictionary<string, object?> { ["page"] = p}), p);
+                    var parameters = new Dictionary<string, object?> { ["page"] = p };
+                    getParams.ForEach(pair => parameters[pair.Key] = pair.Value);
+
+                    yield return ("page-item", NavManager.GetUriWithQueryParameters(AreaName, parameters), p);
                 }
             }
         }
