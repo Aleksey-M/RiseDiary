@@ -1,0 +1,53 @@
+﻿@using RiseDiary.Shared.Scopes;
+
+<ul>
+    @foreach (var scope in AllScopes)
+    {
+        @if (NotEmptyScope(scope))
+        {
+            <li>
+                <h6 style="color:blue">@scope.ScopeName</h6>
+                <ul>
+                    @foreach (var theme in scope.Themes!.Where(DisplayedTheme))
+                    {
+                        <li>
+                            <label>
+                                <input type="checkbox" checked="@IsChecked(theme)" @oninput="_ => CheckboxChanged(theme)" />
+                                &nbsp;@theme.ThemeName
+                            </label>
+                        </li>
+                    }
+                </ul>
+            </li>
+        }
+    }
+</ul>
+
+@code{
+    [Parameter, EditorRequired]
+    public IEnumerable<ScopeDto> AllScopes { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public Dictionary<Guid, bool> Selection { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public bool DisplayActual { get; set; }
+
+
+    private void CheckboxChanged(ThemeDto? theme)
+    {
+        var id = theme?.ThemeId ?? Guid.Empty;
+        Selection[id] = Selection.ContainsKey(id) ? !Selection[id] : true;
+    }
+
+    private bool IsChecked(ThemeDto theme)
+    {
+        var id = theme?.ThemeId ?? Guid.Empty;
+        return Selection.ContainsKey(id) && Selection[id];
+    }
+
+    private bool NotEmptyScope(ScopeDto scope) => scope.Themes != null
+        && scope.Themes.Count(x => x.Actual.HasValue && x.Actual.Value == DisplayActual) > 0;
+
+    private bool DisplayedTheme(ThemeDto theme) => theme.Actual.HasValue && theme.Actual.Value == DisplayActual;
+}

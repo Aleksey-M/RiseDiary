@@ -31,30 +31,40 @@ public sealed class RecordsSearchController : ControllerBase
         [FromQuery] DateOnly? to,
         [FromQuery] string? name,
         [FromQuery] bool? combinedThemes,
-        [FromQuery] Guid[]? themeId,
+        [FromQuery] string? themes,
         [FromQuery] int? page,
         [FromQuery] bool? expanded,
         CancellationToken cancellationToken)
     {
+        int pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.RecordsPageSize) ?? 50;
+
+        int actualPage = page.HasValue && page.Value > 0 ? page.Value - 1 : 0;
+
         var filters = new RecordsFilter
         {
             CombineThemes = combinedThemes ?? false,
-            PageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.RecordsPageSize) ?? 50,
-            PageNo = page ?? 0,
+            PageSize = pageSize,
+            PageNo = actualPage,
             FromDate = from,
             ToDate = to,
             FilterName = name
         };
 
-        if (themeId != null && themeId.Length > 0)
+        if (themes != null)
         {
-            filters.AddThemeId(themeId);
+            foreach(var themeId in themes.Split(","))
+            {
+                if(Guid.TryParse(themeId, out var id))
+                {
+                    filters.AddThemeId(id);
+                }
+            }
         }
 
-        var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
         int allCount = await _recordsSearchService.GetRecordsCount(filters, cancellationToken);
+        var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);        
 
-        var pagesInfo = PagesInfo.GetPagesInfo(allCount, filters.PageNo, filters.PageSize);
+        var pagesInfo = PagesInfo.GetPagesInfo(allCount, filters.PageNo + 1, filters.PageSize);
 
         return ReturnResult(pagesInfo, records, expanded);
     }

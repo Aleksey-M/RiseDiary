@@ -13,7 +13,7 @@ internal static class DtoExtensions
         Date = record.Date,
         CreatedDate = record.CreateDate,
         ModifiedDate = record.ModifyDate,
-        Name = record.Name,
+        Name = record.Name.Length == 0 ? "[Пусто]" : record.Name,
         Text = record.Text,
         Cogitations = record.Cogitations
             .Select(c => c.ToDto())
@@ -38,7 +38,7 @@ internal static class DtoExtensions
         Date = record.Date,
         CreatedDate = record.CreateDate,
         ModifiedDate = record.ModifyDate,
-        Name = record.Name,
+        Name = record.Name.Length == 0 ? "[Пусто]" : record.Name,
         RecordId = record.Id
     };
 }

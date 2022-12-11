@@ -1,5 +1,144 @@
 ﻿@page "/records"
 
-@code {
+@using RiseDiary.Shared.Records;
+@using RiseDiary.Shared.Scopes;
 
+@inherits UIComponentBase
+@inject HttpClient Http
+@inject NavigationManager NavManager
+
+<PageTitle>Записи</PageTitle>
+
+<Spinner Loading="@Loading">
+    @if (_displayTypeParameters != null && _displayType != null)
+    {
+        <div class="col-12">
+            <div class="px-3">
+                <Pager AreaName="records" Pages="@_pages" QueryParameters="@_filters.ToQueryParams()" />
+            </div>
+        </div>
+
+        <RecordsFilters AreaName="records" AllScopes="@_allScopes" Filters="@_filters" OnSearch="Search" />
+
+        <DynamicComponent Type="@_displayType" Parameters="@_displayTypeParameters" />
+
+        <div class="col-12">
+            <div class="px-3">
+                <Pager AreaName="records" Pages="@_pages" QueryParameters="@_filters.ToQueryParams()" />
+            </div>
+        </div>
+    }
+</Spinner>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int Page { get; set; } = 1;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Expanded { get; set; } = true;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public DateOnly? From { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public DateOnly? To { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Name { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool CombinedThemes { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Themes { get; set; }
+
+
+    private RecordsQueryFilters _filters = new();
+
+    private PagesInfo _pages = null!;
+
+
+    private Type? _displayType;
+
+    private Dictionary<string, object>? _displayTypeParameters;
+
+
+    private IEnumerable<ScopeDto> _allScopes = Enumerable.Empty<ScopeDto>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _filters = new RecordsQueryFilters
+            {
+                CombinedThemes = CombinedThemes,
+                Expanded = Expanded,
+                From = From,
+                Name = Name,
+                Themes = Themes,
+                To = To
+            };
+
+        try
+        {
+            await StartApiRequest();
+
+            _allScopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", Token) ?? new();
+
+            var queryParams = _filters.ToQueryParams();
+            queryParams["page"] = Page;
+
+            var uri = NavManager.GetUriWithQueryParameters("api/records", queryParams);
+
+            if (Expanded)
+            {
+                _displayType = typeof(RecordsTableExpanded);
+
+                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordDto>>(uri, Token);
+                _pages = response?.PagesInfo ?? new();
+
+                _displayTypeParameters = new()
+                    {
+                        ["Records"] = response?.Records ?? new List<RecordDto>(),
+                        ["TotalCount"] = _pages.TotalItems
+                    };
+            }
+            else
+            {
+                _displayType = typeof(RecordsTable);
+
+                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordListItemDto>>(uri, Token);
+                _pages = response?.PagesInfo ?? new();
+
+                _displayTypeParameters = new()
+                    {
+                        ["Records"] = response?.Records ?? new List<RecordListItemDto>(),
+                        ["TotalCount"] = _pages.TotalItems
+                    };
+            }
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            _displayTypeParameters = null;
+            _pages = new();
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private void Search(RecordsQueryFilters filters)
+    {
+        var queryParams = filters.ToQueryParams();
+        queryParams["page"] = 1;
+
+        NavManager.NavigateTo(NavManager.GetUriWithQueryParameters(queryParams));
+    }
 }

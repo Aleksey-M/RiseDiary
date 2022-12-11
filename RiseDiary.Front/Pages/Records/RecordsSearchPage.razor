@@ -13,7 +13,7 @@
     {
         <div class="col-12">
             <div class="px-3">
-                <Pager AreaName="records/search" Pages="@_pages" GetParametersList="@SearchParams.ToList()" />
+                <Pager AreaName="records/search" Pages="@_pages" QueryParameters="@SearchParams" />
             </div>
         </div>
 
@@ -25,8 +25,10 @@
                     </div>
 
                     <div class="col-lg-2 col-md-3 col-sm-6 my-2 py-2">
-                        <InputCheckbox @bind-Value="_expanded" name="expanded" id="expanded" />
-                        <label for="expanded">Развернуто</label>
+                        <label>
+                            <InputCheckbox @bind-Value="_expanded" />
+                            Развернуто
+                        </label>
                     </div>
 
                     <div class="col-lg-2 col-md-2 col-sm-6 my-2">
@@ -41,7 +43,7 @@
 
         <div class="col-12">
             <div class="px-3">
-                <Pager AreaName="records/search" Pages="@_pages" GetParametersList="@SearchParams.ToList()" />
+                <Pager AreaName="records/search" Pages="@_pages" QueryParameters="@SearchParams" />
             </div>
         </div>
     }
@@ -71,10 +73,11 @@
     private Dictionary<string, object>? _displayTypeParameters;
 
 
-    private Dictionary<string, string> SearchParams => new()
+    private Dictionary<string, object?> SearchParams => new()
         {
-            ["searchText"] = SearchText,
-            ["expanded"] = Expanded.ToString()
+            [nameof(SearchText)] = SearchText,
+            [nameof(Expanded)] = Expanded,
+            [nameof(Page)] = Page
         };
 
     protected override async Task OnParametersSetAsync()
@@ -88,12 +91,7 @@
         {
             await StartApiRequest();
 
-            var uri = NavManager.GetUriWithQueryParameters("api/records/search", new Dictionary<string, object?>()
-                {
-                    ["searchText"] = SearchText,
-                    ["expanded"] = Expanded,
-                    ["page"] = Page
-                });
+            var uri = NavManager.GetUriWithQueryParameters("api/records/search", SearchParams);
 
             if (Expanded)
             {
@@ -136,9 +134,9 @@
     {
         NavManager.NavigateTo(NavManager.GetUriWithQueryParameters(new Dictionary<string, object?>
             {
-                ["searchText"] = _searchText,
-                ["expanded"] = _expanded,
-                ["page"] = 1
+                [nameof(SearchText)] = _searchText,
+                [nameof(Expanded)] = _expanded,
+                [nameof(Page)] = 1
             }));
     }
 }

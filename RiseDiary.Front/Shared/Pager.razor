@@ -29,13 +29,13 @@
     public string AreaName { get; set; } = string.Empty;
 
     [Parameter]
-    public List<KeyValuePair<string, string?>>? GetParametersList { get; set; }
+    public Dictionary<string, object?>? QueryParameters { get; set; }
 
     private IEnumerable<(string classes, string href, int page)> LinksList
     {
         get
         {            
-            var getParams = GetParametersList ?? new List<KeyValuePair<string, string?>>();
+            var getParams = QueryParameters ?? new ();
 
             foreach (var p in Pages.Pages)
             {                              
@@ -46,10 +46,8 @@
                 }
                 else
                 {
-                    var parameters = new Dictionary<string, object?> { ["page"] = p };
-                    getParams.ForEach(pair => parameters[pair.Key] = pair.Value);
-
-                    yield return ("page-item", NavManager.GetUriWithQueryParameters(AreaName, parameters), p);
+                    getParams["page"] = p;
+                    yield return ("page-item", NavManager.GetUriWithQueryParameters(AreaName, getParams), p);
                 }
             }
         }
