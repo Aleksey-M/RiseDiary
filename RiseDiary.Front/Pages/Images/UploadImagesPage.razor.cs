@@ -24,7 +24,6 @@ public partial class UploadImagesPage : UIComponentBase
     public IJSRuntime JsRuntime { get; set; } = null!;
 
     [Parameter]
-    [SupplyParameterFromQuery]
     public Guid? RecordId { get; set; }
 
     private readonly List<IBrowserFile> _loadedFiles = new();
@@ -142,16 +141,9 @@ public partial class UploadImagesPage : UIComponentBase
 
         var redirectUri = ((_loadedFiles.Count == 1 && newImageId != default), (RecordId.HasValue && RecordId.Value != default)) switch
         {
-            (true, _) => NavManager.GetUriWithQueryParameters("images/edit", new Dictionary<string, object?>
-            {
-                ["recordId"] = RecordId,
-                ["imageId"] = newImageId
-            }),
-            (false, true) => NavManager.GetUriWithQueryParameters("records/view", new Dictionary<string, object?>
-            {
-                ["recordId"] = RecordId
-            }),
-            (false, false) => NavManager.GetUriWithQueryParameters("images", new Dictionary<string, object?>())
+            (true, _) => $"images/edit/{newImageId}/{RecordId}",
+            (false, true) => $"records/view/{RecordId!.Value}",
+            (false, false) => "images"
         };
 
         NavManager.NavigateTo(redirectUri);

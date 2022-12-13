@@ -13,17 +13,17 @@
         @foreach (var dto in _selectedDates!)
         {
             <li class="mb-3">
-                <NavLink href="@GetRecordLink(dto)">@dto.Name</NavLink>
+                <a href="records/view/@dto.Id">@dto.Name</a>
             </li>
         }
     </ul>
 </ModalDialog>
 
 @code {
-    [Parameter, SupplyParameterFromQuery]
+    [Parameter, EditorRequired]
     public int Year { get; set; }
 
-    [Parameter, SupplyParameterFromQuery]
+    [Parameter, EditorRequired]
     public IEnumerable<CalendarDateDto>? DatesList { get; set; }
 
 
@@ -88,13 +88,6 @@
         _selectedDates = null;
         _selectedDatesHeader = null;
     }
-
-    public string GetRecordLink(CalendarDateDto dto) => NavManager.GetUriWithQueryParameters("records/view",
-        new Dictionary<string, object?>
-            {
-                ["recordId"] = dto.Id
-            });
-
 
     public async ValueTask DisposeAsync()
     {

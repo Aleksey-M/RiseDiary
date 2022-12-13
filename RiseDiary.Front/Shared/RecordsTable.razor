@@ -17,7 +17,7 @@ else
                 {
                     <tr>
                         <td class="main-date-column">@rec.Date.ToString("yyyy.MM.dd")</td>
-                        <td><NavLink href="@GetRecordLink(rec)">@rec.Name</NavLink></td>
+                        <td><a href="records/view/@rec.RecordId">@rec.Name</a></td>
                         <td class="date-column">@rec.CreatedDate.ToLocalTime().ToString("yyyy.MM.dd HH.mm.ss")</td>
                         <td class="date-column">@rec.ModifiedDate.ToLocalTime().ToString("yyyy.MM.dd HH.mm.ss")</td>
                     </tr>
@@ -43,9 +43,4 @@ else
 
     [Parameter]
     public int? TotalCount { get; set; }
-
-    public string GetRecordLink(RecordListItemDto dto) => NavManager.GetUriWithQueryParameters("records/view", new Dictionary<string, object?>
-        {
-            ["recordId"] = dto.RecordId
-        });
 }

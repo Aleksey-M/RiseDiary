@@ -31,11 +31,9 @@ public partial class EditImagePage : UIComponentBase
     public CropImageDtoValidator CropImageValidator { get; set; } = null!;
 
     [Parameter]
-    [SupplyParameterFromQuery]
     public Guid ImageId { get; set; }
 
     [Parameter]
-    [SupplyParameterFromQuery]
     public Guid? RedirectRecordId { get; set; }
 
 
@@ -44,11 +42,7 @@ public partial class EditImagePage : UIComponentBase
     private string ImageUri { get; set; } = string.Empty;
 
 
-    private string GetFullRecordUri(Guid recordId) => NavManager.GetUriWithQueryParameters("records/view",
-        new Dictionary<string, object?>
-        {
-            ["recordId"] = recordId.ToString()
-        });
+    private string GetFullRecordUri(Guid recordId) => $"records/view/{recordId}";
 
     private async Task LoadImage()
     {
@@ -106,8 +100,7 @@ public partial class EditImagePage : UIComponentBase
     {
         if (RedirectRecordId.HasValue)
         {
-            NavManager.NavigateTo(NavManager.GetUriWithQueryParameters("records/view",
-                new Dictionary<string, object?> { ["recordId"] = RedirectRecordId.Value.ToString() }));
+            NavManager.NavigateTo($"records/view/{RedirectRecordId.Value}");
         }
 
         NavManager.NavigateTo("images");

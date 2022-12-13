@@ -9,7 +9,7 @@
     <div class="row mt-1">
         <div class="text-center">
             <button @onclick="() => CloseImageView()" type="button" class="btn btn-sm btn-outline-secondary mx-2">Закрыть</button>
-            <NavLink href="@EditImageUri"  class="btn btn-sm btn-outline-secondary mx-2">Изменить</NavLink>
+            <a href="/images/edit/@ImageId/@RecordId"  class="btn btn-sm btn-outline-secondary mx-2">Изменить</a>
         </div>
     </div>    
 }
@@ -26,10 +26,4 @@
 
     [Parameter]
     public Guid? RecordId { get; set; }
-
-    private string EditImageUri => NavManager.GetUriWithQueryParameters("/images/edit", new Dictionary<string, object?>
-        {
-            ["ImageId"] = ImageId,
-            ["redirectRecordId"] = RecordId
-        });
 }

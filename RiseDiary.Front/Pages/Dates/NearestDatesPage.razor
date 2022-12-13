@@ -35,7 +35,7 @@
                                     @date.Date.ToString("yyyy.MM.dd")
                                 </td>
                                 <td>
-                                    <NavLink href="@GetRecordLink(date)">@date.Name</NavLink>
+                                    <a href="records/view/@date.Id">@date.Name</a>
                                     <p class="small"><i>@date.Themes</i></p>
                                 </td>
                             </tr>
@@ -79,9 +79,4 @@
         (false, true) => "background-color:#ffeadc",
         (false, false) => "background-color:#cef5d9"
     };
-
-    public string GetRecordLink(DateListItemDto dto) => NavManager.GetUriWithQueryParameters("records/view", new Dictionary<string, object?>
-    {
-        ["recordId"] = dto.Id
-    });
 }

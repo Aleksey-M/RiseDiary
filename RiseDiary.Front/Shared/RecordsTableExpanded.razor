@@ -14,7 +14,7 @@ else
 {
     @if (OpenedImageId.HasValue)
     {
-        <ImageView ImageId="OpenedImageId.Value" ShowButtons="true" CloseImageView="CloseImage" />
+        <ImageView ImageId="@OpenedImageId.Value" RecordId="@OpenedImageRecordId" ShowButtons="true" CloseImageView="CloseImage" />
     }
     else
     {
@@ -28,7 +28,7 @@ else
 
                             <p>
                                 <b>
-                                    <i><NavLink href="@GetRecordLink(rec)">@rec.Date.ToString("yyyy.MM.dd")</NavLink></i>
+                                    <i><a href="records/view/@rec.RecordId">@rec.Date.ToString("yyyy.MM.dd")</a></i>
                                     &nbsp;@rec.Name
                                 </b>
                             </p>
@@ -45,7 +45,7 @@ else
                                 @foreach (var image in rec.Images)
                                 {
                                     <div class="col-lg-2 col-md-4 col-sm-6 p-3">
-                                        <Thumbnail Image="image" RecordId="rec.RecordId" OnlyImage="true" ImageClick="_ => OpenImage(image.Id)" />
+                                        <Thumbnail Image="image" RecordId="rec.RecordId" OnlyImage="true" ImageClick="_ => OpenImage(image.Id, rec.RecordId)" />
                                     </div>
                                 }
                             </div>
@@ -61,9 +61,9 @@ else
                                         <p>
                                             <b>
                                                 <i>
-                                                    <NavLink href="@GetRecordLink(rec)">
+                                                    <a href="records/view@rec.RecordId">
                                                         @cog.CreateDate.ToLocalTime().ToString("yyyy.MM.dd HH.mm.ss")
-                                                    </NavLink>
+                                                    </a>
                                                 </i>
                                             </b>
                                         </p>
@@ -103,7 +103,7 @@ else
     public int? TotalCount { get; set; }
 
     private Guid? OpenedImageId;
-
+    private Guid? OpenedImageRecordId;
 
     protected override void OnParametersSet()
     {
@@ -124,20 +124,17 @@ else
         }
     }
 
-    private void OpenImage(Guid imageId)
+    private void OpenImage(Guid imageId, Guid recordId)
     {
         OpenedImageId = imageId;
+        OpenedImageRecordId = recordId;
         StateHasChanged();
     }
 
     private void CloseImage()
     {
         OpenedImageId = default;
+        OpenedImageRecordId = default;
         StateHasChanged();
     }
-
-    public string GetRecordLink(RecordDto dto) => NavManager.GetUriWithQueryParameters("records/view", new Dictionary<string, object?>
-        {
-            ["recordId"] = dto.RecordId
-        });
 }
