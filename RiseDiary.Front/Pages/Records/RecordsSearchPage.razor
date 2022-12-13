@@ -2,8 +2,6 @@
 @using RiseDiary.Shared.Records;
 
 @inherits UIComponentBase
-@inject HttpClient Http
-@inject NavigationManager NavManager
 
 <PageTitle>Поиск записей по фрагменту названия или текста</PageTitle>
 
@@ -13,90 +11,65 @@
     {
         <div class="col-12">
             <div class="px-3">
-                <Pager AreaName="records/search" Pages="@_pages" QueryParameters="@SearchParams" />
+                <Pager Pages="@_pages" Navigate="@Navigate" />
             </div>
         </div>
 
-        <div class="col-12">
-            <div class="px-3">
-                <div class="row">
-                    <div class="offset-lg-2 col-lg-4 col-md-7 col-sm-12 my-2">
-                        <input type="text" placeholder="Строка поиска" @bind-value="_searchText" class="form-control" />
-                    </div>
-
-                    <div class="col-lg-2 col-md-3 col-sm-6 my-2 py-2">
-                        <label>
-                            <InputCheckbox @bind-Value="_expanded" />
-                            Развернуто
-                        </label>
-                    </div>
-
-                    <div class="col-lg-2 col-md-2 col-sm-6 my-2">
-                        <button class="btn btn-outline-info" @onclick="Search">Поиск</button>
-                    </div>
-
-                </div>
-            </div>
-        </div>
+        <RecordsTextSearchFilters OnSearch="@Search" />
 
         <DynamicComponent Type="@_displayType" Parameters="@_displayTypeParameters" />
 
         <div class="col-12">
             <div class="px-3">
-                <Pager AreaName="records/search" Pages="@_pages" QueryParameters="@SearchParams" />
+                <Pager Pages="@_pages" Navigate="@Navigate" />
             </div>
         </div>
     }
 </Spinner>
 
 @code {
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public int Page { get; set; } = 1;
+    [Inject]
+    public HttpClient Http { get; set; } = null!;
 
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public string SearchText { get; set; } = string.Empty;
+    [Inject]
+    public ILogger<RecordsSearchPage> Logger { get; set; } = null!;
 
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public bool Expanded { get; set; } = true;
+    [Inject]
+    public NavigationManager NavManager { get; set; } = null!;
 
     private string _searchText = string.Empty;
-    private bool _expanded;
+    private bool _expanded = true;
+    private int _page = 1;
 
     private PagesInfo _pages = null!;
-
 
     private Type? _displayType;
 
     private Dictionary<string, object>? _displayTypeParameters;
 
 
-    private Dictionary<string, object?> SearchParams => new()
-        {
-            [nameof(SearchText)] = SearchText,
-            [nameof(Expanded)] = Expanded,
-            [nameof(Page)] = Page
-        };
-
-    protected override async Task OnParametersSetAsync()
+    private async Task LoadData(string? filter = null, bool? expanded = null, int? page = null)
     {
-        await base.OnParametersSetAsync();
-
-        _expanded = Expanded;
-        _searchText = SearchText;
+        _searchText = filter ?? _searchText;
+        _expanded = expanded ?? _expanded;
+        _page = page ?? _page;
 
         try
         {
             await StartApiRequest();
 
+            Dictionary<string, object?> SearchParams = new()
+                {
+                    ["searchText"] = _searchText,
+                    ["expanded"] = _expanded,
+                    ["page"] = _page
+                };
+
             var uri = NavManager.GetUriWithQueryParameters("api/records/search", SearchParams);
+            _displayType = _expanded ? typeof(RecordsTableExpanded) : typeof(RecordsTable);
 
-            if (Expanded)
+            if (_expanded)
             {
-                _displayType = typeof(RecordsTableExpanded);
-
                 var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordDto>>(uri, Token);
                 _pages = response?.PagesInfo ?? new();
 
@@ -108,8 +81,6 @@
             }
             else
             {
-                _displayType = typeof(RecordsTable);
-
                 var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordListItemDto>>(uri, Token);
                 _pages = response?.PagesInfo ?? new();
 
@@ -124,19 +95,17 @@
         }
         catch (Exception exc)
         {
-            _displayTypeParameters = null;
-            _pages = new();
+            Logger.LogError(exc, "Error on page data loading");
             await FinishApiRequest(exc.Message);
         }
     }
 
-    private void Search()
+    protected override async Task OnInitializedAsync()
     {
-        NavManager.NavigateTo(NavManager.GetUriWithQueryParameters(new Dictionary<string, object?>
-            {
-                [nameof(SearchText)] = _searchText,
-                [nameof(Expanded)] = _expanded,
-                [nameof(Page)] = 1
-            }));
+        await base.OnInitializedAsync();
+        await LoadData();
     }
+
+    private Task Search(string filter, bool expanded) => LoadData(filter, expanded, 1);
+    private Task Navigate(int page) => LoadData(page: page);
 }

@@ -1,5 +1,7 @@
 ﻿@page "/dates/oncalendar"
 
+@using RiseDiary.Shared.Calendar;
+
 @inherits UIComponentBase
 
 <PageTitle>Все даты</PageTitle>
@@ -17,20 +19,38 @@
             <p style="color:red">@ErrorMessage</p>
         }
 
-        <div class="col-12">
-            <div id="calendar" style="height:450px"></div>
-        </div>
-
-        <ModalDialog Show="_selectedDates != null" Title="@_selectedDatesHeader" OnClose="ClearSelected">
-            <ul>
-                @foreach (var dto in _selectedDates!)
-                {
-                    <li>
-                        <NavLink href="@GetRecordLink(dto)">@dto.Name</NavLink>
-                    </li>
-                }
-            </ul>
-        </ModalDialog>
+        <YearCalendar Year="_year" DatesList="_datesList" />
     </div>
 
 </Spinner>
+
+@code {
+    [Inject]
+    public HttpClient Http { get; set; } = null!;
+
+    [Inject]
+    public ILogger<DatesOnCalendarPage> Logger { get; set; } = null!;
+
+    private List<CalendarDateDto>? _datesList;
+    private int _year;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            await StartApiRequest();
+
+            _year = DateTime.UtcNow.Year;
+            _datesList = await Http.GetFromJsonAsync<List<CalendarDateDto>>("api/dates/calendar", Token);
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on initializing");
+            await FinishApiRequest(exc.Message);
+        }
+    }
+}

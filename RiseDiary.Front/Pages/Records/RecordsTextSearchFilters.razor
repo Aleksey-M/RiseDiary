@@ -1,0 +1,29 @@
+﻿
+<div class="col-12">
+    <div class="px-3">
+        <div class="row">
+            <div class="offset-lg-2 col-lg-4 col-md-7 col-sm-12 my-2">
+                <input type="text" placeholder="Строка поиска" @bind-value="@_searchText" class="form-control" />
+            </div>
+
+            <div class="col-lg-2 col-md-3 col-sm-6 my-2 py-2">
+                <label>
+                    <InputCheckbox @bind-Value="@_expanded" />
+                    Развернуто
+                </label>
+            </div>
+
+            <div class="col-lg-2 col-md-2 col-sm-6 my-2">
+                <button class="btn btn-outline-info" @onclick="async _ => await OnSearch(_searchText, _expanded)">Поиск</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Func<string, bool, Task> OnSearch { get; set; } = null!;
+
+    private string _searchText = string.Empty;
+    private bool _expanded = true;
+}

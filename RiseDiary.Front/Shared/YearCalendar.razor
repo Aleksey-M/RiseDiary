@@ -1,0 +1,107 @@
+﻿@using RiseDiary.Front.AppServices;
+@using RiseDiary.Front.Pages.Dates;
+@using RiseDiary.Shared.Calendar;
+
+@implements IAsyncDisposable
+
+<div class="col-12">
+    <div id="calendar" style="height:450px"></div>
+</div>
+
+<ModalDialog Show="_selectedDates != null" Title="@_selectedDatesHeader" OnClose="ClearSelected">
+    <ul>
+        @foreach (var dto in _selectedDates!)
+        {
+            <li class="mb-3">
+                <NavLink href="@GetRecordLink(dto)">@dto.Name</NavLink>
+            </li>
+        }
+    </ul>
+</ModalDialog>
+
+@code {
+    [Parameter, SupplyParameterFromQuery]
+    public int Year { get; set; }
+
+    [Parameter, SupplyParameterFromQuery]
+    public IEnumerable<CalendarDateDto>? DatesList { get; set; }
+
+
+    [Inject]
+    public JsDependencies JsDeps { get; set; } = null!;
+
+    [Inject]
+    public IJSRuntime JsRuntime { get; set; } = null!;
+
+    [Inject]
+    public NavigationManager NavManager { get; set; } = null!;
+
+
+    private DotNetObjectReference<DateClickHandler>? _handlerRef;
+    private IJSObjectReference _jsModule = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        await JsDeps.InitYearCalendar();
+        _jsModule = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./Shared/YearCalendar.razor.js");
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        if (DatesList != null)
+        {
+            var datesOnly = DatesList
+                .Select(x => x.StartDate)
+                .Distinct()
+                .ToList();
+
+            var dateClickHandler = new DateClickHandler(OnDateClick);
+            _handlerRef = dateClickHandler.CreateRefForJs();
+
+            await _jsModule.InvokeVoidAsync("initCalendar", "#calendar", Year, datesOnly, _handlerRef);
+        }
+    }
+
+    private List<CalendarDateDto>? _selectedDates;
+    private string? _selectedDatesHeader;
+
+    private void OnDateClick(DateOnly date)
+    {
+        _selectedDates = null;
+        _selectedDatesHeader = null;
+
+        if (DatesList != null && DatesList.Any(x => x.StartDate == date))
+        {
+            _selectedDates = DatesList.Where(x => x.StartDate == date).ToList();
+            _selectedDatesHeader = $"События {date:yyyy.MM.dd}";
+        }
+
+        StateHasChanged();
+    }
+
+    private void ClearSelected()
+    {
+        _selectedDates = null;
+        _selectedDatesHeader = null;
+    }
+
+    public string GetRecordLink(CalendarDateDto dto) => NavManager.GetUriWithQueryParameters("records/view",
+        new Dictionary<string, object?>
+            {
+                ["recordId"] = dto.Id
+            });
+
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_jsModule != null)
+        {
+            await _jsModule.DisposeAsync();
+            _jsModule = null!;
+        }
+    }
+}

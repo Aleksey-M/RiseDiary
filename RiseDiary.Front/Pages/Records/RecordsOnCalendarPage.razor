@@ -1,5 +1,122 @@
 ﻿@page "/records/calendar"
 
+@using RiseDiary.Front.Pages.Dates;
+@using RiseDiary.Shared.Calendar;
+@using RiseDiary.Shared.Scopes;
+
+@inherits UIComponentBase
+
+<PageTitle>Календарь</PageTitle>
+
+<Spinner Loading="Loading">
+    <div class="row">
+        <div class="col-lg-10 col-sm-12">
+            @if (_filteredYears != null)
+            {
+                @foreach (int y in _filteredYears)
+                {
+                    <button class="@GetClasses(y)" @onclick="async _ => await OpenYear(y)" >@y</button>
+                }
+            }
+        </div>
+
+        <div class="col-lg-2 col-sm-6 my-2">
+            <ThemesFilterPopup AllScopes="_allScopes" CombinedThemes="@_combineThemes" ThemesIdsList="@_themesIds" OnApply="ApplyFilters" />
+        </div>
+
+        @if (HasError)
+        {
+            <p style="color:red">@ErrorMessage</p>
+        }
+
+        <YearCalendar Year="_year" DatesList="_datesList" />
+    </div>
+
+</Spinner>
+
+
 @code {
 
+    [Inject]
+    public HttpClient Http { get; set; } = null!;
+
+    [Inject]
+    public ILogger<DatesOnCalendarPage> Logger { get; set; } = null!;
+
+    [Inject]
+    public NavigationManager NavManager { get; set; } = null!;
+
+    public int _year = DateTime.UtcNow.Year;
+
+    public string _themesIds = string.Empty;
+
+    public bool _combineThemes;
+
+    private List<ScopeDto> _allScopes = null!;
+    private List<CalendarDateDto>? _datesList;
+    private List<int>? _filteredYears;
+
+
+    private async Task LoadData(int? year = null, string? themesIds = null, bool? combineThemes = null)
+    {
+        _year = year ?? _year;
+        _themesIds = themesIds ?? _themesIds;
+        _combineThemes = combineThemes ?? _combineThemes;
+
+        try
+        {
+            await StartApiRequest();
+
+            var queryParams = new Dictionary<string, object?>
+                {
+                    ["year"] = _year,
+                    ["combinedThemes"] = _combineThemes,
+                    ["themes"] = _themesIds
+                };
+
+            var data = await Http.GetFromJsonAsync<CalendarDto>(
+                NavManager.GetUriWithQueryParameters("api/records/calendar", queryParams), Token);
+
+            _filteredYears = data?.Years ?? new();
+            _datesList = data?.Dates ?? new();
+            _year = data?.CurrentYear ?? _year;
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Error loading Calendar data");
+            await FinishApiRequest(exc.Message);
+        }
+
+        StateHasChanged();
+    }
+
+    private Task ApplyFilters(ThemesFilters? themesFilters) => LoadData(
+        year: null,
+        themesIds: themesFilters?.ThemesIdsList,
+        combineThemes: themesFilters?.Combined);
+
+    private Task OpenYear(int year) => LoadData(year: year);
+
+    private string GetClasses(int year) => year == _year ? "btn btn-link text-decoration-none disabled" : "btn btn-link text-decoration-none";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            Loading = true;
+
+            _allScopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", Token) ?? new();
+
+            await LoadData();            
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on initializing");
+            await FinishApiRequest(exc.Message);
+        }
+    }
 }

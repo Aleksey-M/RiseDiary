@@ -5,7 +5,6 @@ using RiseDiary.Shared.Calendar;
 namespace RiseDiary.Api;
 
 [ApiController]
-[Route("api/calendar")]
 public sealed class CalendarItemsController : ControllerBase
 {
     private readonly ICalendarService _calendarService;
@@ -15,26 +14,44 @@ public sealed class CalendarItemsController : ControllerBase
         _calendarService = calendarService;
     }
 
-    [HttpGet("{year}")]
-    public async Task<ActionResult<List<CalendarDateDto>>> GetCalendarDates([FromRoute] int year,
-        [FromQuery] IEnumerable<Guid>? themeId, [FromQuery] bool? combinedThemes, CancellationToken cancellationToken)
+    [HttpGet("api/records/calendar")]
+    public async Task<ActionResult<CalendarDto>> GetCalendar(
+        [FromQuery] int? year,
+        [FromQuery] string? themes,
+        [FromQuery] bool? combinedThemes,
+        CancellationToken cancellationToken)
     {
-        bool ct = combinedThemes ?? false;
-        var themesIds = themeId ?? Enumerable.Empty<Guid>();
+        var _combined = combinedThemes ?? false;
+        var _year = year.HasValue && year.Value != default ? year.Value : DateTime.UtcNow.Year;
+        var themesIds = new List<Guid>();
 
-        var items = await _calendarService.GetCalendarItems(year, themesIds, ct, cancellationToken);
+        if (!string.IsNullOrWhiteSpace(themes))
+        {
+            foreach (var strId in themes.Split(","))
+            {
+                if (Guid.TryParse(strId, out var id))
+                {
+                    themesIds.Add(id);
+                }
+            }
+        }
 
-        return items.Select(x => x.ToDto()).ToList();
-    }
+        var data = new CalendarDto
+        {
+            Years = await _calendarService.GetYears(themesIds, _combined, cancellationToken)
+        };
 
-    [HttpGet("years")]
-    public async Task<ActionResult<IEnumerable<int>>> GetCalendarYears([FromQuery] IEnumerable<Guid>? themeId,
-        [FromQuery] bool? combinedThemes, CancellationToken cancellationToken)
-    {
-        bool ct = combinedThemes ?? false;
-        var themesIds = themeId ?? Enumerable.Empty<Guid>();
+        if (data.Years.Any() && !data.Years.Contains(_year))
+        {
+            _year = data.Years.Last();
+        }
 
-        return await _calendarService.GetYears(themesIds, ct, cancellationToken);
+        var dates = await _calendarService.GetCalendarItems(_year, themesIds, _combined, cancellationToken);
+        data.Dates = dates.Select(x => x.ToDto()).ToList();
+
+        data.CurrentYear = _year;
+
+        return data;
     }
 }
 

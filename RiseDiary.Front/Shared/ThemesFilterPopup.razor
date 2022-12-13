@@ -1,0 +1,106 @@
+﻿@using RiseDiary.Shared.Scopes;
+
+<button type="button" class="btn btn-outline-secondary" @onclick=@ShowThemes>Темы</button>
+
+<ModalDialog Show="_themesDisplayed" Title="Фильтр по темам" OnClose="@HideThemes">
+    <ChildContent>
+        <p>
+            <label>
+                <InputCheckbox @bind-Value=@_combinedThemes />
+                Выводить записи, которые относятся к любой выбранной теме (по правилу 'ИЛИ')
+            </label>
+        </p>
+
+        <hr />
+
+        <p>
+            <h6>Актуальные темы</h6>
+            <ScopeFilter AllScopes=@AllScopes DisplayActual=true Selection="@_themesDictionary" />
+        </p>
+
+        @if (!_allListDisplayed)
+        {
+            <button class="btn btn-link text-decoration-none" type="button" @onclick="_ => _allListDisplayed = true">
+                Остальные темы
+            </button>
+        }
+        else
+        {
+            <p>
+                <ScopeFilter AllScopes=@AllScopes DisplayActual=false Selection="@_themesDictionary" />
+            </p>
+        }
+    </ChildContent>
+
+    <FooterContent>
+        <button type="submit" class="btn btn-outline-info" style="float: right" @onclick=@ApplyFilter>Применить</button>
+    </FooterContent>
+</ModalDialog>
+
+@code {
+    [Parameter, EditorRequired]
+    public IEnumerable<ScopeDto> AllScopes { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public string ThemesIdsList { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public bool CombinedThemes { get; set; }
+
+    [Parameter, EditorRequired]
+    public Func<ThemesFilters, Task> OnApply { get; set; } = null!;
+
+    private bool _combinedThemes;
+
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _combinedThemes = CombinedThemes;
+    }
+
+    private bool _allListDisplayed;
+    private bool _themesDisplayed;
+    private Dictionary<Guid, bool>? _themesDictionary;
+
+    private void ShowThemes()
+    {
+        _themesDictionary = AllScopes
+            .Where(x => x.Themes != null && x.Themes.Count > 0)
+            .SelectMany(x => x.Themes!)
+            .Select(x => new
+            {
+                x.ThemeId,
+                Selected = !string.IsNullOrWhiteSpace(ThemesIdsList) && ThemesIdsList.Contains(x.ThemeId.ToString()!)
+            })
+            .ToDictionary(x => x.ThemeId!.Value, x => x.Selected);
+
+        _themesDisplayed = true;
+    }
+
+    private void HideThemes()
+    {
+        _themesDisplayed = false;
+        _themesDictionary = null;
+    }
+
+    private async Task ApplyFilter()
+    {
+        var filters = new ThemesFilters
+            {
+                Combined = _combinedThemes
+            };
+
+        if (_themesDictionary != null)
+        {
+            filters.ThemesIdsList = string.Join(",", _themesDictionary
+                .ToList()
+                .Where(x => x.Value)
+                .Select(x => x.Key.ToString()));
+        }
+
+        HideThemes();
+
+        await OnApply(filters);
+    }
+}

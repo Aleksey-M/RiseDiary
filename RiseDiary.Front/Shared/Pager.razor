@@ -2,14 +2,14 @@
 
 @inject NavigationManager NavManager
 
-<nav aria-label="navigation" style="@(FloatRight ? "float:right" : "")">
+<nav style="@(FloatRight ? "float:right" : "")">
     @if (Pages.TotalPages > 1)
     {
         <ul class="pagination mb-1">
-            @foreach (var (c, h, p) in LinksList)
+            @foreach (var (classes, p) in LinksList)
             {
-                <li class="@c">
-                    <NavLink href="@h" class="page-link">@p</NavLink>
+                <li class="@classes">
+                    <button class="page-link" @onclick="async _ => await Navigate(p)">@p</button>
                 </li>
             }
         </ul>
@@ -22,34 +22,12 @@
     [Parameter, EditorRequired]
     public PagesInfo Pages { get; set; } = null!;
 
+    [Parameter, EditorRequired]
+    public Func<int, Task> Navigate { get; set; } = null!;
+
     [Parameter]
     public bool FloatRight { get; set; }
 
-    [Parameter]
-    public string AreaName { get; set; } = string.Empty;
-
-    [Parameter]
-    public Dictionary<string, object?>? QueryParameters { get; set; }
-
-    private IEnumerable<(string classes, string href, int page)> LinksList
-    {
-        get
-        {            
-            var getParams = QueryParameters ?? new ();
-
-            foreach (var p in Pages.Pages)
-            {                              
-
-                if(p == Pages.CurrentPage)
-                {
-                    yield return ("page-item disabled", "#", p);
-                }
-                else
-                {
-                    getParams["page"] = p;
-                    yield return ("page-item", NavManager.GetUriWithQueryParameters(AreaName, getParams), p);
-                }
-            }
-        }
-    }
+    private IEnumerable<(string classes, int page)> LinksList => Pages.Pages
+        .Select(p => (p == Pages.CurrentPage ? "page-item disabled" : "page-item", p));
 }

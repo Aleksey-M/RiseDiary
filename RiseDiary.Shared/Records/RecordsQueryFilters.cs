@@ -1,6 +1,6 @@
 ﻿namespace RiseDiary.Shared.Records;
 
-public sealed class RecordsQueryFilters
+public sealed class RecordsSearchFilters
 {
     public DateOnly? From { get; set; }
 
@@ -13,15 +13,4 @@ public sealed class RecordsQueryFilters
     public string? Themes { get; set; }
 
     public bool Expanded { get; set; }
-
-
-    public Dictionary<string, object?> ToQueryParams() => new()
-    {
-        [nameof(From)] = From,
-        [nameof(To)] = To,
-        [nameof(Name)] = Name,
-        [nameof(CombinedThemes)] = CombinedThemes,
-        [nameof(Themes)] = Themes,
-        [nameof(Expanded)] = Expanded
-    };
 }

@@ -17,44 +17,7 @@
     </div>
 
     <div class="col-lg-1 col-sm-6 my-2">
-
-        <button type="button" class="btn btn-outline-secondary" @onclick=@ShowThemes>Темы</button>
-
-        <ModalDialog Show="_themesDisplayed" Title="Фильтр по темам" OnClose="@HideThemes">
-            <ChildContent>
-                <p>
-                    <label>
-                        <InputCheckbox @bind-Value=@Filters.CombinedThemes />
-                        Выводить записи, которые относятся к любой выбранной теме (по правилу 'ИЛИ')
-                    </label>
-                </p>
-
-                <hr />
-
-                <p>
-                    <h6>Актуальные темы</h6>
-                    <ScopeFilter AllScopes=@AllScopes DisplayActual=true Selection="@_themesDictionary" />
-                </p>
-
-                @if (!_allListDisplayed)
-                {
-                    <button class="btn btn-link text-decoration-none" type="button" @onclick="_ => _allListDisplayed = true">
-                        Остальные темы
-                    </button>
-                }
-                else
-                {
-                    <p>
-                        <ScopeFilter AllScopes=@AllScopes DisplayActual=false Selection="@_themesDictionary" />
-                    </p>
-                }
-            </ChildContent>
-
-            <FooterContent>
-                <button type="submit" class="btn btn-outline-info" style="float: right" @onclick=@ApplyFilters>Применить</button>
-            </FooterContent>
-        </ModalDialog>
-
+        <ThemesFilterPopup AllScopes="@AllScopes" CombinedThemes=@Filters.CombinedThemes ThemesIdsList="@Filters.Themes" OnApply="ApplyFilters" />
     </div>
 
     <div class="col-lg-2 col-sm-6 my-3">
@@ -63,7 +26,7 @@
     </div>
 
     <div class="col-lg-2 col-sm-12 my-2">
-        <button class="btn btn-outline-info" style="float: right" @onclick=@ApplyFilters>Применить</button>
+        <button class="btn btn-outline-info" style="float: right" @onclick=@(_ => ApplyFilters(null))>Применить</button>
     </div>
 </div>
 
@@ -77,40 +40,15 @@
     public IEnumerable<ScopeDto> AllScopes { get; set; } = null!;
 
     [Parameter, EditorRequired]
-    public RecordsQueryFilters Filters { get; set; } = null!;
+    public RiseDiary.Shared.Records.RecordsSearchFilters Filters { get; set; } = null!;
 
     [Parameter, EditorRequired]
-    public Action<RecordsQueryFilters> OnSearch { get; set; } = _ => { };
+    public Func<RiseDiary.Shared.Records.RecordsSearchFilters, Task> OnSearch { get; set; } = null!;
 
 
-    private bool _allListDisplayed;
-    private bool _themesDisplayed;
-    private Dictionary<Guid, bool>? _themesDictionary; 
-
-    private void ShowThemes()
+    private async Task ApplyFilters(ThemesFilters? themesFilters)
     {
-        _themesDictionary = AllScopes
-            .Where(x => x.Themes != null && x.Themes.Count > 0)
-            .SelectMany(x => x.Themes!)
-            .Select(x => new 
-                { 
-                    x.ThemeId, 
-                    Selected = !string.IsNullOrWhiteSpace(Filters.Themes) && Filters.Themes.Contains(x.ThemeId.ToString()!)
-                })
-            .ToDictionary(x => x.ThemeId!.Value, x => x.Selected);
-
-        _themesDisplayed = true;
-    }
-
-    private void HideThemes()
-    {
-        _themesDisplayed = false;
-        _themesDictionary = null;
-    }
-
-    private void ApplyFilters()
-    {
-        var newFilters = new RecordsQueryFilters
+        var newFilters = new RiseDiary.Shared.Records.RecordsSearchFilters
             {
                 Expanded = Filters.Expanded,
                 From = Filters.From,
@@ -120,16 +58,12 @@
                 To = Filters.To
             };
 
-        if(_themesDictionary != null)
+        if (themesFilters != null)
         {
-            newFilters.Themes = string.Join(",", _themesDictionary
-                .ToList()
-                .Where(x => x.Value)
-                .Select(x => x.Key.ToString()));
+            newFilters.Themes = themesFilters.ThemesIdsList;
+            newFilters.CombinedThemes = themesFilters.Combined;
         }
 
-        HideThemes();
-
-        OnSearch(newFilters);
+        await OnSearch(newFilters);
     }
 }

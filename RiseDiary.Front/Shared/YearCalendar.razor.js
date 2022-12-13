@@ -1,6 +1,6 @@
 ﻿'use strict'
 
-export function initCalendar(elementCssSelector, dates, onClickEventHandler) {
+export function initCalendar(elementCssSelector, year, dates, onClickEventHandler) {
     try {
 
         const displayDates = dates.map((d) => ({
@@ -9,8 +9,6 @@ export function initCalendar(elementCssSelector, dates, onClickEventHandler) {
             name: d,
             id: d
         }));
-
-        const year = new Date().getFullYear();
 
         const calendar = new Calendar(elementCssSelector, {
             style: 'background',

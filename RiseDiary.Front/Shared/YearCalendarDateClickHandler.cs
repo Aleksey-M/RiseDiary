@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace RiseDiary.Front.Pages.Dates;
+namespace RiseDiary.Front.Shared;
 
 public sealed class DateClickHandler
 {

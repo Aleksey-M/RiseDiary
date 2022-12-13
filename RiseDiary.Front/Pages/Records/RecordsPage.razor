@@ -4,8 +4,6 @@
 @using RiseDiary.Shared.Scopes;
 
 @inherits UIComponentBase
-@inject HttpClient Http
-@inject NavigationManager NavManager
 
 <PageTitle>Записи</PageTitle>
 
@@ -14,7 +12,7 @@
     {
         <div class="col-12">
             <div class="px-3">
-                <Pager AreaName="records" Pages="@_pages" QueryParameters="@_filters.ToQueryParams()" />
+                <Pager Pages="@_pages" Navigate="@Navigate" />
             </div>
         </div>
 
@@ -24,83 +22,57 @@
 
         <div class="col-12">
             <div class="px-3">
-                <Pager AreaName="records" Pages="@_pages" QueryParameters="@_filters.ToQueryParams()" />
+                <Pager Pages="@_pages" Navigate="@Navigate" />
             </div>
         </div>
     }
 </Spinner>
 
 @code {
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public int Page { get; set; } = 1;
+    [Inject]
+    public HttpClient Http { get; set; } = null!;
 
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public bool Expanded { get; set; } = true;
+    [Inject]
+    public ILogger<RecordsPage> Logger { get; set; } = null!;
 
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public DateOnly? From { get; set; }
+    [Inject]
+    public NavigationManager NavManager { get; set; } = null!;
 
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public DateOnly? To { get; set; }
-
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public string? Name { get; set; }
-
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public bool CombinedThemes { get; set; }
-
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public string? Themes { get; set; }
-
-
-    private RecordsQueryFilters _filters = new();
+    private RecordsSearchFilters _filters = new();
+    private int _page = 1;
 
     private PagesInfo _pages = null!;
-
 
     private Type? _displayType;
 
     private Dictionary<string, object>? _displayTypeParameters;
 
 
-    private IEnumerable<ScopeDto> _allScopes = Enumerable.Empty<ScopeDto>();
-
-    protected override async Task OnParametersSetAsync()
+    private async Task LoadData(int? page = null, RecordsSearchFilters? filters = null)
     {
-        await base.OnParametersSetAsync();
-
-        _filters = new RecordsQueryFilters
-            {
-                CombinedThemes = CombinedThemes,
-                Expanded = Expanded,
-                From = From,
-                Name = Name,
-                Themes = Themes,
-                To = To
-            };
+        _filters = filters ?? _filters;
+        _page = page ?? _page;
 
         try
         {
             await StartApiRequest();
 
-            _allScopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", Token) ?? new();
-
-            var queryParams = _filters.ToQueryParams();
-            queryParams["page"] = Page;
+            var queryParams = new Dictionary<string, object?>
+            {
+                ["from"] = _filters.From,
+                ["to"] = _filters.To,
+                ["combinedThemes"] = _filters.CombinedThemes,
+                ["expanded"] = _filters.Expanded,
+                ["name"] = _filters.Name,
+                ["themes"] = _filters.Themes,
+                ["page"] = _page
+            };
 
             var uri = NavManager.GetUriWithQueryParameters("api/records", queryParams);
+            _displayType = _filters.Expanded ? typeof(RecordsTableExpanded) : typeof(RecordsTable);
 
-            if (Expanded)
+            if (_filters.Expanded)
             {
-                _displayType = typeof(RecordsTableExpanded);
-
                 var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordDto>>(uri, Token);
                 _pages = response?.PagesInfo ?? new();
 
@@ -112,8 +84,6 @@
             }
             else
             {
-                _displayType = typeof(RecordsTable);
-
                 var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordListItemDto>>(uri, Token);
                 _pages = response?.PagesInfo ?? new();
 
@@ -128,17 +98,29 @@
         }
         catch (Exception exc)
         {
-            _displayTypeParameters = null;
-            _pages = new();
+            Logger.LogError(exc, "Error on page data loading");
             await FinishApiRequest(exc.Message);
         }
     }
 
-    private void Search(RecordsQueryFilters filters)
-    {
-        var queryParams = filters.ToQueryParams();
-        queryParams["page"] = 1;
+    private IEnumerable<ScopeDto> _allScopes = Enumerable.Empty<ScopeDto>();
 
-        NavManager.NavigateTo(NavManager.GetUriWithQueryParameters(queryParams));
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        try
+        {
+            Loading = true;
+            _allScopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", Token) ?? new();
+            await LoadData();
+        }
+        catch (Exception exc)
+        {
+            Logger.LogError(exc, "Error on page initialization");
+            await FinishApiRequest(exc.Message);
+        }
     }
+
+    private Task Search(RecordsSearchFilters filters) => LoadData(filters: filters);
+    private Task Navigate(int page) => LoadData(page: page);
 }

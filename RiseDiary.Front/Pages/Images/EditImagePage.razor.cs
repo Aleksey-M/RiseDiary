@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
+using RiseDiary.Front.AppServices;
 using RiseDiary.Shared.Images;
 
 namespace RiseDiary.Front.Pages.Images;
@@ -19,6 +20,9 @@ public partial class EditImagePage : UIComponentBase
 
     [Inject]
     public IJSRuntime JsRuntime { get; set; } = null!;
+
+    [Inject]
+    public JsDependencies JsDeps { get; set; } = null!;
 
     [Inject]
     public ScaleDownImageDtoValidator ScaleImageValidator { get; set; } = null!;
@@ -347,17 +351,10 @@ public partial class EditImagePage : UIComponentBase
 
     public async Task<IJSObjectReference> InitJcropLibrary(string imageElementId)
     {
-        bool libNotLoaded = !_moduleTask.IsValueCreated;
-
+        await JsDeps.InitJcrop();
         var module = await _moduleTask.Value;
 
-        if (libNotLoaded)
-        {
-            await module.InvokeVoidAsync("loadLib");
-        }
-
         var jcropRef = await module.InvokeAsync<IJSObjectReference>("JcropInstance");
-
         if (jcropRef == null) throw new Exception("Can't create jcrop js instance");
 
         await jcropRef.InvokeVoidAsync("attach", imageElementId);

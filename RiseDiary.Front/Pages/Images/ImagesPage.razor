@@ -24,7 +24,7 @@
                 <div class="col-12">
                     <div class="my-3 px-3">
                         <NavLink class="btn btn-outline-primary" href="/images/upload">Загрузить</NavLink>
-                        <Pager AreaName="images" Pages="@_pageData.PagesInfo" FloatRight="true" />
+                        <Pager Pages="@_pageData.PagesInfo" FloatRight="true" Navigate="LoadPage" />
                     </div>
                 </div>
 
@@ -38,7 +38,7 @@
                 <div class="col-12">
                     <div class="my-3 px-3">
                         <i class="pt-3">@_totalCount</i>
-                        <Pager AreaName="images" Pages="@_pageData.PagesInfo" FloatRight="true" />
+                        <Pager Pages="@_pageData.PagesInfo" FloatRight="true" Navigate="LoadPage" />
                     </div>
                 </div>
             </div>
@@ -48,9 +48,7 @@
 
 @code {
 
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public int Page { get; set; } = 1;
+    private int _page = 1;
 
     private ImagesPageDto? _pageData;
 
@@ -58,15 +56,15 @@
 
     private string _totalCount = $"Всего изображений: 0";
 
-
-    protected override async Task OnParametersSetAsync()
+    private async Task LoadPage(int page = 1)
     {
-        await base.OnParametersSetAsync();
+        _page = page;
 
         try
         {
             await StartApiRequest();
-            var uri = $"api/images?pageNo={Page}";
+
+            var uri = $"api/images?pageNo={_page}";
             _pageData = await Http.GetFromJsonAsync<ImagesPageDto>(uri, Token);
 
             _totalCount = $"Всего изображений: {_pageData?.PagesInfo?.TotalItems ?? 0}";
@@ -78,6 +76,12 @@
             _pageData = new();
             await FinishApiRequest(exc.Message);
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadPage();
     }
 
     private void OpenImage(Guid imageId)
