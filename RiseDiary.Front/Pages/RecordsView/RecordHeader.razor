@@ -1,0 +1,91 @@
+﻿@using RiseDiary.Shared.Records;
+
+@inherits UIComponentBase
+
+@if(RecordDto != null)
+{
+    @if (HasError)
+    {
+        <p style="color:red">@ErrorMessage</p>
+    }
+
+    <Spinner ShowAnimation="false" Loading="Loading">
+        @if (_editHeaderFormDisplayed)
+        {
+            <div class="row">
+                <div class="col-lg-2 col-md-3 col-sm-12 mb-1">
+                    <InputDate @bind-Value="@_date" class="form-control" />
+                </div>
+                <div class="col-lg-10 col-md-9 col-sm-12 mb-1">
+                    <div class="input-group">
+                        <InputText @bind-Value="@_name" class="form-control" />
+
+                        <div class="input-group-append">
+                            <button class="btn btn-link" title="Сохранить изменения" @onclick="SaveHeader">
+                                <img src="img/check-square.svg" />
+                            </button>
+
+                            <button class="btn btn-link" title="Закрыть" @onclick="_ => _editHeaderFormDisplayed = false">
+                                <img src="img/x-square.svg" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <h5 style="color:darkblue;display:inline">
+                @FullHeader
+            </h5>
+
+            <button type="button" class="btn btn-link pt-0" title="Редактировать заголовок и дату" @onclick="ShowEditHeaderForm">
+                <img src="img/pen.svg" />
+            </button>
+        }
+    </Spinner>
+}
+
+
+@code {
+    [Inject]
+    public ILogger<RecordHeader> Logger { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public RecordEditDto RecordDto { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public Func<DateOnly, string?, Task> OnSaveHeader { get; set; } = null!;
+
+    private bool _editHeaderFormDisplayed;
+    private DateOnly _date;
+    private string? _name;
+
+    private MarkupString FullHeader =>
+        (MarkupString)$"<b>{RecordDto?.Date:yyyy.MM.dd}</b> <i>{(string.IsNullOrEmpty(RecordDto?.Name) ? "[Пусто]" : RecordDto.Name)}</i>";
+
+    private void ShowEditHeaderForm()
+    {
+        _date = RecordDto?.Date ?? DateOnly.FromDateTime(DateTime.Now);
+        _name = RecordDto?.Name ?? string.Empty;
+        _editHeaderFormDisplayed = true;
+    }
+
+    private async Task SaveHeader()
+    {
+        try
+        {
+            await StartApiRequest();
+
+            await OnSaveHeader(_date, _name);
+            _editHeaderFormDisplayed = false;
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning("Error on updating record with id = '{recordId}': {errorMessage}", RecordDto.RecordId, exc.Message);
+            await FinishApiRequest(exc.Message);
+        }
+    }
+}

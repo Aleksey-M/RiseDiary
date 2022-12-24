@@ -90,6 +90,13 @@ ul {
     transition: 0.3s;
 }
 
+.disabled-inline-content {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.4;
+    transition: 0.3s;
+}
+
 .loader-image {
     position: absolute;
     height: 100%;

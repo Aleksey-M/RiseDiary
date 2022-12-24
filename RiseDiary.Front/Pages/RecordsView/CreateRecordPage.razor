@@ -1,0 +1,117 @@
+﻿@page "/records/create"
+@using RiseDiary.Front.AppServices;
+@using RiseDiary.Shared.Records;
+
+@inherits UIComponentBase
+
+<PageTitle>Создание новой записи</PageTitle>
+
+<Spinner Loading="@Loading">
+    <div class="col-12">
+        <div class="row">
+
+            @if (HasError)
+            {
+                <p style="color:red">@ErrorMessage</p>
+            }
+
+            <div class="offset-lg-1 col-lg-2 col-md-4 col-sm-12 my-2">
+                <InputDate @bind-Value=@_date class="form-control" />
+            </div>
+
+            <div class="col-lg-8 col-md-8 col-sm-12 my-2">
+                <InputText @bind-Value=@_name placeholder="Название" class="form-control" />
+            </div>
+
+            <div class="offset-lg-1 col-lg-10 col-md-12 col-sm-12 mt-2 mb-5">
+
+                @if(_previewString != null)
+                {
+                    <div class="col-12">
+                        @_previewString
+                    </div>
+                }
+
+                <textarea rows="8" class="col-12" @bind="_text" @bind:event="oninput"></textarea>
+
+                <div class="col-12 my-2 text-center">
+                    <button @onclick="CreateRecord" class="btn btn-outline-success">Создать</button>
+                    <button @onclick="PreviewText" class="btn btn-outline-secondary">Просмотр</button> 
+                    <a href="/records" class="btn btn-link">Все записи</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</Spinner>
+
+@code {
+    [Inject]
+    public MarkdownService MdService { get; set; } = null!;
+
+    [Inject]
+    public ILogger<CreateRecordPage> Logger { get; set; } = null!;
+
+    [Inject]
+    public CreateRecordValidator Validator { get; set; } = null!;
+
+    [Inject]
+    public HttpClient Http { get; set; } = null!;
+
+    [Inject]
+    public NavigationManager NavManager { get; set; } = null!;
+
+    private DateTime _date = DateTime.UtcNow.Date;
+    private string _name = string.Empty;
+    private string _text = string.Empty;
+
+    private MarkupString? _previewString;
+
+    private void PreviewText()
+    {
+        _previewString = MdService.ToHtml(_text);
+    }
+
+    private async Task CreateRecord()
+    {
+        var dto = new CreateRecordDto
+            {
+                Date = DateOnly.FromDateTime(_date),
+                Name = _name,
+                Text = _text
+            };
+
+        var validationResult = Validator.Validate(dto);
+
+        if (!validationResult.IsValid)
+        {
+            ErrorMessage = validationResult.ToString();
+            Logger.LogWarning("Input validation error: {validationError}", ErrorMessage);
+            return;
+        }
+
+        try
+        {
+            await StartApiRequest();
+
+            var response = await Http.PostAsJsonAsync($"api/records", dto);
+
+            var responseContent = await GetCheckedResponseContent<string?>(response);
+            if (responseContent == null) return;
+
+            if (!Guid.TryParse(responseContent, out var newRecordId))
+            {
+                await FinishApiRequest($"Неверный формат Id: {responseContent}");
+                return;
+            }
+
+            Logger.LogInformation("Created new record with id = '{newRecordId}'", newRecordId);
+            NavManager.NavigateTo($"records/view/{newRecordId}");
+        }
+        catch(Exception exc)
+        {
+            Logger.LogWarning("Error on record creating {errorMessage}", exc.Message);
+            await FinishApiRequest(exc.Message);
+        }
+    }
+}

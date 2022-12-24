@@ -1,16 +1,32 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using FluentValidation;
 
 namespace RiseDiary.Shared.Records;
 
 public sealed class CreateRecordDto
 {
-    [Required]
     public DateOnly Date { get; set; }
 
-    public string RecordName { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
-    [Required, MaxLength(25_000)]
-    public string RecordText { get; set; } = "";
+    public string Text { get; set; } = string.Empty;
+}
 
-    public Guid[] ThemesIds { get; set; } = Array.Empty<Guid>();
+
+public sealed class CreateRecordValidator : DtoValidator<CreateRecordDto>
+{
+    public CreateRecordValidator()
+    {
+        RuleFor(x => x.Date)
+            .Cascade(CascadeMode.Stop)
+            .NotEqual(default(DateOnly)).WithMessage("Не указана дата записи");
+
+        RuleFor(x => x.Name)
+            .Cascade(CascadeMode.Stop)
+            .MaximumLength(500).WithMessage("Длина названия записи не должна превышать 500 символов");
+
+        RuleFor(x => x.Text)
+            .Cascade(CascadeMode.Stop)
+            .NotNull().NotEmpty().WithMessage("Текст записи не может быть пустым")
+            .MaximumLength(25000).WithMessage("Длина текста записи не должна превышать 25 000 символов");
+    }
 }

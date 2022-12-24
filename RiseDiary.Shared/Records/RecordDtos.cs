@@ -17,7 +17,7 @@ public class RecordListItemDto
 }
 
 
-public sealed class RecordDto : RecordListItemDto
+public class RecordDto : RecordListItemDto
 {
     public string Text { get; set; } = string.Empty;
 
@@ -26,6 +26,14 @@ public sealed class RecordDto : RecordListItemDto
     public ImageListItemDto[] Images { get; set; } = Array.Empty<ImageListItemDto>();
 
     public CogitationDto[] Cogitations { get; set; } = Array.Empty<CogitationDto>();
+}
+
+
+public sealed class RecordEditDto : RecordDto
+{
+    public Guid? StartPageRecordId { get; set; }
+
+    public ScopeDto[] AllScopes { get; set; } = Array.Empty<ScopeDto>();
 }
 
 

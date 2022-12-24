@@ -1,0 +1,216 @@
+﻿@using FluentValidation;
+@using RiseDiary.Shared.Records;
+
+@inherits UIComponentBase
+
+<div class="col-12 text-center">
+    <h4 style="color:darkgrey">Комментарии (осмысления)</h4>
+</div>
+
+@if (_showCogitationEditor)
+{
+    <TextEditor Text="@string.Empty" SaveButtonName="Добавить" OnSaveText="CreateNewCogitation" EditorOnly="true" />
+}
+else
+{
+    <div class="col-12 mb-2">
+        <div class="offset-lg-1 col-lg-10 col-md-12 col-sm-12">
+            <button type="button" class="btn btn-outline-success btn-sm mt-1" title="Добавить комментарий" @onclick="_ => _showCogitationEditor = true">
+                Добавить комментарий (осмысление)
+            </button>
+        </div>
+    </div>
+}
+
+
+@foreach (var cog in RecordDto.Cogitations)
+{
+    <div class="col-12 my-1" @key="@cog.Id">
+            <p class="offset-lg-1 col-lg-10 col-md-12 col-sm-12 mt-2">
+                <b class="align-middle">@GetCogitationDate(cog.CreateDate)</b>
+                <button class="btn btn-link" title="Удалить комментарий (осмысление)" @onclick="async _ => await DeleteCogitation(cog.Id)">
+                    <img src="img/trash.svg" width="20" height="20" />
+                </button>
+            </p>
+
+            <TextEditor Text="@cog.Text" SaveButtonName="Сохранить" OnSaveText="_ => Task.CompletedTask" />
+    </div>
+}
+
+@code {
+    [Inject]
+    public CreateCogitationValidator CreateValidator { get; set; } = null!;
+
+    [Inject]
+    public UpdateCogitationValidator UpdateValidator { get; set; } = null!;
+
+    [Inject]
+    public HttpClient Http { get; set; } = null!;
+
+    [Inject]
+    public ILogger<RecordCogitations> Logger { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public RecordEditDto RecordDto { get; set; } = null!;
+
+    private bool _showCogitationEditor;
+
+    private string GetCogitationDate(DateTime date) => date.ToLocalTime().ToString("yyyy.MM.dd HH.mm.ss") ?? string.Empty;
+
+    private async Task CreateNewCogitation(string text)
+    {
+        var dto = new CreateCogitationDto
+            {
+                Text = text,
+                RecordId = RecordDto.RecordId
+            };
+
+        CreateValidator.ValidateAndThrow(dto);
+
+        var response = await Http.PostAsJsonAsync($"api/records/{RecordDto.RecordId}/cogitations", dto);
+        var responseContent = await GetCheckedResponseContent<string?>(response);
+        if (responseContent == null) return;
+
+        if (!Guid.TryParse(responseContent, out var id))
+        {
+            throw new Exception($"Неверный формат Id: {responseContent}");
+        }
+
+        var tmpList = RecordDto
+            .Cogitations
+            .ToList();
+
+        tmpList.Insert(0, new CogitationDto
+            {
+                CreateDate = DateTime.Now,
+                Id = id,
+                Text = dto.Text
+            });
+
+        RecordDto.Cogitations = tmpList.ToArray();
+
+        Logger.LogInformation("Created new cogitation with id = '{cogitationId}' for record with id='{recordId}'", id, dto.RecordId);
+        _showCogitationEditor = false;
+    }
+
+    private async Task DeleteCogitation(Guid id)
+    {
+        
+    }
+
+
+    //private enum ErrorArea { None, CogitationUpdate, CogitationCreate }
+
+    //[Parameter]
+    //public DiaryRecord Record { get; set; } = null!;
+
+    //private string? _criticalError;
+
+    //private ErrorArea _criticalErrorArea = ErrorArea.None;
+
+    //private bool _showCogitationEditor;
+
+    //private List<Cogitation> _cogitations = new List<Cogitation>();
+
+    //protected override async Task OnParametersSetAsync()
+    //{
+    //    await base.OnParametersSetAsync();
+
+    //    try
+    //    {
+    //        _cogitations = Record.Cogitations
+    //            .OrderByDescending(c => c.Date)
+    //            .ToList();
+    //    }
+    //    catch (RecordNotFoundException)
+    //    {
+    //        await JSRuntime.InvokeVoidAsync("redirectToIndex");
+    //        return;
+    //    }
+    //    catch (Exception exc)
+    //    {
+    //        _criticalError = exc.Message;
+    //    }
+    //}
+
+    //private async Task UpdateCogitationText(Guid textId, string text)
+    //{
+    //    try
+    //    {
+    //        if (string.IsNullOrWhiteSpace(text))
+    //        {
+    //            text = "[empty]";
+    //        }
+
+    //        var cog = _cogitations.SingleOrDefault(c => c.Id == textId);
+    //        if (cog is not null)
+    //        {
+    //            await CogitationsService.UpdateCogitationText(cog.Id, text);
+    //            cog.Text = text;
+    //        }
+    //    }
+    //    catch (Exception exc)
+    //    {
+    //        _criticalError = exc.Message;
+    //        _criticalErrorArea = ErrorArea.CogitationUpdate;
+    //    }
+
+    //}
+
+    //private async Task DeleteCogitation(Guid cogitationId)
+    //{
+    //    try
+    //    {
+    //        var cog = _cogitations.SingleOrDefault(c => c.Id == cogitationId);
+    //        if (cog is null) return;
+
+    //        bool conf = await JSRuntime.InvokeAsync<bool>("confirm", "Удалить комментарий (осмысление)?");
+
+    //        if (conf)
+    //        {
+    //            await CogitationsService.DeleteCogitation(cogitationId);
+    //            _cogitations.Remove(cog);
+    //        }
+    //    }
+    //    catch (Exception exc)
+    //    {
+    //        _criticalError = exc.Message;
+    //        _criticalErrorArea = ErrorArea.CogitationUpdate;
+    //    }
+    //}
+
+    //BlazoredTextEditor QuillHtml = null!;
+
+    //private async Task CreateNewCogitation()
+    //{
+    //    try
+    //    {
+    //        var text = await QuillHtml.GetText();
+    //        text = text.Trim() ?? "";
+
+    //        if (text == "")
+    //        {
+    //            await JSRuntime.InvokeVoidAsync("alert", "Текст не введен");
+    //            return;
+    //        }
+
+    //        var html = await QuillHtml.GetHTML();
+    //        var newCogId = await CogitationsService.AddCogitation(Record.Id, html);
+
+    //        _cogitations.Insert(0, new Cogitation
+    //            {                    
+    //                Date = DateTime.UtcNow,
+    //                Text = html,
+    //                RecordId = Record.Id
+    //            });
+
+    //        await JSRuntime.InvokeVoidAsync("setQuillHtmlText", @"<p></p>", "newCogitation");
+    //        _showCogitationEditor = false;
+    //    }
+    //    catch (Exception exc)
+    //    {
+    //        _criticalError = exc.Message;
+    //        _criticalErrorArea = ErrorArea.CogitationCreate;
+    //    }
+    //}
+}

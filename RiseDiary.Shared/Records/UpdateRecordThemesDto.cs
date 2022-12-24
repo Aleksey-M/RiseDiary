@@ -9,5 +9,4 @@ public sealed class UpdateRecordThemesDto
 
     [Required]
     public Guid[] ThemesIds { get; set; } = Array.Empty<Guid>();
-
 }

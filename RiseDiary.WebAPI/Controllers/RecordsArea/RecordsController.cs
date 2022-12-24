@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
+using RiseDiary.Shared;
 using RiseDiary.Shared.Records;
+using RiseDiary.WebAPI.Controllers.ScopesArea;
 
 namespace RiseDiary.WebAPI.Controllers.RecordsArea;
 
@@ -14,34 +17,47 @@ public sealed class RecordsController : ControllerBase
 
     private readonly IAppSettingsService _appSettingsService;
 
-    private readonly IRecordsThemesService _recordsThemesService;
-
     public RecordsController(
         IRecordsService recordService,
         IAppSettingsService appSettingsService,
-        IRecordsThemesService recordsThemesService,
         ICogitationsService cogitationsService)
     {
         _recordService = recordService;
         _appSettingsService = appSettingsService;
-        _recordsThemesService = recordsThemesService;
         _cogitationsService = cogitationsService;
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateRecord(CreateRecordDto createDto)
+    public async Task<IActionResult> CreateRecord(CreateRecordDto createDto, [FromServices] CreateRecordValidator createRecordValidator)
     {
-        var recId = await _recordService.AddRecord(createDto.Date, createDto.RecordName, createDto.RecordText);
-        if (createDto.ThemesIds.Length > 0) await _recordsThemesService.AddRecordTheme(recId, createDto.ThemesIds);
+        createRecordValidator.ValidateAndThrow(createDto);
+
+        var recId = await _recordService.AddRecord(createDto.Date, createDto.Name, createDto.Text);
+
         var newRecordUri = $@"{await _appSettingsService.GetHostAndPort()}/api/records/{recId}";
         return Created(newRecordUri, recId);
     }
 
     [HttpGet("{recordId}")]
-    public async Task<ActionResult<RecordDto>> GetRecord(Guid recordId, CancellationToken cancellationToken)
+    public async Task<ActionResult<RecordEditDto>> GetRecord(
+        Guid recordId,
+        [FromServices] IScopesService scopeService,
+        CancellationToken cancellationToken)
     {
         var record = await _recordService.FetchRecordById(recordId, cancellationToken);
-        return record.ToDto();
+        var dto = record.ToDto();
+
+        var s = (await _appSettingsService.GetAppSetting(AppSettingsKey.StartPageRecordId)).value ?? "";
+
+        Guid? startPageRecordId = null;
+        if (Guid.TryParse(s, out var id))
+        {
+            startPageRecordId = id;
+        }
+
+        var scopes = await scopeService.GetScopes(null, cancellationToken);
+
+        return record.ToEditDto(startPageRecordId, scopes.Select(s => s.ToDto()).ToArray());
     }
 
     [HttpDelete("{recordId}")]
@@ -51,21 +67,29 @@ public sealed class RecordsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut("{recordId}")]
-    public async Task<IActionResult> UpdateRecord(Guid recordId, UpdateRecordDto updateRecordDto)
+    [HttpPatch("{recordId}")]
+    public async Task<IActionResult> UpdateRecord(Guid recordId, UpdateRecordDto updateRecordDto, UpdateRecordValidator validator)
     {
         if (recordId != updateRecordDto.Id) return BadRequest("Not consistent request");
 
-        await _recordService.UpdateRecord(recordId, updateRecordDto.NewDate, updateRecordDto.NewName, updateRecordDto.NewText);
+        validator.ValidateAndThrow(updateRecordDto);
+
+        await _recordService.UpdateRecord(recordId, updateRecordDto.Date, updateRecordDto.Name, updateRecordDto.Text);
         return NoContent();
     }
 
     [HttpPost("{recordId}/cogitations")]
-    public async Task<IActionResult> AddCogitation(Guid recordId, CreateCogitationDto createCogitationDto)
+    public async Task<IActionResult> AddCogitation(
+        Guid recordId,
+        CreateCogitationDto dto,
+        [FromServices] CreateCogitationValidator validator)
     {
-        if (recordId != createCogitationDto.RecordId) return BadRequest("Not consistent request");
+        if (recordId != dto.RecordId) return BadRequest("Not consistent request");
 
-        var cogId = await _cogitationsService.AddCogitation(recordId, createCogitationDto.Text);
+        validator.ValidateAndThrow(dto);
+
+        var cogId = await _cogitationsService.AddCogitation(recordId, dto.Text);
+
         var recordUri = $@"{await _appSettingsService.GetHostAndPort()}/api/v1.0/records/{recordId}";
         return Created(recordUri, cogId);
     }
@@ -75,7 +99,7 @@ public sealed class RecordsController : ControllerBase
     {
         if (recordId != updateCogitationDto.RecordId || cogitationId != updateCogitationDto.CogitationId) return BadRequest("Not consistent request");
 
-        await _cogitationsService.UpdateCogitationText(cogitationId, updateCogitationDto.NewText);
+        await _cogitationsService.UpdateCogitationText(cogitationId, updateCogitationDto.Text);
         return NoContent();
     }
 

@@ -15,21 +15,12 @@ public sealed class RecordsThemesController : ControllerBase
         _recordsThemesService = recordsThemesService;
     }
 
-    [HttpPost("{recordId}/themes")]
-    public async Task<IActionResult> AddThemeToRecord(Guid recordId, UpdateRecordThemesDto themes)
+    [HttpPatch("{recordId}/themes")]
+    public async Task<IActionResult> UpdateRecordThemes(Guid recordId, UpdateRecordThemesDto themes)
     {
         if (recordId != themes.RecordId) return BadRequest("Not consistent request");
 
-        await _recordsThemesService.AddRecordTheme(recordId, themes.ThemesIds);
+        await _recordsThemesService.UpdateRecordThemes(recordId, themes.ThemesIds);
         return Ok();
-    }
-
-    [HttpDelete("{recordId}/themes")]
-    public async Task<IActionResult> DeleteRecordTheme(Guid recordId, UpdateRecordThemesDto themes)
-    {
-        if (recordId != themes.RecordId) return BadRequest("Not consistent request");
-
-        await _recordsThemesService.RemoveRecordTheme(recordId, themes.ThemesIds);
-        return NoContent();
     }
 }

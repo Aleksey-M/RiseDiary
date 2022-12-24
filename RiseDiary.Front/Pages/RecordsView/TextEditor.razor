@@ -1,0 +1,112 @@
+﻿@using RiseDiary.Front.AppServices;
+
+@inherits UIComponentBase
+
+<Spinner Loading="@Loading">
+    <div class="col-12">
+
+        @if (HasError)
+        {
+            <p style="color:red">@ErrorMessage</p>
+        }
+
+        <div class="offset-lg-1 col-lg-10 col-md-12 col-sm-12 mt-2 mb-5">
+
+            @if(_text == null)
+            {
+                @MdService.ToHtml(Text);
+
+                <div class="col-12">
+                    <button class="btn btn-outline-info btn-sm m-1" title="Редактировать текст" @onclick="_ => _text = Text">
+                        Редактировать
+                    </button>
+                </div>
+            }
+            else
+            {
+                @if (_previewString != null)
+                {
+                    <div class="col-12 mb-2" style="border:1px solid green">
+                        @_previewString
+                    </div>
+                }
+
+                <textarea rows="18" class="col-12" @bind="_text" @bind:event="oninput"></textarea>
+
+                <div class="col-12 my-2 text-center">
+                    <button @onclick="SaveText" class="btn btn-sm btn-outline-success mx-1">@SaveButtonName
+                    </button><button @onclick="PreviewText" class="btn btn-sm btn-outline-secondary mx-1">Проверить</button>
+                    
+                    @if (!EditorOnly)
+                    {
+                        <button @onclick="CloseEditor" class="btn btn-sm btn-outline-secondary mx-1">Закрыть</button>
+                    }
+                </div>
+            }
+
+        </div>
+    </div>
+</Spinner>
+
+@code {
+    [Inject]
+    public MarkdownService MdService { get; set; } = null!;
+
+    [Inject]
+    public ILogger<CreateRecordPage> Logger { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public Func<string, Task> OnSaveText { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public string SaveButtonName { get; set; } = "Сохранить";
+
+    [Parameter]
+    public bool EditorOnly { get; set; }
+
+    private string? _text;
+    private MarkupString? _previewString;
+
+    protected override void OnParametersSet()
+    {
+        if (EditorOnly)
+        {
+            _text = Text;
+        }
+
+        base.OnParametersSet();
+    }
+
+    private void PreviewText()
+    {
+        _previewString = MdService.ToHtml(_text);
+    }
+
+    private void CloseEditor()
+    {
+        _previewString = null;
+        _text = null;
+    }
+
+    private async Task SaveText()
+    {
+        try
+        {
+            await StartApiRequest();
+
+            await OnSaveText(_text);
+            _text = null;
+            _previewString = null;
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning("Error on saving text: {errorMessage}", exc.Message);
+            await FinishApiRequest(exc.Message);
+        }
+    }
+}

@@ -1,0 +1,143 @@
+﻿@using RiseDiary.Front.AppServices;
+@using RiseDiary.Shared.Records;
+@using RiseDiary.Shared.Scopes;
+
+@inherits UIComponentBase
+
+
+@if (HasError)
+{
+    <p style="color:red">@ErrorMessage</p>
+}
+
+<Spinner ShowAnimation="false" Loading="Loading">
+    <div class="text-center">
+        <h6 style="display:inline">
+            @foreach (var (theme, index) in RecordDto.Themes.OrderBy(x => x.ThemeName).Select((t, i) => (t, i)))
+            {
+                <i>
+                    @theme?.ThemeName
+                    @if (!string.IsNullOrEmpty(theme?.ThemeDescription))
+                    {
+                        <button class="btn btn-sm btn-link px-1" @onclick="_ => _selectedThemeDetails = theme">?</button>
+                    }
+                </i>
+
+                @if (index != RecordDto.Themes.Length - 1)
+                {
+                    @:&nbsp;|&nbsp;
+                }
+            }
+        </h6>
+
+        <button class="btn btn-link p-0" title="Выбор тем записи" @onclick="ShowThemes">
+            <img src="img/pen.svg" />
+        </button>
+    </div>
+</Spinner>
+
+
+<ModalDialog Show="_themesDisplayed" Title="Темы записи" OnClose="@HideThemes">
+    <ChildContent>
+        <p>
+            <h6>Актуальные темы</h6>
+            <ScopeFilter AllScopes=@RecordDto.AllScopes DisplayActual=true Selection="@_themesDictionary" />
+        </p>
+
+        @if (!_allListDisplayed)
+        {
+            <button class="btn btn-link text-decoration-none" type="button" @onclick="_ => _allListDisplayed = true">
+                Остальные темы
+            </button>
+        }
+        else
+        {
+            <p>
+                <ScopeFilter AllScopes=@RecordDto.AllScopes DisplayActual=false Selection="@_themesDictionary" />
+            </p>
+        }
+    </ChildContent>
+
+    <FooterContent>
+        <button type="submit" class="btn btn-outline-info" style="float: right" @onclick=@SaveRecordThemes>Сохранить</button>
+    </FooterContent>
+</ModalDialog>
+
+
+<ModalDialog Show="_selectedThemeDetails != null" Title="@_selectedThemeDetails?.ThemeName" OnClose="() => _selectedThemeDetails = null">
+    @MdService.ToHtml(_selectedThemeDetails?.ThemeDescription)
+</ModalDialog>
+
+
+@code {
+    [Inject]
+    public MarkdownService MdService { get; set; } = null!;
+
+    [Inject]
+    public HttpClient Http { get; set; } = null!;
+
+    [Inject]
+    public ILogger<RecordThemes> Logger { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public RecordEditDto RecordDto { get; set; } = null!;
+
+    private ThemeDto? _selectedThemeDetails;
+
+    private bool _allListDisplayed;
+    private bool _themesDisplayed;
+    private Dictionary<Guid, bool>? _themesDictionary;
+
+    private void ShowThemes()
+    {
+        _themesDictionary = RecordDto.AllScopes
+            .Where(x => x.Themes != null && x.Themes.Count > 0)
+            .SelectMany(x => x.Themes!)
+            .Select(x => new
+            {
+                x.ThemeId,
+                Selected = RecordDto.Themes.Any(y => y.ThemeId == x.ThemeId)
+            })
+            .ToDictionary(x => x.ThemeId!.Value, x => x.Selected);
+
+        _themesDisplayed = true;
+    }
+
+    private void HideThemes()
+    {
+        _themesDisplayed = false;
+        _themesDictionary = null;
+    }
+
+    private async Task SaveRecordThemes()
+    {
+        var dto = new UpdateRecordThemesDto
+            {
+                RecordId = RecordDto.RecordId,
+                ThemesIds = _themesDictionary?.Where(kv => kv.Value).Select(kv => kv.Key).ToArray() ?? Array.Empty<Guid>()
+            };
+
+        HideThemes();
+
+        try
+        {
+            await StartApiRequest();           
+
+            await Http.PatchAsJsonAsync($"api/records/{RecordDto.RecordId}/themes", dto);
+
+            RecordDto.Themes = RecordDto.AllScopes
+                .Where(x => x.Themes != null && x.Themes.Count > 0)
+                .SelectMany(x => x.Themes!)
+                .Where(x => dto.ThemesIds.Contains(x.ThemeId!.Value))
+                .OrderBy(x => x.ThemeName)
+                .ToArray();
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on updating record themes. Record Id = '{recordId}'. Record themes = {themesIds}", RecordDto.RecordId, dto.ThemesIds);
+            await FinishApiRequest(exc.Message);
+        }
+    }
+}

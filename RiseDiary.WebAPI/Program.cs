@@ -4,6 +4,7 @@ using RiseDiary.Model;
 using RiseDiary.Model.Services;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Images;
+using RiseDiary.Shared.Records;
 using RiseDiary.Shared.Scopes;
 using RiseDiary.Shared.Settings;
 using RiseDiary.WebAPI.Config;
@@ -51,6 +52,10 @@ builder.Services.AddScoped<UploadImageDtoValidator>();
 builder.Services.AddScoped<UpdateImageNameDtoValidator>();
 builder.Services.AddScoped<ScaleDownImageDtoValidator>();
 builder.Services.AddScoped<CropImageDtoValidator>();
+builder.Services.AddScoped<CreateRecordValidator>();
+builder.Services.AddScoped<UpdateRecordValidator>();
+builder.Services.AddScoped<CreateCogitationValidator>();
+builder.Services.AddScoped<UpdateCogitationValidator>();
 
 builder.Services.AddControllers();
 

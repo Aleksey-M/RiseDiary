@@ -19,5 +19,9 @@
     [Parameter]
     public bool ShowAnimation { get; set; } = true;
 
-    private string ContainerClass => Loading ? "disabled-content" : "enabled-content";
+    private string ContainerClass => Loading 
+        ? ShowAnimation
+            ? "disabled-content"
+            : "disabled-inline-content"
+        : "enabled-content";
 }

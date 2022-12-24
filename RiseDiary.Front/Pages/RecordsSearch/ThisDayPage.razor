@@ -41,7 +41,18 @@
         {
             await StartApiRequest();
 
-            _records = await Http.GetFromJsonAsync<List<RecordDto>>("api/records/this-day", Token) ?? new();
+            var response = await Http.GetAsync("api/records/this-day", Token);
+            
+            if(!await CheckSuccessResponse(response)) return;
+
+            if(response.StatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                _records = new();
+            }
+            else
+            {
+                _records = await response.Content.ReadFromJsonAsync<List<RecordDto>>();
+            }
 
             await FinishApiRequest(null);
         }

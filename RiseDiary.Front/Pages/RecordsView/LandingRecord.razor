@@ -1,0 +1,94 @@
+﻿@using RiseDiary.Shared
+
+@inherits UIComponentBase
+
+
+@if (HasError)
+{
+    <p style="color:red">@ErrorMessage</p>
+}
+
+<Spinner ShowAnimation="false" Loading="Loading">
+    @if (StartPageRecordId == null)
+    {
+        <button @onclick="SetOnStartPage" class="btn btn-link pt-0" style="float:right" title="Поместить на стартовую страницу">
+            <img src="img/calendar-plus.svg" />
+        </button>
+    }
+    else if (RecordId == StartPageRecordId)
+    {
+        <button @onclick="RemoveFromStartPage" class="btn btn-link pt-0" style="float:right" title="Удалить со стартовой страницы">
+            <img src="img/calendar-x.svg" />
+        </button>
+    }
+    else
+    {
+        <button @onclick="SetOnStartPage" class="btn btn-link pt-0" style="float:right" title="Заменить другую запись на стартовой странице">
+            <img src="img/calendar-check.svg" />
+        </button>
+    }
+</Spinner>
+
+
+@code{
+    [Inject]
+    public ILogger<LandingRecord> Logger { get; set; } = null!;
+
+    [Inject]
+    public HttpClient Http { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public Guid RecordId { get; set; }
+
+    [Parameter, EditorRequired]
+    public Guid? StartPageRecordId { get; set; }
+
+
+    private async Task SetOnStartPage()
+    {
+        try
+        {
+            await StartApiRequest();
+
+            var dto = new AppSettingDto
+                {
+                    Key = AppSettingsKey.StartPageRecordId,
+                    Value = RecordId.ToString()
+                };
+
+            await Http.PutAsJsonAsync($"api/settings/{AppSettingsKey.StartPageRecordId}", dto);
+
+            StartPageRecordId = RecordId;
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on updating start page record. Record Id = '{recordId}'", RecordId);
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private async Task RemoveFromStartPage()
+    {
+        try
+        {
+            await StartApiRequest();
+
+            var dto = new AppSettingDto
+                {
+                    Key = AppSettingsKey.StartPageRecordId,
+                    Value = string.Empty
+                };
+
+            await Http.PutAsJsonAsync($"api/settings/{AppSettingsKey.StartPageRecordId}", dto);
+
+            StartPageRecordId = null;
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on removing start page record. Record Id = '{recordId}'", RecordId);
+            await FinishApiRequest(exc.Message);
+        }
+    }
+}

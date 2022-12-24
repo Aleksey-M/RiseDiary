@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using RiseDiary.Front.Pages.Config;
 using RiseDiary.Model;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Settings;
