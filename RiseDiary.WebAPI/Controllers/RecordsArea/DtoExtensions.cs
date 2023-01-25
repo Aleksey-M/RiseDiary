@@ -1,11 +1,8 @@
-﻿using System.Xml.Linq;
-using RiseDiary.Model;
+﻿using RiseDiary.Model;
 using RiseDiary.Shared.Records;
 using RiseDiary.Shared.Scopes;
 using RiseDiary.WebAPI.Controllers.ImagesArea;
 using RiseDiary.WebAPI.Controllers.ScopesArea;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RiseDiary.WebAPI.Controllers.RecordsArea;
 
@@ -21,13 +18,15 @@ internal static class DtoExtensions
         Text = record.Text,
         Cogitations = record.Cogitations
             .Select(c => c.ToDto())
-            .ToArray(),
+            .OrderByDescending(c => c.CreateDate)
+            .ToList(),
         Themes = record.ThemesRefs
             .Select(rt => rt.Theme.ToDto())
-            .ToArray(),
+            .ToList(),
         Images = record.ImagesRefs
+            .OrderBy(x => x.Order)
             .Select(ri => ri.Image.ToListDto())
-            .ToArray()
+            .ToList()
     };
 
     public static CogitationDto ToDto(this Cogitation cogitation) => new()
@@ -46,24 +45,28 @@ internal static class DtoExtensions
         RecordId = record.Id
     };
 
-    public static RecordEditDto ToEditDto(this DiaryRecord record, Guid? startPageRecordId, ScopeDto[] allScopes) => new RecordEditDto
-    {
-        RecordId = record.Id,
-        Date = record.Date,
-        CreatedDate = record.CreateDate,
-        ModifiedDate = record.ModifyDate,
-        Name = record.Name,
-        Text = record.Text,
-        Cogitations = record.Cogitations
-            .Select(c => c.ToDto())
-            .ToArray(),
-        Themes = record.ThemesRefs
-            .Select(rt => rt.Theme.ToDto())
-            .ToArray(),
-        Images = record.ImagesRefs
-            .Select(ri => ri.Image.ToListDto())
-            .ToArray(),
-        StartPageRecordId = startPageRecordId,
-        AllScopes = allScopes
-    };
+    public static RecordEditDto ToEditDto(this DiaryRecord record, Guid? startPageRecordId,
+        ScopeDto[] allScopes, int addImagesPageSize) => new RecordEditDto
+        {
+            RecordId = record.Id,
+            Date = record.Date,
+            CreatedDate = record.CreateDate,
+            ModifiedDate = record.ModifyDate,
+            Name = record.Name,
+            Text = record.Text,
+            Cogitations = record.Cogitations
+                .Select(c => c.ToDto())
+                .OrderByDescending(c => c.CreateDate)
+                .ToList(),
+            Themes = record.ThemesRefs
+                .Select(rt => rt.Theme.ToDto())
+                .ToList(),
+            Images = record.ImagesRefs
+                .OrderBy(x => x.Order)
+                .Select(ri => ri.ToListDto())
+                .ToList(),
+            StartPageRecordId = startPageRecordId,
+            AllScopes = allScopes,
+            AddImagesPageSize = addImagesPageSize
+        };
 }

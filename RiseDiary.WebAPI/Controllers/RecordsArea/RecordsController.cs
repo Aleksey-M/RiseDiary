@@ -57,7 +57,9 @@ public sealed class RecordsController : ControllerBase
 
         var scopes = await scopeService.GetScopes(null, cancellationToken);
 
-        return record.ToEditDto(startPageRecordId, scopes.Select(s => s.ToDto()).ToArray());
+        var addImagesPageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.AvailableImagesPageSize);
+
+        return record.ToEditDto(startPageRecordId, scopes.Select(s => s.ToDto()).ToArray(), addImagesPageSize ?? 10);
     }
 
     [HttpDelete("{recordId}")]

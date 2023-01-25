@@ -1,0 +1,272 @@
+﻿@using RiseDiary.Shared.Images;
+@using RiseDiary.Shared.Records;
+
+@inherits UIComponentBase
+
+<div class="row">
+    @if (_openedImageId.HasValue)
+    {
+        <ImageView ImageId="_openedImageId.Value" ShowButtons="true" CloseImageView="CloseImage" RecordId="@RecordDto.RecordId" />
+    }
+    else
+    {
+        @if (!_addMode)
+        {
+            <div class="col-12">
+                <div class="row">
+                    @foreach (var image in RecordDto.Images.OrderBy(x => x.Order))
+                    {
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-3" @key="@image.ImageId">
+                            <Thumbnail RecordId="RecordDto.RecordId" Image="image" ImageClick="OpenImage">
+                                @if (image.Order > 1)
+                                {
+                                    <button type="button" class="btn btn-link px-0" @onclick="async _ => await UpdateImageOrder(image.ImageId, image.Order - 1)">
+                                        <img src="img/arrow-left.svg" />
+                                    </button>
+                                }
+
+                                <button type="button" class="btn btn-sm btn-outline-secondary mx-3" @onclick="async _ => await RemoveImageLink(image.ImageId)" title="Открепить">Открепить</button>
+                                
+                                @if (image.Order < RecordDto.Images.Select(x => x.Order).DefaultIfEmpty().Max())
+                                {
+                                    <button type="button" class="btn btn-link px-0" @onclick="async _ => await UpdateImageOrder(image.ImageId, image.Order + 1)">
+                                        <img src="img/arrow-right.svg" />
+                                    </button>
+                                }
+                            </Thumbnail>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-12 mb-2">
+                <button class="btn btn-outline-info m-1 btn-sm" @onclick="ShowAvailableImages">Прикрепить изображение</button>
+                <a href="/images/upload/@RecordDto.RecordId.ToString()" class="btn btn-outline-info m-1 btn-sm">Загрузить изображение</a>
+            </div>
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="row">
+
+                    <div class="offset-lg-3 col-lg-5 col-md-9 col-sm-12">
+                        <input @bind="_nameFilter" @bind:event="oninput" type="text" class="form-control form-control-sm my-1" id="imageFilter" name="imageFilter" placeholder="поиск по названию" />
+                    </div>
+
+                    <div class="col-lg-1 col-md-3 col-sm-12">
+                         <button class="btn btn-outline-info my-1 btn-sm" @onclick="ShowAvailableImages" title="Фильтрация картинок по названию">Применить</button>
+                    </div>
+
+                </div>                
+            </div>
+
+            <div class="col-12">
+                <div class="row">
+                    @foreach (var image in _availableImages)
+                    {
+                        <div class="col-lg-2 col-md-4 col-sm-6 p-3">
+                            <Thumbnail RecordId="RecordDto.RecordId" Image="@image" ImageClick="OpenImage">
+                                <button type="button" class="btn btn-sm btn-outline-primary" @onclick="async _ => await LinkImage(image)" title="Прикрепить изображение к записи">Прикрепить</button>
+                            </Thumbnail>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-12 mb-2 text-center">
+                <button class="btn btn-outline-info m-1 btn-sm" hidden="@_allImagesDisplayed" @onclick="ShowAvailableImages" title="Показать больше картинок">Показать больше</button>
+                <button class="btn btn-outline-secondary m-1 btn-sm" @onclick="HideAvailableImages" title="Закрыть список доступных изображений">Закрыть</button>
+            </div>
+        }
+    }
+    
+</div>
+
+@code {
+
+    [Inject]
+    public HttpClient Http { get; set; } = null!;
+
+    [Inject]
+    public ILogger<RecordImages> Logger { get; set; } = null!;
+
+    [Inject]
+    public IJSRuntime JsRuntime { get; set; } = null!;
+
+    [Inject]
+    public NavigationManager NavManager { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public RecordEditDto RecordDto { get; set; } = null!;
+
+    private Guid? _openedImageId = null;
+
+    private bool _addMode;
+
+    private string? _nameFilter;
+    private string? _oldNameFilter;
+
+    private int _lastLoadedPage;
+    private bool _allImagesDisplayed;
+
+    private List<ImageListItemDto> _availableImages = new();
+
+
+    private async Task ShowAvailableImages()
+    {
+        if (_addMode)
+        {
+            // show next images set or apply filtering and show first images set
+            if(_oldNameFilter == _nameFilter)
+            {
+                _lastLoadedPage++;
+                await LoadImagesPage();
+            }
+            else
+            {
+                _lastLoadedPage = 1;
+                _oldNameFilter = _nameFilter;
+                _availableImages = new();
+                await LoadImagesPage();
+            }
+        }
+        else
+        {
+            // show first images set
+            _addMode = true;
+            _lastLoadedPage = 1;
+            _oldNameFilter = null;
+            _nameFilter = null;
+            _availableImages = new();
+            await LoadImagesPage();
+        }
+    }
+
+    private async Task LoadImagesPage()
+    {
+        try
+        {
+            await StartApiRequest();
+
+            var uri = NavManager.GetUriWithQueryParameters("api/images", new Dictionary<string, object?>
+            {
+                ["pageNo"] = _lastLoadedPage,
+                ["recordId"] = RecordDto.RecordId,
+                ["imageNameFilter"] = _oldNameFilter
+            });
+
+            var pageData = await Http.GetFromJsonAsync<ImagesPageDto>(uri, Token);
+
+            _availableImages.AddRange(pageData?.Images ?? new());
+            _allImagesDisplayed = (pageData?.PagesInfo?.TotalItems ?? 0) <= _availableImages.Count;
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on images loading");
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private async Task LinkImage(ImageListItemDto image)
+    {
+        try
+        {
+            await StartApiRequest();
+
+            var order = RecordDto.Images
+                .Select(x => x.Order)
+                .DefaultIfEmpty()
+                .Max() + 1;
+
+            RecordDto.Images.Add(new ImageListItemDto
+            {
+                Base64Thumbnail = image.Base64Thumbnail,
+                Height = image.Height,
+                ImageId = image.ImageId,
+                Name = image.Name,
+                SizeKb = image.SizeKb,
+                Width = image.Width,
+                Order = order
+            });
+
+            _availableImages.Remove(image);
+
+            var response = await Http.PostAsync($"api/records/{RecordDto.RecordId}/images/{image.ImageId}", null);
+            await CheckSuccessResponse(response);
+        }
+        catch(Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on images loading");
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private void HideAvailableImages()
+    {
+        _addMode = false;
+        _nameFilter = null;
+        _availableImages = new();
+    }
+
+    private void OpenImage(Guid imageId)
+    {
+        _openedImageId = imageId;
+        StateHasChanged();
+    }
+
+    private void CloseImage()
+    {
+        _openedImageId = default;
+        StateHasChanged();
+    }
+
+    private async Task RemoveImageLink(Guid? imageId)
+    {
+        if (!imageId.HasValue) return;
+
+        try
+        {
+            bool conf = await JsRuntime.InvokeAsync<bool>("confirm", "Открепить изображение от записи?");
+
+            if (conf)
+            {
+                await Http.DeleteAsync($"api/records/{RecordDto.RecordId}/images/{imageId}");
+
+                var image = RecordDto.Images
+                    .First(x => x.ImageId == imageId.Value);
+
+                RecordDto.Images.Remove(image);
+                ImagesSorter.UpdateOrdersSequence(RecordDto.Images, image.Order);
+            }
+        }
+        catch (Exception exc)
+        {
+            Logger.LogError(exc, "Error on removing image from record: {errorMessage}", exc.Message);
+        }
+    }
+
+    private async Task UpdateImageOrder(Guid? imageId, int order)
+    {
+        if (!imageId.HasValue) return;
+
+        try
+        {
+            await Http.PutAsync($"api/records/{RecordDto.RecordId}/images/{imageId}?order={order}", null);
+
+            var imageOrder = RecordDto.Images
+                .Where(x => x.ImageId == imageId.Value)
+                .Select(x => x.Order)
+                .First();
+            
+            ImagesSorter.ShiftOrders(RecordDto.Images, imageId.Value, order, imageOrder);
+            
+            StateHasChanged();
+        }
+        catch (Exception exc)
+        {
+            Logger.LogError(exc, "Error on updating image order: {errorMessage}", exc.Message);
+        }
+    }
+}

@@ -1,12 +1,12 @@
 ﻿@inject NavigationManager NavManager
 
-<div class="text-center mb-3">
-    <img id="img" name="img" src="/api/image-file/@ImageId.ToString()" class="img-fluid" />
+<div class="text-center mb-1">
+    <img id="img" name="img" src="@ImageUri" class="img-fluid" @ondblclick="@RefreshImage" />
 </div>
 
 @if (ShowButtons)
 {
-    <div class="row mt-1">
+    <div class="row my-2">
         <div class="text-center">
             <button @onclick="() => CloseImageView()" type="button" class="btn btn-sm btn-outline-secondary mx-2">Закрыть</button>
             <a href="/images/edit/@ImageId/@RecordId"  class="btn btn-sm btn-outline-secondary mx-2">Изменить</a>
@@ -26,4 +26,15 @@
 
     [Parameter]
     public Guid? RecordId { get; set; }
+
+    [Parameter]
+    public bool RefreshImageCash { get; set; } = false;
+
+    private string ImageUri => $"/api/image-file/{ImageId.ToString()}" + (RefreshImageCash ? $@"?viewId={Guid.NewGuid()}" : "");
+
+    private void RefreshImage()
+    {
+        RefreshImageCash = true;
+        StateHasChanged();
+    }
 }

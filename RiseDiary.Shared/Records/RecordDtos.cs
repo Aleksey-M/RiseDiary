@@ -21,11 +21,11 @@ public class RecordDto : RecordListItemDto
 {
     public string Text { get; set; } = string.Empty;
 
-    public ThemeDto[] Themes { get; set; } = Array.Empty<ThemeDto>();
+    public List<ThemeDto> Themes { get; set; } = new();
 
-    public ImageListItemDto[] Images { get; set; } = Array.Empty<ImageListItemDto>();
+    public List<ImageListItemDto> Images { get; set; } = new();
 
-    public CogitationDto[] Cogitations { get; set; } = Array.Empty<CogitationDto>();
+    public List<CogitationDto> Cogitations { get; set; } = new();
 }
 
 
@@ -34,6 +34,8 @@ public sealed class RecordEditDto : RecordDto
     public Guid? StartPageRecordId { get; set; }
 
     public ScopeDto[] AllScopes { get; set; } = Array.Empty<ScopeDto>();
+
+    public int AddImagesPageSize { get; set; }
 }
 
 

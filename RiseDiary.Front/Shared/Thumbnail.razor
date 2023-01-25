@@ -6,13 +6,13 @@
     @if (!OnlyImage)
     {
         <div class="card-header text-wrap text-center">
-            <a href="images/edit/@Image.Id/@RecordId">@Image.Name</a>
+            <a href="images/edit/@Image.ImageId/@RecordId">@Image.Name</a>
         </div>
     }
 
     <div class="card-body">
         <div class="text-center">
-            <a style="cursor:pointer" @onclick="_ => ImageClick(Image.Id)">
+            <a style="cursor:pointer" @onclick="_ => ImageClick(Image.ImageId)">
                 <img src="data:image/jpg;base64,@Image.Base64Thumbnail" class="img-thumbnail" />
             </a>
         </div>

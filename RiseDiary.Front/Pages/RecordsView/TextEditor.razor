@@ -26,12 +26,13 @@
             {
                 @if (_previewString != null)
                 {
-                    <div class="col-12 mb-2" style="border:1px solid green">
+                    <h5>Предварительный просмотр:</h5>
+                    <div class="col-12 mb-2 p-2" style="border:1px solid green; background-color:rgb(250,250,240); border-radius:10px">
                         @_previewString
                     </div>
                 }
 
-                <textarea rows="18" class="col-12" @bind="_text" @bind:event="oninput"></textarea>
+                <textarea rows="9" class="col-12 p-2" style="border-radius:10px" @bind="_text" @bind:event="oninput"></textarea>
 
                 <div class="col-12 my-2 text-center">
                     <button @onclick="SaveText" class="btn btn-sm btn-outline-success mx-1">@SaveButtonName
@@ -97,9 +98,19 @@
         {
             await StartApiRequest();
 
-            await OnSaveText(_text);
-            _text = null;
+            await OnSaveText(_text ?? string.Empty);            
+
             _previewString = null;
+
+            if (EditorOnly)
+            {
+                Text = string.Empty;
+                _text = Text;
+            }
+            else
+            {
+                _text = null;                
+            }
 
             await FinishApiRequest(null);
         }

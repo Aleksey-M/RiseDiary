@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RiseDiary.Data;
+using RiseDiary.Shared.Images;
 
 namespace RiseDiary.Model.Services;
 
@@ -76,64 +77,18 @@ internal sealed class RecordsImagesService : IRecordsImagesService
 
             if (imageWithOrderExists)
             {
-                ShiftOrders(list, imageId, order.Value);
+                ImagesSorter.ShiftOrders(list, imageId, order.Value);
             }
 
             if (order.Value <= 0)
             {
-                ShiftOrders(list, imageId, 1);
+                ImagesSorter.ShiftOrders(list, imageId, 1);
             }
 
             await _context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         return recordImage;
-    }
-
-    private static void ShiftOrders(List<DiaryRecordImage> diaryRecordImages, Guid insertedImageId, int newOrder, int? oldOrder = null)
-    {
-        var recordImage = diaryRecordImages.Single(x => x.ImageId == insertedImageId);
-
-        if (oldOrder.HasValue)
-        {
-            if (oldOrder.Value < newOrder)
-            {
-                foreach (var image in diaryRecordImages)
-                {
-                    if (image.Order > oldOrder && image.Order <= newOrder)
-                    {
-                        image.Order--;
-                    }
-                }
-            }
-            else if (oldOrder.Value > newOrder)
-            {
-                foreach (var image in diaryRecordImages)
-                {
-                    if (image.Order < oldOrder && image.Order >= newOrder)
-                    {
-                        image.Order++;
-                    }
-                }
-            }
-        }
-        else
-        {
-            foreach (var image in diaryRecordImages)
-            {
-                if (image.Order >= newOrder)
-                {
-                    image.Order++;
-                }
-            }
-        }
-
-        recordImage.Order = newOrder;
-
-        foreach (var (image, index) in diaryRecordImages.OrderBy(x => x.Order).Select((x, i) => (x, i)))
-        {
-            image.Order = index + 1;
-        }
     }
 
     public async Task<List<DiaryRecordImage>> ChangeRecordImageOrder(Guid recordId, Guid imageId, int newOrder)
@@ -146,15 +101,15 @@ internal sealed class RecordsImagesService : IRecordsImagesService
 
         int oldOrder = list.Single(x => x.RecordId == recordId && x.ImageId == imageId).Order;
 
-        ShiftOrders(list, imageId, newOrder, oldOrder);
+        ImagesSorter.ShiftOrders(list, imageId, newOrder, oldOrder);
 
         await _context.SaveChangesAsync();
 
         return list.OrderBy(x => x.Order).ToList();
     }
 
-    public async Task<List<DiaryRecordImage>> GetLinkedImagesList(
-        Guid recordId, CancellationToken cancellationToken) => await _context.RecordImages
+    public async Task<List<DiaryRecordImage>> GetLinkedImagesList(Guid recordId, CancellationToken cancellationToken) =>
+        await _context.RecordImages
             .AsNoTracking()
             .Include(ri => ri.Image)
             .Where(ri => ri.RecordId == recordId)
@@ -162,8 +117,8 @@ internal sealed class RecordsImagesService : IRecordsImagesService
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-    public async Task<Dictionary<Guid, string>> GetLinkedRecordsInfo(
-        Guid imageId, CancellationToken cancellationToken) => await _context.RecordImages
+    public async Task<Dictionary<Guid, string>> GetLinkedRecordsInfo(Guid imageId, CancellationToken cancellationToken) =>
+        await _context.RecordImages
             .AsNoTracking()
             .Include(ri => ri.Record)
             .Where(ri => ri.ImageId == imageId)
@@ -182,12 +137,10 @@ internal sealed class RecordsImagesService : IRecordsImagesService
 
             var nextRecordImages = await _context.RecordImages
                 .Where(x => x.RecordId == recordId && x.Order >= recordImage.Order)
-                .ToListAsync().ConfigureAwait(false);
+                .ToListAsync()
+                .ConfigureAwait(false);
 
-            if (nextRecordImages.Count > 0)
-            {
-                nextRecordImages.ForEach(x => x.Order--);
-            }
+            ImagesSorter.UpdateOrdersSequence(nextRecordImages, recordImage.Order);
 
             await _context.SaveChangesAsync().ConfigureAwait(false);
         }

@@ -45,7 +45,7 @@ else
                                 @foreach (var image in rec.Images)
                                 {
                                     <div class="col-lg-2 col-md-4 col-sm-6 p-3">
-                                        <Thumbnail Image="image" RecordId="rec.RecordId" OnlyImage="true" ImageClick="_ => OpenImage(image.Id, rec.RecordId)" />
+                                        <Thumbnail Image="image" RecordId="rec.RecordId" OnlyImage="true" ImageClick="_ => OpenImage(image.ImageId, rec.RecordId)" />
                                     </div>
                                 }
                             </div>

@@ -1,4 +1,6 @@
-﻿namespace RiseDiary.Model;
+﻿using RiseDiary.Shared.Images;
+
+namespace RiseDiary.Model;
 
 public sealed class DiaryRecord : IDeletedEntity
 {
@@ -54,7 +56,7 @@ public sealed class DiaryRecordTheme : IDeletedEntity
 }
 
 
-public sealed class DiaryRecordImage : IDeletedEntity
+public sealed class DiaryRecordImage : IDeletedEntity, IImageWithOrder
 {
     public Guid ImageId { get; set; }
 

@@ -8,9 +8,9 @@ public sealed class ImagesPageDto
 }
 
 
-public sealed class ImageListItemDto
+public sealed class ImageListItemDto : IImageWithOrder
 {
-    public Guid Id { get; set; }
+    public Guid ImageId { get; set; }
 
     public string Name { get; set; } = "";
 
@@ -21,4 +21,6 @@ public sealed class ImageListItemDto
     public string SizeKb { get; set; } = "";
 
     public string Base64Thumbnail { get; set; } = "";
+
+    public int Order { get; set; }
 }

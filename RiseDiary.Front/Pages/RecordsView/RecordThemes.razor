@@ -23,7 +23,7 @@
                     }
                 </i>
 
-                @if (index != RecordDto.Themes.Length - 1)
+                @if (index != RecordDto.Themes.Count - 1)
                 {
                     @:&nbsp;|&nbsp;
                 }
@@ -121,7 +121,7 @@
 
         try
         {
-            await StartApiRequest();           
+            await StartApiRequest();
 
             await Http.PatchAsJsonAsync($"api/records/{RecordDto.RecordId}/themes", dto);
 
@@ -130,7 +130,7 @@
                 .SelectMany(x => x.Themes!)
                 .Where(x => dto.ThemesIds.Contains(x.ThemeId!.Value))
                 .OrderBy(x => x.ThemeName)
-                .ToArray();
+                .ToList();
 
             await FinishApiRequest(null);
         }

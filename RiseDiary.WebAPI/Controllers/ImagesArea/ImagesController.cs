@@ -107,17 +107,21 @@ public sealed class ImagesController : ControllerBase
     }
 
     [HttpGet("api/images")]
-    public async Task<ActionResult<ImagesPageDto>> GetImagesPage([FromQuery] int? pageNo,
-        [FromQuery] string? imageNameFilter, CancellationToken cancellationToken)
+    public async Task<ActionResult<ImagesPageDto>> GetImagesPage(
+        [FromQuery] int? pageNo,
+        [FromQuery] string? imageNameFilter,
+        [FromQuery] Guid? recordId, 
+        CancellationToken cancellationToken)
     {
         var pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.ImagesPageSize) ?? 20;
         pageNo ??= 1;
-        var count = await _imagesService.GetImagesCount(imageNameFilter, cancellationToken: cancellationToken);
+
+        var count = await _imagesService.GetImagesCount(imageNameFilter, recordId, cancellationToken: cancellationToken);
 
         var pagesInfo = PagesInfo.GetPagesInfo(count, pageNo.Value, pageSize);
 
-        var images = await _imagesService.FetchImageSet(
-            pagesInfo.StartIndex, pagesInfo.PageSize, imageNameFilter, cancellationToken: cancellationToken);
+        var images = await _imagesService.FetchImageSet(pagesInfo.StartIndex,
+            pagesInfo.PageSize, imageNameFilter, recordId, cancellationToken: cancellationToken);
 
         return new ImagesPageDto
         {
