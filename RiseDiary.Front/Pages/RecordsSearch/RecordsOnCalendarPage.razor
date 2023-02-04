@@ -79,6 +79,7 @@
 
             _filteredYears = data?.Years ?? new();
             _datesList = data?.Dates ?? new();
+            _datesList.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
             _year = data?.CurrentYear ?? _year;
 
             await FinishApiRequest(null);
@@ -110,7 +111,7 @@
             Loading = true;
 
             _allScopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", Token) ?? new();
-
+            _allScopes.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
             await LoadData();            
         }
         catch (Exception exc)

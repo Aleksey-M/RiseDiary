@@ -16,3 +16,19 @@ public sealed class DateListItemDto
 
     public string? Themes { get; set; }
 }
+
+public static class DateListItemDtoExtensions
+{
+    public static void SetBaseUri(this DateListItemDto dto, string baseUri)
+    {
+        if (dto.Name != null)
+        {
+            dto.Name = InternalLinksHelper.SetBaseUri(dto.Name.Trim(), baseUri);
+        }
+
+        if (dto.Text != null)
+        {
+            dto.Text = InternalLinksHelper.SetBaseUri(dto.Text.Trim(), baseUri);
+        }
+    }
+}

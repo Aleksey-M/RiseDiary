@@ -7,12 +7,9 @@ internal sealed class RecordsSearchService : IRecordsSearchService
 {
     private readonly DiaryDbContext _context;
 
-    private readonly IAppSettingsService _appSettingsService;
-
     public RecordsSearchService(DiaryDbContext context, IAppSettingsService appSettingsService)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
-        _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
     }
 
     public async Task<List<DiaryRecord>> GetRecordsList(RecordsFilter filter, CancellationToken cancellationToken)
@@ -27,25 +24,7 @@ internal sealed class RecordsSearchService : IRecordsSearchService
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return await ReplaceHostAndPort(recordsPage);
-    }
-
-    private async Task<List<DiaryRecord>> ReplaceHostAndPort(List<DiaryRecord> diaryRecords)
-    {
-        var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
-        var currentHostAndPort = await _appSettingsService.GetHostAndPort();
-
-        foreach (var rec in diaryRecords)
-        {
-            rec.Text = rec.Text?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "";
-            rec.Name = rec.Name?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "";
-            foreach (var cog in rec.Cogitations)
-            {
-                cog.Text = cog.Text?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "";
-            }
-        }
-
-        return diaryRecords;
+        return recordsPage;
     }
 
     public async Task<int> GetRecordsCount(RecordsFilter filter, CancellationToken cancellationToken)
@@ -135,6 +114,6 @@ internal sealed class RecordsSearchService : IRecordsSearchService
             .ThenByDescending(r => r.CreateDate)
             .ToListAsync(cancellationToken);
 
-        return await ReplaceHostAndPort(records);
+        return records;
     }
 }

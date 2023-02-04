@@ -10,3 +10,11 @@ public sealed class CalendarDateDto
 
     public DateOnly EndDate { get; set; }
 }
+
+public static class CalendarDateDtoExtensions
+{
+    public static void SetBaseUri(this CalendarDateDto dto, string baseUri)
+    {
+        dto.Name = InternalLinksHelper.SetBaseUri(dto.Name!.Trim(), baseUri);
+    }
+}

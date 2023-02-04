@@ -62,6 +62,7 @@
             await StartApiRequest();
 
             _datesList = await Http.GetFromJsonAsync<List<DateListItemDto>>("api/dates/nearest", Token);
+            _datesList?.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
 
             await FinishApiRequest(null);
         }

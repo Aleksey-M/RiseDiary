@@ -7,20 +7,14 @@ public class CogitationsService : ICogitationsService
 {
     private readonly DiaryDbContext _context;
 
-    private readonly IAppSettingsService _appSettingsService;
-
-    public CogitationsService(DiaryDbContext context, IAppSettingsService appSettingsService)
+    public CogitationsService(DiaryDbContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
-        _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
     }
 
     public async Task<Guid> AddCogitation(Guid recordId, string cogitationText)
     {
         if (string.IsNullOrWhiteSpace(cogitationText)) throw new ArgumentException("Text should be passed for creating new cogitation");
-
-        var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
-        var currentHostAndPort = await _appSettingsService.GetHostAndPort();
 
         bool isRecordExists = await _context.Records.AnyAsync(r => r.Id == recordId).ConfigureAwait(false);
         if (!isRecordExists) throw new RecordNotFoundException(recordId);
@@ -30,7 +24,7 @@ public class CogitationsService : ICogitationsService
             Id = Guid.NewGuid(),
             RecordId = recordId,
             Date = DateTime.UtcNow,
-            Text = cogitationText.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase)
+            Text = cogitationText.Trim()
         };
 
         await _context.Cogitations.AddAsync(cogitation).ConfigureAwait(false);
@@ -51,18 +45,12 @@ public class CogitationsService : ICogitationsService
 
     public async Task<List<Cogitation>> GetRecordCogitations(Guid recordId, CancellationToken cancellationToken)
     {
-        var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
-        var currentHostAndPort = await _appSettingsService.GetHostAndPort();
-
         var cogitations = await _context.Cogitations
             .AsNoTracking()
             .Where(x => x.RecordId == recordId)
             .OrderByDescending(x => x.Date)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
-
-        cogitations.ForEach(
-            cog => cog.Text = (cog.Text ?? "").Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase));
 
         return cogitations;
     }
@@ -73,10 +61,7 @@ public class CogitationsService : ICogitationsService
         if (cogitation == null) throw new ArgumentException($"Cogitation with Id='{cogitationId}' does not exists");
         if (string.IsNullOrWhiteSpace(newText)) throw new ArgumentException("Cogitation should not be empty");
 
-        var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
-        var currentHostAndPort = await _appSettingsService.GetHostAndPort();
-
-        cogitation.Text = newText.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
+        cogitation.Text = newText.Trim();
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 }

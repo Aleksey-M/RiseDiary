@@ -28,4 +28,27 @@ public static class ScopeDtoExtensions
         target.ScopeName = source.ScopeName;
         target.ScopeDescription = source.ScopeDescription;
     }
+
+    public static void SetHostAndPortPlaceholder(this ScopeDto dto, string baseUri)
+    {
+        dto.ScopeDescription = InternalLinksHelper.SetHostAndPortPlaceholder(
+            dto.ScopeDescription?.Trim() ?? string.Empty,
+            baseUri);
+    }
+
+    public static void SetBaseUri(this ScopeDto dto, string baseUri)
+    {
+        dto.ScopeDescription = InternalLinksHelper.SetBaseUri(
+            dto.ScopeDescription?.Trim() ?? string.Empty,
+            baseUri);
+    }
+
+    public static void SetBaseUri(this List<ScopeDto> dtoList, string baseUri)
+    {
+        foreach (var scope in dtoList)
+        {
+            scope.SetBaseUri(baseUri);
+            scope.Themes?.ForEach(x => x.SetBaseUri(baseUri));
+        }
+    }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Images;
+using RiseDiary.WebUI.Model;
 
 namespace RiseDiary.WebAPI.Controllers.ImagesArea;
 
@@ -73,7 +74,7 @@ public sealed class ImagesController : ControllerBase
             _logger.LogInformation("Image with Id = '{imageId}' attached to record with Id = '{recordId}'", newImageId, imageDto.TargetRecordId);
         }
 
-        var newImageUri = $@"{await _appSettingsService.GetHostAndPort()}/api/images/{newImageId}";
+        var newImageUri = $@"{Request.GetAppBaseUrl()}/api/images/{newImageId}";
 
         return Created(newImageUri, newImageId);
     }

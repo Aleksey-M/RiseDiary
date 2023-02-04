@@ -7,12 +7,9 @@ internal sealed class RecordsSearchTextService : IRecordsSearchTextService
 {
     private readonly DiaryDbContext _context;
 
-    private readonly IAppSettingsService _appSettingsService;
-
     public RecordsSearchTextService(DiaryDbContext context, IAppSettingsService appSettingsService)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
-        _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
     }
 
     private async Task<IEnumerable<DiaryRecord>> SearchRecords(string searchText, CancellationToken cancellationToken)
@@ -77,21 +74,6 @@ internal sealed class RecordsSearchTextService : IRecordsSearchTextService
             .Skip(filter.PageNo * filter.PageSize)
             .Take(filter.PageSize)
             .ToList();
-
-        var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
-        var currentHostAndPort = await _appSettingsService.GetHostAndPort();
-
-        foreach (var rec in list)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            rec.Text = rec.Text?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "";
-            rec.Name = rec.Name?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "";
-            foreach (var cog in rec.Cogitations)
-            {
-                cog.Text = cog.Text?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "";
-            }
-        }
 
         return list;
     }

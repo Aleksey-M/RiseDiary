@@ -20,8 +20,6 @@ internal sealed class DatesService : IDatesService
     {
         var sId = (await _appSettingsService.GetAppSetting(AppSettingsKey.ImportantDaysScopeId)).value ?? throw new Exception("Setting 'ImportantDaysScopeId' does not exists");
         var scopeId = Guid.Parse(sId);
-        var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
-        var currentHostAndPort = await _appSettingsService.GetHostAndPort();
 
         var allRecordsIds = _context.Scopes
             .AsNoTracking()
@@ -44,8 +42,8 @@ internal sealed class DatesService : IDatesService
                 new DateOnly(today.Year, r.Date.Month, r.Date.Day),
                 string.IsNullOrWhiteSpace(r.Name)
                     ? "[ПУСТО]"
-                    : r.Name.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase),
-                r.Text?.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase) ?? "",
+                    : r.Name,
+                r.Text ?? "",
                 string.Join(", ", r.ThemesRefs.Select(tr => tr.Theme!.ThemeName))))
             .OrderBy(r => r.TransferredDate)
             .ToList();

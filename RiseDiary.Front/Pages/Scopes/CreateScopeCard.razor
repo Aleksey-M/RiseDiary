@@ -4,6 +4,7 @@
 
 @inject HttpClient Http
 @inject IDtoValidator<ScopeDto> ScopeValidator
+@inject NavigationManager NavManager
 
 @inherits UIComponentBase
 
@@ -54,7 +55,10 @@
 
             await StartApiRequest();
 
-            var response = await Http.PostAsJsonAsync("api/scopes", _newScopeDto);
+            var tmpDto = _newScopeDto.Copy();
+            tmpDto.SetHostAndPortPlaceholder(NavManager.BaseUri);
+
+            var response = await Http.PostAsJsonAsync("api/scopes", tmpDto);
 
             var responseContent = await GetCheckedResponseContent<string?>(response);
             if (responseContent == null) return;
@@ -65,10 +69,11 @@
                 return;
             }
 
-            _newScopeDto.ScopeId = newScopeId;
-            _newScopeDto.Themes = new();
+            tmpDto.ScopeId = newScopeId;
+            tmpDto.ScopeDescription = _newScopeDto.ScopeDescription;
+            tmpDto.Themes = new();
 
-            NewScopeCreated(_newScopeDto);
+            NewScopeCreated(tmpDto);
 
             _newScopeDto = new();            
 

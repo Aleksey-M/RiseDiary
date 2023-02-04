@@ -30,3 +30,12 @@ public sealed class UpdateCogitationValidator : DtoValidator<UpdateCogitationDto
             .MaximumLength(25000).WithMessage("Длина текста записи не должна превышать 25 000 символов");
     }
 }
+
+
+public static class UpdateCogitationDtoExtensions
+{
+    public static void SetHostAndPortPlaceholder(this UpdateCogitationDto dto, string baseUri)
+    {
+        dto.Text = InternalLinksHelper.SetHostAndPortPlaceholder(dto.Text?.Trim() ?? string.Empty, baseUri);
+    }
+}

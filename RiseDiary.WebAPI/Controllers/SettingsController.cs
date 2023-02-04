@@ -88,14 +88,4 @@ public sealed class SettingsController : ControllerBase
 
         return NoContent();
     }
-
-    [HttpGet("host")]
-    public async Task<ActionResult<HostAndPortInfo>> GetHostAndPort()
-    {
-        return new HostAndPortInfo
-        {
-            CurrentHostAndPort = Request.GetAppBaseUrl(),
-            HostAndPortSetting = await _settingsSvc.GetHostAndPort()
-        };
-    }
 }

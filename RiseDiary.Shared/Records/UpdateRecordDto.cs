@@ -27,3 +27,33 @@ public sealed class UpdateRecordValidator : DtoValidator<UpdateRecordDto>
             .MaximumLength(25000).WithMessage("Длина текста записи не должна превышать 25 000 символов");
     }
 }
+
+
+public static class UpdateRecordDtoExtensions
+{
+    public static void SetHostAndPortPlaceholder(this UpdateRecordDto dto, string baseUri)
+    {
+        if (dto.Name != null)
+        {
+            dto.Name = InternalLinksHelper.SetHostAndPortPlaceholder(dto.Name.Trim(), baseUri);
+        }
+
+        if (dto.Text != null)
+        {
+            dto.Text = InternalLinksHelper.SetHostAndPortPlaceholder(dto.Text.Trim(), baseUri);
+        }
+    }
+
+    public static void SetBaseUri(this UpdateRecordDto dto, string baseUri)
+    {
+        if (dto.Name != null)
+        {
+            dto.Name = InternalLinksHelper.SetBaseUri(dto.Name.Trim(), baseUri);
+        }
+
+        if (dto.Text != null)
+        {
+            dto.Text = InternalLinksHelper.SetBaseUri(dto.Text.Trim(), baseUri);
+        }
+    }
+}

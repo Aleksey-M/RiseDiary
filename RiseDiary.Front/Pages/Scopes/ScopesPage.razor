@@ -5,6 +5,7 @@
 @using RiseDiary.Front.Pages
 
 @inject HttpClient Http
+@inject NavigationManager NavManager
 
 @inherits UIComponentBase
 
@@ -63,6 +64,7 @@
         try
         {
             _scopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", Token);
+            _scopes?.SetBaseUri(NavManager.BaseUri);
         }
         catch (Exception exc)
         {

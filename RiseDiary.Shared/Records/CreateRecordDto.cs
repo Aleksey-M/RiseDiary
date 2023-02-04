@@ -30,3 +30,12 @@ public sealed class CreateRecordValidator : DtoValidator<CreateRecordDto>
             .MaximumLength(25000).WithMessage("Длина текста записи не должна превышать 25 000 символов");
     }
 }
+
+public static class CreateRecordDateExtensions
+{
+    public static void SetHostAndPortPlaceholder(this CreateRecordDto dto, string baseUri)
+    {
+        dto.Name = InternalLinksHelper.SetHostAndPortPlaceholder(dto.Name?.Trim() ?? string.Empty, baseUri);
+        dto.Text = InternalLinksHelper.SetHostAndPortPlaceholder(dto.Text?.Trim() ?? string.Empty, baseUri);
+    }
+}

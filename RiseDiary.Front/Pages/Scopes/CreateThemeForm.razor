@@ -4,6 +4,7 @@
 
 @inject HttpClient Http
 @inject ThemeValidator Validator
+@inject NavigationManager NavManager
 
 @inherits UIComponentBase
 
@@ -61,7 +62,10 @@
 
             await StartApiRequest();
 
-            var response = await Http.PostAsJsonAsync($"api/scopes/{_newThemeDto.ScopeId.ToString()}/themes", _newThemeDto);
+            var tmpDto = _newThemeDto.Copy();
+            tmpDto.SetHostAndPortPlaceholder(NavManager.BaseUri);
+
+            var response = await Http.PostAsJsonAsync($"api/scopes/{tmpDto.ScopeId.ToString()}/themes", tmpDto);
 
             var responseContent = await GetCheckedResponseContent<string?>(response);
             if (responseContent == null) return;
@@ -72,9 +76,10 @@
                 return;
             }
 
-            _newThemeDto.ThemeId = newId;
+            tmpDto.ThemeId = newId;
+            tmpDto.ThemeDescription = _newThemeDto.ThemeDescription;
 
-            NewThemeCreated(_newThemeDto);
+            NewThemeCreated(tmpDto);
 
             _newThemeDto = new();
 

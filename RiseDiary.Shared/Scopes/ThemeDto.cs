@@ -33,4 +33,18 @@ public static class ThemeDtoExtensions
         target.ThemeName = source.ThemeName;
         target.Actual = source.Actual;
     }
+
+    public static void SetHostAndPortPlaceholder(this ThemeDto dto, string baseUri)
+    {
+        dto.ThemeDescription = InternalLinksHelper.SetHostAndPortPlaceholder(
+            dto.ThemeDescription?.Trim() ?? string.Empty,
+            baseUri);
+    }
+
+    public static void SetBaseUri(this ThemeDto dto, string baseUri)
+    {
+        dto.ThemeDescription = InternalLinksHelper.SetBaseUri(
+            dto.ThemeDescription?.Trim() ?? string.Empty,
+            baseUri);
+    }
 }

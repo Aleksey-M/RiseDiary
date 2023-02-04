@@ -7,27 +7,21 @@ internal sealed class CalendarService : ICalendarService
 {
     private readonly DiaryDbContext _context;
 
-    private readonly IAppSettingsService _appSettingsService;
-
-    public CalendarService(DiaryDbContext context, IAppSettingsService appSettingsService)
+    public CalendarService(DiaryDbContext context)
     {
         _context = context;
-        _appSettingsService = appSettingsService;
     }
 
     public async Task<List<CalendarItem>> GetCalendarItems(int year,
         IEnumerable<Guid> themesId, bool combineThemes, CancellationToken cancellationToken)
     {
-        var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
-        var currentHostAndPort = await _appSettingsService.GetHostAndPort();
-
         if (themesId is null || !themesId.Any())
         {
             var records = await _context.Records
                 .AsNoTracking()
                 .Select(r => new CalendarItem(
                     r.Id,
-                    string.IsNullOrWhiteSpace(r.Name) ? "[ПУСТО]" : r.Name.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase),
+                    string.IsNullOrWhiteSpace(r.Name) ? "[ПУСТО]" : r.Name,
                     r.Date, r.Date))
                 .ToListAsync()
                 .ConfigureAwait(false);
@@ -55,7 +49,7 @@ internal sealed class CalendarService : ICalendarService
                 .Where(r => filterFunc(themesId, t => r.Themes.Contains(t)))
                 .Select(r => new CalendarItem(
                     r.Id,
-                    string.IsNullOrWhiteSpace(r.Name) ? "[ПУСТО]" : r.Name.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase),
+                    string.IsNullOrWhiteSpace(r.Name) ? "[ПУСТО]" : r.Name,
                     r.Date, r.Date))
                 .OrderBy(r => r.StartDate)
                 .ToList();

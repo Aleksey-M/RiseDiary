@@ -4,6 +4,7 @@
 
 @inject ILogger<ThisDayPage> Logger
 @inject HttpClient Http
+@inject NavigationManager NavManager
 
 @inherits UIComponentBase
 
@@ -53,6 +54,8 @@
             {
                 _records = await response.Content.ReadFromJsonAsync<List<RecordDto>>();
             }
+
+            _records!.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
 
             await FinishApiRequest(null);
         }

@@ -7,12 +7,9 @@ internal sealed class ScopesService : IScopesService
 {
     private readonly DiaryDbContext _context;
 
-    private readonly IAppSettingsService _appSettingsService;
-
-    public ScopesService(DiaryDbContext context, IAppSettingsService appSettingsService)
+    public ScopesService(DiaryDbContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
-        _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
     }
 
     public async Task<Guid> AddScope(string newScopeName, string newScopeDescription)
@@ -25,15 +22,6 @@ internal sealed class ScopesService : IScopesService
 
         if (await _context.Scopes.AnyAsync(s => s.ScopeName == newScopeName))
             throw new ArgumentException($"Scope with name {newScopeName} already exists");
-
-        if (newScopeDescription != "")
-        {
-            var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
-            var currentHostAndPort = await _appSettingsService.GetHostAndPort();
-
-            newScopeDescription =
-                newScopeDescription.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
-        }
 
         var scope = new DiaryScope
         {
@@ -66,15 +54,6 @@ internal sealed class ScopesService : IScopesService
 
         if (scope.Themes.Any(t => t.ThemeName == newThemeName))
             throw new ArgumentException($"Theme with name '{newThemeName}' already exists in '{scope.ScopeName}' scope");
-
-        if (newThemeDescription != "")
-        {
-            var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
-            var currentHostAndPort = await _appSettingsService.GetHostAndPort();
-
-            newThemeDescription =
-                newThemeDescription.Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
-        }
 
         var theme = new DiaryTheme
         {
@@ -160,22 +139,6 @@ internal sealed class ScopesService : IScopesService
             }
         }
 
-        var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
-        var currentHostAndPort = await _appSettingsService.GetHostAndPort();
-
-        foreach (var scope in scopesList)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            scope.Description = scope.Description.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase);
-
-            foreach (var theme in scope.Themes)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                theme.Description =
-                    theme.Description.Replace(placeholder, currentHostAndPort, StringComparison.OrdinalIgnoreCase);
-            }
-        }
-
         return scopesList;
     }
 
@@ -197,18 +160,7 @@ internal sealed class ScopesService : IScopesService
             targetScope.ScopeName = scopeNewName;
         }
 
-        if (!string.IsNullOrWhiteSpace(scopeNewDescription))
-        {
-            var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
-            var currentHostAndPort = await _appSettingsService.GetHostAndPort();
-
-            targetScope.Description = scopeNewDescription.Trim()
-                .Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
-        }
-        else
-        {
-            targetScope.Description = string.Empty;
-        }
+        targetScope.Description = scopeNewDescription ?? targetScope.Description;
 
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }
@@ -232,18 +184,7 @@ internal sealed class ScopesService : IScopesService
             targetTheme.ThemeName = themeNewName;
         }
 
-        if (!string.IsNullOrWhiteSpace(themeNewDescription))
-        {
-            var placeholder = _appSettingsService.GetHostAndPortPlaceholder();
-            var currentHostAndPort = await _appSettingsService.GetHostAndPort();
-
-            targetTheme.Description = themeNewDescription.Trim()
-                .Replace(currentHostAndPort, placeholder, StringComparison.OrdinalIgnoreCase);
-        }
-        else
-        {
-            targetTheme.Description = string.Empty;
-        }
+        targetTheme.Description = themeNewDescription ?? targetTheme.Description;
 
         if (themeActuality != null && targetTheme.Actual != themeActuality)
         {

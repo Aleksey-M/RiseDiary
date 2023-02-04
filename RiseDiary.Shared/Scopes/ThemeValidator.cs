@@ -18,7 +18,7 @@ public sealed class ThemeValidator : DtoValidator<ThemeDto>
             RuleFor(x => x.ThemeDescription)
                 .Cascade(CascadeMode.Stop)
                 .MaximumLength(2000).WithMessage("Описание должно иметь не более {MaxLength} символов");
-        });        
+        });
 
         RuleSet("identifier", () =>
         {

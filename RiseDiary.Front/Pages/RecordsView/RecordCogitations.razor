@@ -53,12 +53,16 @@ else
     [Inject]
     public IJSRuntime JsRuntime { get; set; } = null!;
 
+    [Inject]
+    public NavigationManager NavManager { get; set; } = null!;
+
     [Parameter, EditorRequired]
     public RecordEditDto RecordDto { get; set; } = null!;
 
     private bool _showCogitationEditor;
 
     private string GetCogitationDate(DateTime date) => date.ToLocalTime().ToString("yyyy.MM.dd HH.mm.ss") ?? string.Empty;
+
 
     private async Task CreateNewCogitation(string text)
     {
@@ -69,6 +73,8 @@ else
             };
 
         CreateValidator.ValidateAndThrow(dto);
+
+        dto.SetHostAndPortPlaceholder(NavManager.BaseUri);
 
         var response = await Http.PostAsJsonAsync($"api/records/{RecordDto.RecordId}/cogitations", dto);
         var responseContent = await GetCheckedResponseContent<string?>(response);
@@ -83,7 +89,7 @@ else
             {
                 CreateDate = DateTime.Now,
                 Id = id,
-                Text = dto.Text
+                Text = InternalLinksHelper.SetBaseUri(dto.Text, NavManager.BaseUri)
             });
 
         Logger.LogInformation("Created new cogitation with id = '{cogitationId}' for record with id='{recordId}'", id, dto.RecordId);
@@ -116,6 +122,8 @@ else
 
         var cogitation = RecordDto.Cogitations.Single(x => x.Id == cogitationId);
         cogitation.Text = dto.Text;
+
+        dto.SetHostAndPortPlaceholder(NavManager.BaseUri);
 
         await Http.PutAsJsonAsync($"api/records/{RecordDto.RecordId}/cogitations/{dto.CogitationId}", dto);
         StateHasChanged();

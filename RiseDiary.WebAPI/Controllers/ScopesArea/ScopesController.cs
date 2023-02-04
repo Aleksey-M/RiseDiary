@@ -2,6 +2,7 @@
 using RiseDiary.Model;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Scopes;
+using RiseDiary.WebUI.Model;
 
 namespace RiseDiary.WebAPI.Controllers.ScopesArea;
 
@@ -11,12 +12,9 @@ public sealed class ScopesController : ControllerBase
 {
     private readonly IScopesService _scopeService;
 
-    private readonly IAppSettingsService _appSettingsService;
-
-    public ScopesController(IScopesService scopesService, IAppSettingsService appSettingsService)
+    public ScopesController(IScopesService scopesService)
     {
         _scopeService = scopesService;
-        _appSettingsService = appSettingsService;
     }
 
     [HttpPost]
@@ -28,8 +26,7 @@ public sealed class ScopesController : ControllerBase
             newScopeName: dto.ScopeName!,
             newScopeDescription: dto.ScopeDescription ?? string.Empty);
 
-        var hostAndPort = await _appSettingsService.GetHostAndPort();
-        var newScopeUri = $@"{hostAndPort}/api/scopes/{id}";
+        var newScopeUri = $@"{Request.GetAppBaseUrl()}/api/scopes/{id}";
         return Created(newScopeUri, id);
     }
 
@@ -46,8 +43,7 @@ public sealed class ScopesController : ControllerBase
             newThemeDescription: dto.ThemeDescription ?? string.Empty,
             actual: dto.Actual!.Value);
 
-        var hostAndPort = await _appSettingsService.GetHostAndPort();
-        var scopeUri = $@"{hostAndPort}/api/scopes/{sid}";
+        var scopeUri = $@"{Request.GetAppBaseUrl()}/api/scopes/{sid}";
         return Created(scopeUri, newThemeId);
     }
 

@@ -42,13 +42,6 @@ internal static class DataSeed
 
         context.AppSettings.Add(new AppSetting
         {
-            Key = AppSettingsKey.HostAndPort.ToString(),
-            Value = "https://risediary.azurewebsites.net",
-            ModifiedDate = DateTime.UtcNow
-        });
-
-        context.AppSettings.Add(new AppSetting
-        {
             Key = AppSettingsKey.ThumbnailSize.ToString(),
             Value = "140",
             ModifiedDate = DateTime.UtcNow

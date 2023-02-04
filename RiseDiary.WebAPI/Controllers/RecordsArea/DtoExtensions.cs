@@ -46,7 +46,7 @@ internal static class DtoExtensions
     };
 
     public static RecordEditDto ToEditDto(this DiaryRecord record, Guid? startPageRecordId,
-        ScopeDto[] allScopes, int addImagesPageSize) => new RecordEditDto
+        List<ScopeDto> allScopes, int addImagesPageSize) => new RecordEditDto
         {
             RecordId = record.Id,
             Date = record.Date,

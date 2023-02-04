@@ -52,6 +52,8 @@ public partial class ViewRecordPage : UIComponentBase
                 NavManager.NavigateTo("records");
             }
 
+            _recordDto!.SetBaseUri(NavManager.BaseUri);
+
             await FinishApiRequest(null);
         }
         catch (Exception exc)
@@ -111,8 +113,10 @@ public partial class ViewRecordPage : UIComponentBase
 
         UpdateValidator.ValidateAndThrow(dto);
 
+        dto.SetHostAndPortPlaceholder(NavManager.BaseUri);
         await Http.PatchAsJsonAsync($"api/records/{RecordId}", dto);
 
+        dto.SetBaseUri(NavManager.BaseUri);
         _recordDto!.Date = dto.Date ?? _recordDto.Date;
         _recordDto!.Name = dto.Name ?? _recordDto.Name;
         _recordDto!.Text = dto.Text ?? _recordDto.Text;

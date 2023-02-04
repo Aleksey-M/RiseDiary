@@ -6,6 +6,7 @@
 @inject IJSRuntime JSRuntime
 @inject MarkdownService MdService
 @inject ThemeValidator Validator
+@inject NavigationManager NavManager
 
 @inherits UIComponentBase
 
@@ -119,11 +120,14 @@
 
             await StartApiRequest();
 
+            _edited.SetHostAndPortPlaceholder(NavManager.BaseUri);
+
             var response = await Http.PutAsJsonAsync($"api/scopes/{Scope.ScopeId}/themes/{_edited.ThemeId}", _edited);
             var isSuccess = await CheckSuccessResponse(response);
 
             if (!isSuccess) return;
 
+            _edited.SetBaseUri(NavManager.BaseUri);
             CurrentTheme.FillFrom(_edited);
             _edited = new();
             _editMode = false;

@@ -6,6 +6,7 @@
 
 @inject MarkdownService MdService
 @inject HttpClient Http
+@inject NavigationManager NavManager
 
 @inherits UIComponentBase
 
@@ -51,6 +52,11 @@
         try
         {
             _startPageRecord = await Http.GetFromJsonAsync<StartPageRecordDto>("api/startpage", Token);
+            if(_startPageRecord != null && _startPageRecord.RecordMdText != null)
+            {
+                _startPageRecord.RecordMdText = InternalLinksHelper.SetBaseUri(
+                    _startPageRecord.RecordMdText, NavManager.BaseUri);
+            }
         }
         catch (Exception exc)
         {

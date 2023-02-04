@@ -94,6 +94,8 @@
         {
             await StartApiRequest();
 
+            dto.SetHostAndPortPlaceholder(NavManager.BaseUri);
+
             var response = await Http.PostAsJsonAsync($"api/records", dto);
 
             var responseContent = await GetCheckedResponseContent<string?>(response);

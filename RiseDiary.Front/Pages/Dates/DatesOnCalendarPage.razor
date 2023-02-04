@@ -29,6 +29,9 @@
     public HttpClient Http { get; set; } = null!;
 
     [Inject]
+    public NavigationManager NavManager { get; set; } = null!;
+
+    [Inject]
     public ILogger<DatesOnCalendarPage> Logger { get; set; } = null!;
 
     private List<CalendarDateDto>? _datesList;
@@ -44,6 +47,7 @@
 
             _year = DateTime.UtcNow.Year;
             _datesList = await Http.GetFromJsonAsync<List<CalendarDateDto>>("api/dates/calendar", Token);
+            _datesList?.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
 
             await FinishApiRequest(null);
         }

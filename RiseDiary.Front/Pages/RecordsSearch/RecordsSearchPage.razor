@@ -73,9 +73,12 @@
                 var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordDto>>(uri, Token);
                 _pages = response?.PagesInfo ?? new();
 
+                var records = response?.Records ?? new List<RecordDto>();
+                records.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
+
                 _displayTypeParameters = new()
                     {
-                        ["Records"] = response?.Records ?? new List<RecordDto>(),
+                        ["Records"] = records,
                         ["TotalCount"] = _pages.TotalItems
                     };
             }
@@ -84,9 +87,12 @@
                 var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordListItemDto>>(uri, Token);
                 _pages = response?.PagesInfo ?? new();
 
+                var records = response?.Records ?? new List<RecordListItemDto>();
+                records.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
+
                 _displayTypeParameters = new()
                     {
-                        ["Records"] = response?.Records ?? new List<RecordListItemDto>(),
+                        ["Records"] = records,
                         ["TotalCount"] = _pages.TotalItems
                     };
             }

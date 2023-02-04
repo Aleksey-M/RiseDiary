@@ -7,7 +7,7 @@ namespace RiseDiary.IntegratedTests.Services;
 // плохая практика
 public static class TestedServices
 {
-    static public ICalendarService GetCalendarService(DiaryDbContext context, IAppSettingsService appSettingsService) => new CalendarService(context, appSettingsService);
+    static public ICalendarService GetCalendarService(DiaryDbContext context) => new CalendarService(context);
 
     static public IDatesService GetDatesService(DiaryDbContext context, IAppSettingsService appSettingsService) => new DatesService(context, appSettingsService);
 
@@ -15,7 +15,7 @@ public static class TestedServices
 
     static public IRecordsSearchService GetRecordsSearchService(DiaryDbContext context, IAppSettingsService appSettingsService) => new RecordsSearchService(context, appSettingsService);
 
-    static public IRecordsService GetRecordsService(DiaryDbContext context, IAppSettingsService appSettingsService) => new RecordsService(context, appSettingsService);
+    static public IRecordsService GetRecordsService(DiaryDbContext context) => new RecordsService(context);
 
     static public IImagesEditService GetImagesEditService(DiaryDbContext context, IAppSettingsService appSettingsService) => new ImagesEditService(context, appSettingsService);
 
@@ -27,7 +27,7 @@ public static class TestedServices
 
     static public IRecordsThemesService GetRecordsThemesService(DiaryDbContext context) => new RecordsThemesService(context);
 
-    static public IScopesService GetScopesService(DiaryDbContext context, IAppSettingsService appSettingsService) => new ScopesService(context, appSettingsService);
+    static public IScopesService GetScopesService(DiaryDbContext context) => new ScopesService(context);
 
-    static public ICogitationsService GetCogitationsService(DiaryDbContext context, IAppSettingsService appSettingsService) => new CogitationsService(context, appSettingsService);
+    static public ICogitationsService GetCogitationsService(DiaryDbContext context) => new CogitationsService(context);
 }

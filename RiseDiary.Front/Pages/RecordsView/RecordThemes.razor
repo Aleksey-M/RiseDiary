@@ -77,6 +77,9 @@
     public HttpClient Http { get; set; } = null!;
 
     [Inject]
+    public NavigationManager NavManager { get; set; } = null!;
+
+    [Inject]
     public ILogger<RecordThemes> Logger { get; set; } = null!;
 
     [Parameter, EditorRequired]
@@ -131,6 +134,8 @@
                 .Where(x => dto.ThemesIds.Contains(x.ThemeId!.Value))
                 .OrderBy(x => x.ThemeName)
                 .ToList();
+
+            RecordDto.Themes.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
 
             await FinishApiRequest(null);
         }

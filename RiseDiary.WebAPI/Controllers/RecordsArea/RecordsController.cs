@@ -4,6 +4,7 @@ using RiseDiary.Model;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Records;
 using RiseDiary.WebAPI.Controllers.ScopesArea;
+using RiseDiary.WebUI.Model;
 
 namespace RiseDiary.WebAPI.Controllers.RecordsArea;
 
@@ -34,7 +35,7 @@ public sealed class RecordsController : ControllerBase
 
         var recId = await _recordService.AddRecord(createDto.Date, createDto.Name, createDto.Text);
 
-        var newRecordUri = $@"{await _appSettingsService.GetHostAndPort()}/api/records/{recId}";
+        var newRecordUri = $@"{Request.GetAppBaseUrl()}/api/records/{recId}";
         return Created(newRecordUri, recId);
     }
 
@@ -59,7 +60,7 @@ public sealed class RecordsController : ControllerBase
 
         var addImagesPageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.AvailableImagesPageSize);
 
-        return record.ToEditDto(startPageRecordId, scopes.Select(s => s.ToDto()).ToArray(), addImagesPageSize ?? 10);
+        return record.ToEditDto(startPageRecordId, scopes.Select(s => s.ToDto()).ToList(), addImagesPageSize ?? 10);
     }
 
     [HttpDelete("{recordId}")]
@@ -92,7 +93,7 @@ public sealed class RecordsController : ControllerBase
 
         var cogId = await _cogitationsService.AddCogitation(recordId, dto.Text);
 
-        var recordUri = $@"{await _appSettingsService.GetHostAndPort()}/api/v1.0/records/{recordId}";
+        var recordUri = $@"{Request.GetAppBaseUrl()}/api/records/{recordId}";
         return Created(recordUri, cogId);
     }
 
