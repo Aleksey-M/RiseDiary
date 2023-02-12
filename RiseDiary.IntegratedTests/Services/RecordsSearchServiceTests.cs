@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using RiseDiary.IntegratedTests.Stubs;
 using RiseDiary.Model;
 
 namespace RiseDiary.IntegratedTests.Services;
@@ -102,71 +101,6 @@ internal class RecordsSearchServiceTests : TestFixtureBase
         var allRecordsThemes = list.SelectMany(r => r.ThemesRefs);
         allRecordsThemes.Should().NotContain(dr => dr.ThemeId == thId1 || dr.ThemeId == thId2, "because theme removed from records");
         allRecordsThemes.Should().HaveCount(20 * 3 - 2);
-    }
-
-    [Test]
-    public async Task GetRecordsList_ShouldReplacePlaceholdereByHostAndPort_InRecordName()
-    {
-        var context = CreateContext();
-        context.SoftDeleting = true;
-        Create20Records(context, GetNumberList(20), GetDatesList(20));
-        var svc = GetRecordsSearchService(context);
-        var hostAndPortService = new HostAndPortStub();
-        // add links
-        var (rec1, rec2) = await For2RecordsAddLinkToName(context, hostAndPortService);
-
-        var list = await svc.GetRecordsList(RecordsFilter.Empty);
-
-        var r1 = list.SingleOrDefault(r => r.Id == rec1);
-        r1?.Name.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
-        r1?.Name.Should().Contain(hostAndPortService.GetHostAndPort());
-        var r2 = list.SingleOrDefault(r => r.Id == rec2);
-        r2?.Name.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
-        r2?.Name.Should().Contain(hostAndPortService.GetHostAndPort());
-    }
-
-    [Test]
-    public async Task GetRecordsList_ShouldReplacePlaceholdereByHostAndPort_InRecordText()
-    {
-        var context = CreateContext();
-        context.SoftDeleting = true;
-        Create20Records(context, GetNumberList(20), GetDatesList(20));
-        var svc = GetRecordsSearchService(context);
-        var hostAndPortService = new HostAndPortStub();
-        // add links
-        var (rec1, rec2) = await For2RecordsAddLinkToText(context, hostAndPortService);
-
-        var list = await svc.GetRecordsList(RecordsFilter.Empty);
-
-        var r1 = list.SingleOrDefault(r => r.Id == rec1);
-        r1?.Text.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
-        r1?.Text.Should().Contain(hostAndPortService.GetHostAndPort());
-        var r2 = list.SingleOrDefault(r => r.Id == rec2);
-        r2?.Text.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
-        r2?.Text.Should().Contain(hostAndPortService.GetHostAndPort());
-    }
-
-    [Test]
-    public async Task GetRecordsList_ShouldReplacePlaceholdereByHostAndPort_InCogitationsText()
-    {
-        var context = CreateContext();
-        context.SoftDeleting = true;
-        Create20Records(context, GetNumberList(20), GetDatesList(20));
-        await Add3CogitationsForEachRecord(context);
-        var svc = GetRecordsSearchService(context);
-        var hostAndPortService = new HostAndPortStub();
-        // add links
-        var (cog1, cog2) = await For2RecordsAddLinkToCogitations(context, hostAndPortService);
-
-        var list = await svc.GetRecordsList(RecordsFilter.Empty);
-
-        var allCogitations = list.SelectMany(r => r.Cogitations).ToList();
-        var c1 = allCogitations.SingleOrDefault(c => c.Id == cog1);
-        c1?.Text.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
-        c1?.Text.Should().Contain(hostAndPortService.GetHostAndPort());
-        var c2 = list.SingleOrDefault(r => r.Id == cog2);
-        c2?.Text.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
-        c2?.Text.Should().Contain(hostAndPortService.GetHostAndPort());
     }
 
     [Test]

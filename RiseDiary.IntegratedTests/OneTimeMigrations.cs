@@ -13,6 +13,53 @@ namespace Migrations;
 [TestFixture]
 public class OneTimeMigrations
 {
+    [Test]
+    public async Task RecreateDb()
+    {
+        var sourceFullName = @"D:\DB\Diary (3).db";
+        var destFullName = @"D:\DB\DiaryDB.new.db";
+
+        var sourceDb = CreateContext(sourceFullName);
+        await sourceDb.Database.MigrateAsync();
+
+        var destDb = CreateContext(destFullName);
+        await destDb.Database.MigrateAsync();
+
+        var scopes = await sourceDb.Scopes
+            .AsNoTracking()
+            .Include(x => x.Themes)
+            .ToListAsync();
+
+        destDb.Scopes.AddRange(scopes);
+
+        var images = await sourceDb.Images
+            .AsNoTracking()
+            .Include(x => x.FullImage)
+            .ToListAsync();
+
+        images.ForEach(x => x.ContentType = @"image/jpeg");
+
+        destDb.Images.AddRange(images);
+
+        var records = await sourceDb.Records
+            .AsNoTracking()
+            .Include(x => x.Cogitations)
+            .Include(x => x.ImagesRefs)
+            .Include(x => x.ThemesRefs)
+            .ToListAsync();
+
+        destDb.Records.AddRange(records);
+
+        await destDb.SaveChangesAsync();
+
+        static DiaryDbContext CreateContext(string fileName)
+        {
+            IConfigurationRoot configuration = new ConfigurationBuilder().Build();
+            var builder = new DbContextOptionsBuilder<DiaryDbContext>();
+            builder.UseSqlite($"Data Source={fileName};", o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            return new DiaryDbContext(builder.Options);
+        }
+    }
 
     [Test, Ignore("One time migration")]
     public async Task UpdateImageLinksInText()

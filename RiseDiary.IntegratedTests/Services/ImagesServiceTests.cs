@@ -20,7 +20,7 @@ internal class ImagesServiceTests : TestFixtureBase
     {
         var svc = GetImagesService();
 
-        var imageId = await svc.AddImage(TestFile);
+        var imageId = await svc.AddImage(TestFile, contentType: @"image/jpeg");
 
         imageId.Should().NotBeEmpty();
     }
@@ -32,7 +32,7 @@ internal class ImagesServiceTests : TestFixtureBase
         var context = CreateContext();
         var svc = GetImagesService(context);
 
-        var imageId = await svc.AddImage(TestFile, newBiggestDimensionSize: 250);
+        var imageId = await svc.AddImage(TestFile, newBiggestDimensionSize: 250, contentType: @"image/jpeg");
 
         imageId.Should().NotBeEmpty();
         var image = await context.Images.SingleAsync(i => i.Id == imageId);
@@ -53,7 +53,7 @@ internal class ImagesServiceTests : TestFixtureBase
     public async Task FetchImageById_ShouldReturnAddedImage()
     {
         var svc = GetImagesService();
-        var imageId = await svc.AddImage(TestFile, "Test image name");
+        var imageId = await svc.AddImage(TestFile, "Test image name", contentType: @"image/jpeg");
 
         var image = await svc.FetchImageById(imageId);
 
@@ -70,7 +70,7 @@ internal class ImagesServiceTests : TestFixtureBase
         using var ms = new MemoryStream();
         await imgFile.OpenReadStream().CopyToAsync(ms);
         var sourceImageData = ms.ToArray();
-        var imageId = await svc.AddImage(imgFile, "Test image name");
+        var imageId = await svc.AddImage(imgFile, "Test image name", contentType: @"image/jpeg");
 
         var fullImage = await svc.FetchFullImageById(imageId);
 
@@ -95,7 +95,7 @@ internal class ImagesServiceTests : TestFixtureBase
         var svc = GetImagesService();
         for (int i = 0; i < 3; i++)
         {
-            await svc.AddImage(TestFile, $"Test image {i}");
+            await svc.AddImage(TestFile, $"Test image {i}", contentType: @"image/jpeg");
         }
 
         int count = await svc.GetImagesCount();
@@ -119,7 +119,7 @@ internal class ImagesServiceTests : TestFixtureBase
         var svc = GetImagesService();
         for (int i = 0; i < 3; i++)
         {
-            await svc.AddImage(TestFile, $"Test image {i}");
+            await svc.AddImage(TestFile, $"Test image {i}", contentType: @"image/jpeg");
         }
 
         int count = await svc.GetImagesCount("ImaGe 1");
@@ -178,7 +178,7 @@ internal class ImagesServiceTests : TestFixtureBase
         var svc = GetImagesService();
         for (int i = 0; i < 3; i++)
         {
-            await svc.AddImage(TestFile, $"Test image {i}");
+            await svc.AddImage(TestFile, $"Test image {i}", contentType: @"image/jpeg");
         }
 
         int count = await svc.GetImagesCount("ImaGe 4");
@@ -194,7 +194,7 @@ internal class ImagesServiceTests : TestFixtureBase
         var svc = GetImagesService(context);
         for (int i = 0; i < 3; i++)
         {
-            var id = await svc.AddImage(TestFile, $"Test image {i}");
+            var id = await svc.AddImage(TestFile, $"Test image {i}", contentType: @"image/jpeg");
             imagesId.Add(id);
         }
 
@@ -213,7 +213,7 @@ internal class ImagesServiceTests : TestFixtureBase
     {
         var context = CreateContext();
         var svc = GetImagesService(context);
-        var id = await svc.AddImage(TestFile, $"Test image");
+        var id = await svc.AddImage(TestFile, $"Test image", contentType: @"image/jpeg");
         string newName = Guid.NewGuid().ToString();
 
         await svc.UpdateImage(id, newName);
@@ -231,7 +231,7 @@ internal class ImagesServiceTests : TestFixtureBase
         var svc = GetImagesService(context);
         for (int i = 0; i < 10; i++)
         {
-            await svc.AddImage(TestFile, $"Test image {i}");
+            await svc.AddImage(TestFile, $"Test image {i}", contentType: @"image/jpeg");
         }
 
         var page = await svc.FetchImageSet(7, 5);
@@ -249,7 +249,7 @@ internal class ImagesServiceTests : TestFixtureBase
         var svc = GetImagesService(context);
         for (int i = 0; i < 10; i++)
         {
-            await svc.AddImage(TestFile, $"Test image {i}");
+            await svc.AddImage(TestFile, $"Test image {i}", contentType: @"image/jpeg");
         }
 
         var page = await svc.FetchImageSet(0, 5, "IMAGE 7");
@@ -274,7 +274,7 @@ internal class ImagesServiceTests : TestFixtureBase
         var svc = GetImagesService(context);
         for (int i = 0; i < 30; i++)
         {
-            await svc.AddImage(TestFile, $"Test image {i}");
+            await svc.AddImage(TestFile, $"Test image {i}", contentType: @"image/jpeg");
         }
 
         var page = await svc.FetchImageSet(10, 10, "2");

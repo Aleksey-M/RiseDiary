@@ -85,6 +85,13 @@ internal static class DataSeed
             }
         });
 
+        context.AppSettings.Add(new AppSetting
+        {
+            Key = AppSettingsKey.ImportantDaysScopeId.ToString(),
+            Value = scopeId,
+            ModifiedDate = DateTime.UtcNow
+        });
+
         await context.SaveChangesAsync();
     }
 }

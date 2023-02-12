@@ -17,7 +17,7 @@ internal class RecordsThemesServiceTests : TestFixtureBase
         var recSvc = GetRecordsService(context);
         var themeId = new Guid[] { CreateTheme(context, "Theme Name") };
         var recId = CreateRecord(context);
-        await svc.AddRecordTheme(recId, themeId);
+        await svc.UpdateRecordThemes(recId, themeId);
 
         var bindRec = await context.RecordThemes.SingleOrDefaultAsync(br => br.RecordId == recId && br.ThemeId == themeId[0] && !br.Deleted);
         bindRec.Should().NotBeNull();
@@ -36,7 +36,7 @@ internal class RecordsThemesServiceTests : TestFixtureBase
         var themesSvc = GetScopesService(context);
         var themeId = CreateTheme(context, "Theme Name");
         var recId = CreateRecord(context);
-        await svc.AddRecordTheme(recId, new Guid[] { themeId });
+        await svc.UpdateRecordThemes(recId, new Guid[] { themeId });
 
         var bindRec = await context.RecordThemes.SingleOrDefaultAsync(br => br.RecordId == recId && br.ThemeId == themeId && !br.Deleted);
         bindRec.Should().NotBeNull();
@@ -55,9 +55,9 @@ internal class RecordsThemesServiceTests : TestFixtureBase
         var themeId = new Guid[] { CreateTheme(context, "Theme Name") };
         var recId = CreateRecord(context);
 
-        await svc.AddRecordTheme(recId, themeId);
-        await svc.RemoveRecordTheme(recId, themeId);
-        await svc.AddRecordTheme(recId, themeId);
+        await svc.UpdateRecordThemes(recId, themeId);
+        await svc.UpdateRecordThemes(recId, themeId);
+        await svc.UpdateRecordThemes(recId, themeId);
 
         int boundRecordCount = context.RecordThemes.Count(br => br.RecordId == recId && br.ThemeId == themeId[0]);
         boundRecordCount.Should().Be(1);
@@ -75,12 +75,12 @@ internal class RecordsThemesServiceTests : TestFixtureBase
         var recTheme = await context.RecordThemes.FirstOrDefaultAsync(rt => rt.RecordId == rec.Id && rt.ThemeId == theme[0]);
         recTheme.Should().NotBeNull();
 
-        await svc.RemoveRecordTheme(rec.Id, theme);
+        await svc.UpdateRecordThemes(rec.Id, Array.Empty<Guid>());
 
         recTheme = await context.RecordThemes.FirstOrDefaultAsync(rt => rt.RecordId == rec.Id && rt.ThemeId == theme[0]);
         recTheme.Should().BeNull();
 
-        await svc.AddRecordTheme(rec.Id, theme);
+        await svc.UpdateRecordThemes(rec.Id, theme);
         recTheme = await context.RecordThemes.FirstOrDefaultAsync(rt => rt.RecordId == rec.Id && rt.ThemeId == theme[0]);
         recTheme.Should().NotBeNull();
     }
@@ -97,45 +97,13 @@ internal class RecordsThemesServiceTests : TestFixtureBase
         var recTheme = await context.RecordThemes.FirstOrDefaultAsync(rt => rt.RecordId == rec.Id && rt.ThemeId == theme[0]);
         recTheme.Should().NotBeNull();
 
-        await svc.RemoveRecordTheme(rec.Id, theme);
+        await svc.UpdateRecordThemes(rec.Id, Array.Empty<Guid>());
 
         recTheme = await context.RecordThemes.FirstOrDefaultAsync(rt => rt.RecordId == rec.Id && rt.ThemeId == theme[0]);
         recTheme.Should().BeNull();
 
-        await svc.AddRecordTheme(rec.Id, theme);
+        await svc.UpdateRecordThemes(rec.Id, theme);
         recTheme = await context.RecordThemes.FirstOrDefaultAsync(rt => rt.RecordId == rec.Id && rt.ThemeId == theme[0]);
         recTheme.Should().NotBeNull();
-    }
-
-    [Test]
-    public async Task GetRecordThemes_ShouldReturnEmptyList()
-    {
-        var context = CreateContext();
-        var recordId = CreateRecord(context);
-        var svc = GetRecordsThemesService(context);
-
-        var list = await svc.GetRecordThemes(recordId);
-
-        list.Should().NotBeNull();
-        list.Should().BeEmpty();
-    }
-
-    [Test]
-    public async Task GetRecordThemes_ShouldReturn3Themes()
-    {
-        var context = CreateContext();
-        var recordId = CreateRecord(context);
-        var svc = GetRecordsThemesService(context);
-        await Add3ThemesForEachRecord(context);
-
-        var list = await svc.GetRecordThemes(recordId);
-
-        list.Should().NotBeNull();
-        list.Should().HaveCount(3);
-        list.Should().AllSatisfy(
-            x =>
-            {
-                x.Theme.Should().NotBeNull();
-            });
     }
 }

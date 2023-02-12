@@ -12,7 +12,7 @@
 
             @if (HasError)
             {
-                <p style="color:red">@ErrorMessage</p>
+                <p class="col-12 offset-1 p-2" style="color:red">@ErrorMessage</p>
             }
 
             <div class="offset-lg-1 col-lg-2 col-md-4 col-sm-12 my-2">
@@ -23,31 +23,13 @@
                 <InputText @bind-Value=@_name placeholder="Название" class="form-control" />
             </div>
 
-            <div class="offset-lg-1 col-lg-10 col-md-12 col-sm-12 mt-2 mb-5">
+            <TextEditor Text="@string.Empty" SaveButtonName="Создать" OnSaveText="CreateRecord" EditorOnly="true" DisplaySpinner="false" />
 
-                @if(_previewString != null)
-                {
-                    <div class="col-12">
-                        @_previewString
-                    </div>
-                }
-
-                <textarea rows="8" class="col-12" @bind="_text" @bind:event="oninput"></textarea>
-
-                <div class="col-12 my-2 text-center">
-                    <button @onclick="CreateRecord" class="btn btn-outline-success">Создать</button>
-                    <button @onclick="PreviewText" class="btn btn-outline-secondary">Просмотр</button> 
-                    <a href="/records" class="btn btn-link">Все записи</a>
-                </div>
-
-            </div>
         </div>
     </div>
 </Spinner>
 
 @code {
-    [Inject]
-    public MarkdownService MdService { get; set; } = null!;
 
     [Inject]
     public ILogger<CreateRecordPage> Logger { get; set; } = null!;
@@ -63,30 +45,25 @@
 
     private DateTime _date = DateTime.UtcNow.Date;
     private string _name = string.Empty;
-    private string _text = string.Empty;
 
-    private MarkupString? _previewString;
 
-    private void PreviewText()
-    {
-        _previewString = MdService.ToHtml(_text);
-    }
-
-    private async Task CreateRecord()
+    private async Task CreateRecord(string text)
     {
         var dto = new CreateRecordDto
             {
                 Date = DateOnly.FromDateTime(_date),
                 Name = _name,
-                Text = _text
+                Text = text
             };
 
         var validationResult = Validator.Validate(dto);
 
         if (!validationResult.IsValid)
         {
+
             ErrorMessage = validationResult.ToString();
             Logger.LogWarning("Input validation error: {validationError}", ErrorMessage);
+            StateHasChanged();
             return;
         }
 

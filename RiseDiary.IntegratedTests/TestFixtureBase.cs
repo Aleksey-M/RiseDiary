@@ -76,8 +76,7 @@ internal class TestFixtureBase
             _dbFileNames.Add(dbFileFullName);
         }
 
-        IConfigurationRoot configuration = new ConfigurationBuilder()
-        .Build();
+        IConfigurationRoot configuration = new ConfigurationBuilder().Build();
 
         var builder = new DbContextOptionsBuilder<DiaryDbContext>();
         if (inMemory)
@@ -444,6 +443,7 @@ internal class TestFixtureBase
             Taken = DateTime.UtcNow.AddDays(-1),
             SizeByte = imgData.Length,
             ModifyDate = DateTime.UtcNow,
+            ContentType = @"image/jpeg",
             TempImage = new TempImage
             {
                 Id = Guid.NewGuid(),
@@ -451,7 +451,8 @@ internal class TestFixtureBase
                 Modification = "Some modification",
                 Height = h,
                 Width = w,
-                SizeByte = imgData2.Length
+                SizeByte = imgData2.Length,
+                ContentType = @"image/jpeg"
             }
         };
 
@@ -579,66 +580,6 @@ internal class TestFixtureBase
         await context.SaveChangesAsync();
 
         return (cogId1, cogId2);
-    }
-
-    protected async Task<(Guid, Guid)> For2RecordsAddLinkToName(DiaryDbContext context, HostAndPortStub hostAndPortService)
-    {
-        int count = await context.Records.CountAsync();
-        var rnd = new Random();
-
-        int ind1 = rnd.Next(0, count / 2);
-        var rec = (await context.Records.ToListAsync()).ElementAt(ind1);
-        rec.Name += $@"Link: <a href=""{hostAndPortService.GetHostAndPortPlaceholder()}/images/123"">Some Image</a>";
-        var rec1 = rec.Id;
-
-        int ind2 = rnd.Next(count / 2, count - 1);
-        rec = (await context.Records.ToListAsync()).ElementAt(ind2);
-        rec.Name += $@"Link: <a href=""{hostAndPortService.GetHostAndPortPlaceholder()}/records/987987987"">Some record</a>";
-        var rec2 = rec.Id;
-
-        await context.SaveChangesAsync();
-
-        return (rec1, rec2);
-    }
-
-    protected async Task<(Guid, Guid)> For2RecordsAddLinkToText(DiaryDbContext context, HostAndPortStub hostAndPortService)
-    {
-        int count = await context.Records.CountAsync();
-        var rnd = new Random();
-
-        int ind1 = rnd.Next(0, count / 2);
-        var rec = (await context.Records.ToListAsync()).ElementAt(ind1);
-        rec.Text += $@"Link: <a href=""{hostAndPortService.GetHostAndPortPlaceholder()}/images/123"">Some Image</a>";
-        var rec1 = rec.Id;
-
-        int ind2 = rnd.Next(count / 2, count - 1);
-        rec = (await context.Records.ToListAsync()).ElementAt(ind2);
-        rec.Text += $@"Link: <a href=""{hostAndPortService.GetHostAndPortPlaceholder()}/records/987987987"">Some record</a>";
-        var rec2 = rec.Id;
-
-        await context.SaveChangesAsync();
-
-        return (rec1, rec2);
-    }
-
-    protected async Task<(Guid, Guid)> For2RecordsAddLinkToCogitations(DiaryDbContext context, HostAndPortStub hostAndPortService)
-    {
-        int count = await context.Records.CountAsync();
-        var rnd = new Random();
-
-        int ind1 = rnd.Next(0, count / 2);
-        var rec = (await context.Records.Include(r => r.Cogitations).ToListAsync()).ElementAt(ind1);
-        rec.Cogitations.Skip(1).First().Text += $@"Link: <a href=""{hostAndPortService.GetHostAndPortPlaceholder()}/images/123"">Some Image</a>";
-        var cog1 = rec.Cogitations.Skip(1).First().Id;
-
-        int ind2 = rnd.Next(count / 2, count - 1);
-        rec = (await context.Records.Include(r => r.Cogitations).ToListAsync()).ElementAt(ind2);
-        rec.Cogitations.Skip(2).First().Text += $@"Link: <a href=""{hostAndPortService.GetHostAndPortPlaceholder()}/records/987987987"">Some record</a>";
-        var cog2 = rec.Cogitations.Skip(2).First().Id;
-
-        await context.SaveChangesAsync();
-
-        return (cog1, cog2);
     }
 
     protected enum ThemesTestDataSet { ThemesOnly, DatesAndThemesRec, DatesAndThemesCount }
@@ -794,10 +735,10 @@ internal class TestFixtureBase
 
         var imagesIds = new List<Guid>
         {
-            await imageSvc.AddImage(TestFile, imageName: "Image 01"),
-            await imageSvc.AddImage(TestFile, imageName: "Image 02"),
-            await imageSvc.AddImage(TestFile, imageName: "Image 1"),
-            await imageSvc.AddImage(TestFile, imageName: "Image 03")
+            await imageSvc.AddImage(TestFile, imageName: "Image 01", contentType: @"image/jpeg"),
+            await imageSvc.AddImage(TestFile, imageName: "Image 02", contentType: @"image/jpeg"),
+            await imageSvc.AddImage(TestFile, imageName: "Image 1", contentType: @"image/jpeg"),
+            await imageSvc.AddImage(TestFile, imageName: "Image 03", contentType: @"image/jpeg")
         };
 
         var recordId = CreateRecord(context);
@@ -805,7 +746,7 @@ internal class TestFixtureBase
         return (recordId, imagesIds, context);
     }
 
-    static protected ICalendarService GetCalendarService(DiaryDbContext? context = null) => TestedServices.GetCalendarService(context ?? CreateContext(), new AppSettingsServiceStub());
+    static protected ICalendarService GetCalendarService(DiaryDbContext? context = null) => TestedServices.GetCalendarService(context ?? CreateContext());
 
     static protected IDatesService GetDatesService(int daysRange, DiaryDbContext? context = null) => TestedServices.GetDatesService(context ?? CreateContext(), new AppSettingsForDatesServiceStub(daysRange));
 
@@ -813,9 +754,7 @@ internal class TestFixtureBase
 
     static protected IRecordsSearchService GetRecordsSearchService(DiaryDbContext? context = null) => TestedServices.GetRecordsSearchService(context ?? CreateContext(), new AppSettingsServiceStub());
 
-    static protected IRecordsService GetRecordsService(DiaryDbContext? context = null) => TestedServices.GetRecordsService(context ?? CreateContext(), new AppSettingsServiceStub());
-
-    static protected ICropImageService GetCropImageService(DiaryDbContext? context = null) => TestedServices.GetCropImageService(context ?? CreateContext(), new AppSettingsServiceStub());
+    static protected IRecordsService GetRecordsService(DiaryDbContext? context = null) => TestedServices.GetRecordsService(context ?? CreateContext());
 
     static protected IImagesEditService GetImagesEditService(DiaryDbContext? context = null) => TestedServices.GetImagesEditService(context ?? CreateContext(), new AppSettingsServiceStub());
 
@@ -827,7 +766,7 @@ internal class TestFixtureBase
 
     static protected IRecordsThemesService GetRecordsThemesService(DiaryDbContext? context = null) => TestedServices.GetRecordsThemesService(context ?? CreateContext());
 
-    static protected IScopesService GetScopesService(DiaryDbContext? context = null) => TestedServices.GetScopesService(context ?? CreateContext(), new AppSettingsServiceStub());
+    static protected IScopesService GetScopesService(DiaryDbContext? context = null) => TestedServices.GetScopesService(context ?? CreateContext());
 
-    static protected ICogitationsService GetCogitationsService(DiaryDbContext? context = null) => TestedServices.GetCogitationsService(context ?? CreateContext(), new AppSettingsServiceStub());
+    static protected ICogitationsService GetCogitationsService(DiaryDbContext? context = null) => TestedServices.GetCogitationsService(context ?? CreateContext());
 }

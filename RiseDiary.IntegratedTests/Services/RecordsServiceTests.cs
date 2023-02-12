@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using RiseDiary.IntegratedTests.Stubs;
-using RiseDiary.Model;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 
@@ -183,83 +180,4 @@ internal class RecordsServiceTests : TestFixtureBase
         updatedRecord.CreateDate.Should().Be(rec.CreateDate);
         updatedRecord.ModifyDate.Should().Be(rec.ModifyDate);
     }
-
-    [Test]
-    public async Task AddDiaryRecord_ShouldReplaceHostAndPortByPlaceholder()
-    {
-        var context = CreateContext();
-        var svc = GetRecordsService(context);
-        var hpSvc = new HostAndPortStub();
-        var text = $@"New text with link {hpSvc.GetHostAndPort()}/index and another link {hpSvc.GetHostAndPort()}/images/12345678";
-
-        var id = await svc.AddRecord(DateOnly.FromDateTime(DateTime.UtcNow), text, text);
-
-        var rec = await context.Records.SingleOrDefaultAsync(r => r.Id == id);
-        rec.Name.Should().NotContain(hpSvc.GetHostAndPort());
-        rec.Text.Should().NotContain(hpSvc.GetHostAndPort());
-        rec.Name.Should().Contain(hpSvc.GetHostAndPortPlaceholder(), Exactly.Twice());
-        rec.Text.Should().Contain(hpSvc.GetHostAndPortPlaceholder(), Exactly.Twice());
-    }
-
-    [Test]
-    public async Task UpdateRecord_ShouldReplaceHostAndPortByPlaceholder()
-    {
-        var context = CreateContext();
-        var svc = GetRecordsService(context);
-        var id = CreateRecord(context);
-        var hpSvc = new HostAndPortStub();
-        var text = $@"New text with link {hpSvc.GetHostAndPort()}/index and another link {hpSvc.GetHostAndPort()}/images/12345678";
-
-        await svc.UpdateRecord(id, null, text, text);
-
-        var rec = await context.Records.SingleOrDefaultAsync(r => r.Id == id);
-        rec.Name.Should().NotContain(hpSvc.GetHostAndPort());
-        rec.Text.Should().NotContain(hpSvc.GetHostAndPort());
-        rec.Name.Should().Contain(hpSvc.GetHostAndPortPlaceholder(), Exactly.Twice());
-        rec.Text.Should().Contain(hpSvc.GetHostAndPortPlaceholder(), Exactly.Twice());
-    }
-
-    [Test]
-    public async Task FetchRecordById_ShouldReplacePlaceholderByHostAndPort()
-    {
-        var context = CreateContext();
-        var svc = GetRecordsService(context);
-        var rec = GetTestRecord();
-        var hpSvc = new HostAndPortStub();
-        var text = $@"New text with link {hpSvc.GetHostAndPortPlaceholder()}/index and another link {hpSvc.GetHostAndPortPlaceholder()}/images/12345678";
-        rec.Name = text;
-        rec.Text = text;
-        context.Records.Add(rec);
-        await context.SaveChangesAsync();
-
-        var savedRec = await svc.FetchRecordById(rec.Id);
-
-        savedRec.Name.Should().NotContain(hpSvc.GetHostAndPortPlaceholder());
-        savedRec.Text.Should().NotContain(hpSvc.GetHostAndPortPlaceholder());
-        savedRec.Name.Should().Contain(hpSvc.GetHostAndPort(), Exactly.Twice());
-        savedRec.Text.Should().Contain(hpSvc.GetHostAndPort(), Exactly.Twice());
-    }
-
-    [Test]
-    public async Task FetchRecordById_ShouldReplacePlaceholderByHostAndPort_InCogitations()
-    {
-        var context = CreateContext();
-        var svc = GetRecordsService(context);
-        var recId = CreateRecord(context);
-        var hpSvc = new HostAndPortStub();
-        var text = $@"New text with link {hpSvc.GetHostAndPortPlaceholder()}/index and another link {hpSvc.GetHostAndPortPlaceholder()}/images/12345678";
-        var cogitationsList = Enumerable.Range(1, 3)
-            .Select(i => new Cogitation { Id = Guid.NewGuid(), RecordId = recId, Date = DateTime.UtcNow, Text = text }).ToList();
-        context.Cogitations.AddRange(cogitationsList);
-        await context.SaveChangesAsync();
-
-        var savedRec = await svc.FetchRecordById(recId);
-
-        foreach (var c in savedRec.Cogitations)
-        {
-            c.Text.Should().NotContain(hpSvc.GetHostAndPortPlaceholder());
-            c.Text.Should().Contain(hpSvc.GetHostAndPort(), Exactly.Twice());
-        }
-    }
-
 }

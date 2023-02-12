@@ -6,7 +6,6 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using RiseDiary.Data;
-using RiseDiary.IntegratedTests.Stubs;
 using RiseDiary.Model;
 
 namespace RiseDiary.IntegratedTests.Services;
@@ -14,42 +13,6 @@ namespace RiseDiary.IntegratedTests.Services;
 [TestFixture]
 internal class DatesServiceTests : TestFixtureBase
 {
-    [Test]
-    public async Task GetAllDates_ShouldReplacePlaceholdereByHostAndPort_InRecordName()
-    {
-        var context = CreateContext();
-        await AddTestData(context);
-        var datesService = GetDatesService(10, context);
-        var hostAndPortService = new HostAndPortStub();
-
-        var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.UtcNow));
-
-        var r1 = list[2];
-        r1?.Name.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
-        r1?.Name.Should().Contain(hostAndPortService.GetHostAndPort());
-        var r2 = list[5];
-        r2?.Name.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
-        r2?.Name.Should().Contain(hostAndPortService.GetHostAndPort());
-    }
-
-    [Test]
-    public async Task GetAllDates_ShouldReplacePlaceholdereByHostAndPort_InRecordText()
-    {
-        var context = CreateContext();
-        await AddTestData(context);
-        var datesService = GetDatesService(10, context);
-        var hostAndPortService = new HostAndPortStub();
-
-        var list = await datesService.GetAllDates(DateOnly.FromDateTime(DateTime.UtcNow));
-
-        var r1 = list[2];
-        r1?.Text.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
-        r1?.Text.Should().Contain(hostAndPortService.GetHostAndPort());
-        var r2 = list[5];
-        r2?.Text.Should().NotContain(hostAndPortService.GetHostAndPortPlaceholder());
-        r2?.Text.Should().Contain(hostAndPortService.GetHostAndPort());
-    }
-
     [Test]
     public async Task GetAllDates_ShouldReturnAllAssignedThemesNames()
     {
@@ -191,8 +154,8 @@ internal class DatesServiceTests : TestFixtureBase
         {
             Id = Guid.NewGuid(),
             Date = DateOnly.Parse("2012-04-23"),
-            Name = Guid.NewGuid().ToString() + $@"Link: <a href=""{new HostAndPortStub().GetHostAndPortPlaceholder()}/images/123"">Some Image</a>",
-            Text = Guid.NewGuid().ToString() + $@"Link: <a href=""{new HostAndPortStub().GetHostAndPortPlaceholder()}/images/123"">Some Image</a>"
+            Name = Guid.NewGuid().ToString() + $@"Link: <a href=""https://diary.com/images/123"">Some Image</a>",
+            Text = Guid.NewGuid().ToString() + $@"Link: <a href=""https://diary.com/images/123"">Some Image</a>"
         },
         new DiaryRecord // 0
         {
@@ -219,8 +182,8 @@ internal class DatesServiceTests : TestFixtureBase
         {
             Id = Guid.NewGuid(),
             Date = DateOnly.Parse("2020-06-24"),
-            Name = Guid.NewGuid().ToString() + $@"Link: <a href=""{new HostAndPortStub().GetHostAndPortPlaceholder()}/records/987987987"">Some record</a>",
-            Text = Guid.NewGuid().ToString() + $@"Link: <a href=""{new HostAndPortStub().GetHostAndPortPlaceholder()}/records/987987987"">Some record</a>"
+            Name = Guid.NewGuid().ToString() + $@"Link: <a href=""https://diary.com/records/987987987"">Some record</a>",
+            Text = Guid.NewGuid().ToString() + $@"Link: <a href=""https://diary.com/records/987987987"">Some record</a>"
         },
         new DiaryRecord // 3
         {

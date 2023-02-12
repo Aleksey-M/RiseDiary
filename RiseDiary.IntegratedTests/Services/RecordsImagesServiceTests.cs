@@ -17,7 +17,7 @@ internal class RecordsImagesServiceTests : TestFixtureBase
         var context = CreateContext();
         var recImgSvc = GetRecordsImagesService(context);
         var imageSvc = GetImagesService(context);
-        var imageId = await imageSvc.AddImage(TestFile);
+        var imageId = await imageSvc.AddImage(TestFile, contentType: @"image/jpeg");
         var recordId = CreateRecord(context);
         await recImgSvc.AddRecordImage(recordId, imageId);
 

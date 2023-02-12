@@ -70,7 +70,7 @@ internal class ImagesEditServiceTests : TestFixtureBase
         var svc = GetImagesEditService(context);
         var imgId = CreateImage(context);
 
-        await svc.ReplaceImage(TestFile, imgId);
+        await svc.ReplaceImage(TestFile, imgId, @"image/jpeg");
 
         var tmpImg = await context.TempImages.SingleOrDefaultAsync(i => i.SourceImageId == imgId);
         tmpImg.Should().NotBeNull();

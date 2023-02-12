@@ -2,7 +2,7 @@
 
 @inherits UIComponentBase
 
-<Spinner Loading="@Loading">
+<Spinner Loading="@Loading" ShowAnimation="@DisplaySpinner">
     <div class="col-12">
 
         @if (HasError)
@@ -67,6 +67,9 @@
 
     [Parameter]
     public bool EditorOnly { get; set; }
+
+    [Parameter]
+    public bool DisplaySpinner { get; set; } = true;
 
     private string? _text;
     private MarkupString? _previewString;

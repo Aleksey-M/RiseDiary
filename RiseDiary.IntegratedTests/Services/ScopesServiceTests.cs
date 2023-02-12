@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using RiseDiary.IntegratedTests.Stubs;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 
@@ -472,87 +471,5 @@ internal class ScopesServiceTests : TestFixtureBase
 
         var scope = await context.Scopes.FindAsync(id);
         scope.Should().BeNull();
-    }
-
-    [Test]
-    public async Task AddScope_ShouldReplaceHostAndPortByPlaceholder_InDescription()
-    {
-        var context = CreateContext();
-        var svc = GetScopesService(context);
-        var hpSvc = new HostAndPortStub();
-        var description = $@"New text with link {hpSvc.GetHostAndPort()}/index and another link {hpSvc.GetHostAndPort()}/images/12345678";
-
-        Guid id = await svc.AddScope("New Scope 1", description);
-
-        var scope = await context.Scopes.SingleOrDefaultAsync(r => r.Id == id);
-        scope.Description.Should().NotContain(hpSvc.GetHostAndPort());
-        scope.Description.Should().Contain(hpSvc.GetHostAndPortPlaceholder(), Exactly.Twice());
-    }
-
-    [Test]
-    public async Task AddTheme_ShouldReplaceHostAndPortByPlaceholder_InDescription()
-    {
-        var context = CreateContext();
-        var svc = GetScopesService(context);
-        var hpSvc = new HostAndPortStub();
-        var description = $@"New text with link {hpSvc.GetHostAndPort()}/index and another link {hpSvc.GetHostAndPort()}/images/12345678";
-        var scopeId = CreateScope(context, "Test Scope");
-
-        var themeId = await svc.AddTheme(scopeId, "Theme 1", false, description);
-
-        var theme = await context.Themes.SingleOrDefaultAsync(r => r.Id == themeId);
-        theme.Description.Should().NotContain(hpSvc.GetHostAndPort());
-        theme.Description.Should().Contain(hpSvc.GetHostAndPortPlaceholder(), Exactly.Twice());
-    }
-
-    [Test]
-    public async Task UpdateScopeDescription_ShouldReplaceHostAndPortByPlaceholder()
-    {
-        var context = CreateContext();
-        var svc = GetScopesService(context);
-        var hpSvc = new HostAndPortStub();
-        var description = $@"New text with link {hpSvc.GetHostAndPort()}/index and another link {hpSvc.GetHostAndPort()}/images/12345678";
-        var scopeId = CreateScope(context, "Test Scope", "Some description");
-
-        await svc.UpdateScope(scopeId, scopeNewName: null, scopeNewDescription: description);
-
-        var scope = await context.Scopes.SingleOrDefaultAsync(r => r.Id == scopeId);
-        scope.Description.Should().NotContain(hpSvc.GetHostAndPort());
-        scope.Description.Should().Contain(hpSvc.GetHostAndPortPlaceholder(), Exactly.Twice());
-    }
-
-    [Test]
-    public async Task UpdateThemeDescription_ShouldReplaceHostAndPortByPlaceholder()
-    {
-        var context = CreateContext();
-        var svc = GetScopesService(context);
-        var hpSvc = new HostAndPortStub();
-        var description = $@"New text with link {hpSvc.GetHostAndPort()}/index and another link {hpSvc.GetHostAndPort()}/images/12345678";
-        var (scopeId, themeId) = CreateThemeWithScope(context, "Theme Name", "Some theme description");
-
-        await svc.UpdateTheme(themeId, themeNewName: null, themeActuality: null, themeNewDescription: description);
-
-        var theme = await context.Themes.SingleOrDefaultAsync(r => r.Id == themeId);
-        theme.Description.Should().NotContain(hpSvc.GetHostAndPort());
-        theme.Description.Should().Contain(hpSvc.GetHostAndPortPlaceholder(), Exactly.Twice());
-    }
-
-    [Test]
-    public async Task GetScopes_ShouldReplacePlaceholderByHostAndPort()
-    {
-        var context = CreateContext();
-        var svc = GetScopesService(context);
-        var hpSvc = new HostAndPortStub();
-        var description = $@"New text with link {hpSvc.GetHostAndPortPlaceholder()}/index and another link {hpSvc.GetHostAndPortPlaceholder()}/images/12345678";
-        var scopeId = CreateScope(context, "Test Scope", description);
-        CreateTheme(context, "Test Theme", scopeId, description);
-
-        var list = await svc.GetScopes();
-
-        list.First().Description.Should().NotContain(hpSvc.GetHostAndPortPlaceholder());
-        list.First().Description.Should().Contain(hpSvc.GetHostAndPort(), Exactly.Twice());
-        list.First().Themes.First().Description.Should().NotContain(hpSvc.GetHostAndPortPlaceholder());
-        list.First().Themes.First().Description.Should().Contain(hpSvc.GetHostAndPort(), Exactly.Twice());
-
     }
 }
