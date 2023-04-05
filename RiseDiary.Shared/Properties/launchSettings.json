@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "RiseDiary.Shared": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:54610;http://localhost:54611"
+    }
+  }
+}
