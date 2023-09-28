@@ -13,7 +13,7 @@ namespace Migrations;
 [TestFixture]
 public class OneTimeMigrations
 {
-    [Test]
+    [Test, Ignore("One time migration")]
     public async Task RecreateDb()
     {
         var sourceFullName = @"D:\DB\Diary (3).db";
