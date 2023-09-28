@@ -268,3 +268,5 @@ RiseDiary.WebUI/wwwroot/lib/
 RiseDiary.WebUI/appsettings.json
 Pwd/Program.cs
 RiseDiary.Front/wwwroot/lib/
+*.db-shm
+*.db-wal
