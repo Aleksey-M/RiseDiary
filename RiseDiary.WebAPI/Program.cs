@@ -10,6 +10,7 @@ using RiseDiary.Shared.Settings;
 using RiseDiary.WebAPI.Config;
 using RiseDiary.WebAPI.Data;
 using RiseDiary.WebAPI.Middleware;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,16 @@ builder.Services.AddDbContext<DiaryDbContext>(options => options.UseSqlite(
     $"Data Source={dbFileName};", o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
 await DataSeed.CheckData(dbFileName);
+
+
+// logging
+var logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .CreateLogger();
+
+builder.Logging.AddSerilog(logger);
+
 
 // app services
 builder.Services.AddScoped<IScopesService, ScopesService>();
