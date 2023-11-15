@@ -14,6 +14,7 @@ namespace Migrations;
 public class OneTimeMigrations
 {
     [Test]
+    [Ignore("One time migration")]
     public async Task RecreateDb()
     {
         var sourceFullName = @"D:\DB\Diary (3).db";

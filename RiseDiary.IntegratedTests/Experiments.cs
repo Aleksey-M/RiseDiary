@@ -9,6 +9,7 @@ using RiseDiary.Model;
 namespace RiseDiary.IntegratedTests;
 
 [TestFixture]
+[Ignore("Experiment")]
 internal class Experiments : TestFixtureBase
 {
     [Test, Ignore("Experimental test")]
