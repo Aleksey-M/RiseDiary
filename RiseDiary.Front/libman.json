@@ -3,7 +3,7 @@
   "defaultProvider": "unpkg",
   "libraries": [
     {
-      "library": "bootstrap@5.2.3",
+      "library": "bootstrap@5.3.2",
       "files": [ "dist/css/bootstrap.min.css", "dist/js/bootstrap.bundle.min.js" ],
       "destination": "wwwroot/lib/bootstrap"
     },
