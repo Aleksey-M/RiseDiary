@@ -70,13 +70,13 @@ internal static class DataSeed
             Description = "Группа записей, даты которых будут выводиться в разделе \"Даты\"",
             Themes = new List<DiaryTheme>
             {
-                new DiaryTheme
+                new ()
                 {
                     Id = Guid.NewGuid(),
                     ScopeId = Guid.Parse(scopeId),
                     ThemeName = "День рожденья"
                 },
-                new DiaryTheme
+                new ()
                 {
                     Id = Guid.NewGuid(),
                     ScopeId = Guid.Parse(scopeId),

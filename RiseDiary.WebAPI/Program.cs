@@ -25,6 +25,7 @@ var dbFileName = builder.Configuration
 
 builder.Services.AddDbContext<DiaryDbContext>(options => options.UseSqlite(
     $"Data Source={dbFileName};", o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+Console.WriteLine($"Database file: {dbFileName}");
 
 await DataSeed.CheckData(dbFileName);
 

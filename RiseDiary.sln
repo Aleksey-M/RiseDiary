@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{064BE5AF-AD53-4757-A268-163BB5330962}"
 	ProjectSection(SolutionItems) = preProject
 		Backlog.txt = Backlog.txt
+		Dockerfile = Dockerfile
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RiseDiary.WebAPI", "RiseDiary.WebAPI\RiseDiary.WebAPI.csproj", "{F9E4CB61-63EB-479A-A9A1-5F6A389C6DCC}"
