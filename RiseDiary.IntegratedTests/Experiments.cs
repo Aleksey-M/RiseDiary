@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using RiseDiary.Model;
@@ -57,6 +58,6 @@ internal class Experiments : TestFixtureBase
 
         var list = r ?? await result.ToListAsync();
 
-        Assert.IsEmpty(list);
+        list.Should().BeEmpty();
     }
 }
