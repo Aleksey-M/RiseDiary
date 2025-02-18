@@ -287,6 +287,11 @@ public partial class UploadImagesPage : UIComponentBase
         var prop = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.DateTimeOriginal);
         DateTime? taken = prop != null ? (DateTime)prop.Value : (DateTime?)null;
 
+        if (taken == new DateTime())
+        {
+            taken = (DateTime?)null;
+        }
+
         var model = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.Model)?.Value?.ToString() ?? "";
         var make = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.Make)?.Value.ToString() ?? "";
         string? cameraModel = model.Contains(make, StringComparison.OrdinalIgnoreCase) ? model : make + " " + model;
