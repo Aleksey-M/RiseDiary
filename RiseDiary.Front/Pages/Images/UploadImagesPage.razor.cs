@@ -103,7 +103,8 @@ public partial class UploadImagesPage : UIComponentBase
                     Logger.LogWarning("Validation error {validationResult}", validationResult.ToString());
                     await FinishApiRequest(validationResult.ToString());
                     break;
-                };
+                }
+                ;
 
                 var preparedImageStream = await PrepareImage(img, uploadDto);
 
@@ -203,7 +204,7 @@ public partial class UploadImagesPage : UIComponentBase
             ImageName = (string.IsNullOrWhiteSpace(imageName), fileIndex) switch
             {
                 (true, _) => Path.GetFileNameWithoutExtension(imgFile.Name),
-                (false, > 0) => $"{imageName!} ({fileIndex})",
+                (false, > 0) => @$"{imageName!} ({fileIndex})",
                 (false, _) => imageName!
             },
             ContentType = imgFile.ContentType,
@@ -304,7 +305,7 @@ public partial class UploadImagesPage : UIComponentBase
     {
         var formContent = new MultipartFormDataContent
         {
-            { new StreamContent(imageStream), "newImage", dto.ImageName },
+            { new StreamContent(imageStream), "newImage", "newImage" },
             { new StringContent(dto.ContentType ?? "image/jpeg"), nameof(dto.ContentType) },
             { new StringContent(dto.ImageName), nameof(dto.ImageName) }
         };
