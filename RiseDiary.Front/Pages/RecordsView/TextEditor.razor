@@ -37,7 +37,7 @@
                 <div class="col-12 my-2 text-center">
                     <button @onclick="SaveText" class="btn btn-sm btn-outline-success mx-1">@SaveButtonName
                     </button><button @onclick="PreviewText" class="btn btn-sm btn-outline-secondary mx-1">Проверить</button>
-                    
+
                     @if (!EditorOnly)
                     {
                         <button @onclick="CloseEditor" class="btn btn-sm btn-outline-secondary mx-1">Закрыть</button>
@@ -74,15 +74,17 @@
     private string? _text;
     private MarkupString? _previewString;
 
-    protected override void OnParametersSet()
+
+    protected override void OnInitialized()
     {
+        base.OnInitialized();
+
         if (EditorOnly)
         {
             _text = Text;
         }
-
-        base.OnParametersSet();
     }
+
 
     private void PreviewText()
     {
