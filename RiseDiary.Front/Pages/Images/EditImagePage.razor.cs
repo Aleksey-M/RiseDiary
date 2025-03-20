@@ -79,6 +79,7 @@ public partial class EditImagePage : UIComponentBase
         {
             Logger.LogWarning("Image Id not passed");
             Redirect();
+            return;
         }
 
         _moduleTask = new(() => JsRuntime.InvokeAsync<IJSObjectReference>(
@@ -101,6 +102,7 @@ public partial class EditImagePage : UIComponentBase
         if (RedirectRecordId.HasValue)
         {
             NavManager.NavigateTo($"records/view/{RedirectRecordId.Value}");
+            return;
         }
 
         NavManager.NavigateTo("images");
