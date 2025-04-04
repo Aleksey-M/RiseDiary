@@ -1,5 +1,5 @@
 ﻿@page "/"
-@page "/index.html"
+@page "/index"
 
 @using RiseDiary.Front.AppServices
 @using RiseDiary.Shared.Records
@@ -10,40 +10,34 @@
 
 @inherits UIComponentBase
 
-<PageTitle>Дневник</PageTitle>
+<PageTitle>Закладки</PageTitle>
 
 <div class="col-12 p-2">
-    <Spinner Loading="_startPageRecord == null">
+    <Spinner Loading="_loading">
 
         @if (HasError)
         {
             <pre style="color:red;">@ErrorMessage</pre>
         }
 
-        @if (_startPageRecord != null && _startPageRecord.RecordId == null)
+        @if (_records.Length == 0)
         {
-            <h3 class="p-3" style="color:silver">Стартовая страница не выбрана</h3>            
+            <h3 class="p-3" style="color:silver">Пусто</h3>            
         }
-        
-        @if (_startPageRecord?.RecordId != null )
+
+        @if (_records.Length > 0)
         {
-            @RecordHtml
-
-            <br />
-
-            <NavLink href="@RecordUrl">Открыть запись</NavLink>
+            <RecordsTableExpanded Records="_records" TotalCount="(int?)null">
+            </RecordsTableExpanded>
         }
 
     </Spinner>
 </div>
 
 @code {
-    private StartPageRecordDto? _startPageRecord;
 
-    private MarkupString RecordHtml => MdService.ToHtml(_startPageRecord?.RecordMdText);
-
-    private string RecordUrl => $@"records/view/{_startPageRecord?.RecordId?.ToString()}";
-
+    private RecordDto[] _records = [];
+    private bool _loading = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,17 +45,13 @@
 
         try
         {
-            _startPageRecord = await Http.GetFromJsonAsync<StartPageRecordDto>("api/startpage", Token);
-            if(_startPageRecord != null && _startPageRecord.RecordMdText != null)
-            {
-                _startPageRecord.RecordMdText = InternalLinksHelper.SetBaseUri(
-                    _startPageRecord.RecordMdText, NavManager.BaseUri);
-            }
+            _records = await Http.GetFromJsonAsync<RecordDto[]>("api/bookmarks", Token) ?? [];
+            _loading = false;
         }
         catch (Exception exc)
         {
             ErrorMessage = exc.Message;
-            _startPageRecord = new();
+            _records = [];
         }
     }
 }

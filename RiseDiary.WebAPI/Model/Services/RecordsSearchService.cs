@@ -116,4 +116,19 @@ internal sealed class RecordsSearchService : IRecordsSearchService
 
         return records;
     }
+
+    public async Task<List<DiaryRecord>> GetRecordsByIds(
+        IEnumerable<Guid> recordsIds,
+        CancellationToken cancellationToken = default) =>
+            await _context.Records
+                .AsNoTracking()
+                .Include(r => r.Cogitations)
+                .Include(r => r.ThemesRefs)
+                .ThenInclude(rt => rt.Theme)
+                .Include(r => r.ImagesRefs.OrderBy(x => x.Order))
+                .ThenInclude(ri => ri.Image)
+                .Where(x => recordsIds.Contains(x.Id))
+                .OrderByDescending(r => r.Date)
+                .ThenByDescending(r => r.CreateDate)
+                .ToListAsync(cancellationToken);
 }

@@ -12,7 +12,8 @@ public static class SettingsValidator
         (AppSettingsKey.ImportantDaysDisplayRange, _) when !int.TryParse(value, out _) => "Range value should be set as int",
         (AppSettingsKey.ImportantDaysDisplayRange, _) => int.Parse(value) <= 1 ? "Range value must be greater than 1" :
                                                          int.Parse(value) > 30 ? "Range value must be less than 30" : "",
-        (AppSettingsKey.StartPageRecordId, _) when value != "" && !Guid.TryParse(value, out _) => "RecordId value is not a correct GUID",
+        //(AppSettingsKey.BookmarksRecordsList, _) when value != "" 
+        //    && value.Split(';').Any(x => !Guid.TryParse(value, out _)) => "RecordId value is not a correct GUID",
 
         (AppSettingsKey.ImageQuality, _) when !int.TryParse(value, out _) => "Image Quality value should be set as int",
         (AppSettingsKey.ImageQuality, _) => int.Parse(value) <= 0 ? "Image Quality value must be greater than 0" :

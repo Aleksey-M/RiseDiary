@@ -21,19 +21,19 @@ public class RecordDto : RecordListItemDto
 {
     public string Text { get; set; } = string.Empty;
 
-    public List<ThemeDto> Themes { get; set; } = new();
+    public List<ThemeDto> Themes { get; set; } = [];
 
-    public List<ImageListItemDto> Images { get; set; } = new();
+    public List<ImageListItemDto> Images { get; set; } = [];
 
-    public List<CogitationDto> Cogitations { get; set; } = new();
+    public List<CogitationDto> Cogitations { get; set; } = [];
 }
 
 
 public sealed class RecordEditDto : RecordDto
 {
-    public Guid? StartPageRecordId { get; set; }
+    public Guid[] StartPageRecords { get; set; } = [];
 
-    public List<ScopeDto> AllScopes { get; set; } = new();
+    public List<ScopeDto> AllScopes { get; set; } = [];
 
     public int AddImagesPageSize { get; set; }
 }
