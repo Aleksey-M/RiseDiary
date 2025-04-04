@@ -37,6 +37,7 @@
                 <div class="col-12 my-2 text-center">
                     <button @onclick="SaveText" class="btn btn-sm btn-outline-success mx-1">@SaveButtonName
                     </button><button @onclick="PreviewText" class="btn btn-sm btn-outline-secondary mx-1">Проверить</button>
+                    <MarkdownSyntax></MarkdownSyntax>
 
                     @if (!EditorOnly)
                     {
