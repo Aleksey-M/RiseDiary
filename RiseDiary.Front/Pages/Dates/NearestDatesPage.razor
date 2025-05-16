@@ -27,16 +27,21 @@
                     <tbody>
                         @foreach (var date in _datesList)
                         {
-                            <tr style="@GetRowStyle(date)">
-                                <td>
+                            var s = GetRowStyle(date);
+
+                            <tr>
+                                <td style="@s">
                                     @date.TransferredDate.ToString("yyyy.MM.dd ddd")
                                 </td>
-                                <td style="color:darkred">
-                                    @date.Date.ToString("yyyy.MM.dd")
+                                <td style="@s">
+                                    <p style="color:darkred">@date.Date.ToString("yyyy.MM.dd")</p>
                                 </td>
-                                <td>
-                                    <a href="records/view/@date.Id">@date.Name</a>
-                                    <p class="small"><i>@date.Themes</i></p>
+                                <td style="@s">
+                                    @if (date.Id != default)
+                                    {
+                                        <a href="records/view/@date.Id">@date.Name</a>
+                                        <p class="small"><i>@date.Themes</i></p>
+                                    }
                                 </td>
                             </tr>
                         }
