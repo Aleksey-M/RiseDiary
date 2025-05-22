@@ -30,7 +30,7 @@ public static class ImageHelper
             width = Convert.ToInt32(bitmap.Width / (double)bitmap.Height * maxSizePx);
         }
         var imageInfo = new SKImageInfo(width, height);
-        using var thumbnail = bitmap.Resize(imageInfo, SKFilterQuality.Medium);
+        using var thumbnail = bitmap.Resize(imageInfo, SKSamplingOptions.Default);
         using var img = SKImage.FromBitmap(thumbnail);
         using var jpeg = img.Encode(SKEncodedImageFormat.Jpeg, imageQuality);
         using var memoryStream = new MemoryStream();

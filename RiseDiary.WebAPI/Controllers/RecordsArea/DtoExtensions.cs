@@ -45,7 +45,7 @@ internal static class DtoExtensions
         RecordId = record.Id
     };
 
-    public static RecordEditDto ToEditDto(this DiaryRecord record, Guid? startPageRecordId,
+    public static RecordEditDto ToEditDto(this DiaryRecord record, Guid[] startPageRecords,
         List<ScopeDto> allScopes, int addImagesPageSize) => new RecordEditDto
         {
             RecordId = record.Id,
@@ -65,7 +65,7 @@ internal static class DtoExtensions
                 .OrderBy(x => x.Order)
                 .Select(ri => ri.ToListDto())
                 .ToList(),
-            StartPageRecordId = startPageRecordId,
+            StartPageRecords = startPageRecords,
             AllScopes = allScopes,
             AddImagesPageSize = addImagesPageSize
         };

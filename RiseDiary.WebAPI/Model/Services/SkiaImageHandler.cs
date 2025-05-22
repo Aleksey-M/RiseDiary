@@ -24,7 +24,7 @@ internal abstract class SkiaImageHandler
             width = Convert.ToInt32(bitmap.Width / (double)bitmap.Height * maxSizePx);
         }
         var imageInfo = new SKImageInfo(width, height);
-        using var thumbnail = bitmap.Resize(imageInfo, SKFilterQuality.Medium);
+        using var thumbnail = bitmap.Resize(imageInfo, SKSamplingOptions.Default);
         using var img = SKImage.FromBitmap(thumbnail);
         using var jpeg = img.Encode(SKEncodedImageFormat.Jpeg, imageQuality);
         using var memoryStream = new MemoryStream();
@@ -72,6 +72,11 @@ internal abstract class SkiaImageHandler
         var prop = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.DateTimeOriginal);
         DateTime? taken = prop != null ? (DateTime)prop.Value : (DateTime?)null;
 
+        if (taken == new DateTime())
+        {
+            taken = (DateTime?)null;
+        }
+            
         var model = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.Model)?.Value?.ToString() ?? "";
         var make = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.Make)?.Value.ToString() ?? "";
         string? cameraModel = model.Contains(make, StringComparison.OrdinalIgnoreCase) ? model : make + " " + model;

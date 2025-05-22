@@ -18,31 +18,28 @@
         {
             <ImageView ImageId="OpenedImageId.Value" ShowButtons="true" CloseImageView="CloseImage" />
         }
-        else
-        {
-            <div class="col-12 row">
-                <div class="col-12">
-                    <div class="my-3 px-3">
-                        <NavLink class="btn btn-outline-primary" href="/images/upload">Загрузить</NavLink>
-                        <Pager Pages="@_pageData.PagesInfo" FloatRight="true" Navigate="LoadPage" />
-                    </div>
-                </div>
-
-                @foreach (var image in _pageData.Images)
-                {
-                    <div class="col-lg-3 col-md-6 col-sm-12 p-3">
-                        <Thumbnail Image="image" ImageClick="OpenImage" />
-                    </div>
-                }
-
-                <div class="col-12">
-                    <div class="my-3 px-3">
-                        <i class="pt-3">@_totalCount</i>
-                        <Pager Pages="@_pageData.PagesInfo" FloatRight="true" Navigate="LoadPage" />
-                    </div>
+        <div class="col-12 row">
+            <div class="col-12">
+                <div class="my-3 px-3">
+                    <NavLink class="btn btn-outline-primary" href="/images/upload">Загрузить</NavLink>
+                    <Pager Pages="@_pageData.PagesInfo" FloatRight="true" Navigate="LoadPage" />
                 </div>
             </div>
-        }
+
+            @foreach (var image in _pageData.Images)
+            {
+                <div class="col-lg-3 col-md-6 col-sm-12 p-3">
+                    <Thumbnail Image="image" ImageClick="OpenImage" />
+                </div>
+            }
+
+            <div class="col-12">
+                <div class="my-3 px-3">
+                    <i class="pt-3">@_totalCount</i>
+                    <Pager Pages="@_pageData.PagesInfo" FloatRight="true" Navigate="LoadPage" />
+                </div>
+            </div>
+        </div>
     }
 </Spinner>
 

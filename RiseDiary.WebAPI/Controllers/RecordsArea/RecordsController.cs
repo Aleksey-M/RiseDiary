@@ -48,19 +48,21 @@ public sealed class RecordsController : ControllerBase
         var record = await _recordService.FetchRecordById(recordId, cancellationToken);
         var dto = record.ToDto();
 
-        var s = (await _appSettingsService.GetAppSetting(AppSettingsKey.StartPageRecordId)).value ?? "";
+        var s = (await _appSettingsService.GetAppSetting(AppSettingsKey.BookmarksRecordsList)).value ?? "";
+        var startRecords = string.IsNullOrWhiteSpace(s)
+            ? []
+            : s.Split(';')
+                .Select(x => (isGuid: Guid.TryParse(x, out var id), value: id))
+                .Where(x => x.isGuid)
+                .Select(x => x.value)
+                .ToArray();
 
-        Guid? startPageRecordId = null;
-        if (Guid.TryParse(s, out var id))
-        {
-            startPageRecordId = id;
-        }
 
         var scopes = await scopeService.GetScopes(null, cancellationToken);
 
         var addImagesPageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.AvailableImagesPageSize);
 
-        return record.ToEditDto(startPageRecordId, scopes.Select(s => s.ToDto()).ToList(), addImagesPageSize ?? 10);
+        return record.ToEditDto(startRecords, scopes.Select(s => s.ToDto()).ToList(), addImagesPageSize ?? 10);
     }
 
     [HttpDelete("{recordId}")]

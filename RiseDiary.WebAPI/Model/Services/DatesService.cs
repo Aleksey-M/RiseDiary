@@ -77,7 +77,7 @@ internal sealed class DatesService : IDatesService
             if (emptyDate == null) continue;
 
             datesFromRange.Add(rec with { TransferredDate = emptyDate.TransferredDate });
-            if (!emptyDates.Contains(emptyDate)) emptyDates.Add(emptyDate);
+            emptyDates.Add(emptyDate);
         }
 
         if (!withEmptyDates) return datesFromRange.OrderBy(d => d.TransferredDate).ToList();

@@ -5,7 +5,7 @@ public enum AppSettingsKey
     Unknown = 0,
     ImportantDaysScopeId = 1,
     ImportantDaysDisplayRange = 2,
-    StartPageRecordId = 3,
+    BookmarksRecordsList = 3,
     ImageQuality = 4,
     ThumbnailSize = 5,
     RecordsPageSize = 7,

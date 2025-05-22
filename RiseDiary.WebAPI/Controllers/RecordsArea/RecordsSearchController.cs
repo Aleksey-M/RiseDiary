@@ -93,10 +93,13 @@ public sealed class RecordsSearchController : ControllerBase
         return ReturnResult(pagesInfo, records, expanded);
     }
 
-    [HttpGet("this-day")]
-    public async Task<IActionResult> GetThisDayRecords(CancellationToken cancellationToken)
+    [HttpGet("this-day/{date}")]
+    public async Task<IActionResult> GetThisDayRecords(CancellationToken cancellationToken, string? date)
     {
-        var today = DateTime.UtcNow;
+        var today = !string.IsNullOrWhiteSpace(date) && DateOnly.TryParse(date, out var today_selected)
+            ? today_selected
+            : DateOnly.FromDateTime(DateTime.UtcNow);
+        
         var records = await _recordsSearchService.GetThisDayRecords(month: today.Month, day: today.Day, cancellationToken);
 
         return records.Count > 0

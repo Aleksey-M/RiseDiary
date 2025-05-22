@@ -9,39 +9,35 @@
 }
 
 <Spinner ShowAnimation="false" Loading="Loading">
-    @if (StartPageRecordId == null)
+    @if (!OnStartPage)
     {
         <button @onclick="SetOnStartPage" class="btn btn-link pt-0" style="float:right" title="Поместить на стартовую страницу">
             <img src="img/calendar-plus.svg" />
         </button>
     }
-    else if (RecordId == StartPageRecordId)
+    else
     {
         <button @onclick="RemoveFromStartPage" class="btn btn-link pt-0" style="float:right" title="Удалить со стартовой страницы">
             <img src="img/calendar-x.svg" />
-        </button>
-    }
-    else
-    {
-        <button @onclick="SetOnStartPage" class="btn btn-link pt-0" style="float:right" title="Заменить другую запись на стартовой странице">
-            <img src="img/calendar-check.svg" />
         </button>
     }
 </Spinner>
 
 
 @code{
-    [Inject]
-    public ILogger<LandingRecord> Logger { get; set; } = null!;
+        [Inject]
+        public ILogger<LandingRecord> Logger { get; set; } = null!;
 
-    [Inject]
-    public HttpClient Http { get; set; } = null!;
+        [Inject]
+        public HttpClient Http { get; set; } = null!;
 
-    [Parameter, EditorRequired]
-    public Guid RecordId { get; set; }
+        [Parameter, EditorRequired]
+        public Guid RecordId { get; set; }
 
-    [Parameter, EditorRequired]
-    public Guid? StartPageRecordId { get; set; }
+        [Parameter, EditorRequired]
+        public Guid[] StartPageRecords { get; set; } = [];
+
+    private bool OnStartPage => StartPageRecords.Contains(RecordId);
 
 
     private async Task SetOnStartPage()
@@ -50,15 +46,16 @@
         {
             await StartApiRequest();
 
+            var newArray = StartPageRecords.Union([RecordId]).ToArray(); 
             var dto = new AppSettingDto
                 {
-                    Key = AppSettingsKey.StartPageRecordId,
-                    Value = RecordId.ToString()
+                    Key = AppSettingsKey.BookmarksRecordsList,
+                    Value = string.Join(';', newArray)
                 };
 
-            await Http.PutAsJsonAsync($"api/settings/{AppSettingsKey.StartPageRecordId}", dto);
+            await Http.PutAsJsonAsync($"api/settings/{AppSettingsKey.BookmarksRecordsList}", dto);
 
-            StartPageRecordId = RecordId;
+            StartPageRecords = newArray;
             await FinishApiRequest(null);
         }
         catch (Exception exc)
@@ -74,15 +71,16 @@
         {
             await StartApiRequest();
 
+            var newArray = StartPageRecords.Except([RecordId]).ToArray();
             var dto = new AppSettingDto
                 {
-                    Key = AppSettingsKey.StartPageRecordId,
-                    Value = string.Empty
+                    Key = AppSettingsKey.BookmarksRecordsList,
+                    Value = string.Join(';', newArray)
                 };
 
-            await Http.PutAsJsonAsync($"api/settings/{AppSettingsKey.StartPageRecordId}", dto);
+            await Http.PutAsJsonAsync($"api/settings/{AppSettingsKey.BookmarksRecordsList}", dto);
 
-            StartPageRecordId = null;
+            StartPageRecords = newArray;
             await FinishApiRequest(null);
         }
         catch (Exception exc)

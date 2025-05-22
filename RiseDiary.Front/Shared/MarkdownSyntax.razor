@@ -1,0 +1,120 @@
+﻿
+
+<button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#myModal">
+    md?
+</button>
+
+
+<div class="modal" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">Markdown синтаксис</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body text-start">
+                <h5>Заголовки</h5>
+
+                <pre>
+# H1
+## H2
+### H3
+                </pre>
+
+                <h5>Жирный шрифт и курсив</h5>
+
+                <pre>
+**bold text**
+*italicized text*
+                </pre>
+
+                <h5>Блок</h5>
+
+                <pre>
+> blockquote
+                </pre>
+
+                <h5>Нумерованый список</h5>
+
+                <pre>
+1. First item
+2. Second item
+3. Third item
+                </pre>
+
+                <h5>Простой список</h5>
+
+                <pre>
+- First item
+- Second item
+- Third item
+                </pre>
+
+                <h5>Code</h5>
+
+                <pre>
+`code`
+                </pre>
+
+                <h5>Горизонтальная черта</h5>
+
+                <pre>
+---
+                </pre>
+
+                <h5>Ссылки и Изображения</h5>
+
+                <pre>
+[title](https://www.example.com)
+![alt text](image.jpg)
+                </pre>
+
+                <h5>Таблицы</h5>
+
+                <pre>
+| Syntax | Description |
+| ----------- | ----------- |
+| Header | Title |
+| Paragraph | Text |
+                </pre>
+
+                <h5>Блоки с подсветкой синтаксиса</h5>
+
+                <pre>
+```json
+{
+"firstName": "John",
+"lastName": "Smith",
+"age": 25
+}
+```
+                </pre>
+
+                <h5>Сноски</h5>
+
+                <pre>
+Here's a sentence with a footnote.[^1]
+
+[^1]: This is the footnote
+               </pre>
+
+                <h5>Экранирование</h5>
+
+                <pre>
+\*asterisc\*
+                </pre>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+}

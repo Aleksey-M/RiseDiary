@@ -3,13 +3,12 @@
 
 @inherits UIComponentBase
 
-<div class="row">
+<div class="row">    
     @if (_openedImageId.HasValue)
     {
         <ImageView ImageId="_openedImageId.Value" ShowButtons="true" CloseImageView="CloseImage" RecordId="@RecordDto.RecordId" />
     }
-    else
-    {
+    
         @if (!_addMode)
         {
             <div class="col-12">
@@ -78,7 +77,7 @@
                 <button class="btn btn-outline-secondary m-1 btn-sm" @onclick="HideAvailableImages" title="Закрыть список доступных изображений">Закрыть</button>
             </div>
         }
-    }
+    
     
 </div>
 

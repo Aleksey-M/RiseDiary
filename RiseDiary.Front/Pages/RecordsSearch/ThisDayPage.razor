@@ -1,4 +1,4 @@
-﻿@page "/records/this-day"
+﻿@page "/records/this-day/{date?}"
 
 @using RiseDiary.Shared.Records
 
@@ -29,7 +29,13 @@
 
 
 @code {
-    public string ThisDayCaption => DateTime.UtcNow.ToString("m");
+
+    [Parameter]
+    public string? Date { get; set; }
+
+    public string ThisDayCaption => !string.IsNullOrWhiteSpace(Date) && DateOnly.TryParse(Date, out var parsedDate)
+        ? parsedDate.ToString("m")
+        : DateTime.UtcNow.ToString("m");
 
     private List<RecordDto>? _records;
 
@@ -42,7 +48,11 @@
         {
             await StartApiRequest();
 
-            var response = await Http.GetAsync("api/records/this-day", Token);
+            var date = !string.IsNullOrWhiteSpace(Date) && DateOnly.TryParse(Date, out var parsedDate)
+                ? parsedDate.ToString("yyyy-MM-dd")
+                : DateTime.UtcNow.ToString("yyyy-MM-dd");
+
+            var response = await Http.GetAsync($"api/records/this-day/{date}", Token);
             
             if(!await CheckSuccessResponse(response)) return;
 

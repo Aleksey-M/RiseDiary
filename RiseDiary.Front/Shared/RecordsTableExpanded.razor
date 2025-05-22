@@ -16,82 +16,81 @@ else
     {
         <ImageView ImageId="@OpenedImageId.Value" RecordId="@OpenedImageRecordId" ShowButtons="true" CloseImageView="CloseImage" />
     }
-    else
-    {
-        <div class="offset-lg-2 col-lg-8 col-md-12">
-            <div class="row">
-                @foreach (var rec in Records)
-                {
-                    <div class="col-12 p-1">
-                        <hr />
-                        <div class="px-2">
 
-                            <p>
-                                <b>
-                                    <i><a href="records/view/@rec.RecordId">@rec.Date.ToString("yyyy.MM.dd")</a></i>
-                                    &nbsp;@rec.Name
-                                </b>
-                            </p>
+    <div class="offset-lg-2 col-lg-8 col-md-12">
+        <div class="row">
+            @foreach (var rec in Records)
+            {
+                <div class="col-12 p-1">
+                    <hr />
+                    <div class="px-2">
 
-                            <p>
-                                <small><i>@GetAllThemes(rec)</i></small>
-                            </p>
+                        <p>
+                            <b>
+                                <i><a href="records/view/@rec.RecordId">@rec.Date.ToString("yyyy.MM.dd")</a></i>
+                                &nbsp;@rec.Name
+                            </b>
+                        </p>
 
-                            <p>
-                                @(MdService.ToHtml(rec.Text))
-                            </p>
+                        <p>
+                            <small><i>@GetAllThemes(rec)</i></small>
+                        </p>
 
-                            <div class="row">
-                                @foreach (var image in rec.Images)
-                                {
-                                    <div class="col-lg-2 col-md-4 col-sm-6 p-3">
-                                        <Thumbnail Image="image" RecordId="rec.RecordId" OnlyImage="true" ImageClick="_ => OpenImage(image.ImageId, rec.RecordId)" />
-                                    </div>
-                                }
-                            </div>
+                        <p>
+                            @(MdService.ToHtml(rec.Text))
+                        </p>
+
+                        <div class="row">
+                            @foreach (var image in rec.Images)
+                            {
+                                <div class="col-lg-2 col-md-4 col-sm-6 p-3">
+                                    <Thumbnail Image="image" RecordId="rec.RecordId" OnlyImage="true" ImageClick="_ => OpenImage(image.ImageId, rec.RecordId)" />
+                                </div>
+                            }
                         </div>
-
-                        @if (rec.Cogitations.Any())
-                        {
-                            <div class="row p-3">
-                                @foreach (var cog in rec.Cogitations)
-                                {
-                                    <div class="offset-2 col-10 mt-2">
-
-                                        <p>
-                                            <b>
-                                                <i>
-                                                    <a href="records/view@rec.RecordId">
-                                                        @cog.CreateDate.ToLocalTime().ToString("yyyy.MM.dd HH.mm.ss")
-                                                    </a>
-                                                </i>
-                                            </b>
-                                        </p>
-
-                                        <p>
-                                            @MdService.ToHtml(cog.Text)
-                                        </p>
-                                    </div>
-                                }
-                            </div>
-                        }
                     </div>
-                }
-            </div>
 
+                    @if (rec.Cogitations.Any())
+                    {
+                        <div class="row p-3">
+                            @foreach (var cog in rec.Cogitations)
+                            {
+                                <div class="offset-2 col-10 mt-2">
+
+                                    <p>
+                                        <b>
+                                            <i>
+                                                <a href="records/view/@rec.RecordId">
+                                                    @cog.CreateDate.ToLocalTime().ToString("yyyy.MM.dd HH.mm.ss")
+                                                </a>
+                                            </i>
+                                        </b>
+                                    </p>
+
+                                    <p>
+                                        @MdService.ToHtml(cog.Text)
+                                    </p>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
         </div>
 
-        @if (TotalCount.HasValue)
-        {
-            <div class="row">
-                <div class="col-12 p-1">
-                    <hr class="mb-2" />
+    </div>
 
-                    <b><i>Записей отфильтровано : @TotalCount.Value</i></b>
-                </div>
+    @if (TotalCount.HasValue)
+    {
+        <div class="row">
+            <div class="col-12 p-1">
+                <hr class="mb-2" />
+
+                <b><i>Записей отфильтровано : @TotalCount.Value</i></b>
             </div>
-        }
+        </div>
     }
+
 }
 
 @code {

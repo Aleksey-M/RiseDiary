@@ -270,3 +270,5 @@ Pwd/Program.cs
 RiseDiary.Front/wwwroot/lib/
 *.db-shm
 *.db-wal
+/RiseDiary.WebAPI/RiseDiary.db-shm
+/RiseDiary.WebAPI/RiseDiary.db-wal

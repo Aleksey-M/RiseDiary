@@ -7,4 +7,6 @@ public interface IRecordsSearchService
     Task<int> GetRecordsCount(RecordsFilter filter, CancellationToken cancellationToken = default);
 
     Task<List<DiaryRecord>> GetThisDayRecords(int month, int day, CancellationToken cancellationToken = default);
+
+    Task<List<DiaryRecord>> GetRecordsByIds(IEnumerable<Guid> recordsIds, CancellationToken cancellationToken = default);
 }

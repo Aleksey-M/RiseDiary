@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentAssertions;
 using NUnit.Framework;
 using RiseDiary.Model;
 
@@ -18,7 +19,7 @@ class FilterTests
 
         recFilter.ToDate = date;
 
-        Assert.AreEqual(recFilter.ToDate, date);
+        recFilter.ToDate.Should().Be(date);
     }
 
     [Test]
@@ -29,7 +30,7 @@ class FilterTests
 
         recFilter.FromDate = date;
 
-        Assert.AreEqual(recFilter.FromDate, date);
+        recFilter.FromDate.Should().Be(date);
     }
 
     [Test]
@@ -42,9 +43,9 @@ class FilterTests
         recFilter.AddThemeId(itemId1);
         recFilter.AddThemeId(itemId2);
 
-        Assert.AreEqual(2, recFilter.Themes.Count);
-        Assert.IsTrue(recFilter.Themes.Contains(itemId1));
-        Assert.IsTrue(recFilter.Themes.Contains(itemId2));
+        recFilter.Themes.Count.Should().Be(2);
+        recFilter.Themes.Contains(itemId1).Should().BeTrue();
+        recFilter.Themes.Contains(itemId2).Should().BeTrue();
     }
 
     [Test]
@@ -56,8 +57,8 @@ class FilterTests
         recFilter.AddThemeId(itemId1);
         recFilter.AddThemeId(itemId1);// same id
 
-        Assert.AreEqual(1, recFilter.Themes.Count);
-        Assert.AreEqual(itemId1, recFilter.Themes[0]);
+        recFilter.Themes.Count.Should().Be(1);
+        recFilter.Themes[0].Should().Be(itemId1);
     }
 
     [Test]
@@ -70,9 +71,9 @@ class FilterTests
         recFilter.AddThemeId(recList[0]);
         recFilter.AddThemeId(recList);
 
-        Assert.AreEqual(recList.Length, recFilter.Themes.Count);
-        Assert.IsTrue(recFilter.Themes.All(i => recList.Contains(i)));
-        Assert.IsTrue(recList.All(i => recFilter.Themes.Contains(i)));
+        recFilter.Themes.Count.Should().Be(recList.Length);
+        recFilter.Themes.Should().BeSubsetOf(recList);
+        recList.Should().BeSubsetOf(recFilter.Themes);
     }
 
     [Test]
@@ -85,8 +86,8 @@ class FilterTests
 
         recFilter.RemoveThemeId(Guid.NewGuid());
 
-        Assert.AreEqual(1, recFilter.Themes.Count);
-        Assert.AreEqual(id, recFilter.Themes[0]);
+        recFilter.Themes.Count.Should().Be(1);
+        recFilter.Themes[0].Should().Be(id);
     }
 
     [Test]
@@ -99,7 +100,7 @@ class FilterTests
 
         recFilter.RemoveThemeId(id);
 
-        Assert.AreEqual(0, recFilter.Themes.Count);
+        recFilter.Themes.Should().BeEmpty();
     }
 
     [Test]
@@ -120,10 +121,10 @@ class FilterTests
         recList.Add(id3);
         recFilter.RemoveThemeId(recList);
 
-        Assert.AreEqual(3, recFilter.Themes.Count);
-        Assert.IsTrue(recFilter.Themes.Contains(id4));
-        Assert.IsTrue(recFilter.Themes.Contains(id1));
-        Assert.IsTrue(recFilter.Themes.Contains(id2));
+        recFilter.Themes.Count.Should().Be(3);
+        recFilter.Themes.Should().Contain(id4);
+        recFilter.Themes.Should().Contain(id1);
+        recFilter.Themes.Should().Contain(id2);
     }
 
     [Test]
@@ -133,9 +134,9 @@ class FilterTests
         var date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-3));
 
         filter.ToDate = date;
-        Assert.AreEqual(filter.ToDate, date);
+        date.Should().Be(filter.ToDate);
         filter.ToDate = null;
-        Assert.IsNull(filter.ToDate);
+        filter.ToDate.Should().BeNull();
     }
 
     [Test]
@@ -145,9 +146,9 @@ class FilterTests
         var date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7));
 
         filter.FromDate = date;
-        Assert.AreEqual(filter.FromDate, date);
+        date.Should().Be(filter.FromDate);
         filter.FromDate = null;
-        Assert.IsNull(filter.FromDate);
+        filter.FromDate.Should().BeNull();
     }
 
     [Test]
@@ -157,13 +158,13 @@ class FilterTests
 
         var filter = new RecordsFilter { FromDate = date, ToDate = date };
 
-        Assert.AreEqual(filter.FromDate, date);
-        Assert.AreEqual(filter.ToDate, date);
-        Assert.AreEqual(filter.ToDate, filter.FromDate);
+        date.Should().Be(filter.FromDate);
+        date.Should().Be(filter.ToDate);
+        filter.FromDate.Should().Be(filter.ToDate);
         filter.FromDate = null;
         filter.ToDate = null;
-        Assert.IsNull(filter.FromDate);
-        Assert.IsNull(filter.ToDate);
+        filter.FromDate.Should().BeNull();
+        filter.ToDate.Should().BeNull();
     }
 
     [Test]
@@ -176,8 +177,8 @@ class FilterTests
         filter.FromDate = dateFrom;
         filter.ToDate = dateTo;
 
-        Assert.AreEqual(filter.FromDate, dateFrom);
-        Assert.IsNull(filter.ToDate);
+        dateFrom.Should().Be(filter.FromDate);
+        filter.ToDate.Should().BeNull();
     }
 
     [Test]
@@ -190,7 +191,7 @@ class FilterTests
         filter.ToDate = dateTo;
         filter.FromDate = dateFrom;
 
-        Assert.AreEqual(filter.ToDate, dateTo);
-        Assert.IsNull(filter.FromDate);
+        dateTo.Should().Be(filter.ToDate);
+        filter.FromDate.Should().BeNull();
     }
 }
