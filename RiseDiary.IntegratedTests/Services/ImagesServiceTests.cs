@@ -36,8 +36,8 @@ internal class ImagesServiceTests : TestFixtureBase
 
         imageId.Should().NotBeEmpty();
         var image = await context.Images.SingleAsync(i => i.Id == imageId);
-        image.Height.Should().BeLessOrEqualTo(250);
-        image.Width.Should().BeLessOrEqualTo(250);
+        image.Height.Should().BeLessThanOrEqualTo(250);
+        image.Width.Should().BeLessThanOrEqualTo(250);
     }
 
     [Test]
