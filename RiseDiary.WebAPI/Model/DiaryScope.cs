@@ -1,5 +1,8 @@
 ﻿namespace RiseDiary.Model;
 
+/// <summary>
+/// Увлечения в общем смысле, или область интересов
+/// </summary>
 public sealed class DiaryScope : IDeletedEntity
 {
     public Guid Id { get; set; }
@@ -13,6 +16,9 @@ public sealed class DiaryScope : IDeletedEntity
     public ICollection<DiaryTheme> Themes { get; set; } = null!;
 }
 
+/// <summary>
+/// Отдельная тема из какой-то области интересов
+/// </summary>
 public sealed class DiaryTheme : IDeletedEntity
 {
     public Guid Id { get; set; }

@@ -3,7 +3,7 @@ using RiseDiary.Data;
 
 namespace RiseDiary.Model.Services;
 
-internal sealed class ScopesService : IScopesService
+public sealed class ScopesService : IScopesService
 {
     private readonly DiaryDbContext _context;
 

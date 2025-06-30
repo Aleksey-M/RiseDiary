@@ -3,7 +3,7 @@ using SkiaSharp;
 
 namespace RiseDiary.Model.Services;
 
-internal abstract class SkiaImageHandler
+public abstract class SkiaImageHandler
 {
     protected static byte[] ScaleImage(byte[] data, int imageQuality, int maxSizePx)
     {

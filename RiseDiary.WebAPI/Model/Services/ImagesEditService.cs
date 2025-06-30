@@ -5,7 +5,7 @@ using RiseDiary.Shared;
 
 namespace RiseDiary.Model.Services;
 
-internal class ImagesEditService : ImagesService, IImagesEditService
+public class ImagesEditService : ImagesService, IImagesEditService
 {
     public ImagesEditService(DiaryDbContext context, IAppSettingsService appSettingsService) : base(context, appSettingsService) { }
 

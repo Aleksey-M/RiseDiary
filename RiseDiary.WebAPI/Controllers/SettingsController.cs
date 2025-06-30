@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Model;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Settings;
-using RiseDiary.WebUI.Model;
 
 namespace RiseDiary.Api;
 
@@ -42,8 +41,8 @@ public sealed class SettingsController : ControllerBase
     }
 
     [HttpGet("images")]
-    public async Task<ActionResult<ImagesSettings>> GetImagesSettings(CancellationToken cancellationToken) =>
-        await _settingsSvc.GetImagesSettings(cancellationToken);
+    public async Task<ActionResult<ImagesSettings>> GetImagesSettings() =>
+        await _settingsSvc.GetImagesSettings();
 
 
     [HttpPut("images")]
@@ -58,8 +57,8 @@ public sealed class SettingsController : ControllerBase
     }
 
     [HttpGet("pages")]
-    public async Task<ActionResult<PagesSizesSettings>> GetPagesSettings(CancellationToken cancellationToken) =>
-        await _settingsSvc.GetPagesSizesSettings(cancellationToken);
+    public async Task<ActionResult<PagesSizesSettings>> GetPagesSettings() =>
+        await _settingsSvc.GetPagesSizesSettings();
 
 
     [HttpPut("pages")]

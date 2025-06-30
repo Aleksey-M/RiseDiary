@@ -3,7 +3,7 @@ using RiseDiary.Data;
 
 namespace RiseDiary.Model.Services;
 
-internal sealed class CalendarService : ICalendarService
+public sealed class CalendarService : ICalendarService
 {
     private readonly DiaryDbContext _context;
 

@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace RiseDiary.Shared.Settings;
 
@@ -8,25 +7,6 @@ public sealed class ImagesSettings
     public int ImageQuality { get; set; }
 
     public int ThumbnailSize { get; set; }
-
-    public static IEnumerable<string> SettingsKeys
-    {
-        get
-        {
-            yield return nameof(AppSettingsKey.ImageQuality);
-            yield return nameof(AppSettingsKey.ThumbnailSize);
-        }
-    }
-
-    [JsonIgnore]
-    public IEnumerable<string> PropertiesValues
-    {
-        get
-        {
-            yield return ImageQuality.ToString();
-            yield return ThumbnailSize.ToString();
-        }
-    }
 }
 
 public sealed class ImagesSettingsValidator : AbstractValidator<ImagesSettings>

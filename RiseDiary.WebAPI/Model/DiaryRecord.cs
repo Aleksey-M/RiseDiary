@@ -2,6 +2,10 @@
 
 namespace RiseDiary.Model;
 
+
+/// <summary>
+/// Запись дневника
+/// </summary>
 public sealed class DiaryRecord : IDeletedEntity
 {
     public Guid Id { get; set; }
@@ -26,6 +30,9 @@ public sealed class DiaryRecord : IDeletedEntity
 }
 
 
+/// <summary>
+/// Размышления (осмысления), добавленные к записи. Оно же "Комментарий"
+/// </summary>
 public sealed class Cogitation : IDeletedEntity
 {
     public Guid Id { get; set; }
@@ -42,6 +49,9 @@ public sealed class Cogitation : IDeletedEntity
 }
 
 
+/// <summary>
+/// Сущность для привязки темы интересов к записи (связ много ко многим)
+/// </summary>
 public sealed class DiaryRecordTheme : IDeletedEntity
 {
     public Guid ThemeId { get; set; }
@@ -56,6 +66,9 @@ public sealed class DiaryRecordTheme : IDeletedEntity
 }
 
 
+/// <summary>
+/// Сущность для привязки изображений к записи (связ много ко многим)
+/// </summary>
 public sealed class DiaryRecordImage : IDeletedEntity, IImageWithOrder
 {
     public Guid ImageId { get; set; }

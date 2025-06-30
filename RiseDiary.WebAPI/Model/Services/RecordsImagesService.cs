@@ -4,7 +4,7 @@ using RiseDiary.Shared.Images;
 
 namespace RiseDiary.Model.Services;
 
-internal sealed class RecordsImagesService : IRecordsImagesService
+public sealed class RecordsImagesService : IRecordsImagesService
 {
     private readonly DiaryDbContext _context;
 

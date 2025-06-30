@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using RiseDiary.Data;
 using RiseDiary.Model;
 using RiseDiary.Model.Services;
@@ -38,6 +39,15 @@ var logger = new LoggerConfiguration()
 
 builder.Logging.AddSerilog(logger);
 
+//
+builder.Services.AddHybridCache(options =>
+{
+    options.DefaultEntryOptions = new HybridCacheEntryOptions
+    {
+        Expiration = TimeSpan.FromMinutes(5),
+        LocalCacheExpiration = TimeSpan.FromMinutes(5)
+    };
+});
 
 // app services
 builder.Services.AddScoped<IScopesService, ScopesService>();

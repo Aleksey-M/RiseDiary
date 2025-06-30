@@ -4,17 +4,21 @@ using System.Data.Common;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Moq;
 using NUnit.Framework;
 using RiseDiary.Data;
-using RiseDiary.IntegratedTests.Services;
 using RiseDiary.IntegratedTests.Stubs;
 using RiseDiary.Model;
+using RiseDiary.Model.Services;
 
 #pragma warning disable CA1822 // Mark members as static
 
@@ -746,27 +750,43 @@ internal class TestFixtureBase
         return (recordId, imagesIds, context);
     }
 
-    static protected ICalendarService GetCalendarService(DiaryDbContext? context = null) => TestedServices.GetCalendarService(context ?? CreateContext());
 
-    static protected IDatesService GetDatesService(int daysRange, DiaryDbContext? context = null) => TestedServices.GetDatesService(context ?? CreateContext(), new AppSettingsForDatesServiceStub(daysRange));
+    static public ICalendarService GetCalendarService(DiaryDbContext? context = null) =>
+        new CalendarService(context ?? CreateContext());
 
-    static protected IRecordsSearchTextService GetRecordsSearchTextService(DiaryDbContext? context = null) => TestedServices.GetRecordsSearchTextService(context ?? CreateContext(), new AppSettingsServiceStub());
+    static public IDatesService GetDatesService(int daysRange, DiaryDbContext? context = null) =>
+        new DatesService(context ?? CreateContext(), new AppSettingsForDatesServiceStub(daysRange));
 
-    static protected IRecordsSearchService GetRecordsSearchService(DiaryDbContext? context = null) => TestedServices.GetRecordsSearchService(context ?? CreateContext(), new AppSettingsServiceStub());
+    static public IRecordsSearchTextService GetRecordsSearchTextService(DiaryDbContext? context = null) =>
+        new RecordsSearchTextService(context ?? CreateContext(), new AppSettingsServiceStub());
 
-    static protected IRecordsService GetRecordsService(DiaryDbContext? context = null) => TestedServices.GetRecordsService(context ?? CreateContext());
+    static public IRecordsSearchService GetRecordsSearchService(DiaryDbContext? context = null) =>
+        new RecordsSearchService(context ?? CreateContext(), new AppSettingsServiceStub());
 
-    static protected IImagesEditService GetImagesEditService(DiaryDbContext? context = null) => TestedServices.GetImagesEditService(context ?? CreateContext(), new AppSettingsServiceStub());
+    static public IRecordsService GetRecordsService(DiaryDbContext? context = null) =>
+        new RecordsService(context ?? CreateContext());
 
-    static protected IImagesService GetImagesService(DiaryDbContext? context = null) => TestedServices.GetImagesService(context ?? CreateContext(), new AppSettingsServiceStub());
+    static public IImagesEditService GetImagesEditService(DiaryDbContext? context) =>
+        new ImagesEditService(context ?? CreateContext(), new AppSettingsServiceStub());
 
-    static protected IRecordsImagesService GetRecordsImagesService(DiaryDbContext? context = null) => TestedServices.GetRecordsImagesService(context ?? CreateContext());
+    static public IImagesService GetImagesService(DiaryDbContext? context = null) =>
+        new ImagesService(context ?? CreateContext(), new AppSettingsServiceStub());
 
-    static protected IAppSettingsService GetAppSettingsService(DiaryDbContext? context = null) => TestedServices.GetAppSettingsService(context ?? CreateContext());
+    static public IRecordsImagesService GetRecordsImagesService(DiaryDbContext? context = null) =>
+        new RecordsImagesService(context ?? CreateContext());
 
-    static protected IRecordsThemesService GetRecordsThemesService(DiaryDbContext? context = null) => TestedServices.GetRecordsThemesService(context ?? CreateContext());
+    static public IAppSettingsService GetAppSettingsService(DiaryDbContext? context = null) =>
+        new AppSettingsService(
+            context ?? CreateContext(),
+            Mock.Of<ILogger<AppSettingsService>>(),
+            new HybridCacheStub());
 
-    static protected IScopesService GetScopesService(DiaryDbContext? context = null) => TestedServices.GetScopesService(context ?? CreateContext());
+    static public IRecordsThemesService GetRecordsThemesService(DiaryDbContext? context = null) =>
+        new RecordsThemesService(context ?? CreateContext());
 
-    static protected ICogitationsService GetCogitationsService(DiaryDbContext? context = null) => TestedServices.GetCogitationsService(context ?? CreateContext());
+    static public IScopesService GetScopesService(DiaryDbContext? context = null) =>
+        new ScopesService(context ?? CreateContext());
+
+    static public ICogitationsService GetCogitationsService(DiaryDbContext? context = null) =>
+        new CogitationsService(context ?? CreateContext());
 }

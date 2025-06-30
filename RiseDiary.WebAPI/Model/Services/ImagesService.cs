@@ -4,7 +4,7 @@ using RiseDiary.Shared;
 
 namespace RiseDiary.Model.Services;
 
-internal class ImagesService : SkiaImageHandler, IImagesService
+public class ImagesService : SkiaImageHandler, IImagesService
 {
     protected readonly DiaryDbContext _context;
 

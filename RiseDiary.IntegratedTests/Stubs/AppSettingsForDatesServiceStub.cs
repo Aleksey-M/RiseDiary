@@ -27,7 +27,7 @@ internal class AppSettingsForDatesServiceStub : IAppSettingsService
         _ => throw new Exception($"The stub does not know what value to return for '{key}'")
     };
 
-    public Task<ImagesSettings> GetImagesSettings(CancellationToken token)
+    public Task<ImagesSettings> GetImagesSettings()
     {
         throw new NotImplementedException();
     }
@@ -37,7 +37,7 @@ internal class AppSettingsForDatesServiceStub : IAppSettingsService
         throw new NotImplementedException();
     }
 
-    public Task<PagesSizesSettings> GetPagesSizesSettings(CancellationToken token)
+    public Task<PagesSizesSettings> GetPagesSizesSettings()
     {
         throw new NotImplementedException();
     }

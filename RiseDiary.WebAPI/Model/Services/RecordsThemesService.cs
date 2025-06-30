@@ -3,7 +3,7 @@ using RiseDiary.Data;
 
 namespace RiseDiary.Model.Services;
 
-internal sealed class RecordsThemesService : IRecordsThemesService
+public sealed class RecordsThemesService : IRecordsThemesService
 {
     private readonly DiaryDbContext _context;
 

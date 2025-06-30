@@ -11,7 +11,7 @@ public interface IAppSettingsService
 
     Task UpdateAppSetting(AppSettingsKey key, string value);
 
-    Task<ImagesSettings> GetImagesSettings(CancellationToken token);
+    Task<ImagesSettings> GetImagesSettings();
 
     Task UpdateImagesSettings(ImagesSettings imagesSettings);
 
@@ -19,7 +19,7 @@ public interface IAppSettingsService
 
     Task UpdateImportantDaysSettings(ImportantDaysSettings importantDaysSettings);
 
-    Task<PagesSizesSettings> GetPagesSizesSettings(CancellationToken token);
+    Task<PagesSizesSettings> GetPagesSizesSettings();
 
     Task UpdatePagesSizesSettings(PagesSizesSettings pagesSizesSettings);
 }

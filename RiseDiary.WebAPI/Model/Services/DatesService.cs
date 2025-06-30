@@ -4,7 +4,7 @@ using RiseDiary.Shared;
 
 namespace RiseDiary.Model.Services;
 
-internal sealed class DatesService : IDatesService
+public sealed class DatesService : IDatesService
 {
     private readonly DiaryDbContext _context;
 

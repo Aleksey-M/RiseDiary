@@ -14,31 +14,32 @@
 
 <div class="col-12 p-2">
     <Spinner Loading="_loading">
-
-        <h3 class="p-3 text-center">Закладки</h3>
-
-        @if (HasError)
+        @if (_records != null)
         {
-            <pre style="color:red;">@ErrorMessage</pre>
-        }
+            <h3 class="p-3 text-center">Закладки</h3>
 
-        @if (_records.Length == 0)
-        {
-            <h3 class="p-3" style="color:silver">Пусто</h3>            
-        }
+            @if (HasError)
+            {
+                <pre style="color:red;">@ErrorMessage</pre>
+            }
 
-        @if (_records.Length > 0)
-        {
-            <RecordsTableExpanded Records="_records" TotalCount="(int?)null">
-            </RecordsTableExpanded>
-        }
+            @if (_records.Length == 0)
+            {
+                <h3 class="p-3" style="color:silver">Пусто</h3>
+            }
 
+            @if (_records.Length > 0)
+            {
+                <RecordsTableExpanded Records="_records" TotalCount="(int?)null">
+                </RecordsTableExpanded>
+            }
+        }
     </Spinner>
 </div>
 
 @code {
 
-    private RecordDto[] _records = [];
+    private RecordDto[]? _records = null;
     private bool _loading = true;
 
     protected override async Task OnInitializedAsync()

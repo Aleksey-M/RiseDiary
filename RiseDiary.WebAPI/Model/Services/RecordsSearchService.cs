@@ -3,7 +3,7 @@ using RiseDiary.Data;
 
 namespace RiseDiary.Model.Services;
 
-internal sealed class RecordsSearchService : IRecordsSearchService
+public sealed class RecordsSearchService : IRecordsSearchService
 {
     private readonly DiaryDbContext _context;
 

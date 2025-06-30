@@ -1,92 +1,92 @@
 ﻿using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using RiseDiary.Data;
 using RiseDiary.Shared;
 using RiseDiary.Shared.Settings;
+using RiseDiary.WebAPI.Caching;
 
 namespace RiseDiary.Model.Services;
 
-internal sealed class AppSettingsService : IAppSettingsService
+public sealed class AppSettingsService : IAppSettingsService
 {
     private readonly DiaryDbContext _context;
+    private readonly ILogger<AppSettingsService> _logger;
+    private readonly HybridCache _cache;
 
-    public AppSettingsService(DiaryDbContext context)
+    public AppSettingsService(DiaryDbContext context, ILogger<AppSettingsService> logger, HybridCache cache)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _logger = logger;
+        _cache = cache;
     }
 
     public async Task<(string? value, DateTime? modifiedDate)> GetAppSetting(AppSettingsKey key)
     {
-        if (key == AppSettingsKey.Unknown) throw new ArgumentException("Unknown settings key");
+        if (key == AppSettingsKey.Unknown)
+            throw new ArgumentException("Unknown settings key");
 
-        var keyStr = key.ToString();
-        var setting = await _context.AppSettings.FirstOrDefaultAsync(s => s.Key == keyStr).ConfigureAwait(false);
+        var setting = await _cache.GetOrCreateAsync(
+            $"setting_{key}",
+            async ct =>
+            {
+                _logger.LogInformation("Чтение настройки {settingsKey} из БД", key);
+
+                return await _context.AppSettings
+                    .FirstOrDefaultAsync(s => s.Key == key.ToString(), cancellationToken: ct);
+            },
+            tags: [key.ToString()]);
+
         return (setting?.Value, setting?.ModifiedDate);
     }
 
     public async Task<int?> GetAppSettingInt(AppSettingsKey key)
     {
-        var (str, _) = await GetAppSetting(key).ConfigureAwait(false);
+        var (str, _) = await GetAppSetting(key);
         return int.TryParse(str, NumberStyles.None, CultureInfo.CurrentCulture.NumberFormat, out int result) ? result : (int?)null;
     }
 
-    private static int ValueOf(List<AppSetting> settings, AppSettingsKey key)
-    {
-        var value = settings?.FirstOrDefault(x => x.Key == key.ToString())?.Value;
-        return int.TryParse(value, out var intValue) ? intValue : 0;
-    }
-
-    public async Task<ImagesSettings> GetImagesSettings(CancellationToken token)
-    {
-        var settings = await _context.AppSettings
-            .AsNoTracking()
-            .Where(x => ImagesSettings.SettingsKeys.Contains(x.Key))
-            .ToListAsync(token);
-
-        return new ImagesSettings
+    public async Task<ImagesSettings> GetImagesSettings() =>
+        new ImagesSettings
         {
-            ThumbnailSize = ValueOf(settings, AppSettingsKey.ThumbnailSize),
-            ImageQuality = ValueOf(settings, AppSettingsKey.ImageQuality)
+            ThumbnailSize = await GetAppSettingInt(AppSettingsKey.ThumbnailSize) ?? 0,
+            ImageQuality = await GetAppSettingInt(AppSettingsKey.ImageQuality) ?? 0
         };
-    }
 
     public async Task<ImportantDaysSettings> GetImportantDaysSettings(CancellationToken token)
     {
-        var settings = await _context.AppSettings
-            .AsNoTracking()
-            .Where(x => ImportantDaysSettings.SettingsKeys.Contains(x.Key))
-            .ToListAsync(token);
+        var (ids, _) = await GetAppSetting(AppSettingsKey.ImportantDaysScopeId);
 
-        var scopes = await _context.Scopes
-            .AsNoTracking()
-            .OrderBy(x => x.ScopeName)
-            .Select(x => new KeyValuePair<Guid, string>(x.Id, x.ScopeName))
-            .ToListAsync(token);
+        var scopes = await _cache.GetOrCreateAsync(CacheTags.ScopesNames,
+            async ct =>
+            {
+                _logger.LogInformation("Чтение списка 'Увлечений' из БД");
 
-        var scopeIdString = settings.FirstOrDefault(x => x.Key == AppSettingsKey.ImportantDaysScopeId.ToString())?.Value;
+                return await _context.Scopes
+                    .OrderBy(x => x.ScopeName)
+                    .Select(x => new KeyValuePair<Guid, string>(x.Id, x.ScopeName))
+                    .ToListAsync(ct);
+            },
+            tags: [CacheTags.ScopesNames],
+            cancellationToken: token);
+
 
         return new ImportantDaysSettings
         {
-            ImportantDaysScopeId = Guid.TryParse(scopeIdString, out var id) ? id : null,
+            ImportantDaysScopeId = Guid.TryParse(ids, out var id) ? id : null,
             ScopesSelectList = scopes,
-            ImportantDaysDisplayRange = ValueOf(settings, AppSettingsKey.ImportantDaysDisplayRange)
+            ImportantDaysDisplayRange = await GetAppSettingInt(AppSettingsKey.ImportantDaysDisplayRange) ?? 0
         };
     }
 
-    public async Task<PagesSizesSettings> GetPagesSizesSettings(CancellationToken token)
-    {
-        var settings = await _context.AppSettings
-            .AsNoTracking()
-            .Where(x => PagesSizesSettings.SettingsKeys.Contains(x.Key))
-            .ToListAsync(token);
-
-        return new PagesSizesSettings
+    public async Task<PagesSizesSettings> GetPagesSizesSettings() =>
+        new PagesSizesSettings
         {
-            AvailableImagesPageSize = ValueOf(settings, AppSettingsKey.AvailableImagesPageSize),
-            ImagesPageSize = ValueOf(settings, AppSettingsKey.ImagesPageSize),
-            RecordsPageSize = ValueOf(settings, AppSettingsKey.RecordsPageSize)
+            AvailableImagesPageSize = await GetAppSettingInt(AppSettingsKey.AvailableImagesPageSize) ?? 0,
+            ImagesPageSize = await GetAppSettingInt(AppSettingsKey.ImagesPageSize) ?? 0,
+            RecordsPageSize = await GetAppSettingInt(AppSettingsKey.RecordsPageSize) ?? 0
         };
-    }
+
 
     public async Task UpdateAppSetting(AppSettingsKey key, string value)
     {
@@ -94,77 +94,48 @@ internal sealed class AppSettingsService : IAppSettingsService
         if (message != "") throw new ArgumentException(message);
 
         var keyStr = key.ToString();
-        var appSetting = await _context.AppSettings.FirstOrDefaultAsync(s => s.Key == keyStr).ConfigureAwait(false);
+        var appSetting = await _context.AppSettings.FirstOrDefaultAsync(s => s.Key == keyStr);
 
         if (appSetting == null)
         {
-            await _context.AppSettings.AddAsync(new AppSetting
+            _context.AppSettings.Add(new AppSetting
             {
                 Key = keyStr,
                 Value = value,
                 ModifiedDate = DateTime.UtcNow
             });
-            await _context.SaveChangesAsync().ConfigureAwait(false);
         }
         else
         {
-            if (appSetting.Value != value)
-            {
-                appSetting.Value = value;
-                appSetting.ModifiedDate = DateTime.UtcNow;
-                await _context.SaveChangesAsync().ConfigureAwait(false);
-            }
-        }
-    }
-
-    public Task UpdateImagesSettings(ImagesSettings imagesSettings) =>
-        UpdateSettingsRange(ImagesSettings.SettingsKeys.ToList(), imagesSettings.PropertiesValues.ToList());
-
-    public Task UpdateImportantDaysSettings(ImportantDaysSettings importantDaysSettings) =>
-        UpdateSettingsRange(ImportantDaysSettings.SettingsKeys.ToList(), importantDaysSettings.PropertiesValues.ToList());
-
-    public Task UpdatePagesSizesSettings(PagesSizesSettings pagesSizesSettings) =>
-        UpdateSettingsRange(PagesSizesSettings.SettingsKeys.ToList(), pagesSizesSettings.PropertiesValues.ToList());
-
-    private void UpdateSettings(List<AppSetting> mutableList, string key, string value)
-    {
-        var setting = mutableList.FirstOrDefault(x => x.Key == key);
-
-        if (setting == null)
-        {
-            setting = new AppSetting
-            {
-                Key = key,
-                ModifiedDate = DateTime.UtcNow,
-                Value = value
-            };
-
-            _context.Attach(setting);
-            mutableList.Add(setting);
-        }
-        else
-        {
-            if (setting.Value != value)
-            {
-                setting.Value = value;
-                setting.ModifiedDate = DateTime.UtcNow;
-            }
-        }
-    }
-
-    private async Task UpdateSettingsRange(List<string> keys, List<string> values)
-    {
-        var settings = await _context.AppSettings
-            .Where(x => keys.Contains(x.Key))
-            .ToListAsync();
-
-        var kvPairs = keys.Zip(values);
-
-        foreach (var (k, v) in kvPairs)
-        {
-            UpdateSettings(settings, k, v);
+            appSetting.ModifiedDate = appSetting.Value != value ? DateTime.UtcNow : appSetting.ModifiedDate;
+            appSetting.Value = value;
         }
 
         await _context.SaveChangesAsync();
+
+        var tag = $"setting_{key}";
+        await _cache.RemoveByTagAsync(tag);
+        await _cache.SetAsync(tag, value, tags: [key.ToString()]);
+
+        _logger.LogInformation("Обновлена настройка {configKey} = {configValue}", key, value);
+    }
+
+    public async Task UpdateImagesSettings(ImagesSettings imagesSettings)
+    {
+        await UpdateAppSetting(AppSettingsKey.ImageQuality, imagesSettings.ImageQuality.ToString());
+        await UpdateAppSetting(AppSettingsKey.ThumbnailSize, imagesSettings.ThumbnailSize.ToString());
+    }
+
+    public async Task UpdateImportantDaysSettings(ImportantDaysSettings importantDaysSettings)
+    {
+        await UpdateAppSetting(AppSettingsKey.ImportantDaysScopeId, importantDaysSettings.ImportantDaysScopeId?.ToString() ?? "");
+        await UpdateAppSetting(AppSettingsKey.ImportantDaysDisplayRange, importantDaysSettings.ImportantDaysDisplayRange.ToString());
+    }
+
+    public async Task UpdatePagesSizesSettings(PagesSizesSettings pagesSizesSettings)
+    {
+        await UpdateAppSetting(AppSettingsKey.ImagesPageSize, pagesSizesSettings.ImagesPageSize.ToString());
+        await UpdateAppSetting(AppSettingsKey.RecordsPageSize, pagesSizesSettings.RecordsPageSize.ToString());
+        await UpdateAppSetting(AppSettingsKey.AvailableImagesPageSize, pagesSizesSettings.AvailableImagesPageSize.ToString());
     }
 }
