@@ -27,7 +27,7 @@ public sealed class AppSettingsService : IAppSettingsService
             throw new ArgumentException("Unknown settings key");
 
         var setting = await _cache.GetOrCreateAsync(
-            $"setting_{key}",
+            CacheTags.AppSettingKey(key),
             async ct =>
             {
                 _logger.LogInformation("Чтение настройки {settingsKey} из БД", key);
@@ -57,7 +57,8 @@ public sealed class AppSettingsService : IAppSettingsService
     {
         var (ids, _) = await GetAppSetting(AppSettingsKey.ImportantDaysScopeId);
 
-        var scopes = await _cache.GetOrCreateAsync(CacheTags.ScopesNames,
+        var scopes = await _cache.GetOrCreateAsync(
+            CacheTags.ScopesNames,
             async ct =>
             {
                 _logger.LogInformation("Чтение списка 'Увлечений' из БД");
@@ -113,7 +114,7 @@ public sealed class AppSettingsService : IAppSettingsService
 
         await _context.SaveChangesAsync();
 
-        var tag = $"setting_{key}";
+        var tag = CacheTags.AppSettingKey(key);
         await _cache.RemoveByTagAsync(tag);
         await _cache.SetAsync(tag, value, tags: [key.ToString()]);
 

@@ -4,13 +4,11 @@ using System.Data.Common;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -752,7 +750,10 @@ internal class TestFixtureBase
 
 
     static public ICalendarService GetCalendarService(DiaryDbContext? context = null) =>
-        new CalendarService(context ?? CreateContext());
+        new CalendarService(
+            context ?? CreateContext(),
+            Mock.Of<ILogger<CalendarService>>(),
+            new HybridCacheStub());
 
     static public IDatesService GetDatesService(int daysRange, DiaryDbContext? context = null) =>
         new DatesService(context ?? CreateContext(), new AppSettingsForDatesServiceStub(daysRange));
