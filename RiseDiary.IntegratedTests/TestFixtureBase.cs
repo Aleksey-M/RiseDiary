@@ -759,7 +759,7 @@ internal class TestFixtureBase
         new DatesService(context ?? CreateContext(), new AppSettingsForDatesServiceStub(daysRange));
 
     static public IRecordsSearchTextService GetRecordsSearchTextService(DiaryDbContext? context = null) =>
-        new RecordsSearchTextService(context ?? CreateContext(), new AppSettingsServiceStub());
+        new RecordsSearchTextService(context ?? CreateContext(), Mock.Of<ILogger<RecordsSearchTextService>>());
 
     static public IRecordsSearchService GetRecordsSearchService(DiaryDbContext? context = null) =>
         new RecordsSearchService(context ?? CreateContext(), new AppSettingsServiceStub());

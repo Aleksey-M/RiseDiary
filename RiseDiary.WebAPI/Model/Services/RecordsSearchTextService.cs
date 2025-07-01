@@ -1,20 +1,33 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore;
 using RiseDiary.Data;
 
 namespace RiseDiary.Model.Services;
 
-public sealed class RecordsSearchTextService : IRecordsSearchTextService
+public sealed partial class RecordsSearchTextService : IRecordsSearchTextService
 {
     private readonly DiaryDbContext _context;
+    private readonly ILogger<RecordsSearchTextService> _logger;
 
-    public RecordsSearchTextService(DiaryDbContext context, IAppSettingsService appSettingsService)
+    public RecordsSearchTextService(DiaryDbContext context, ILogger<RecordsSearchTextService> logger)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _logger = logger;
     }
 
-    private async Task<IEnumerable<DiaryRecord>> SearchRecords(string searchText, CancellationToken cancellationToken)
+    private async Task<IEnumerable<DiaryRecord>> SearchRecords(string? searchText, CancellationToken cancellationToken)
     {
-        searchText = searchText?.ToUpper() ?? throw new ArgumentNullException(nameof(searchText));
+        searchText = searchText ?? throw new ArgumentNullException(nameof(searchText));
+        _logger.LogInformation("Поиск записей по тексту: {searchText}", searchText);
+
+        var searchParts = SplitSearchtext().Matches(searchText)
+            .Select(x => x.Value.Replace('"', ' ').Trim())
+            .Where(x => x != string.Empty && x.Length > 1)
+            .Distinct()
+            .ToArray();
+
+        _logger.LogInformation("Параметры поиска записей: {searchText}", (object)searchParts);
+
 
         var prelimData = await _context.Records
             .AsNoTracking()
@@ -24,8 +37,8 @@ public sealed class RecordsSearchTextService : IRecordsSearchTextService
 
         var recordsIds = prelimData
             .Where(pd =>
-                (pd.Name?.ToUpper()?.Contains(searchText) ?? false) ||
-                (pd.Text?.ToUpper()?.Contains(searchText) ?? false))
+                searchParts.Any(y => pd.Name?.Contains(y, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                searchParts.Any(y => pd.Text?.Contains(y, StringComparison.OrdinalIgnoreCase) ?? false))
             .Select(pd => pd.Id)
             .ToList();
 
@@ -36,14 +49,14 @@ public sealed class RecordsSearchTextService : IRecordsSearchTextService
             .ConfigureAwait(false);
 
         var recordsIds2 = cogitationsPrelimData
-            .Where(pd => pd.Text?.ToUpper()?.Contains(searchText) ?? false)
+            .Where(pd => searchParts.Any(y => pd.Text?.Contains(y, StringComparison.OrdinalIgnoreCase) ?? false))
             .Select(pd => pd.RecordId)
             .Distinct()
             .ToList();
 
         var combinedList = recordsIds.Union(recordsIds2).ToList();
 
-        if (combinedList.Count == 0) return Enumerable.Empty<DiaryRecord>();
+        if (combinedList.Count == 0) return [];
 
         return await _context.Records
             .AsNoTracking()
@@ -77,4 +90,7 @@ public sealed class RecordsSearchTextService : IRecordsSearchTextService
 
         return list;
     }
+
+    [GeneratedRegex(@"[^\s""']+|""([^""]*)""|'([^']*)'", RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Multiline)]
+    private static partial Regex SplitSearchtext();
 }
