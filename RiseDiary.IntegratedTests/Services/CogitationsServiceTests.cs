@@ -62,7 +62,7 @@ internal class CogitationsServiceTests : TestFixtureBase
         var cDate = DateTime.UtcNow;
         var cText = "Some Text 81237912y0r9182ny";
         var newText = "Some other text";
-        context.Cogitations.Add(new Cogitation { Id = cId, Date = cDate, RecordId = recId, Text = cText });
+        context.Cogitations.Add(new RecordCommentEntity { Id = cId, Date = cDate, RecordId = recId, Text = cText });
         await context.SaveChangesAsync();
 
         await svc.UpdateCogitationText(cId, newText);

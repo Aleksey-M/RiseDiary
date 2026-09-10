@@ -1,8 +1,8 @@
 ﻿using System.Drawing;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using RiseDiary.Common.Images;
 using RiseDiary.Model;
-using RiseDiary.Shared.Images;
 
 namespace RiseDiary.WebAPI.Controllers.ImagesArea;
 

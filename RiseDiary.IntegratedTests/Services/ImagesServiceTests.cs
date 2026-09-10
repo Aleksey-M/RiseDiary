@@ -255,7 +255,6 @@ internal class ImagesServiceTests : TestFixtureBase
         var page = await svc.FetchImageSet(0, 5, "IMAGE 7");
 
         var page2 = await context.Images
-            .Include(x => x.FullImage)
             .Where(x => x.Name.ToLower().Trim().Contains("IMAGE 7".ToLower()))
             .OrderByDescending(i => i.CreateDate)
             .Skip(0)
@@ -280,7 +279,6 @@ internal class ImagesServiceTests : TestFixtureBase
         var page = await svc.FetchImageSet(10, 10, "2");
 
         var page2 = await context.Images
-            .Include(x => x.FullImage)
             .Where(x => x.Name.Contains("2"))
             .OrderByDescending(i => i.CreateDate)
             .Skip(10)

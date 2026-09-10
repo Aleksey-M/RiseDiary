@@ -1,7 +1,7 @@
-﻿@using RiseDiary.Shared
-@using RiseDiary.Shared.Scopes
-@using RiseDiary.Front.AppServices
+﻿@using RiseDiary.Common.Scopes
 @using RiseDiary.Front.Pages
+@using RiseDiary.Front.Services
+@using RiseDiary.Shared
 
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
@@ -94,7 +94,7 @@
 
     private void ShowEditForm()
     {
-        _editedScope = CurrentScope.Copy();
+        _editedScope = new ScopeDto(CurrentScope);
         ErrorMessage = null;
         _editMode = true;
     }

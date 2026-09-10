@@ -1,9 +1,11 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using RiseDiary.Common;
+using RiseDiary.Common.Images;
 using RiseDiary.Model;
-using RiseDiary.Shared;
-using RiseDiary.Shared.Images;
-using RiseDiary.WebUI.Model;
+using RiseDiary.WebAPI.Extensions;
+using RiseDiary.WebAPI.Settings;
+using RiseDiary.WebAPI.Settings.Model;
 
 namespace RiseDiary.WebAPI.Controllers.ImagesArea;
 
@@ -14,14 +16,14 @@ public sealed class ImagesController : ControllerBase
 
     private readonly IRecordsImagesService _recordsImagesService;
 
-    private readonly IAppSettingsService _appSettingsService;
+    private readonly ISettingsService _appSettingsService;
 
     private readonly ILogger<ImagesController> _logger;
 
     public ImagesController(
         IImagesService imagesService,
         IRecordsImagesService recordsImagesService,
-        IAppSettingsService appSettingsService,
+        ISettingsService appSettingsService,
         ILogger<ImagesController> logger)
     {
         _imagesService = imagesService;
@@ -111,10 +113,11 @@ public sealed class ImagesController : ControllerBase
     public async Task<ActionResult<ImagesPageDto>> GetImagesPage(
         [FromQuery] int? pageNo,
         [FromQuery] string? imageNameFilter,
-        [FromQuery] Guid? recordId, 
+        [FromQuery] Guid? recordId,
         CancellationToken cancellationToken)
     {
-        var pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.ImagesPageSize) ?? 20;
+        var setting = (await _appSettingsService.GetSetting<PagesSizesSettings>(cancellationToken)).Data;
+        var pageSize = setting?.ImagesPageSize ?? 20;
         pageNo ??= 1;
 
         var count = await _imagesService.GetImagesCount(imageNameFilter, recordId, cancellationToken: cancellationToken);

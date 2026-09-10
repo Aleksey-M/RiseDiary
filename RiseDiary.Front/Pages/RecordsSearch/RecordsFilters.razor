@@ -1,6 +1,5 @@
-﻿@using RiseDiary.Shared
-@using RiseDiary.Shared.Records;
-@using RiseDiary.Shared.Scopes;
+﻿@using RiseDiary.Common.Records
+@using RiseDiary.Common.Scopes
 
 <div class="row">
 
@@ -40,15 +39,15 @@
     public IEnumerable<ScopeDto> AllScopes { get; set; } = null!;
 
     [Parameter, EditorRequired]
-    public RiseDiary.Shared.Records.RecordsSearchFilters Filters { get; set; } = null!;
+    public RecordsSearchFilters Filters { get; set; } = null!;
 
     [Parameter, EditorRequired]
-    public Func<RiseDiary.Shared.Records.RecordsSearchFilters, Task> OnSearch { get; set; } = null!;
+    public Func<RecordsSearchFilters, Task> OnSearch { get; set; } = null!;
 
 
     private async Task ApplyFilters(ThemesFilters? themesFilters)
     {
-        var newFilters = new RiseDiary.Shared.Records.RecordsSearchFilters
+        var newFilters = new RecordsSearchFilters
             {
                 Expanded = Filters.Expanded,
                 From = Filters.From,

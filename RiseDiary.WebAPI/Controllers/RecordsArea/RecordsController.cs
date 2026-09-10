@@ -1,10 +1,12 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using RiseDiary.Common.Records;
 using RiseDiary.Model;
-using RiseDiary.Shared;
-using RiseDiary.Shared.Records;
 using RiseDiary.WebAPI.Controllers.ScopesArea;
-using RiseDiary.WebUI.Model;
+using RiseDiary.WebAPI.Extensions;
+using RiseDiary.WebAPI.Scopes.Services;
+using RiseDiary.WebAPI.Settings;
+using RiseDiary.WebAPI.Settings.Model;
 
 namespace RiseDiary.WebAPI.Controllers.RecordsArea;
 
@@ -16,11 +18,11 @@ public sealed class RecordsController : ControllerBase
 
     private readonly ICogitationsService _cogitationsService;
 
-    private readonly IAppSettingsService _appSettingsService;
+    private readonly ISettingsService _appSettingsService;
 
     public RecordsController(
         IRecordsService recordService,
-        IAppSettingsService appSettingsService,
+        ISettingsService appSettingsService,
         ICogitationsService cogitationsService)
     {
         _recordService = recordService;
@@ -48,19 +50,10 @@ public sealed class RecordsController : ControllerBase
         var record = await _recordService.FetchRecordById(recordId, cancellationToken);
         var dto = record.ToDto();
 
-        var s = (await _appSettingsService.GetAppSetting(AppSettingsKey.BookmarksRecordsList)).value ?? "";
-        var startRecords = string.IsNullOrWhiteSpace(s)
-            ? []
-            : s.Split(';')
-                .Select(x => (isGuid: Guid.TryParse(x, out var id), value: id))
-                .Where(x => x.isGuid)
-                .Select(x => x.value)
-                .ToArray();
-
-
+        var startRecords = (await _appSettingsService.GetSetting<BookmarksSettings>(cancellationToken)).Data?.Records ?? [];
         var scopes = await scopeService.GetScopes(null, cancellationToken);
 
-        var addImagesPageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.AvailableImagesPageSize);
+        var addImagesPageSize = (await _appSettingsService.GetSetting<PagesSizesSettings>(cancellationToken)).Data?.AvailableImagesPageSize;
 
         return record.ToEditDto(startRecords, scopes.Select(s => s.ToDto()).ToList(), addImagesPageSize ?? 10);
     }

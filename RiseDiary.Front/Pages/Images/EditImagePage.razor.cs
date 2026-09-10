@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
-using RiseDiary.Front.AppServices;
-using RiseDiary.Shared.Images;
+using RiseDiary.Common.Images;
+using RiseDiary.Front.Services;
 
 namespace RiseDiary.Front.Pages.Images;
 

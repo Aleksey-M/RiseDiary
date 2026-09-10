@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RiseDiary.Common;
+using RiseDiary.Common.Records;
+using RiseDiary.Common.Search;
 using RiseDiary.Model;
-using RiseDiary.Shared;
-using RiseDiary.Shared.Records;
+using RiseDiary.WebAPI.Settings;
+using RiseDiary.WebAPI.Settings.Model;
 
 namespace RiseDiary.WebAPI.Controllers.RecordsArea;
 
@@ -13,12 +16,12 @@ public sealed class RecordsSearchController : ControllerBase
 
     private readonly IRecordsSearchTextService _recordsTextSearchService;
 
-    private readonly IAppSettingsService _appSettingsService;
+    private readonly ISettingsService _appSettingsService;
 
     public RecordsSearchController(
         IRecordsSearchService recordsSearchService,
         IRecordsSearchTextService recordsTextSearchService,
-        IAppSettingsService appSettingsService)
+        ISettingsService appSettingsService)
     {
         _appSettingsService = appSettingsService;
         _recordsSearchService = recordsSearchService;
@@ -36,7 +39,7 @@ public sealed class RecordsSearchController : ControllerBase
         [FromQuery] bool? expanded,
         CancellationToken cancellationToken)
     {
-        int pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.RecordsPageSize) ?? 50;
+        int pageSize = (await _appSettingsService.GetSetting<PagesSizesSettings>(cancellationToken)).Data?.RecordsPageSize ?? 50;
 
         int actualPage = page.HasValue && page.Value > 0 ? page.Value - 1 : 0;
 
@@ -52,9 +55,9 @@ public sealed class RecordsSearchController : ControllerBase
 
         if (themes != null)
         {
-            foreach(var themeId in themes.Split(","))
+            foreach (var themeId in themes.Split(","))
             {
-                if(Guid.TryParse(themeId, out var id))
+                if (Guid.TryParse(themeId, out var id))
                 {
                     filters.AddThemeId(id);
                 }
@@ -62,7 +65,7 @@ public sealed class RecordsSearchController : ControllerBase
         }
 
         int allCount = await _recordsSearchService.GetRecordsCount(filters, cancellationToken);
-        var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);        
+        var records = await _recordsSearchService.GetRecordsList(filters, cancellationToken);
 
         var pagesInfo = PagesInfo.GetPagesInfo(allCount, filters.PageNo + 1, filters.PageSize);
 
@@ -77,7 +80,7 @@ public sealed class RecordsSearchController : ControllerBase
         [FromQuery] bool? expanded,
         CancellationToken cancellationToken)
     {
-        int pageSize = await _appSettingsService.GetAppSettingInt(AppSettingsKey.RecordsPageSize) ?? 50;
+        int pageSize = (await _appSettingsService.GetSetting<PagesSizesSettings>(cancellationToken)).Data?.RecordsPageSize ?? 50;
         int allCount = await _recordsTextSearchService.GetRecordsCount(searchText, cancellationToken);
         var pagesInfo = PagesInfo.GetPagesInfo(allCount, page ?? 1, pageSize);
 
@@ -99,7 +102,7 @@ public sealed class RecordsSearchController : ControllerBase
         var today = !string.IsNullOrWhiteSpace(date) && DateOnly.TryParse(date, out var today_selected)
             ? today_selected
             : DateOnly.FromDateTime(DateTime.UtcNow);
-        
+
         var records = await _recordsSearchService.GetThisDayRecords(month: today.Month, day: today.Day, cancellationToken);
 
         return records.Count > 0
@@ -107,7 +110,7 @@ public sealed class RecordsSearchController : ControllerBase
             : NoContent();
     }
 
-    private IActionResult ReturnResult(PagesInfo pagesInfo, List<DiaryRecord> records, bool? extended) => (extended ?? false)
+    private IActionResult ReturnResult(PagesInfo pagesInfo, List<RecordEntity> records, bool? extended) => (extended ?? false)
             ? Ok(new RecordsPageDto<RecordDto>
             {
                 PagesInfo = pagesInfo,

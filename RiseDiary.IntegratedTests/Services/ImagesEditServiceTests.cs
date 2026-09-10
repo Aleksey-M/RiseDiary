@@ -125,7 +125,7 @@ internal class ImagesEditServiceTests : TestFixtureBase
 
         await svc.ApplyChanges(imgWithTemp.Id);
 
-        var savedImage = await context.Images.Include(i => i.FullImage).SingleOrDefaultAsync(i => i.Id == imgWithTemp.Id);
+        var savedImage = await context.Images.SingleOrDefaultAsync(i => i.Id == imgWithTemp.Id);
         savedImage.Should().NotBeNull();
         savedImage.Name.Should().Be(imgWithTemp.Name);
         savedImage.ModifyDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(500));
@@ -135,7 +135,7 @@ internal class ImagesEditServiceTests : TestFixtureBase
         savedImage.SizeByte.Should().Be(tmpImage?.SizeByte);
         savedImage.Height.Should().Be(tmpImage?.Height);
         savedImage.Width.Should().Be(tmpImage?.Width);
-        savedImage.FullImage?.Data.Should().BeEquivalentTo(tmpImage?.Data);
+        savedImage.Image.Should().BeEquivalentTo(tmpImage?.Data);
     }
 
     [Test]
@@ -165,11 +165,11 @@ internal class ImagesEditServiceTests : TestFixtureBase
         int imagesCountAfter = await context.Images.CountAsync();
 
         imagesCountAfter.Should().Be(imagesCountBefore + 1);
-        var newImage = await context.Images.Include(i => i.FullImage).SingleOrDefaultAsync(i => i.Id == newImageId);
+        var newImage = await context.Images.SingleOrDefaultAsync(i => i.Id == newImageId);
         newImage.Name.Should().Be($"{imgWithTemp.Name} ({modification})");
         newImage.ModifyDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(500));
-        newImage.FullImage.Should().NotBeNull();
-        newImage.FullImage!.Data.Should().BeEquivalentTo(tempImageData);
+        newImage.Image.Should().NotBeNull();
+        newImage.Image!.Should().BeEquivalentTo(tempImageData);
     }
 
     [Test]
@@ -192,14 +192,14 @@ internal class ImagesEditServiceTests : TestFixtureBase
         var svc = GetImagesEditService(context);
         var imgWithTemp = await CreateImageWithTempImage(context);
         var imageName = imgWithTemp.Name;
-        var imageData = imgWithTemp!.FullImage!.Data;
+        var imageData = imgWithTemp!.Image;
         var imageModifyDate = imgWithTemp.ModifyDate;
 
         await svc.CreateNewImageFromChanged(imgWithTemp.Id);
 
-        var image = await context.Images.Include(i => i.FullImage).SingleOrDefaultAsync(i => i.Id == imgWithTemp.Id);
+        var image = await context.Images.SingleOrDefaultAsync(i => i.Id == imgWithTemp.Id);
         image.Name.Should().Be(imageName);
-        image.FullImage!.Data.Should().BeEquivalentTo(imageData);
+        image.Image!.Should().BeEquivalentTo(imageData);
         image.ModifyDate.Should().Be(imageModifyDate);
     }
 
@@ -210,14 +210,14 @@ internal class ImagesEditServiceTests : TestFixtureBase
         var svc = GetImagesEditService(context);
         var imgWithTemp = await CreateImageWithTempImage(context);
         var imageName = imgWithTemp.Name;
-        var imageData = imgWithTemp!.FullImage!.Data;
+        var imageData = imgWithTemp!.Image;
         var imageModifyDate = imgWithTemp.ModifyDate;
 
         await svc.DiscardChanges(imgWithTemp.Id);
 
-        var image = await context.Images.Include(i => i.FullImage).SingleOrDefaultAsync(i => i.Id == imgWithTemp.Id);
+        var image = await context.Images.SingleOrDefaultAsync(i => i.Id == imgWithTemp.Id);
         image.Name.Should().Be(imageName);
-        image.FullImage!.Data.Should().BeEquivalentTo(imageData);
+        image.Image!.Should().BeEquivalentTo(imageData);
         image.ModifyDate.Should().Be(imageModifyDate);
     }
 

@@ -1,5 +1,5 @@
-﻿@using RiseDiary.Shared.Images;
-@using RiseDiary.Shared.Records;
+﻿@using RiseDiary.Common.Images
+@using RiseDiary.Common.Records
 
 @inherits UIComponentBase
 
@@ -154,7 +154,7 @@
                 ["imageNameFilter"] = _oldNameFilter
             });
 
-            var pageData = await Http.GetFromJsonAsync<ImagesPageDto>(uri, Token);
+            var pageData = await Http.GetFromJsonAsync<ImagesPageDto>(uri, CancellationToken);
 
             _availableImages.AddRange(pageData?.Images ?? new());
             _allImagesDisplayed = (pageData?.PagesInfo?.TotalItems ?? 0) <= _availableImages.Count;

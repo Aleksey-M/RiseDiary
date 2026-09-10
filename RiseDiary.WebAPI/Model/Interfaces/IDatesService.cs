@@ -5,7 +5,6 @@ public record DateListItem(Guid Id, DateOnly Date, DateOnly TransferredDate, str
 public interface IDatesService
 {
     Task<List<DateListItem>> GetAllDates(DateOnly today, CancellationToken cancellationToken = default);
-
     Task<List<DateListItem>> GetDatesFromRange(DateOnly tuday,
         bool withEmptyDates, CancellationToken cancellationToken = default);
 }

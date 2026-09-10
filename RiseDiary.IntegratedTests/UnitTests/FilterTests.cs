@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
-using RiseDiary.Model;
+using RiseDiary.Common.Search;
 
 namespace RiseDiary.UnitTests;
 

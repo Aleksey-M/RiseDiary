@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RiseDiary.Common.Database;
 using RiseDiary.Model;
-using RiseDiary.Shared.Database;
 
 namespace RiseDiary.Api;
 

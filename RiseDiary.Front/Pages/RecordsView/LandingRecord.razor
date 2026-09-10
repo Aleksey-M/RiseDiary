@@ -1,7 +1,9 @@
-﻿@using RiseDiary.Shared
+﻿@using RiseDiary.Common.Settings
+@using RiseDiary.Common.Settings.Client
 
 @inherits UIComponentBase
 
+@inject ISettingsClient SettingsApiClient
 
 @if (HasError)
 {
@@ -24,21 +26,20 @@
 </Spinner>
 
 
-@code{
-        [Inject]
-        public ILogger<LandingRecord> Logger { get; set; } = null!;
+    @code{
+    [Inject]
+    public ILogger<LandingRecord> Logger { get; set; } = null!;
 
-        [Inject]
-        public HttpClient Http { get; set; } = null!;
+    [Inject]
+    public HttpClient Http { get; set; } = null!;
 
-        [Parameter, EditorRequired]
-        public Guid RecordId { get; set; }
+    [Parameter, EditorRequired]
+    public Guid RecordId { get; set; }
 
-        [Parameter, EditorRequired]
-        public Guid[] StartPageRecords { get; set; } = [];
+    [Parameter, EditorRequired]
+    public Guid[] StartPageRecords { get; set; } = [];
 
     private bool OnStartPage => StartPageRecords.Contains(RecordId);
-
 
     private async Task SetOnStartPage()
     {
@@ -47,16 +48,7 @@
             await StartApiRequest();
 
             var newArray = StartPageRecords.Union([RecordId]).ToArray(); 
-            var dto = new AppSettingDto
-                {
-                    Key = AppSettingsKey.BookmarksRecordsList,
-                    Value = string.Join(';', newArray)
-                };
-
-            await Http.PutAsJsonAsync($"api/settings/{AppSettingsKey.BookmarksRecordsList}", dto);
-
-            StartPageRecords = newArray;
-            await FinishApiRequest(null);
+            await FinishApiRequest(await UpdateSetting(newArray));
         }
         catch (Exception exc)
         {
@@ -72,21 +64,29 @@
             await StartApiRequest();
 
             var newArray = StartPageRecords.Except([RecordId]).ToArray();
-            var dto = new AppSettingDto
-                {
-                    Key = AppSettingsKey.BookmarksRecordsList,
-                    Value = string.Join(';', newArray)
-                };
-
-            await Http.PutAsJsonAsync($"api/settings/{AppSettingsKey.BookmarksRecordsList}", dto);
-
-            StartPageRecords = newArray;
-            await FinishApiRequest(null);
+            await FinishApiRequest(await UpdateSetting(newArray));
         }
         catch (Exception exc)
         {
             Logger.LogWarning(exc, "Error on removing start page record. Record Id = '{recordId}'", RecordId);
             await FinishApiRequest(exc.Message);
         }
+    }
+
+    private async Task<string?> UpdateSetting(Guid[] recordsIds)
+    {
+        var dto = new BookmarksSettingsDto
+        {
+            Records = recordsIds
+        };
+
+        var result = await SettingsApiClient.UpdateAsync(SettingKey.Bookmarks, dto, CancellationToken);
+
+        if (result.Succeeded)
+        {
+            StartPageRecords = recordsIds;
+        }
+
+        return result.Message;
     }
 }

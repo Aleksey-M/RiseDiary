@@ -1,0 +1,107 @@
+﻿@page "/settings/dates"
+
+@using RiseDiary.Common.Core
+@using RiseDiary.Common.Scopes.Client
+@using RiseDiary.Common.Settings
+@using RiseDiary.Common.Settings.Client
+
+@inject ISettingsClient SettingsApiClient
+@inject IScopesClient ScopesClient
+
+@inherits UIComponentBase
+
+
+<PageTitle>Настройки отображения дат</PageTitle>
+
+<Spinner Loading="Loading">
+    @if (HasError)
+    {
+        <pre style="color:red;">@ErrorMessage</pre>
+    }
+
+    @if (_settings != null && _scopes != null)
+    {        
+        <div class="row mt-2 mb-3">
+            <div class="offset-lg-1 col-lg-8 col-md-9 col-sm-12 pt-2">
+                <b>Сфера интересов для отображения дат</b>
+            </div>
+
+            <div class="col-lg-2 col-md-3 col-sm-6 mt-1">
+                <InputSelect class="form-control" @bind-Value="_settings.ImportantDaysScopeId">
+                    @foreach (var scope in _scopes!)
+                    {
+                        <option value="@scope.scopeId">@scope.scopeName</option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+
+        <div class="row mt-2 mb-3">
+            <div class="offset-lg-1 col-lg-8 col-md-9 col-sm-12 pt-2">
+                <b>Размер периода отображаемых дат (от и до текущей)</b>
+            </div>
+
+            <div class="col-lg-2 col-md-3 col-sm-6 mt-1">
+                <input type="number" class="form-control" @bind-value="_settings.ImportantDaysDisplayRange" @bind-value:event="onchange" />
+            </div>
+        </div>
+
+        <div class="row mt-2">
+            <div class="text-center">
+                <button type="button" @onclick="UpdateSettings" class="btn btn-outline-success">Сохранить</button>
+            </div>
+        </div>
+    }
+</Spinner>
+
+@code {
+    private ImportantDaysSettingsDto? _settings;
+    private (Guid scopeId, string scopeName)[]? _scopes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            await StartApiRequest();
+
+            var scopesResult = ScopesClient.GetScopes(null, CancellationToken);
+            var settingsResult = SettingsApiClient.GetAsync(SettingKey.Dates, CancellationToken);
+            await Task.WhenAll([scopesResult, settingsResult]);
+
+            if (scopesResult.Result.Succeeded && settingsResult.Result.Succeeded)
+            {
+                _scopes = scopesResult.Result.Data?.Select(x => (x.ScopeId!.Value, x.ScopeName ?? string.Empty)).ToArray() ?? [];
+                _settings = settingsResult.Result.Data as ImportantDaysSettingsDto ?? new();
+            }
+            else
+            {
+                _settings = new();
+                _scopes = [];
+            }
+
+            await FinishApiRequest(new Result[] { scopesResult.Result, settingsResult.Result }.MinBy(x => x.Succeeded));
+        }
+        catch (Exception exc)
+        {
+            _settings = new();
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    private async Task UpdateSettings()
+    {
+        try
+        {
+            await StartApiRequest();
+            var resp = await SettingsApiClient.UpdateAsync(SettingKey.Dates, _settings!, CancellationToken);
+            await FinishApiRequest(resp);
+        }
+        catch (Exception exc)
+        {
+            _settings = new();
+            await FinishApiRequest(exc.Message);
+        }
+    }
+}

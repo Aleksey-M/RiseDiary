@@ -15,52 +15,32 @@ namespace RiseDiary.WebAPI.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "7.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
 
-            modelBuilder.Entity("RiseDiary.Model.AppSetting", b =>
+            modelBuilder.Entity("RecordImageEntity", b =>
                 {
-                    b.Property<string>("Key")
+                    b.Property<Guid>("RecordId")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Key");
-
-                    b.ToTable("AppSettings");
-                });
-
-            modelBuilder.Entity("RiseDiary.Model.Cogitation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("Date")
+                    b.Property<Guid>("ImageId")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("RecordId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.HasKey("RecordId", "ImageId");
 
-                    b.HasKey("Id");
+                    b.HasIndex("ImageId");
 
-                    b.HasIndex("RecordId");
+                    b.HasIndex("RecordId", "ImageId");
 
-                    b.ToTable("Cogitations");
+                    b.ToTable("RecordImages");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.DiaryImage", b =>
+            modelBuilder.Entity("RiseDiary.Model.ImageEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -81,6 +61,10 @@ namespace RiseDiary.WebAPI.Migrations
 
                     b.Property<int>("Height")
                         .HasColumnType("INTEGER");
+
+                    b.Property<byte[]>("Image")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
 
                     b.Property<DateTime>("ModifyDate")
                         .HasColumnType("TEXT");
@@ -107,28 +91,39 @@ namespace RiseDiary.WebAPI.Migrations
                     b.ToTable("Images");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.DiaryImageFull", b =>
+            modelBuilder.Entity("RiseDiary.Model.RecordCommentEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<byte[]>("Data")
-                        .IsRequired()
-                        .HasColumnType("BLOB");
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ImageId")
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("ModifyDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("RecordId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ImageId")
-                        .IsUnique();
+                    b.HasIndex("RecordId");
 
-                    b.ToTable("FullSizeImages");
+                    b.ToTable("Cogitations");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.DiaryRecord", b =>
+            modelBuilder.Entity("RiseDiary.Model.RecordEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -159,30 +154,7 @@ namespace RiseDiary.WebAPI.Migrations
                     b.ToTable("Records");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.DiaryRecordImage", b =>
-                {
-                    b.Property<Guid>("RecordId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ImageId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("RecordId", "ImageId");
-
-                    b.HasIndex("ImageId");
-
-                    b.HasIndex("RecordId", "ImageId");
-
-                    b.ToTable("RecordImages");
-                });
-
-            modelBuilder.Entity("RiseDiary.Model.DiaryRecordTheme", b =>
+            modelBuilder.Entity("RiseDiary.Model.RecordThemeEntity", b =>
                 {
                     b.Property<Guid>("RecordId")
                         .HasColumnType("TEXT");
@@ -202,10 +174,13 @@ namespace RiseDiary.WebAPI.Migrations
                     b.ToTable("RecordThemes");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.DiaryScope", b =>
+            modelBuilder.Entity("RiseDiary.Model.ScopeEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreateDate")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("Deleted")
@@ -213,6 +188,9 @@ namespace RiseDiary.WebAPI.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ModifyDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ScopeName")
@@ -224,37 +202,7 @@ namespace RiseDiary.WebAPI.Migrations
                     b.ToTable("Scopes");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.DiaryTheme", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("Actual")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ScopeId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ThemeName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ScopeId");
-
-                    b.ToTable("Themes");
-                });
-
-            modelBuilder.Entity("RiseDiary.Model.TempImage", b =>
+            modelBuilder.Entity("RiseDiary.Model.TempImageEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -292,35 +240,68 @@ namespace RiseDiary.WebAPI.Migrations
                     b.ToTable("TempImages");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.Cogitation", b =>
+            modelBuilder.Entity("RiseDiary.Model.ThemeEntity", b =>
                 {
-                    b.HasOne("RiseDiary.Model.DiaryRecord", "Record")
-                        .WithMany("Cogitations")
-                        .HasForeignKey("RecordId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
 
-                    b.Navigation("Record");
+                    b.Property<bool>("Actual")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ModifyDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ScopeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ThemeName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScopeId");
+
+                    b.ToTable("Themes");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.DiaryImageFull", b =>
+            modelBuilder.Entity("RiseDiary.WebAPI.Settings.Model.SettingEntity", b =>
                 {
-                    b.HasOne("RiseDiary.Model.DiaryImage", null)
-                        .WithOne("FullImage")
-                        .HasForeignKey("RiseDiary.Model.DiaryImageFull", "ImageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<int>("Key")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("AppSettings");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.DiaryRecordImage", b =>
+            modelBuilder.Entity("RecordImageEntity", b =>
                 {
-                    b.HasOne("RiseDiary.Model.DiaryImage", "Image")
+                    b.HasOne("RiseDiary.Model.ImageEntity", "Image")
                         .WithMany("RecordsRefs")
                         .HasForeignKey("ImageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RiseDiary.Model.DiaryRecord", "Record")
+                    b.HasOne("RiseDiary.Model.RecordEntity", "Record")
                         .WithMany("ImagesRefs")
                         .HasForeignKey("RecordId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -331,15 +312,26 @@ namespace RiseDiary.WebAPI.Migrations
                     b.Navigation("Record");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.DiaryRecordTheme", b =>
+            modelBuilder.Entity("RiseDiary.Model.RecordCommentEntity", b =>
                 {
-                    b.HasOne("RiseDiary.Model.DiaryRecord", "Record")
+                    b.HasOne("RiseDiary.Model.RecordEntity", "Record")
+                        .WithMany("Cogitations")
+                        .HasForeignKey("RecordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Record");
+                });
+
+            modelBuilder.Entity("RiseDiary.Model.RecordThemeEntity", b =>
+                {
+                    b.HasOne("RiseDiary.Model.RecordEntity", "Record")
                         .WithMany("ThemesRefs")
                         .HasForeignKey("RecordId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RiseDiary.Model.DiaryTheme", "Theme")
+                    b.HasOne("RiseDiary.Model.ThemeEntity", "Theme")
                         .WithMany("RecordsRefs")
                         .HasForeignKey("ThemeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -350,9 +342,18 @@ namespace RiseDiary.WebAPI.Migrations
                     b.Navigation("Theme");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.DiaryTheme", b =>
+            modelBuilder.Entity("RiseDiary.Model.TempImageEntity", b =>
                 {
-                    b.HasOne("RiseDiary.Model.DiaryScope", "Scope")
+                    b.HasOne("RiseDiary.Model.ImageEntity", null)
+                        .WithOne("TempImage")
+                        .HasForeignKey("RiseDiary.Model.TempImageEntity", "SourceImageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("RiseDiary.Model.ThemeEntity", b =>
+                {
+                    b.HasOne("RiseDiary.Model.ScopeEntity", "Scope")
                         .WithMany("Themes")
                         .HasForeignKey("ScopeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -361,25 +362,14 @@ namespace RiseDiary.WebAPI.Migrations
                     b.Navigation("Scope");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.TempImage", b =>
+            modelBuilder.Entity("RiseDiary.Model.ImageEntity", b =>
                 {
-                    b.HasOne("RiseDiary.Model.DiaryImage", null)
-                        .WithOne("TempImage")
-                        .HasForeignKey("RiseDiary.Model.TempImage", "SourceImageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("RiseDiary.Model.DiaryImage", b =>
-                {
-                    b.Navigation("FullImage");
-
                     b.Navigation("RecordsRefs");
 
                     b.Navigation("TempImage");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.DiaryRecord", b =>
+            modelBuilder.Entity("RiseDiary.Model.RecordEntity", b =>
                 {
                     b.Navigation("Cogitations");
 
@@ -388,12 +378,12 @@ namespace RiseDiary.WebAPI.Migrations
                     b.Navigation("ThemesRefs");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.DiaryScope", b =>
+            modelBuilder.Entity("RiseDiary.Model.ScopeEntity", b =>
                 {
                     b.Navigation("Themes");
                 });
 
-            modelBuilder.Entity("RiseDiary.Model.DiaryTheme", b =>
+            modelBuilder.Entity("RiseDiary.Model.ThemeEntity", b =>
                 {
                     b.Navigation("RecordsRefs");
                 });

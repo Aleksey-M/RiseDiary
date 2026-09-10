@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using RiseDiary.Model;
+using RiseDiary.Common.Search;
 
 namespace RiseDiary.IntegratedTests.Services;
 

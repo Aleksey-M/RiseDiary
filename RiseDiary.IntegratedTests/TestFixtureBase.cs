@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -17,6 +11,20 @@ using RiseDiary.Data;
 using RiseDiary.IntegratedTests.Stubs;
 using RiseDiary.Model;
 using RiseDiary.Model.Services;
+using RiseDiary.WebAPI.Scopes.Model;
+using RiseDiary.WebAPI.Scopes.Services;
+using RiseDiary.WebAPI.Services;
+using RiseDiary.WebAPI.Settings;
+using RiseDiary.WebAPI.Settings.Model;
+using RiseDiary.WebAPI.Settings.Services;
+using RiseDiary.WebAPI.Settings.Storage;
+using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 #pragma warning disable CA1822 // Mark members as static
 
@@ -104,7 +112,7 @@ internal class TestFixtureBase
         _dbFileNames.Clear();
     }
 
-    protected static DiaryRecord GetTestRecord(int? yearsAdd = null, int? month = null)
+    protected static RecordEntity GetTestRecord(int? yearsAdd = null, int? month = null)
     {
         DateTime now = DateTime.UtcNow;
         if (yearsAdd == null)
@@ -112,7 +120,7 @@ internal class TestFixtureBase
         else
             now = month == null ? now.AddYears((int)yearsAdd) : new DateTime(now.Year + (int)yearsAdd, (int)month, 10);
 
-        return new DiaryRecord
+        return new RecordEntity
         {
             Date = DateOnly.FromDateTime(now),
             CreateDate = DateTime.UtcNow,
@@ -130,12 +138,12 @@ internal class TestFixtureBase
         return rec.Id;
     }
 
-    protected static DiaryImage GetTestImage(string fileName)
+    protected static ImageEntity GetTestImage(string fileName)
     {
         var data = File.ReadAllBytes(fileName);
         var (w, h) = ImageHelper.GetImageSize(data);
 
-        return new DiaryImage
+        return new ImageEntity
         {
             Name = Guid.NewGuid().ToString(),
             Thumbnail = File.ReadAllBytes(FullImage_1280X814),
@@ -148,11 +156,7 @@ internal class TestFixtureBase
             ModifyDate = DateTime.UtcNow.AddHours(-2),
             SizeByte = 120000,
             Id = Guid.NewGuid(),
-            FullImage = new DiaryImageFull
-            {
-                Id = Guid.NewGuid(),
-                Data = data
-            }
+            Image = data
         };
     }
 
@@ -168,19 +172,19 @@ internal class TestFixtureBase
     {
         Guid recId;
 
-        context.Records.Add(new Model.DiaryRecord
+        context.Records.Add(new Model.RecordEntity
         {
             Date = DateOnly.FromDateTime(DateTime.UtcNow),
             Name = "first",
             Text = "1111"
         });
-        context.Records.Add(new Model.DiaryRecord
+        context.Records.Add(new Model.RecordEntity
         {
             Date = DateOnly.FromDateTime(DateTime.UtcNow),
             Name = "second",
             Text = "2222"
         });
-        context.Records.Add(new Model.DiaryRecord
+        context.Records.Add(new Model.RecordEntity
         {
             Date = DateOnly.FromDateTime(DateTime.UtcNow),
             Name = "third",
@@ -189,7 +193,7 @@ internal class TestFixtureBase
         context.SaveChanges();
         recId = context.Records.Where(r => r.Name == "second").First().Id;
 
-        var cogitation = new Model.Cogitation
+        var cogitation = new Model.RecordCommentEntity
         {
             RecordId = recId,
             Text = "COGITATION"
@@ -209,7 +213,7 @@ internal class TestFixtureBase
         if (_20recordDates.Count() != 20) throw new ArgumentOutOfRangeException(nameof(_20recordDates));
         if (_20recordNames.Count() != 20) throw new ArgumentOutOfRangeException(nameof(_20recordNames));
 
-        var recList = _20recordNames.Select((n, i) => new DiaryRecord { Name = n, Date = _20recordDates.ElementAt(i) }).ToList();
+        var recList = _20recordNames.Select((n, i) => new RecordEntity { Name = n, Date = _20recordDates.ElementAt(i) }).ToList();
 
         if (_20recordsText != null)
         {
@@ -227,11 +231,11 @@ internal class TestFixtureBase
     {
         Create20Records(context, _20recordNames, _20recordDates);
 
-        var scope = new DiaryScope { ScopeName = "Test" };
+        var scope = new ScopeEntity { ScopeName = "Test" };
         context.Scopes.Add(scope);
         context.SaveChanges();
 
-        context.Themes.AddRange(Enumerable.Range(0, 30).Select(i => new DiaryTheme { ScopeId = scope.Id, ThemeName = i.ToString(CultureInfo.InvariantCulture) }));
+        context.Themes.AddRange(Enumerable.Range(0, 30).Select(i => new ThemeEntity { ScopeId = scope.Id, ThemeName = i.ToString(CultureInfo.InvariantCulture) }));
         context.SaveChanges();
     }
 
@@ -241,7 +245,7 @@ internal class TestFixtureBase
         {
             foreach (var tName in recordTheme.Value)
             {
-                context.RecordThemes.Add(new Model.DiaryRecordTheme
+                context.RecordThemes.Add(new Model.RecordThemeEntity
                 {
                     RecordId = context.Records.First(r => r.Name == recordTheme.Key).Id,
                     ThemeId = context.Themes.First(r => r.ThemeName == tName).Id,
@@ -253,7 +257,7 @@ internal class TestFixtureBase
 
     protected static Guid CreateScope(DiaryDbContext context, string? scopeName = null, string? scopeDescription = null)
     {
-        var scope = new DiaryScope
+        var scope = new ScopeEntity
         {
             ScopeName = scopeName ?? Guid.NewGuid().ToString(),
             Description = scopeDescription ?? ""
@@ -269,7 +273,7 @@ internal class TestFixtureBase
     {
         var scopeId = CreateScope(context);
 
-        var theme = new DiaryTheme
+        var theme = new ThemeEntity
         {
             Id = Guid.NewGuid(),
             ScopeId = scopeId,
@@ -291,7 +295,7 @@ internal class TestFixtureBase
             return tId;
         }
 
-        var theme = new DiaryTheme
+        var theme = new ThemeEntity
         {
             Id = Guid.NewGuid(),
             ScopeId = scopeId.Value,
@@ -305,15 +309,15 @@ internal class TestFixtureBase
         return theme.Id;
     }
 
-    protected static List<DiaryScope> Create3ScopesWith1ThemeForEach(DiaryDbContext context)
+    protected static List<ScopeEntity> Create3ScopesWith1ThemeForEach(DiaryDbContext context)
     {
         for (int i = 0; i < 3; i++)
         {
-            var theme = new DiaryTheme
+            var theme = new ThemeEntity
             {
                 Id = Guid.NewGuid(),
                 ThemeName = $"Theme For Scope {i + 1}",
-                Scope = new DiaryScope
+                Scope = new ScopeEntity
                 {
                     Id = Guid.NewGuid(),
                     ScopeName = $"Scope {i + 1}"
@@ -325,14 +329,14 @@ internal class TestFixtureBase
         return context.Scopes.ToList();
     }
 
-    protected static (DiaryRecord record, DiaryScope scope, DiaryImage image) CreateEntities(DiaryDbContext context)
+    protected static (RecordEntity record, ScopeEntity scope, ImageEntity image) CreateEntities(DiaryDbContext context)
     {
         var rec = GetTestRecord();
-        var theme = new DiaryTheme
+        var theme = new ThemeEntity
         {
             ThemeName = "Some Theme",
             Actual = true,
-            Scope = new DiaryScope { ScopeName = $"Some Scope" }
+            Scope = new ScopeEntity { ScopeName = $"Some Scope" }
         };
 
         var img = GetTestImage(FullImage_512X341);
@@ -343,17 +347,17 @@ internal class TestFixtureBase
 
         context.SaveChanges();
 
-        context.Add(new DiaryRecordImage { Record = rec, Image = img });
-        context.Add(new DiaryRecordTheme { Record = rec, Theme = theme });
-        context.Add(new Cogitation { Record = rec, Date = DateTime.UtcNow, Text = "Some Cogitation text" });
+        context.Add(new RecordImageEntity { Record = rec, Image = img });
+        context.Add(new RecordThemeEntity { Record = rec, Theme = theme });
+        context.Add(new RecordCommentEntity { Record = rec, Date = DateTime.UtcNow, Text = "Some Cogitation text" });
         context.SaveChanges();
 
         return (rec, theme.Scope, img);
     }
 
-    protected static async Task<List<DiaryRecord>> AddSetOfRecordsWithDates(DiaryDbContext context, IEnumerable<DateOnly> recDates)
+    protected static async Task<List<RecordEntity>> AddSetOfRecordsWithDates(DiaryDbContext context, IEnumerable<DateOnly> recDates)
     {
-        var recs = recDates.Select(d => new DiaryRecord
+        var recs = recDates.Select(d => new RecordEntity
         {
             Date = d,
             CreateDate = d.ToDateTime(TimeOnly.MinValue),
@@ -373,7 +377,7 @@ internal class TestFixtureBase
     {
         _ = await AddSetOfRecordsWithDates(context, themesByDate.Select(tbd => tbd.Key).ToList());
 
-        var addedThemes = new List<DiaryTheme>();
+        var addedThemes = new List<ThemeEntity>();
 
         foreach (var kv in themesByDate)
         {
@@ -384,11 +388,11 @@ internal class TestFixtureBase
                 var themeAdded = addedThemes.Any(t => t.ThemeName == tn);
                 if (!themeAdded)
                 {
-                    var theme = new DiaryTheme
+                    var theme = new ThemeEntity
                     {
                         ThemeName = tn,
                         Id = Guid.NewGuid(),
-                        Scope = new DiaryScope
+                        Scope = new ScopeEntity
                         {
                             Id = Guid.NewGuid(),
                             ScopeName = "Scope For " + kv.Value
@@ -406,7 +410,7 @@ internal class TestFixtureBase
             {
                 var t = addedThemes.Single(tt => tt.ThemeName == tn);
 
-                context.RecordThemes.Add(new DiaryRecordTheme { RecordId = rec.Id, ThemeId = t.Id });
+                context.RecordThemes.Add(new RecordThemeEntity { RecordId = rec.Id, ThemeId = t.Id });
             }
 
             context.SaveChanges();
@@ -423,22 +427,18 @@ internal class TestFixtureBase
         return retRes;
     }
 
-    protected static async Task<DiaryImage> CreateImageWithTempImage(DiaryDbContext context)
+    protected static async Task<ImageEntity> CreateImageWithTempImage(DiaryDbContext context)
     {
         var imgData = File.ReadAllBytes(FullImage_1280X814);
         var imgData2 = File.ReadAllBytes(FullImage_512X341);
         var (w, h) = ImageHelper.GetImageSize(imgData2);
 
-        var image = new DiaryImage
+        var image = new ImageEntity
         {
             Id = Guid.NewGuid(),
             Name = "new image " + Guid.NewGuid().ToString(),
             CreateDate = DateTime.UtcNow,
-            FullImage = new DiaryImageFull
-            {
-                Id = Guid.NewGuid(),
-                Data = imgData
-            },
+            Image = imgData,
             Height = 3000,
             Width = 4000,
             CameraModel = "camera model",
@@ -446,7 +446,7 @@ internal class TestFixtureBase
             SizeByte = imgData.Length,
             ModifyDate = DateTime.UtcNow,
             ContentType = @"image/jpeg",
-            TempImage = new TempImage
+            TempImage = new TempImageEntity
             {
                 Id = Guid.NewGuid(),
                 Data = imgData2,
@@ -470,7 +470,7 @@ internal class TestFixtureBase
         {
             var recordImages = Enumerable.Range(1, 3)
                 .Select(_ => GetTestImage(FullImage_512X341))
-                .Select(img => new DiaryRecordImage { Image = img, Record = rec })
+                .Select(img => new RecordImageEntity { Image = img, Record = rec })
                 .ToList();
 
             await context.RecordImages.AddRangeAsync(recordImages);
@@ -504,11 +504,11 @@ internal class TestFixtureBase
         await foreach (var rec in context.Records.Include(r => r.ThemesRefs).AsAsyncEnumerable())
         {
             var themesList = Enumerable.Range(1, 3)
-                .Select(c => new DiaryTheme
+                .Select(c => new ThemeEntity
                 {
                     Id = Guid.NewGuid(),
                     ThemeName = $"Theme {c}",
-                    Scope = new DiaryScope
+                    Scope = new ScopeEntity
                     {
                         Id = Guid.NewGuid(),
                         ScopeName = $"Scope {Guid.NewGuid()} {c}"
@@ -516,7 +516,7 @@ internal class TestFixtureBase
                 });
 
             await context.Themes.AddRangeAsync(themesList);
-            await context.RecordThemes.AddRangeAsync(themesList.Select(t => new DiaryRecordTheme { Record = rec, Theme = t }));
+            await context.RecordThemes.AddRangeAsync(themesList.Select(t => new RecordThemeEntity { Record = rec, Theme = t }));
         }
 
         await context.SaveChangesAsync();
@@ -547,7 +547,7 @@ internal class TestFixtureBase
         await foreach (var rec in context.Records.Include(r => r.Cogitations).AsAsyncEnumerable())
         {
             Enumerable.Range(1, 3)
-                .Select(i => new Cogitation { Id = Guid.NewGuid(), Record = rec, Text = prefix ?? "" + Guid.NewGuid().ToString() })
+                .Select(i => new RecordCommentEntity { Id = Guid.NewGuid(), Record = rec, Text = prefix ?? "" + Guid.NewGuid().ToString() })
                 .ToList()
                 .ForEach(c => context.Cogitations.Add(c));
         }
@@ -556,7 +556,7 @@ internal class TestFixtureBase
         {
             context.Records
                 .ToList()
-                .Zip(additionalCogitationsText, (rec, cogText) => new Cogitation { Id = Guid.NewGuid(), Record = rec, Text = cogText })
+                .Zip(additionalCogitationsText, (rec, cogText) => new RecordCommentEntity { Id = Guid.NewGuid(), Record = rec, Text = cogText })
                 .ToList()
                 .ForEach(c => context.Cogitations.Add(c));
         }
@@ -683,15 +683,15 @@ internal class TestFixtureBase
         Create30ThemesAnd20Records(context, namesList.Values.ToArray(), GetDatesList(20));
         var themeId1 = context.Themes.ToList().ElementAt(10).Id;
         var themeId2 = context.Themes.ToList().ElementAt(22).Id;
-        var recordsThemes = new List<DiaryRecordTheme> {
-            new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(4),  ThemeId = themeId1},
-            new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(7),  ThemeId = themeId1},
-            new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(8),  ThemeId = themeId2},
-            new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(10), ThemeId = themeId1},
-            new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(11), ThemeId = themeId2},
-            new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(17), ThemeId = themeId2},
-            new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(19), ThemeId = themeId1},
-            new DiaryRecordTheme {RecordId = GetRecordIdByNameIndex(7),  ThemeId = themeId2}
+        var recordsThemes = new List<RecordThemeEntity> {
+            new RecordThemeEntity {RecordId = GetRecordIdByNameIndex(4),  ThemeId = themeId1},
+            new RecordThemeEntity {RecordId = GetRecordIdByNameIndex(7),  ThemeId = themeId1},
+            new RecordThemeEntity {RecordId = GetRecordIdByNameIndex(8),  ThemeId = themeId2},
+            new RecordThemeEntity {RecordId = GetRecordIdByNameIndex(10), ThemeId = themeId1},
+            new RecordThemeEntity {RecordId = GetRecordIdByNameIndex(11), ThemeId = themeId2},
+            new RecordThemeEntity {RecordId = GetRecordIdByNameIndex(17), ThemeId = themeId2},
+            new RecordThemeEntity {RecordId = GetRecordIdByNameIndex(19), ThemeId = themeId1},
+            new RecordThemeEntity {RecordId = GetRecordIdByNameIndex(7),  ThemeId = themeId2}
         };
         context.RecordThemes.AddRange(recordsThemes);
         await context.SaveChangesAsync();
@@ -706,23 +706,23 @@ internal class TestFixtureBase
         var rec3Id = CreateRecord(context);
         var imgId = CreateImage(context);
 
-        context.RecordImages.Add(new DiaryRecordImage { ImageId = imgId, RecordId = rec1Id, Order = 1 });
-        context.RecordImages.Add(new DiaryRecordImage { ImageId = imgId, RecordId = rec2Id, Order = 1 });
-        context.RecordImages.Add(new DiaryRecordImage { ImageId = imgId, RecordId = rec3Id, Order = 1 });
+        context.RecordImages.Add(new RecordImageEntity { ImageId = imgId, RecordId = rec1Id, Order = 1 });
+        context.RecordImages.Add(new RecordImageEntity { ImageId = imgId, RecordId = rec2Id, Order = 1 });
+        context.RecordImages.Add(new RecordImageEntity { ImageId = imgId, RecordId = rec3Id, Order = 1 });
 
         for (int i = 2; i <= 4; i++)
         {
-            context.RecordImages.Add(new DiaryRecordImage { ImageId = CreateImage(context), RecordId = rec1Id, Order = i });
+            context.RecordImages.Add(new RecordImageEntity { ImageId = CreateImage(context), RecordId = rec1Id, Order = i });
         }
 
         for (int i = 2; i <= 4; i++)
         {
-            context.RecordImages.Add(new DiaryRecordImage { ImageId = CreateImage(context), RecordId = rec2Id, Order = i });
+            context.RecordImages.Add(new RecordImageEntity { ImageId = CreateImage(context), RecordId = rec2Id, Order = i });
         }
 
         for (int i = 2; i <= 4; i++)
         {
-            context.RecordImages.Add(new DiaryRecordImage { ImageId = CreateImage(context), RecordId = rec3Id, Order = i });
+            context.RecordImages.Add(new RecordImageEntity { ImageId = CreateImage(context), RecordId = rec3Id, Order = i });
         }
 
         await context.SaveChangesAsync();
@@ -752,8 +752,7 @@ internal class TestFixtureBase
     static public ICalendarService GetCalendarService(DiaryDbContext? context = null) =>
         new CalendarService(
             context ?? CreateContext(),
-            Mock.Of<ILogger<CalendarService>>(),
-            new HybridCacheStub());
+            Mock.Of<ILogger<CalendarService>>());
 
     static public IDatesService GetDatesService(int daysRange, DiaryDbContext? context = null) =>
         new DatesService(context ?? CreateContext(), new AppSettingsForDatesServiceStub(daysRange));
@@ -776,18 +775,53 @@ internal class TestFixtureBase
     static public IRecordsImagesService GetRecordsImagesService(DiaryDbContext? context = null) =>
         new RecordsImagesService(context ?? CreateContext());
 
-    static public IAppSettingsService GetAppSettingsService(DiaryDbContext? context = null) =>
-        new AppSettingsService(
-            context ?? CreateContext(),
-            Mock.Of<ILogger<AppSettingsService>>(),
-            new HybridCacheStub());
+    static public ISettingsService GetAppSettingsService(DiaryDbContext? context = null) =>
+        new SettingsService(
+            Mock.Of<IServiceProvider>(),
+            Mock.Of<ILogger<SettingsService>>());
 
     static public IRecordsThemesService GetRecordsThemesService(DiaryDbContext? context = null) =>
         new RecordsThemesService(context ?? CreateContext());
 
     static public IScopesService GetScopesService(DiaryDbContext? context = null) =>
-        new ScopesService(context ?? CreateContext());
+        new ScopesService(context ?? CreateContext(), Mock.Of<ILogger<ScopesService>>());
 
     static public ICogitationsService GetCogitationsService(DiaryDbContext? context = null) =>
         new CogitationsService(context ?? CreateContext());
+
+    public static ServiceProvider BuildServiceProvider()
+    {
+        var services = new ServiceCollection();
+
+        // In-memory SQLite
+        var connection = new SqliteConnection("Filename=:memory:");
+        connection.Open();
+
+        services.AddDbContext<DiaryDbContext>(opt =>
+        {
+            opt.UseSqlite(connection);
+        });
+
+        // Register storages
+        services.AddScoped<ISettingsStorage<BookmarksSettings>, BookmarksSettingsStorage>();
+        services.AddScoped<ISettingsStorage<ImagesSettings>, ImagesSettingsStorage>();
+        services.AddScoped<ISettingsStorage<ImportantDaysSettings>, ImportantDaysSettingsStorage>();
+        services.AddScoped<ISettingsStorage<PagesSizesSettings>, PagesSizesSettingsStorage>();
+
+        // Register service
+        services.AddScoped<ISettingsService, SettingsService>();
+
+        // Logger
+        services.AddLogging();
+
+        var provider = services.BuildServiceProvider();
+
+        // Ensure DB schema exists
+        using var scope = provider.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<DiaryDbContext>();
+        db.Database.EnsureCreated();
+
+        return provider;
+    }
+
 }

@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RiseDiary.Model;
+using RiseDiary.Common.Core;
+using RiseDiary.Common.Scopes;
+using RiseDiary.Common.Validation;
 using RiseDiary.Shared;
-using RiseDiary.Shared.Scopes;
-using RiseDiary.WebUI.Model;
-
-namespace RiseDiary.WebAPI.Controllers.ScopesArea;
+using RiseDiary.WebAPI.Controllers.ScopesArea;
+using RiseDiary.WebAPI.Scopes.Services;
 
 [ApiController]
 [Route("api/scopes")]
@@ -18,24 +18,37 @@ public sealed class ScopesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Guid>> CreateScope([FromServices] IDtoValidator<ScopeDto> validator, ScopeDto dto)
+    public async Task<ActionResult<Result<Guid>>> CreateScope(
+        [FromServices] IDtoValidator<ScopeDto> validator,
+        ScopeDto dto)
     {
-        validator.ValidateForCreate(dto, true);
+        var validation = validator.ValidateForCreate(dto, true);
+        if (!validation.IsValid)
+        {
+            return BadRequest(Result<Guid>.Failure(validation.ErrorMessages()));
+        }
 
         var id = await _scopeService.AddScope(
             newScopeName: dto.ScopeName!,
             newScopeDescription: dto.ScopeDescription ?? string.Empty);
 
-        var newScopeUri = $@"{Request.GetAppBaseUrl()}/api/scopes/{id}";
-        return Created(newScopeUri, id);
+        return Ok(Result<Guid>.Success(id));
     }
 
     [HttpPost("{sid}/themes")]
-    public async Task<ActionResult<Guid>> CreateTheme([FromServices] ThemeValidator validator, Guid sid, ThemeDto dto)
+    public async Task<ActionResult<Result<Guid>>> CreateTheme(
+        [FromServices] ThemeDtoValidator validator,
+        Guid sid,
+        ThemeDto dto)
     {
-        validator.ValidateForCreate(dto, true);
+        var validation = validator.ValidateForCreate(dto, true);
+        if (!validation.IsValid)
+        {
+            return BadRequest(Result<Guid>.Failure(validation.ErrorMessages()));
+        }
 
-        if (sid != dto.ScopeId) return BadRequest(new { Message = "Not consistent request" });
+        if (sid != dto.ScopeId)
+            return BadRequest(Result<Guid>.Failure("Not consistent request"));
 
         var newThemeId = await _scopeService.AddTheme(
             scopeId: sid,
@@ -43,48 +56,66 @@ public sealed class ScopesController : ControllerBase
             newThemeDescription: dto.ThemeDescription ?? string.Empty,
             actual: dto.Actual!.Value);
 
-        var scopeUri = $@"{Request.GetAppBaseUrl()}/api/scopes/{sid}";
-        return Created(scopeUri, newThemeId);
+        return Ok(Result<Guid>.Success(newThemeId));
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<ScopeDto>>> GetScopes(bool? actual, CancellationToken cancellationToken)
+    public async Task<ActionResult<Result<ScopeDto[]>>> GetScopes(
+        bool? actual,
+        CancellationToken cancellationToken)
     {
         var scopes = await _scopeService.GetScopes(actual, cancellationToken);
-        return scopes.Select(s => s.ToDto()).ToList();
+        return Ok(Result<ScopeDto[]>.Success(scopes.Select(s => s.ToDto()).ToArray()));
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateScope([FromServices] IDtoValidator<ScopeDto> validator, Guid id, ScopeDto dto)
+    public async Task<ActionResult<Result>> UpdateScope(
+        [FromServices] IDtoValidator<ScopeDto> validator,
+        Guid id,
+        ScopeDto dto)
     {
-        validator.ValidateForUpdate(dto, true);
+        var validation = validator.ValidateForUpdate(dto, true);
+        if (!validation.IsValid)
+        {
+            return BadRequest(Result.Failure(validation.ErrorMessages()));
+        }
 
-        if (id != dto.ScopeId) return BadRequest(new { Message = "Not consistent request" });
+        if (id != dto.ScopeId)
+            return BadRequest(Result.Failure("Not consistent request"));
 
         await _scopeService.UpdateScope(
             scopeId: dto.ScopeId.Value,
             scopeNewName: dto.ScopeName,
             scopeNewDescription: dto.ScopeDescription);
 
-        return NoContent();
+        return Ok(Result.Success());
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteScope(Guid id)
+    public async Task<ActionResult<Result>> DeleteScope(Guid id)
     {
-        if (!await _scopeService.CanDeleteScope(id)) return BadRequest(new { Message = "Нельзя удалить сферу интересов с темами" });
+        if (!await _scopeService.CanDeleteScope(id))
+            return BadRequest(Result.Failure("Нельзя удалить сферу интересов с темами"));
 
         await _scopeService.DeleteScope(id);
-
-        return NoContent();
+        return Ok(Result.Success());
     }
 
     [HttpPut("{scopeId}/themes/{themeId}")]
-    public async Task<ActionResult> UpdateTheme([FromServices] ThemeValidator validator, Guid scopeId, Guid themeId, ThemeDto dto)
+    public async Task<ActionResult<Result>> UpdateTheme(
+        [FromServices] ThemeDtoValidator validator,
+        Guid scopeId,
+        Guid themeId,
+        ThemeDto dto)
     {
-        validator.ValidateForUpdate(dto, true);
+        var validation = validator.ValidateForUpdate(dto, true);
+        if (!validation.IsValid)
+        {
+            return BadRequest(Result.Failure(validation.ErrorMessages()));
+        }
 
-        if (scopeId != dto.ScopeId || themeId != dto.ThemeId) return BadRequest(new { Message = "Not consistent request" });
+        if (scopeId != dto.ScopeId || themeId != dto.ThemeId)
+            return BadRequest(Result.Failure("Not consistent request"));
 
         await _scopeService.UpdateTheme(
             themeId: dto.ThemeId.Value,
@@ -92,26 +123,34 @@ public sealed class ScopesController : ControllerBase
             themeNewDescription: dto.ThemeDescription,
             themeActuality: dto.Actual);
 
-        return NoContent();
+        return Ok(Result.Success());
     }
 
     [HttpPut("{scopeId}/themes/{themeId}/actuality")]
-    public async Task<ActionResult> UpdateThemeActuality([FromServices] ThemeValidator validator, Guid scopeId, Guid themeId, ThemeDto dto)
+    public async Task<ActionResult<Result>> UpdateThemeActuality(
+        [FromServices] ThemeDtoValidator validator,
+        Guid scopeId,
+        Guid themeId,
+        ThemeDto dto)
     {
-        validator.ValidateForActuality(dto, true);
+        var validation = validator.ValidateForActuality(dto, true);
+        if (!validation.IsValid)
+        {
+            return BadRequest(Result.Failure(validation.ErrorMessages()));
+        }
 
-        if (scopeId != dto.ScopeId || themeId != dto.ThemeId) return BadRequest(new { Message = "Not consistent request" });
+        if (scopeId != dto.ScopeId || themeId != dto.ThemeId)
+            return BadRequest(Result.Failure("Not consistent request"));
 
         await _scopeService.UpdateTheme(themeId: dto.ThemeId.Value, themeActuality: dto.Actual);
 
-        return NoContent();
+        return Ok(Result.Success());
     }
 
     [HttpDelete("{scopeId}/themes/{themeId}")]
-    public async Task<IActionResult> DeleteTheme(Guid scopeId, Guid themeId)
+    public async Task<ActionResult<Result>> DeleteTheme(Guid scopeId, Guid themeId)
     {
         await _scopeService.DeleteTheme(themeId);
-
-        return NoContent();
+        return Ok(Result.Success());
     }
 }

@@ -1,6 +1,5 @@
-﻿@using RiseDiary.Shared
-@using RiseDiary.Shared.Scopes
-@using RiseDiary.Front.AppServices
+﻿@using RiseDiary.Common.Scopes
+@using RiseDiary.Shared
 
 @inject HttpClient Http
 @inject IDtoValidator<ScopeDto> ScopeValidator
@@ -55,7 +54,7 @@
 
             await StartApiRequest();
 
-            var tmpDto = _newScopeDto.Copy();
+            var tmpDto = new ScopeDto(_newScopeDto);
             tmpDto.SetHostAndPortPlaceholder(NavManager.BaseUri);
 
             var response = await Http.PostAsJsonAsync("api/scopes", tmpDto);

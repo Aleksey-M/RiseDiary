@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
+using RiseDiary.Common.Core;
 using RiseDiary.Shared;
 
 namespace RiseDiary.Front.Pages;
@@ -7,13 +8,9 @@ namespace RiseDiary.Front.Pages;
 public class UIComponentBase : ComponentBase, IAsyncDisposable
 {
     private readonly Lazy<CancellationTokenSource> _cts = new(() => new CancellationTokenSource(), isThreadSafe: false);
-
-    protected CancellationToken Token => _cts.Value.Token;
-
+    protected CancellationToken CancellationToken => _cts.Value.Token;
     protected bool Loading { get; set; }
-
     protected string? ErrorMessage { get; set; }
-
     protected bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
 
     protected async Task StartApiRequest()
@@ -23,10 +20,16 @@ public class UIComponentBase : ComponentBase, IAsyncDisposable
         await Task.Yield();
     }
 
-    protected async Task FinishApiRequest(string? errorMessage)
+    protected async Task FinishApiRequest(Result? result)
     {
         Loading = false;
-        ErrorMessage = errorMessage;
+
+        ErrorMessage = result switch
+        {
+            { Succeeded: false } => result.Message,
+            _ => null
+        };
+
         StateHasChanged();
         await Task.Yield();
     }
@@ -35,10 +38,10 @@ public class UIComponentBase : ComponentBase, IAsyncDisposable
     {
         if (response.IsSuccessStatusCode)
         {
-            return await response.Content.ReadFromJsonAsync<T>(cancellationToken: Token);
+            return await response.Content.ReadFromJsonAsync<T>(cancellationToken: CancellationToken);
         }
 
-        var msg = await response.Content.ReadFromJsonAsync<MessageResponse>(cancellationToken: Token);
+        var msg = await response.Content.ReadFromJsonAsync<MessageResponse>(cancellationToken: CancellationToken);
 
         ErrorMessage = $"{response.StatusCode}: {msg?.Message ?? string.Empty}";
         Loading = false;
@@ -52,13 +55,24 @@ public class UIComponentBase : ComponentBase, IAsyncDisposable
     {
         if (response.IsSuccessStatusCode) return true;
 
-        var msg = await response.Content.ReadFromJsonAsync<MessageResponse>(cancellationToken: Token);
+        var msg = await response.Content.ReadFromJsonAsync<MessageResponse>(cancellationToken: CancellationToken);
 
         ErrorMessage = $"{response.StatusCode}: {msg?.Message ?? string.Empty}";
         Loading = false;
         StateHasChanged();
         await Task.Yield();
 
+        return false;
+    }
+
+    protected bool CheckSuccessResponse(Result result)
+    {
+        if (result.Succeeded)
+            return true;
+
+        ErrorMessage = result.Message ?? string.Empty;
+        Loading = false;
+        StateHasChanged();
         return false;
     }
 

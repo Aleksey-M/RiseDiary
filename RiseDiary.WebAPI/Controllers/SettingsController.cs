@@ -1,89 +1,93 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
-using RiseDiary.Model;
-using RiseDiary.Shared;
-using RiseDiary.Shared.Settings;
+﻿using Microsoft.AspNetCore.Mvc;
+using RiseDiary.Common.Core;
+using RiseDiary.Common.Settings;
+using RiseDiary.Common.Settings.Validators;
+using RiseDiary.WebAPI.Settings;
+using RiseDiary.WebAPI.Settings.Model;
+using RiseDiary.WebAPI.Settings.Services;
+using System.Text.Json;
 
-namespace RiseDiary.Api;
+namespace RiseDiary.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/settings")]
 public sealed class SettingsController : ControllerBase
 {
-    private readonly IAppSettingsService _settingsSvc;
+    private readonly ISettingsService _settingsSvc;
+    private readonly ISettingsDtoValidator _dtoValidator;
+    private readonly JsonSerializerOptions _jsonOptions;
 
-    public SettingsController(IAppSettingsService settingsSvc)
+    public SettingsController(ISettingsService settingsSvc, ISettingsDtoValidator dtoValidator, JsonSerializerOptions jsonOptions)
     {
         _settingsSvc = settingsSvc;
+        _dtoValidator = dtoValidator;
+        _jsonOptions = jsonOptions;
     }
 
-    [HttpGet("{key}")]
-    public async Task<ActionResult<AppSettingDto>> GetSettings(AppSettingsKey key)
+    private readonly string[] _settingsKeys = ["bookmarks", "pages", "images", "dates"];
+    private static readonly Dictionary<string, (Type model, Type dto)> _settingTypes = new()
     {
-        var (value, modifiedDate) = await _settingsSvc.GetAppSetting(key);
+        ["bookmarks"] = (model: typeof(BookmarksSettings), dto: typeof(BookmarksSettingsDto)),
+        ["pages"] = (model: typeof(PagesSizesSettings), dto: typeof(PagesSizesSettingsDto)),
+        ["images"] = (model: typeof(ImagesSettings), dto: typeof(ImagesSettingsDto)),
+        ["dates"] = (model: typeof(ImportantDaysSettings), dto: typeof(ImportantDaysSettingsDto))
+    };
 
-        return new AppSettingDto
+    [HttpGet("{key}")]
+    public async Task<IActionResult> GetSettings(string key, CancellationToken cancellationToken)
+    {
+        key = key.ToLower();
+        if (!_settingsKeys.Contains(key))
         {
-            Key = key,
-            Value = value ?? "",
-            ModifiedDate = modifiedDate ?? default
+            return NotFound();
+        }
+
+        object? result = (key) switch
+        {
+            "bookmarks" => (await _settingsSvc.GetSetting<BookmarksSettings>(cancellationToken)).Data,
+            "pages" => (await _settingsSvc.GetSetting<PagesSizesSettings>(cancellationToken)).Data,
+            "images" => (await _settingsSvc.GetSetting<ImagesSettings>(cancellationToken)).Data,
+            "dates" => (await _settingsSvc.GetSetting<ImportantDaysSettings>(cancellationToken)).Data,
+            _ => null
         };
+
+        return result == null
+            ? NotFound()
+            : Ok(result);
     }
 
     [HttpPut("{key}")]
-    public async Task<IActionResult> UpdateSettingValue(AppSettingsKey key, AppSettingDto value)
+    public async Task<IActionResult> UpdateSettingValue(string key, [FromBody] JsonElement payload)
     {
-        if (value.Key != key) return BadRequest(new { Message = "Not consistent request" });
+        if (!_settingTypes.TryGetValue(key.ToLower(), out var type))
+        {
+            return BadRequest();
+        }
 
-        await _settingsSvc.UpdateAppSetting(key, value.Value);
+        var payloadText = payload.GetRawText();
+        var typedDto = JsonSerializer.Deserialize(payloadText, type.dto, _jsonOptions);
 
-        return NoContent();
-    }
+        var validateResult = _dtoValidator.ValidateDto(typedDto);
+        if (!validateResult.Succeeded)
+        {
+            return BadRequest(validateResult);
+        }
 
-    [HttpGet("images")]
-    public async Task<ActionResult<ImagesSettings>> GetImagesSettings() =>
-        await _settingsSvc.GetImagesSettings();
+        var method = typeof(SettingsService).GetMethod(nameof(_settingsSvc.UpdateSetting));
 
+        var generic = method?.MakeGenericMethod(type.model);
+        if (generic == null)
+        {
+            return BadRequest();
+        }
 
-    [HttpPut("images")]
-    public async Task<IActionResult> UpdateImagesSettings(
-        [FromServices] ImagesSettingsValidator validator, ImagesSettings imagesSettings)
-    {
-        validator.ValidateAndThrow(imagesSettings);
-
-        await _settingsSvc.UpdateImagesSettings(imagesSettings);
-
-        return NoContent();
-    }
-
-    [HttpGet("pages")]
-    public async Task<ActionResult<PagesSizesSettings>> GetPagesSettings() =>
-        await _settingsSvc.GetPagesSizesSettings();
-
-
-    [HttpPut("pages")]
-    public async Task<IActionResult> UpdatePagesSettings(
-        [FromServices] PagesSizesSettingsValidator validator, PagesSizesSettings pagesSizesSettings)
-    {
-        validator.ValidateAndThrow(pagesSizesSettings);
-
-        await _settingsSvc.UpdatePagesSizesSettings(pagesSizesSettings);
-
-        return NoContent();
-    }
-
-    [HttpGet("dates")]
-    public async Task<ActionResult<ImportantDaysSettings>> GetDatesSettings(CancellationToken cancellationToken) =>
-        await _settingsSvc.GetImportantDaysSettings(cancellationToken);
-
-
-    [HttpPut("dates")]
-    public async Task<IActionResult> UpdateDatesSettings(
-        [FromServices] ImportantDaysSettingsValidator validator, ImportantDaysSettings importantDaysSettings)
-    {
-        validator.ValidateAndThrow(importantDaysSettings);
-
-        await _settingsSvc.UpdateImportantDaysSettings(importantDaysSettings);
+        var typedModel = JsonSerializer.Deserialize(payloadText, type.model, _jsonOptions);
+        var result = generic.Invoke(_settingsSvc, [typedModel]);
+        if (result is Task<Result> task)
+        {
+            await task;
+            return Ok(task.Result);
+        }
 
         return NoContent();
     }

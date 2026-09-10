@@ -1,54 +1,32 @@
-﻿using System;
+﻿using RiseDiary.Common.Core;
+using RiseDiary.WebAPI.Settings;
+using RiseDiary.WebAPI.Settings.Model;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using RiseDiary.Model;
-using RiseDiary.Shared;
-using RiseDiary.Shared.Settings;
 
 namespace RiseDiary.IntegratedTests.Stubs;
 
-internal class AppSettingsServiceStub : IAppSettingsService
+internal class AppSettingsServiceStub : ISettingsService
 {
-    public Task<(string? value, DateTime? modifiedDate)> GetAppSetting(AppSettingsKey key) => key switch
+    public Task<(string? value, DateTime? modifiedDate)> GetAppSetting(SettingsKey key) => key switch
     {
         _ => throw new Exception($"The stub does not know what value to return for '{key}'")
     };
 
-    public Task<int?> GetAppSettingInt(AppSettingsKey key) => key switch
+    public Task<int?> GetAppSettingInt(SettingsKey key) => key switch
     {
-        AppSettingsKey.ImageQuality => Task.FromResult((int?)75),
-        AppSettingsKey.ThumbnailSize => Task.FromResult((int?)150),
+        SettingsKey.ImageQuality => Task.FromResult((int?)75),
+        SettingsKey.ThumbnailSize => Task.FromResult((int?)150),
         _ => throw new Exception($"The stub does not know what value to return for '{key}'")
     };
 
-    public Task<ImagesSettings> GetImagesSettings()
+    public Task<Result<T>> GetSetting<T>(CancellationToken token = default) where T : ISettings
     {
         throw new NotImplementedException();
     }
 
-    public Task<ImportantDaysSettings> GetImportantDaysSettings(CancellationToken token)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<PagesSizesSettings> GetPagesSizesSettings()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task UpdateAppSetting(AppSettingsKey key, string value) => throw new NotImplementedException();
-
-    public Task UpdateImagesSettings(ImagesSettings imagesSettings)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task UpdateImportantDaysSettings(ImportantDaysSettings importantDaysSettings)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task UpdatePagesSizesSettings(PagesSizesSettings pagesSizesSettings)
+    public Task<Result> UpdateSetting<T>(T setting) where T : ISettings
     {
         throw new NotImplementedException();
     }

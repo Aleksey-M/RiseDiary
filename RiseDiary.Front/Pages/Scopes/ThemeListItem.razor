@@ -1,11 +1,10 @@
-﻿@using RiseDiary.Shared
-@using RiseDiary.Shared.Scopes
-@using RiseDiary.Front.AppServices
+﻿@using RiseDiary.Common.Scopes
+@using RiseDiary.Front.Services
 
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 @inject MarkdownService MdService
-@inject ThemeValidator Validator
+@inject ThemeDtoValidator Validator
 @inject NavigationManager NavManager
 
 @inherits UIComponentBase
@@ -94,7 +93,7 @@
 
     private void ShowEditForm()
     {
-        _edited = CurrentTheme.Copy();
+        _edited = new ThemeDto(CurrentTheme);
         ErrorMessage = null;
         _editMode = true;
     }

@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RiseDiary.Common.Records;
 using RiseDiary.Model;
-using RiseDiary.Shared;
-using RiseDiary.Shared.Records;
 using RiseDiary.WebAPI.Controllers.RecordsArea;
+using RiseDiary.WebAPI.Settings;
+using RiseDiary.WebAPI.Settings.Model;
 
 namespace RiseDiary.WebAPI.Controllers
 {
@@ -11,9 +12,9 @@ namespace RiseDiary.WebAPI.Controllers
     {
         private readonly IRecordsSearchService _recordService;
 
-        private readonly IAppSettingsService _appSettingsService;
+        private readonly ISettingsService _appSettingsService;
 
-        public StartPageController(IAppSettingsService appSettingsService, IRecordsSearchService recordService)
+        public StartPageController(ISettingsService appSettingsService, IRecordsSearchService recordService)
         {
             _recordService = recordService;
             _appSettingsService = appSettingsService;
@@ -22,19 +23,11 @@ namespace RiseDiary.WebAPI.Controllers
         [HttpGet("api/bookmarks")]
         public async Task<ActionResult<List<RecordDto>>> GetBookmarksRecord(CancellationToken token)
         {
-            var (recordIds, _) = await _appSettingsService.GetAppSetting(AppSettingsKey.BookmarksRecordsList);
+            var recordIds = (await _appSettingsService.GetSetting<BookmarksSettings>(token)).Data?.Records ?? [];
 
-            if (!string.IsNullOrEmpty(recordIds))
+            if (recordIds.Length > 0)
             {
-                var ids = recordIds
-                    .Trim()
-                    .Split(';')
-                    .Select(x => (isGuid: Guid.TryParse(x, out var id), id))
-                    .Where(x => x.isGuid)
-                    .Select(x => x.id)
-                    .ToArray();
-
-                var recs = await _recordService.GetRecordsByIds(ids, token);
+                var recs = await _recordService.GetRecordsByIds(recordIds, token);
                 return Ok(recs.Select(x => x.ToDto()).ToList());
             }
 

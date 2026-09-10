@@ -1,8 +1,8 @@
 ﻿@page "/records/calendar"
 
+@using RiseDiary.Common.Calendar
+@using RiseDiary.Common.Scopes
 @using RiseDiary.Front.Pages.Dates;
-@using RiseDiary.Shared.Calendar;
-@using RiseDiary.Shared.Scopes;
 
 @inherits UIComponentBase
 
@@ -75,7 +75,7 @@
                 };
 
             var data = await Http.GetFromJsonAsync<CalendarDto>(
-                NavManager.GetUriWithQueryParameters("api/records/calendar", queryParams), Token);
+                NavManager.GetUriWithQueryParameters("api/records/calendar", queryParams), CancellationToken);
 
             _filteredYears = data?.Years ?? new();
             _datesList = data?.Dates ?? new();
@@ -110,7 +110,7 @@
         {
             Loading = true;
 
-            _allScopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", Token) ?? new();
+            _allScopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", CancellationToken) ?? new();
             _allScopes.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
             await LoadData();            
         }

@@ -1,17 +1,18 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Hybrid;
+using RiseDiary.Common.Images;
+using RiseDiary.Common.Records;
+using RiseDiary.Common.Scopes;
+using RiseDiary.Common.Settings;
 using RiseDiary.Data;
 using RiseDiary.Model;
 using RiseDiary.Model.Services;
-using RiseDiary.Shared;
-using RiseDiary.Shared.Images;
-using RiseDiary.Shared.Records;
-using RiseDiary.Shared.Scopes;
-using RiseDiary.Shared.Settings;
 using RiseDiary.WebAPI.Config;
-using RiseDiary.WebAPI.Data;
 using RiseDiary.WebAPI.Middleware;
+using RiseDiary.WebAPI.Services;
+using RiseDiary.WebAPI.Settings;
 using Serilog;
+using RiseDiary.Common;
+using RiseDiary.WebAPI.Scopes.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,8 +29,6 @@ builder.Services.AddDbContext<DiaryDbContext>(options => options.UseSqlite(
     $"Data Source={dbFileName};", o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 Console.WriteLine($"Database file: {dbFileName}");
 
-await DataSeed.CheckData(dbFileName);
-
 
 // logging
 var logger = new LoggerConfiguration()
@@ -39,19 +38,17 @@ var logger = new LoggerConfiguration()
 
 builder.Logging.AddSerilog(logger);
 
-//
-builder.Services.AddHybridCache(options =>
-{
-    options.DefaultEntryOptions = new HybridCacheEntryOptions
-    {
-        Expiration = TimeSpan.FromMinutes(20),
-        LocalCacheExpiration = TimeSpan.FromMinutes(20)
-    };
-});
+builder.Services.RegisterJsonOptions();
+
+builder.Services.AddMemoryCache();
 
 // app services
+builder.Services.RegisterCommonSettingsValidators();
+builder.Services.RegisterSettingsServices();
+
+builder.Services.RegisterScopesAndThemesValidators();
 builder.Services.AddScoped<IScopesService, ScopesService>();
-builder.Services.AddScoped<IAppSettingsService, AppSettingsService>();
+
 builder.Services.AddScoped<IRecordsThemesService, RecordsThemesService>();
 builder.Services.AddScoped<IImagesService, ImagesService>();
 builder.Services.AddScoped<IRecordsImagesService, RecordsImagesService>();
@@ -65,8 +62,8 @@ builder.Services.AddScoped<ICalendarService, CalendarService>();
 builder.Services.AddScoped<ISqliteDatabase, SqliteDatabase>();
 
 // validators
-builder.Services.AddScoped<IDtoValidator<ScopeDto>, ScopeValidator>();
-builder.Services.AddScoped<ThemeValidator>();
+builder.Services.AddScoped<ScopeDtoValidator>();
+builder.Services.AddScoped<ThemeDtoValidator>();
 builder.Services.AddScoped<ImportantDaysSettingsValidator>();
 builder.Services.AddScoped<ImagesSettingsValidator>();
 builder.Services.AddScoped<PagesSizesSettingsValidator>();

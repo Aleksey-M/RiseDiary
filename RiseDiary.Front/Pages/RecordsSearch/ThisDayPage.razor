@@ -1,6 +1,6 @@
 ﻿@page "/records/this-day/{date?}"
 
-@using RiseDiary.Shared.Records
+@using RiseDiary.Common.Records
 
 @inject ILogger<ThisDayPage> Logger
 @inject HttpClient Http
@@ -52,7 +52,7 @@
                 ? parsedDate.ToString("yyyy-MM-dd")
                 : DateTime.UtcNow.ToString("yyyy-MM-dd");
 
-            var response = await Http.GetAsync($"api/records/this-day/{date}", Token);
+            var response = await Http.GetAsync($"api/records/this-day/{date}", CancellationToken);
             
             if(!await CheckSuccessResponse(response)) return;
 

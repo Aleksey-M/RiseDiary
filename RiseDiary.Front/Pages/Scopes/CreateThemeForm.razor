@@ -1,9 +1,7 @@
-﻿@using RiseDiary.Shared
-@using RiseDiary.Shared.Scopes
-@using RiseDiary.Front.AppServices
+﻿@using RiseDiary.Common.Scopes
 
 @inject HttpClient Http
-@inject ThemeValidator Validator
+@inject ThemeDtoValidator Validator
 @inject NavigationManager NavManager
 
 @inherits UIComponentBase
@@ -62,7 +60,7 @@
 
             await StartApiRequest();
 
-            var tmpDto = _newThemeDto.Copy();
+            var tmpDto = new ThemeDto(_newThemeDto);
             tmpDto.SetHostAndPortPlaceholder(NavManager.BaseUri);
 
             var response = await Http.PostAsJsonAsync($"api/scopes/{tmpDto.ScopeId.ToString()}/themes", tmpDto);

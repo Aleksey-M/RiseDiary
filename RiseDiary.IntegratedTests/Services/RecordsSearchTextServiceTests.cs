@@ -1,9 +1,9 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using RiseDiary.Model;
+using RiseDiary.Common.Search;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RiseDiary.IntegratedTests.Services;
 

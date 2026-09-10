@@ -2,8 +2,8 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using RiseDiary.Front.AppServices;
-using RiseDiary.Shared.Records;
+using RiseDiary.Common.Records;
+using RiseDiary.Front.Services;
 
 namespace RiseDiary.Front.Pages.RecordsView;
 
@@ -45,7 +45,7 @@ public partial class ViewRecordPage : UIComponentBase
         {
             await StartApiRequest();
 
-            _recordDto = await Http.GetFromJsonAsync<RecordEditDto>($"api/records/{RecordId}", Token);
+            _recordDto = await Http.GetFromJsonAsync<RecordEditDto>($"api/records/{RecordId}", CancellationToken);
             if (_recordDto == null)
             {
                 Logger.LogWarning("Record with Id = '{recordId}' does not exists", RecordId);

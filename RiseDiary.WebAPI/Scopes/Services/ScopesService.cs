@@ -1,0 +1,196 @@
+﻿using Microsoft.EntityFrameworkCore;
+using RiseDiary.Data;
+using RiseDiary.WebAPI.Scopes.Model;
+
+namespace RiseDiary.WebAPI.Scopes.Services;
+
+public sealed class ScopesService : IScopesService
+{
+    private readonly DiaryDbContext _context;
+    private readonly ILogger<ScopesService> _logger;
+
+    public ScopesService(DiaryDbContext context, ILogger<ScopesService> logger)
+    {
+        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _logger = logger;
+    }
+
+    public async Task<Guid> AddScope(string newScopeName, string newScopeDescription)
+    {
+        if (string.IsNullOrWhiteSpace(newScopeName))
+            throw new ArgumentException($"Parameter {nameof(newScopeName)} should not be null or empty");
+
+        newScopeName = newScopeName.Trim();
+        newScopeDescription = newScopeDescription?.Trim() ?? "";
+
+        if (await _context.Scopes.AnyAsync(s => s.ScopeName == newScopeName))
+            throw new ArgumentException($"Scope with name {newScopeName} already exists");
+
+        var scope = new ScopeEntity
+        {
+            Id = Guid.NewGuid(),
+            ScopeName = newScopeName,
+            Description = newScopeDescription
+        };
+
+        _context.Scopes.Add(scope);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Добавлена новая область интересов: {@scope}", scope);
+
+        return scope.Id;
+    }
+
+    public async Task<Guid> AddTheme(Guid scopeId, string newThemeName, bool actual, string newThemeDescription)
+    {
+        if (string.IsNullOrWhiteSpace(newThemeName))
+            throw new ArgumentException($"Parameter {nameof(newThemeName)} should not be null or empty");
+
+        newThemeName = newThemeName.Trim();
+        newThemeDescription = newThemeDescription?.Trim() ?? "";
+
+        var scope = await _context.Scopes
+            .AsNoTracking()
+            .Include(s => s.Themes)
+            .SingleOrDefaultAsync(s => s.Id == scopeId)
+            ?? throw new ArgumentException($"Scope with id={scopeId} is not exists");
+
+        if (scope.Themes.Any(t => t.ThemeName == newThemeName))
+            throw new ArgumentException($"Theme with name '{newThemeName}' already exists in '{scope.ScopeName}' scope");
+
+        var theme = new ThemeEntity
+        {
+            Id = Guid.NewGuid(),
+            ScopeId = scopeId,
+            ThemeName = newThemeName.Trim(),
+            Actual = actual,
+            Description = newThemeDescription
+        };
+
+        await _context.Themes.AddAsync(theme);
+        await _context.SaveChangesAsync();
+
+        return theme.Id;
+    }
+
+    public async Task<bool> CanDeleteScope(Guid scopeId)
+    {
+        bool themesExist = await _context.Themes.AnyAsync(th => th.ScopeId == scopeId);
+        return !themesExist;
+    }
+
+    public async Task DeleteScope(Guid scopeId)
+    {
+        bool canDelete = await CanDeleteScope(scopeId);
+        if (!canDelete) return;
+
+        var scope = await _context.Scopes
+            .Include(s => s.Themes)
+            .ThenInclude(t => t.RecordsRefs)
+            .SingleOrDefaultAsync(s => s.Id == scopeId);
+
+        if (scope != null && !scope.Themes.Any(t => !t.Deleted))
+        {
+            _context.Scopes.Remove(scope);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task DeleteTheme(Guid themeId)
+    {
+        var theme = await _context.Themes
+            .Include(t => t.RecordsRefs)
+            .SingleOrDefaultAsync(t => t.Id == themeId);
+
+        if (theme != null)
+        {
+            _context.Themes.Remove(theme);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<ScopeEntity[]> GetScopes(bool? themesActuality, CancellationToken cancellationToken)
+    {
+        var scopesList = await _context.Scopes
+            .Include(s => s.Themes)
+            .ThenInclude(t => t.RecordsRefs)
+            .AsNoTracking()
+            .OrderBy(s => s.ScopeName)
+            .ToListAsync(cancellationToken);
+
+        if (themesActuality != null)
+        {
+            foreach (var scope in scopesList.ToList())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                scope.Themes = scope.Themes.Where(t => t.Actual == themesActuality.Value).ToList();
+                if (scope.Themes.Count == 0) scopesList.Remove(scope);
+            }
+        }
+
+        return [.. scopesList];
+    }
+
+    public async Task<(Guid scopeId, string scopeName)[]> GetScopesNames(CancellationToken cancellationToken = default)
+    {
+        var scopes = await _context.Scopes
+            .AsNoTracking()
+            .Select(x => new { x.Id, x.ScopeName })
+            .ToListAsync(cancellationToken);
+
+        return scopes.Select(x => (scopeId: x.Id, x.ScopeName)).ToArray();
+    }
+
+    public async Task UpdateScope(Guid scopeId, string? scopeNewName, string? scopeNewDescription)
+    {
+        if (string.IsNullOrWhiteSpace(scopeNewName) && scopeNewDescription == null) return;
+
+        var targetScope = await _context.Scopes.FindAsync(scopeId)
+            ?? throw new ArgumentException($"Scope with id = {scopeId} is not exists");
+        if (targetScope.Deleted) throw new ArgumentException($"Scope with id = {scopeId} is deleted");
+
+        if (!string.IsNullOrWhiteSpace(scopeNewName))
+        {
+            scopeNewName = scopeNewName.Trim();
+
+            if (await _context.Scopes.AnyAsync(s => s.ScopeName == scopeNewName && s.Id != scopeId))
+                throw new ArgumentException($"Scope with name {scopeNewName} already exists");
+
+            targetScope.ScopeName = scopeNewName;
+        }
+
+        targetScope.Description = scopeNewDescription ?? targetScope.Description;
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateTheme(Guid themeId, string? themeNewName, bool? themeActuality, string? themeNewDescription)
+    {
+        if (string.IsNullOrWhiteSpace(themeNewName) && themeActuality == null && themeNewDescription == null) return;
+
+        var targetTheme = await _context.Themes.FindAsync(themeId)
+            ?? throw new ArgumentException($"Theme with id = {themeId} is not exists");
+        if (targetTheme.Deleted) throw new ArgumentException($"Theme with id = {themeId} is deleted");
+
+        if (!string.IsNullOrWhiteSpace(themeNewName))
+        {
+            themeNewName = themeNewName.Trim();
+
+            if (await _context.Themes
+                .AnyAsync(t => t.ScopeId == targetTheme.ScopeId && t.Id != targetTheme.Id && t.ThemeName == themeNewName))
+                throw new ArgumentException($"Theme with name {themeNewName} already exists");
+
+            targetTheme.ThemeName = themeNewName;
+        }
+
+        targetTheme.Description = themeNewDescription ?? targetTheme.Description;
+
+        if (themeActuality != null && targetTheme.Actual != themeActuality)
+        {
+            targetTheme.Actual = themeActuality.Value;
+        }
+
+        await _context.SaveChangesAsync();
+    }
+}

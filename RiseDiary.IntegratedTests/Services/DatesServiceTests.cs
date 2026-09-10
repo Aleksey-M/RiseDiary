@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using RiseDiary.Data;
 using RiseDiary.Model;
+using RiseDiary.WebAPI.Scopes.Model;
 
 namespace RiseDiary.IntegratedTests.Services;
 
@@ -127,72 +128,72 @@ internal class DatesServiceTests : TestFixtureBase
 
 
 #pragma warning disable CA1822 // Mark members as static
-    private List<DiaryRecord> GetTestRecords() => new()
+    private List<RecordEntity> GetTestRecords() => new()
     {
-        new DiaryRecord //1
+        new RecordEntity //1
         {
             Id = Guid.NewGuid(),
             Date = DateOnly.Parse("2018-01-01"),
             Name = Guid.NewGuid().ToString(),
             Text = Guid.NewGuid().ToString()
         },
-         new DiaryRecord // 0
+         new RecordEntity // 0
         {
             Id = Guid.NewGuid(),
             Date = DateOnly.Parse("2016-02-10"),
             Name = Guid.NewGuid().ToString(),
             Text = Guid.NewGuid().ToString()
         },
-         new DiaryRecord // 3
+         new RecordEntity // 3
         {
             Id = Guid.NewGuid(),
             Date = DateOnly.Parse("2010-04-22"),
             Name = Guid.NewGuid().ToString(),
             Text = Guid.NewGuid().ToString()
         },
-        new DiaryRecord // 1
+        new RecordEntity // 1
         {
             Id = Guid.NewGuid(),
             Date = DateOnly.Parse("2012-04-23"),
             Name = Guid.NewGuid().ToString() + $@"Link: <a href=""https://diary.com/images/123"">Some Image</a>",
             Text = Guid.NewGuid().ToString() + $@"Link: <a href=""https://diary.com/images/123"">Some Image</a>"
         },
-        new DiaryRecord // 0
+        new RecordEntity // 0
         {
             Id = Guid.NewGuid(),
             Date = DateOnly.Parse("2008-06-19"),
             Name = Guid.NewGuid().ToString(),
             Text = Guid.NewGuid().ToString()
         },
-        new DiaryRecord // 2
+        new RecordEntity // 2
         {
             Id = Guid.NewGuid(),
             Date = DateOnly.Parse("2019-06-23"),
             Name = Guid.NewGuid().ToString(),
             Text = Guid.NewGuid().ToString()
         },
-        new DiaryRecord // 3
+        new RecordEntity // 3
         {
             Id = Guid.NewGuid(),
             Date = DateOnly.Parse("2015-06-23"),
             Name = Guid.NewGuid().ToString(),
             Text = Guid.NewGuid().ToString()
         },
-        new DiaryRecord // 3
+        new RecordEntity // 3
         {
             Id = Guid.NewGuid(),
             Date = DateOnly.Parse("2020-06-24"),
             Name = Guid.NewGuid().ToString() + $@"Link: <a href=""https://diary.com/records/987987987"">Some record</a>",
             Text = Guid.NewGuid().ToString() + $@"Link: <a href=""https://diary.com/records/987987987"">Some record</a>"
         },
-        new DiaryRecord // 3
+        new RecordEntity // 3
         {
             Id = Guid.NewGuid(),
             Date = DateOnly.Parse("2005-09-17"),
             Name = Guid.NewGuid().ToString(),
             Text = Guid.NewGuid().ToString()
         },
-        new DiaryRecord // 1
+        new RecordEntity // 1
         {
             Id = Guid.NewGuid(),
             Date = DateOnly.Parse("2019-12-31"),
@@ -201,48 +202,48 @@ internal class DatesServiceTests : TestFixtureBase
         }
     };
 
-    private List<DiaryScope> GetTestScopes() => new()
+    private List<ScopeEntity> GetTestScopes() => new()
     {
-        new DiaryScope
+        new ScopeEntity
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
             ScopeName = "Dates Scope",
-            Themes = new List<DiaryTheme>
+            Themes = new List<ThemeEntity>
             {
-                new DiaryTheme
+                new ThemeEntity
                 {
                     Id = Guid.NewGuid(),
                     ThemeName = "Dates 1"
                 },
-                new DiaryTheme
+                new ThemeEntity
                 {
                     Id = Guid.NewGuid(),
                     ThemeName = "Dates 2"
                 },
-                new DiaryTheme
+                new ThemeEntity
                 {
                     Id = Guid.NewGuid(),
                     ThemeName = "Dates 3"
                 }
             }
         },
-        new DiaryScope
+        new ScopeEntity
         {
             Id = Guid.NewGuid(),
             ScopeName = "Some other scope",
-            Themes = new List<DiaryTheme>
+            Themes = new List<ThemeEntity>
             {
-                new DiaryTheme
+                new ThemeEntity
                 {
                     Id = Guid.NewGuid(),
                     ThemeName = "Other Theme 1"
                 },
-                new DiaryTheme
+                new ThemeEntity
                 {
                     Id = Guid.NewGuid(),
                     ThemeName = "Other Theme 2"
                 },
-                new DiaryTheme
+                new ThemeEntity
                 {
                     Id = Guid.NewGuid(),
                     ThemeName = "Other Theme 3"
@@ -251,7 +252,7 @@ internal class DatesServiceTests : TestFixtureBase
         }
     };
 
-    private async Task<(List<DiaryScope> scopes, List<DiaryRecord> records)> AddTestData(DiaryDbContext context)
+    private async Task<(List<ScopeEntity> scopes, List<RecordEntity> records)> AddTestData(DiaryDbContext context)
     {
         var scopes = GetTestScopes();
         var records = GetTestRecords();
@@ -259,134 +260,134 @@ internal class DatesServiceTests : TestFixtureBase
         await context.Records.AddRangeAsync(records);
         await context.Scopes.AddRangeAsync(scopes);
 
-        var rs = new List<DiaryRecordTheme>
+        var rs = new List<RecordThemeEntity>
         {
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[0],
                 Theme = scopes[0].Themes.ElementAt(1)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[2],
                 Theme = scopes[0].Themes.ElementAt(0)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[2],
                 Theme = scopes[0].Themes.ElementAt(1)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[2],
                 Theme = scopes[0].Themes.ElementAt(2)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[3],
                 Theme = scopes[0].Themes.ElementAt(0)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[5],
                 Theme = scopes[0].Themes.ElementAt(0)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[5],
                 Theme = scopes[0].Themes.ElementAt(2)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[6],
                 Theme = scopes[0].Themes.ElementAt(1)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[6],
                 Theme = scopes[0].Themes.ElementAt(0)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[6],
                 Theme = scopes[0].Themes.ElementAt(2)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[7],
                 Theme = scopes[0].Themes.ElementAt(0)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[7],
                 Theme = scopes[0].Themes.ElementAt(1)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[7],
                 Theme = scopes[0].Themes.ElementAt(2)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[8],
                 Theme = scopes[0].Themes.ElementAt(1)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[8],
                 Theme = scopes[0].Themes.ElementAt(0)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[8],
                 Theme = scopes[0].Themes.ElementAt(2)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[9],
                 Theme = scopes[0].Themes.ElementAt(1)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[0],
                 Theme = scopes[1].Themes.ElementAt(1)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[1],
                 Theme = scopes[1].Themes.ElementAt(0)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[2],
                 Theme = scopes[1].Themes.ElementAt(2)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[4],
                 Theme = scopes[1].Themes.ElementAt(0)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[5],
                 Theme = scopes[1].Themes.ElementAt(1)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[6],
                 Theme = scopes[1].Themes.ElementAt(2)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[7],
                 Theme = scopes[1].Themes.ElementAt(0)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[8],
                 Theme = scopes[1].Themes.ElementAt(2)
             },
-            new DiaryRecordTheme
+            new RecordThemeEntity
             {
                 Record = records[9],
                 Theme = scopes[1].Themes.ElementAt(1)

@@ -6,12 +6,9 @@ public interface IImagesService
         string? cameraModel = null, DateTime? taken = null, string? contentType = null);
 
     Task DeleteImage(Guid imageId);
-
     Task<byte[]> FetchFullImageById(Guid imageId, CancellationToken cancellationToken = default);
-
-    Task<DiaryImage> FetchImageById(Guid imageId, CancellationToken cancellationToken = default);
-
-    Task<List<DiaryImage>> FetchImageSet(int skip, int count,
+    Task<ImageEntity> FetchImageById(Guid imageId, CancellationToken cancellationToken = default);
+    Task<List<ImageEntity>> FetchImageSet(int skip, int count,
         string? imageNameFilter = null, Guid? recordId = null, CancellationToken cancellationToken = default);
 
     Task<int> GetImagesCount(string? imageNameFilter = null,

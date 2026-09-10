@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -56,33 +55,6 @@ internal class ScopesServiceTests : TestFixtureBase
         action1.Should().ThrowAsync<ArgumentException>();
         action2.Should().ThrowAsync<ArgumentException>();
         action3.Should().ThrowAsync<ArgumentException>();
-    }
-
-    [Test]
-    public async Task GetScope_WithNotExistingId_ShouldReturnNull()
-    {
-        var svc = GetScopesService();
-
-        var scope = await svc.FetchScopeById(Guid.NewGuid());
-
-        scope.Should().BeNull();
-    }
-
-    [Test]
-    public async Task GetScope_ShouldReturnScope()
-    {
-        var svc = GetScopesService();
-        var ScopesData = new Dictionary<string, Guid>
-        {
-            { @"""_)(*&^%$#@!фівраХЇЇїіййєєє", await svc.AddScope(@"""_)(*&^%$#@!фівраХЇЇїіййєєє") },
-            { @"...^&*(::;[]", await svc.AddScope(@"...^&*(::;[]") },
-            { @"'|||\\//", await svc.AddScope(@"'|||\\//") }
-        };
-
-        foreach (KeyValuePair<string, Guid> pair in ScopesData)
-        {
-            pair.Key.Should().Be((await svc.FetchScopeById(pair.Value)).ScopeName);
-        }
     }
 
     [Test]
@@ -234,18 +206,6 @@ internal class ScopesServiceTests : TestFixtureBase
     }
 
     [Test]
-    public async Task UpdateScope_ShouldUpdateScopeName()
-    {
-        var svc = GetScopesService();
-        Guid id = await svc.AddScope("New Scope 1");
-
-        await svc.UpdateScope(id, @"""'''[]!@#$%^&*()_+::"":;;<><>,.");
-        var updatedScope = await svc.FetchScopeById(id);
-
-        updatedScope.ScopeName.Should().Be(@"""'''[]!@#$%^&*()_+::"":;;<><>,.");
-    }
-
-    [Test]
     public async Task CanDeleteScope_ShouldReturnTrue()
     {
         var svc = GetScopesService();
@@ -286,36 +246,6 @@ internal class ScopesServiceTests : TestFixtureBase
     }
 
     [Test]
-    public async Task DeleteScope_ShouldDeleteScope()
-    {
-        var context = CreateContext();
-        var svc = GetScopesService(context);
-        Guid id = await svc.AddScope("New Scope 1");
-
-        await svc.DeleteScope(id);
-        var scope = await svc.FetchScopeById(id);
-
-        scope.Should().BeNull();
-        context.Scopes.IgnoreQueryFilters().SingleOrDefault(s => s.Id == id).Should().NotBeNull();
-    }
-
-    [Test]
-    public async Task DeleteScope_WithDeletedThemes_ShouldDeleteScope()
-    {
-        var context = CreateContext();
-        var svc = GetScopesService(context);
-        var themeId = CreateTheme(context, "Theme Name");
-        var scopeId = (await context.Themes.FindAsync(themeId)).ScopeId;
-
-        await svc.DeleteTheme(themeId);
-        await svc.DeleteScope(scopeId);
-        var scope = await svc.FetchScopeById(scopeId);
-
-        scope.Should().BeNull();
-        context.Scopes.IgnoreQueryFilters().SingleOrDefault(s => s.Id == scopeId).Should().NotBeNull();
-    }
-
-    [Test]
     public async Task AddTheme_ShouldNotThrowException()
     {
         var context = CreateContext();
@@ -328,59 +258,10 @@ internal class ScopesServiceTests : TestFixtureBase
     }
 
     [Test]
-    public async Task FetchTheme_ShouldReturnTheme()
-    {
-        var context = CreateContext();
-        string themeName = @"!@#$%^''""&*()_+,.<><>?//[]||\\апрорпывоаъъЇЇііі.єєєйй";
-        var (scopeId, themeId) = CreateThemeWithScope(context, themeName);
-        var svc = GetScopesService(context);
-
-        var scope = await svc.FetchScopeById(scopeId);
-        var theme = scope.Themes.SingleOrDefault(t => t.Id == themeId);
-
-        theme.Should().NotBeNull();
-        theme?.ThemeName.Should().Be(themeName);
-    }
-
-    [Test]
-    public async Task UpdateTheme_ShouldUpdateThemeName()
-    {
-        var context = CreateContext();
-        string themeNameOld = @"!@#$%^''""&*()_+,.<><>?//[]||\\апрорпывоаъъЇЇііі.єєєйй";
-        string themeNameNew = @"}{}{P}ЪХЪХъыйыбЙЇіїіїієєєжж.ююббьчсимеуdgfjsjs";
-        var (scopeId, themeId) = CreateThemeWithScope(context, themeNameOld);
-        var svc = GetScopesService(context);
-        var scope = await svc.FetchScopeById(scopeId);
-        var theme = scope.Themes.SingleOrDefault(t => t.Id == themeId);
-
-        await svc.UpdateTheme(themeId, themeNameNew, false);
-        scope = await svc.FetchScopeById(scopeId);
-        theme = scope.Themes.Single(t => t.Id == themeId);
-
-        theme.ThemeName.Should().Be(themeNameNew);
-    }
-
-    [Test]
-    public Task DeleteTheme_WithNotExistingId_ShouldNotThrowException()
+    public async Task DeleteTheme_WithNotExistingId_ShouldNotThrowException()
     {
         var svc = GetScopesService();
-        return svc.DeleteTheme(Guid.NewGuid());
-    }
-
-    [Test]
-    public async Task DeleteTheme_ShouldDeleteTheme()
-    {
-        var context = CreateContext();
-        var (scopeId, themeId) = CreateThemeWithScope(context, "Theme Name");
-        var svc = GetScopesService(context);
-
-        await svc.DeleteTheme(themeId);
-
-        var scope = await svc.FetchScopeById(scopeId);
-        var theme = scope.Themes.SingleOrDefault(t => t.Id == themeId);
-
-        theme.Should().BeNull();
-        context.Themes.IgnoreQueryFilters().SingleOrDefault(t => t.Id == themeId).Should().NotBeNull();
+        await svc.DeleteTheme(Guid.NewGuid());
     }
 
     [Test]

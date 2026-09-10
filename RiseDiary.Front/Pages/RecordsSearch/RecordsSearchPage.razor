@@ -1,5 +1,6 @@
 ﻿@page "/records/search"
-@using RiseDiary.Shared.Records;
+@using RiseDiary.Common
+@using RiseDiary.Common.Records
 
 @inherits UIComponentBase
 
@@ -70,7 +71,7 @@
 
             if (_expanded)
             {
-                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordDto>>(uri, Token);
+                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordDto>>(uri, CancellationToken);
                 _pages = response?.PagesInfo ?? new();
 
                 var records = response?.Records ?? new List<RecordDto>();
@@ -84,7 +85,7 @@
             }
             else
             {
-                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordListItemDto>>(uri, Token);
+                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordListItemDto>>(uri, CancellationToken);
                 _pages = response?.PagesInfo ?? new();
 
                 var records = response?.Records ?? new List<RecordListItemDto>();

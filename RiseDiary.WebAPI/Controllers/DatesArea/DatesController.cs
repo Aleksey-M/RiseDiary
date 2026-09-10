@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RiseDiary.Common.Calendar;
 using RiseDiary.Model;
-using RiseDiary.Shared.Calendar;
 
 namespace RiseDiary.WebAPI.Controllers.DatesArea;
 

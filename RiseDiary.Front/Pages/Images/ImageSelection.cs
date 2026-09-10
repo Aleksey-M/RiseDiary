@@ -1,4 +1,4 @@
-﻿using RiseDiary.Shared.Images;
+﻿using RiseDiary.Common.Images;
 
 namespace RiseDiary.Front.Pages.Images;
 

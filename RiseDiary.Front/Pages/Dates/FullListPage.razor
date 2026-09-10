@@ -1,6 +1,6 @@
 ﻿@page "/dates/fulllist"
 
-@using RiseDiary.Shared.Calendar;
+@using RiseDiary.Common.Calendar
 
 @inherits UIComponentBase
 
@@ -61,7 +61,7 @@
         {
             await StartApiRequest();
 
-            _datesList = await Http.GetFromJsonAsync<List<DateListItemDto>>("api/dates/fulllist", Token);
+            _datesList = await Http.GetFromJsonAsync<List<DateListItemDto>>("api/dates/fulllist", CancellationToken);
             _datesList?.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
 
             await FinishApiRequest(null);

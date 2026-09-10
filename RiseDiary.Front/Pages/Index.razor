@@ -1,8 +1,8 @@
 ﻿@page "/"
 @page "/index"
 
-@using RiseDiary.Front.AppServices
-@using RiseDiary.Shared.Records
+@using RiseDiary.Common.Records
+@using RiseDiary.Front.Services
 
 @inject MarkdownService MdService
 @inject HttpClient Http
@@ -48,7 +48,12 @@
 
         try
         {
-            _records = await Http.GetFromJsonAsync<RecordDto[]>("api/bookmarks", Token) ?? [];
+            _records = await Http.GetFromJsonAsync<RecordDto[]>("api/bookmarks", CancellationToken) ?? [];
+            foreach (var r in _records)
+            {
+                r.SetBaseUri(NavManager.BaseUri);
+            }
+
             _loading = false;
         }
         catch (Exception exc)

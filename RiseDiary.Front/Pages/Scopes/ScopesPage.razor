@@ -1,7 +1,6 @@
 ﻿@page "/scopes"
 
-@using RiseDiary.Shared
-@using RiseDiary.Shared.Scopes
+@using RiseDiary.Common.Scopes
 @using RiseDiary.Front.Pages
 
 @inject HttpClient Http
@@ -63,7 +62,7 @@
 
         try
         {
-            _scopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", Token);
+            _scopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", CancellationToken);
             _scopes?.SetBaseUri(NavManager.BaseUri);
         }
         catch (Exception exc)

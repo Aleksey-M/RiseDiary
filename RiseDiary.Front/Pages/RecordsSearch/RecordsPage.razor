@@ -1,7 +1,8 @@
 ﻿@page "/records"
 
-@using RiseDiary.Shared.Records;
-@using RiseDiary.Shared.Scopes;
+@using RiseDiary.Common
+@using RiseDiary.Common.Records
+@using RiseDiary.Common.Scopes
 
 @inherits UIComponentBase
 
@@ -73,7 +74,7 @@
 
             if (_filters.Expanded)
             {
-                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordDto>>(uri, Token);
+                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordDto>>(uri, CancellationToken);
                 _pages = response?.PagesInfo ?? new();
 
                 var records = response?.Records ?? new List<RecordDto>();
@@ -87,7 +88,7 @@
             }
             else
             {
-                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordListItemDto>>(uri, Token);
+                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordListItemDto>>(uri, CancellationToken);
                 _pages = response?.PagesInfo ?? new();
 
                 var records = response?.Records ?? new List<RecordListItemDto>();
@@ -117,7 +118,7 @@
         try
         {
             Loading = true;
-            _allScopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", Token) ?? new();
+            _allScopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", CancellationToken) ?? new();
             _allScopes.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
             await LoadData();
         }

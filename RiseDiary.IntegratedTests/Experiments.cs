@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using RiseDiary.Common.Search;
 using RiseDiary.Model;
 
 namespace RiseDiary.IntegratedTests;
@@ -20,8 +21,8 @@ internal class Experiments : TestFixtureBase
         var filter = new RecordsFilter();
         filter.AddThemeId(Guid.NewGuid());
 
-        IQueryable<DiaryRecord> result;
-        List<DiaryRecord>? r = null;
+        IQueryable<RecordEntity> result;
+        List<RecordEntity>? r = null;
 
         if (!filter.IsEmptyTypeFilter)
         {

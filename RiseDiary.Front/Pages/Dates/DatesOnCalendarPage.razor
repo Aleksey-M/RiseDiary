@@ -1,6 +1,6 @@
 ﻿@page "/dates/oncalendar"
 
-@using RiseDiary.Shared.Calendar;
+@using RiseDiary.Common.Calendar
 
 @inherits UIComponentBase
 
@@ -46,7 +46,7 @@
             await StartApiRequest();
 
             _year = DateTime.UtcNow.Year;
-            _datesList = await Http.GetFromJsonAsync<List<CalendarDateDto>>("api/dates/calendar", Token);
+            _datesList = await Http.GetFromJsonAsync<List<CalendarDateDto>>("api/dates/calendar", CancellationToken);
             _datesList?.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
 
             await FinishApiRequest(null);

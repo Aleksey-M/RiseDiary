@@ -1,9 +1,8 @@
 ﻿@page "/images"
 
-@using RiseDiary.Front.Shared
-@using RiseDiary.Shared
-@using RiseDiary.Shared.Images
+@using RiseDiary.Common.Images
 @using RiseDiary.Front.Pages
+@using RiseDiary.Front.Shared
 
 @inherits UIComponentBase
 
@@ -62,7 +61,7 @@
             await StartApiRequest();
 
             var uri = $"api/images?pageNo={_page}";
-            _pageData = await Http.GetFromJsonAsync<ImagesPageDto>(uri, Token);
+            _pageData = await Http.GetFromJsonAsync<ImagesPageDto>(uri, CancellationToken);
 
             _totalCount = $"Всего изображений: {_pageData?.PagesInfo?.TotalItems ?? 0}";
 
