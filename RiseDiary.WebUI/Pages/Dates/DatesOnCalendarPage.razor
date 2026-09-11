@@ -1,0 +1,61 @@
+﻿@page "/dates/oncalendar"
+
+@using RiseDiary.Common.Calendar
+@using RiseDiary.WebUI.Pages
+
+@inherits UIComponentBase
+
+<PageTitle>Все даты</PageTitle>
+
+
+<Spinner Loading="Loading">
+    <div class="row">
+        @if (_datesList != null)
+        {
+            <DatesSubmenu CurrentPageUriPart="oncalendar" />
+        }
+
+        @if (HasError)
+        {
+            <p style="color:red">@ErrorMessage</p>
+        }
+
+        <YearCalendar Year="_year" DatesList="_datesList" />
+    </div>
+
+</Spinner>
+
+@code {
+    [Inject]
+    public HttpClient Http { get; set; } = null!;
+
+    [Inject]
+    public NavigationManager NavManager { get; set; } = null!;
+
+    [Inject]
+    public ILogger<DatesOnCalendarPage> Logger { get; set; } = null!;
+
+    private List<CalendarDateDto>? _datesList;
+    private int _year;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            await StartApiRequest();
+
+            _year = DateTime.UtcNow.Year;
+            _datesList = await Http.GetFromJsonAsync<List<CalendarDateDto>>("api/dates/calendar", CancellationToken);
+            _datesList?.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            Logger.LogWarning(exc, "Error on initializing");
+            await FinishApiRequest(exc.Message);
+        }
+    }
+}

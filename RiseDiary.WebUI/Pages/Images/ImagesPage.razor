@@ -1,0 +1,94 @@
+﻿@page "/images"
+
+@using RiseDiary.Common.Images
+@using RiseDiary.WebUI.Pages
+@using RiseDiary.WebUI.Shared
+
+@inherits UIComponentBase
+
+@inject HttpClient Http
+
+<PageTitle>Фотографии и рисунки</PageTitle>
+
+<Spinner Loading="Loading">
+    @if (_pageData != null)
+    {
+        @if (OpenedImageId.HasValue)
+        {
+            <ImageView ImageId="OpenedImageId.Value" ShowButtons="true" CloseImageView="CloseImage" />
+        }
+        <div class="col-12 row">
+            <div class="col-12">
+                <div class="my-3 px-3">
+                    <NavLink class="btn btn-outline-primary" href="/images/upload">Загрузить</NavLink>
+                    <Pager Pages="@_pageData.PagesInfo" FloatRight="true" Navigate="LoadPage" />
+                </div>
+            </div>
+
+            @foreach (var image in _pageData.Images)
+            {
+                <div class="col-lg-3 col-md-6 col-sm-12 p-3">
+                    <Thumbnail Image="image" ImageClick="OpenImage" />
+                </div>
+            }
+
+            <div class="col-12">
+                <div class="my-3 px-3">
+                    <i class="pt-3">@_totalCount</i>
+                    <Pager Pages="@_pageData.PagesInfo" FloatRight="true" Navigate="LoadPage" />
+                </div>
+            </div>
+        </div>
+    }
+</Spinner>
+
+@code {
+
+    private int _page = 1;
+
+    private ImagesPageDto? _pageData;
+
+    private Guid? OpenedImageId;
+
+    private string _totalCount = $"Всего изображений: 0";
+
+    private async Task LoadPage(int page = 1)
+    {
+        _page = page;
+
+        try
+        {
+            await StartApiRequest();
+
+            var uri = $"api/images?pageNo={_page}";
+            _pageData = await Http.GetFromJsonAsync<ImagesPageDto>(uri, CancellationToken);
+
+            _totalCount = $"Всего изображений: {_pageData?.PagesInfo?.TotalItems ?? 0}";
+
+            await FinishApiRequest(null);
+        }
+        catch (Exception exc)
+        {
+            _pageData = new();
+            await FinishApiRequest(exc.Message);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadPage();
+    }
+
+    private void OpenImage(Guid imageId)
+    {
+        OpenedImageId = imageId;
+        StateHasChanged();
+    }
+
+    private void CloseImage()
+    {
+        OpenedImageId = default;
+        StateHasChanged();
+    }
+}

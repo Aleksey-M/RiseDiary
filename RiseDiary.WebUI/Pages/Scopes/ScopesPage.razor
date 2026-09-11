@@ -1,0 +1,74 @@
+﻿@page "/scopes"
+
+@using RiseDiary.Common.Scopes
+@using RiseDiary.WebUI.Pages
+
+@inject HttpClient Http
+@inject NavigationManager NavManager
+
+@inherits UIComponentBase
+
+<PageTitle>Области интересов и темы</PageTitle>
+
+
+<div class="offset-md-2 col-md-8 col-sm-12 mt-2">
+
+    @if (_scopes == null)
+    {
+        <Spinner Loading="true" />
+    }
+    else
+    {
+        @if (HasError)
+        {
+            <pre style="color:red;">@ErrorMessage</pre>
+        }
+
+        <CreateScopeCard NewScopeCreated="AddScope" />
+
+        @foreach (var sc in _scopes)
+        {
+            <ScopeCard CurrentScope="sc" DeleteScopeFromList="DeleteScopeFromList" @key="sc.ScopeId" />
+        }
+    }
+
+</div>
+
+
+@code {
+
+    private List<ScopeDto>? _scopes;
+
+    private void AddScope(ScopeDto scope)
+    {
+        _scopes?.Insert(0, scope);
+        StateHasChanged();
+    }
+
+    private void DeleteScopeFromList(Guid scopeId)
+    {
+        var s = _scopes?.FirstOrDefault(x => x.ScopeId == scopeId);
+
+        if (s != null)
+        {
+            _scopes?.Remove(s);
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            _scopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", CancellationToken);
+            _scopes?.SetBaseUri(NavManager.BaseUri);
+        }
+        catch (Exception exc)
+        {
+            ErrorMessage = exc.Message;
+            _scopes = new();
+        }
+    }
+}

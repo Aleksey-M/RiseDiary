@@ -34,7 +34,7 @@
 	
   <ItemGroup>
     <ProjectReference Include="..\RiseDiary.Common\RiseDiary.Common.csproj" />
-    <ProjectReference Include="..\RiseDiary.Front\RiseDiary.Front.csproj" />
+    <ProjectReference Include="..\RiseDiary.WebUI\RiseDiary.WebUI.csproj" />
   </ItemGroup>
 	
   <ItemGroup>

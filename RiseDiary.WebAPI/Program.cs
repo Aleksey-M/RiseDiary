@@ -43,10 +43,9 @@ builder.Services.RegisterJsonOptions();
 builder.Services.AddMemoryCache();
 
 // app services
-builder.Services.RegisterCommonSettingsValidators();
-builder.Services.RegisterSettingsServices();
+builder.Services.RegisterDtoValidators();
 
-builder.Services.RegisterScopesAndThemesValidators();
+builder.Services.RegisterSettingsServices();
 builder.Services.AddScoped<IScopesService, ScopesService>();
 
 builder.Services.AddScoped<IRecordsThemesService, RecordsThemesService>();

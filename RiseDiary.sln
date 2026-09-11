@@ -12,9 +12,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RiseDiary.WebAPI", "RiseDiary.WebAPI\RiseDiary.WebAPI.csproj", "{F9E4CB61-63EB-479A-A9A1-5F6A389C6DCC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RiseDiary.Front", "RiseDiary.Front\RiseDiary.Front.csproj", "{903DB26A-9E77-493F-A15E-2D9D566E4F5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RiseDiary.WebUI", "RiseDiary.WebUI\RiseDiary.WebUI.csproj", "{903DB26A-9E77-493F-A15E-2D9D566E4F5C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiseDiary.Common", "RiseDiary.Common\RiseDiary.Common.csproj", "{D4BFD8E7-CED0-8B15-DF65-AAB0472F323F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiseDiary.WebUI.Clients", "RiseDiary.WebUI.Clients\RiseDiary.WebUI.Clients.csproj", "{4DA7A45C-D71E-4F42-9A34-861A09662F7A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +40,10 @@ Global
 		{D4BFD8E7-CED0-8B15-DF65-AAB0472F323F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4BFD8E7-CED0-8B15-DF65-AAB0472F323F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4BFD8E7-CED0-8B15-DF65-AAB0472F323F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DA7A45C-D71E-4F42-9A34-861A09662F7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DA7A45C-D71E-4F42-9A34-861A09662F7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DA7A45C-D71E-4F42-9A34-861A09662F7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DA7A45C-D71E-4F42-9A34-861A09662F7A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
