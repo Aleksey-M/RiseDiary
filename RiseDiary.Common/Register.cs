@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RiseDiary.Common.Scopes;
 using RiseDiary.Common.Settings;
 using RiseDiary.Common.Settings.Validators;
+using RiseDiary.Shared;
 using System.Text.Json;
 
 namespace RiseDiary.Common;
@@ -29,8 +30,8 @@ public static class Register
         services.AddSingleton<AbstractValidator<PagesSizesSettingsDto>, PagesSizesSettingsValidator>();
         services.AddSingleton<ISettingsDtoValidator, SettingsDtoValidator>();
 
-        services.AddSingleton<ScopeDtoValidator>();
-        services.AddSingleton<ThemeDtoValidator>();
+        services.AddSingleton<IDtoValidator<ScopeDto>, ScopeDtoValidator>();
+        services.AddSingleton<IDtoValidator<ThemeDto>, ThemeDtoValidator>();
 
         return services;
     }

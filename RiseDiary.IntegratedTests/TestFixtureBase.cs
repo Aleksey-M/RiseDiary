@@ -9,15 +9,29 @@ using Moq;
 using NUnit.Framework;
 using RiseDiary.Data;
 using RiseDiary.IntegratedTests.Stubs;
-using RiseDiary.Model;
 using RiseDiary.Model.Services;
-using RiseDiary.WebAPI.Scopes.Model;
-using RiseDiary.WebAPI.Scopes.Services;
-using RiseDiary.WebAPI.Services;
-using RiseDiary.WebAPI.Settings;
-using RiseDiary.WebAPI.Settings.Model;
-using RiseDiary.WebAPI.Settings.Services;
-using RiseDiary.WebAPI.Settings.Storage;
+using RiseDiary.WebAPI.Application.Analysis.Abstraction;
+using RiseDiary.WebAPI.Application.Analysis.Services;
+using RiseDiary.WebAPI.Application.Images.Abstraction;
+using RiseDiary.WebAPI.Application.Images.Model;
+using RiseDiary.WebAPI.Application.Images.Services;
+using RiseDiary.WebAPI.Application.Records.Abstraction;
+using RiseDiary.WebAPI.Application.Records.Model;
+using RiseDiary.WebAPI.Application.Records.Services;
+using RiseDiary.WebAPI.Application.RecordsImages.Abstraction;
+using RiseDiary.WebAPI.Application.RecordsImages.Services;
+using RiseDiary.WebAPI.Application.RecordsThemes.Abstraction;
+using RiseDiary.WebAPI.Application.RecordsThemes.Model;
+using RiseDiary.WebAPI.Application.RecordsThemes.Services;
+using RiseDiary.WebAPI.Application.Scopes.Abstraction;
+using RiseDiary.WebAPI.Application.Scopes.Model;
+using RiseDiary.WebAPI.Application.Scopes.Services;
+using RiseDiary.WebAPI.Application.Search.Abstraction;
+using RiseDiary.WebAPI.Application.Search.Services;
+using RiseDiary.WebAPI.Application.Settings.Abstraction;
+using RiseDiary.WebAPI.Application.Settings.Model;
+using RiseDiary.WebAPI.Application.Settings.Services;
+using RiseDiary.WebAPI.Application.Settings.Storage;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -172,19 +186,19 @@ internal class TestFixtureBase
     {
         Guid recId;
 
-        context.Records.Add(new Model.RecordEntity
+        context.Records.Add(new RecordEntity
         {
             Date = DateOnly.FromDateTime(DateTime.UtcNow),
             Name = "first",
             Text = "1111"
         });
-        context.Records.Add(new Model.RecordEntity
+        context.Records.Add(new RecordEntity
         {
             Date = DateOnly.FromDateTime(DateTime.UtcNow),
             Name = "second",
             Text = "2222"
         });
-        context.Records.Add(new Model.RecordEntity
+        context.Records.Add(new RecordEntity
         {
             Date = DateOnly.FromDateTime(DateTime.UtcNow),
             Name = "third",
@@ -193,7 +207,7 @@ internal class TestFixtureBase
         context.SaveChanges();
         recId = context.Records.Where(r => r.Name == "second").First().Id;
 
-        var cogitation = new Model.RecordCommentEntity
+        var cogitation = new RecordCommentEntity
         {
             RecordId = recId,
             Text = "COGITATION"
@@ -245,7 +259,7 @@ internal class TestFixtureBase
         {
             foreach (var tName in recordTheme.Value)
             {
-                context.RecordThemes.Add(new Model.RecordThemeEntity
+                context.RecordThemes.Add(new RecordThemeEntity
                 {
                     RecordId = context.Records.First(r => r.Name == recordTheme.Key).Id,
                     ThemeId = context.Themes.First(r => r.ThemeName == tName).Id,

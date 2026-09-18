@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Common.Records;
-using RiseDiary.Model;
+using RiseDiary.WebAPI.Application.RecordsThemes.Abstraction;
 
 namespace RiseDiary.WebAPI.Controllers.RecordsArea;
 

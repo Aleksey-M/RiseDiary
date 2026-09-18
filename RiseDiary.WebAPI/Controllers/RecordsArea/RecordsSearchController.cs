@@ -2,9 +2,10 @@
 using RiseDiary.Common;
 using RiseDiary.Common.Records;
 using RiseDiary.Common.Search;
-using RiseDiary.Model;
-using RiseDiary.WebAPI.Settings;
-using RiseDiary.WebAPI.Settings.Model;
+using RiseDiary.WebAPI.Application.Records.Model;
+using RiseDiary.WebAPI.Application.Search.Abstraction;
+using RiseDiary.WebAPI.Application.Settings.Abstraction;
+using RiseDiary.WebAPI.Application.Settings.Model;
 
 namespace RiseDiary.WebAPI.Controllers.RecordsArea;
 

@@ -2,9 +2,9 @@
 using RiseDiary.Common.Core;
 using RiseDiary.Common.Settings;
 using RiseDiary.Common.Settings.Validators;
-using RiseDiary.WebAPI.Settings;
-using RiseDiary.WebAPI.Settings.Model;
-using RiseDiary.WebAPI.Settings.Services;
+using RiseDiary.WebAPI.Application.Settings.Abstraction;
+using RiseDiary.WebAPI.Application.Settings.Model;
+using RiseDiary.WebAPI.Application.Settings.Services;
 using System.Text.Json;
 
 namespace RiseDiary.WebAPI.Controllers;

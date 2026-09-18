@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using RiseDiary.WebAPI.Application.Images.Abstraction;
+
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 
@@ -241,7 +243,7 @@ internal class ImagesEditServiceTests : TestFixtureBase
         var svc = GetImagesEditService(context);
         var imgId = CreateImage(context, FullImage_512X341);
 
-        await svc.RotateImage(imgId, Model.Turn.Left);
+        await svc.RotateImage(imgId, Turn.Left);
 
         var tmpImg = await context.TempImages.SingleOrDefaultAsync(i => i.SourceImageId == imgId);
         var img = await context.Images.SingleOrDefaultAsync(i => i.Id == imgId);
@@ -261,7 +263,7 @@ internal class ImagesEditServiceTests : TestFixtureBase
         var svc = GetImagesEditService(context);
         var imgId = CreateImage(context, FullImage_512X341);
 
-        await svc.RotateImage(imgId, Model.Turn.Right);
+        await svc.RotateImage(imgId, Turn.Right);
 
         var tmpImg = await context.TempImages.SingleOrDefaultAsync(i => i.SourceImageId == imgId);
         var img = await context.Images.SingleOrDefaultAsync(i => i.Id == imgId);

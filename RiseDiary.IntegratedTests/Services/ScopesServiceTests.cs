@@ -1,11 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
+using RiseDiary.WebAPI.Application.Scopes.Services.Commands;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RiseDiary.IntegratedTests.Services;
 
@@ -13,48 +12,54 @@ namespace RiseDiary.IntegratedTests.Services;
 internal class ScopesServiceTests : TestFixtureBase
 {
     [Test]
-    public async Task AddScope_ShouldNotThrowException()
+    public async Task CreateScope_ShouldNotThrowException()
     {
         var svc = GetScopesService();
 
-        Guid newId = await svc.AddScope(@"New Scope ""!@#$%^''""&*()_+,.<><>?//[]||\\апрорпывоаъъЇЇііі.єєєйй");
+        var result = await svc.Apply(new CreateScope
+        {
+            Name = @"New Scope ""!@#$%^''""&*()_+,.<><>?//[]||\\апрорпывоаъъЇЇііі.єєєйй",
+            Description = null
+        });
 
-        newId.Should().NotBeEmpty();
+        result.Succeeded.Should().BeTrue();
+        result.Data!.NewEntityId.Should().NotBeEmpty();
     }
 
     [Test]
-    public async Task AddSeveralScopes_ShouldReturnDifferentIds()
+    public async Task CreateSeveralScopes_ShouldReturnDifferentIds()
     {
         var svc = GetScopesService();
 
-        Guid id1 = await svc.AddScope("New Scope 1");
-        Guid id2 = await svc.AddScope("New Scope 2");
-        Guid id3 = await svc.AddScope("New Scope 3");
+        var id1 = (await svc.Apply(new CreateScope { Name = "New Scope 1" })).Data!.NewEntityId;
+        var id2 = (await svc.Apply(new CreateScope { Name = "New Scope 2" })).Data!.NewEntityId;
+        var id3 = (await svc.Apply(new CreateScope { Name = "New Scope 3" })).Data!.NewEntityId;
 
-        id1.Should().NotBe(id2).And.NotBe(id3);
-        id2.Should().NotBe(id3);
+        id1.Should().NotBe(id2!.Value).And.NotBe(id3!.Value);
+        id2.Should().NotBe(id3!.Value);
     }
 
     [Test]
-    public void AddScope_WithNullParameter_ShouldThrowArgumentException()
+    public void CreateScope_WithNullName_ShouldThrowArgumentException()
     {
         var svc = GetScopesService();
-        Func<Task> action = async () => _ = await svc.AddScope(null!);
+        Func<Task> action = async () => await svc.Apply(new CreateScope { Name = null! });
 
         action.Should().ThrowAsync<ArgumentException>();
     }
 
     [Test]
-    public void AddScope_WithEmptyParameter_ShouldThrowArgumentException()
+    public void CreateScope_WithEmptyName_ShouldThrowArgumentException()
     {
         var svc = GetScopesService();
-        Func<Task> action1 = async () => _ = await svc.AddScope("");
-        Func<Task> action2 = async () => _ = await svc.AddScope(" ");
-        Func<Task> action3 = async () => _ = await svc.AddScope("   ");
 
-        action1.Should().ThrowAsync<ArgumentException>();
-        action2.Should().ThrowAsync<ArgumentException>();
-        action3.Should().ThrowAsync<ArgumentException>();
+        Func<Task> a1 = async () => await svc.Apply(new CreateScope { Name = "" });
+        Func<Task> a2 = async () => await svc.Apply(new CreateScope { Name = " " });
+        Func<Task> a3 = async () => await svc.Apply(new CreateScope { Name = "   " });
+
+        a1.Should().ThrowAsync<ArgumentException>();
+        a2.Should().ThrowAsync<ArgumentException>();
+        a3.Should().ThrowAsync<ArgumentException>();
     }
 
     [Test]
@@ -62,79 +67,59 @@ internal class ScopesServiceTests : TestFixtureBase
     {
         var svc = GetScopesService();
 
-        var list = await svc.GetScopes(themesActuality: true);
+        var r1 = await svc.GetScopes();
+        r1.Succeeded.Should().BeTrue();
+        r1.Data.Should().BeEmpty();
 
-        list.Should().NotBeNull();
-        list.Should().BeEmpty();
-
-        list = await svc.GetScopes(themesActuality: false);
-
-        list.Should().NotBeNull();
-        list.Should().BeEmpty();
+        var r2 = await svc.GetScopes();
+        r2.Succeeded.Should().BeTrue();
+        r2.Data.Should().BeEmpty();
     }
 
     [Test]
     public async Task GetScopes_All_ShouldReturnListWith3Scopes()
     {
         var svc = GetScopesService();
-        await svc.AddScope("New Scope 1");
-        await svc.AddScope("New Scope 2");
-        await svc.AddScope("New Scope 3");
 
-        var list = await svc.GetScopes(themesActuality: null);
+        await svc.Apply(new CreateScope { Name = "New Scope 1" });
+        await svc.Apply(new CreateScope { Name = "New Scope 2" });
+        await svc.Apply(new CreateScope { Name = "New Scope 3" });
 
-        list.Should().NotBeNull();
-        list.Should().HaveCount(3);
-    }
+        var result = await svc.GetScopes();
 
-    [Test]
-    public async Task GetScopes_AllActive_Or_NotActive_ShouldReturnEmptyList()
-    {
-        var svc = GetScopesService();
-        await svc.AddScope("New Scope 1");
-        await svc.AddScope("New Scope 2");
-        await svc.AddScope("New Scope 3");
-
-        var list = await svc.GetScopes(themesActuality: true);
-
-        list.Should().NotBeNull();
-        list.Should().BeEmpty();
-
-        list = await svc.GetScopes(themesActuality: false);
-
-        list.Should().NotBeNull();
-        list.Should().BeEmpty();
+        result.Succeeded.Should().BeTrue();
+        result.Data.Should().HaveCount(3);
     }
 
     [Test]
     public async Task GetScopes_NotActive_ShouldReturnListWith2Scopes()
     {
         var svc = GetScopesService();
-        var id1 = await svc.AddScope("New Scope 1");
-        await svc.AddScope("New Scope 2");
-        var id3 = await svc.AddScope("New Scope 3");
-        var id4 = await svc.AddScope("New Scope 4");
-        var tid1 = await svc.AddTheme(id1, "Theme 1", false);
-        await svc.AddTheme(id3, "Theme 2", true);
-        var tid2 = await svc.AddTheme(id3, "Theme 3", false);
-        await svc.AddTheme(id4, "Theme 4", true);
 
-        var list = await svc.GetScopes(themesActuality: false);
+        var id1 = (await svc.Apply(new CreateScope { Name = "New Scope 1" })).Data!.NewEntityId;
+        await svc.Apply(new CreateScope { Name = "New Scope 2" });
+        var id3 = (await svc.Apply(new CreateScope { Name = "New Scope 3" })).Data!.NewEntityId;
+        var id4 = (await svc.Apply(new CreateScope { Name = "New Scope 4" })).Data!.NewEntityId;
 
-        list.Should().NotBeNull();
+        var tid1 = (await svc.Apply(new CreateTheme { ScopeId = id1!.Value, Name = "Theme 1", Actual = false })).Data!.NewEntityId;
+        await svc.Apply(new CreateTheme { ScopeId = id3!.Value, Name = "Theme 2", Actual = true });
+        var tid2 = (await svc.Apply(new CreateTheme { ScopeId = id3!.Value, Name = "Theme 3", Actual = false })).Data!.NewEntityId;
+        await svc.Apply(new CreateTheme { ScopeId = id4!.Value, Name = "Theme 4", Actual = true });
+
+        var result = await svc.GetScopes();
+        var list = result.Data!.Where(s => s.Themes.Any(t => !t.Actual)).ToList();
+
         list.Should().HaveCount(2);
         list.Should().SatisfyRespectively(
             s =>
             {
-                s.Id.Should().Be(id1);
-                s.Themes.Should().HaveCount(1);
-                s.Themes.First().Id.Should().Be(tid1);
+                s.Id.Should().Be(id1!.Value);
+                s.Themes.Should().ContainSingle(t => t.Id == tid1);
             },
             s =>
             {
-                s.Id.Should().Be(id3);
-                s.Themes.Should().HaveCount(1);
-                s.Themes.First().Id.Should().Be(tid2);
+                s.Id.Should().Be(id3!.Value);
+                s.Themes.Should().ContainSingle(t => t.Id == tid2);
             });
     }
 
@@ -142,126 +127,89 @@ internal class ScopesServiceTests : TestFixtureBase
     public async Task GetScopes_Active_ShouldReturnListWith2Scopes()
     {
         var svc = GetScopesService();
-        var id1 = await svc.AddScope("New Scope 1");
-        await svc.AddScope("New Scope 2");
-        var id3 = await svc.AddScope("New Scope 3");
-        var id4 = await svc.AddScope("New Scope 4");
-        await svc.AddTheme(id1, "Theme 1", false);
-        var tid1 = await svc.AddTheme(id3, "Theme 2", true);
-        await svc.AddTheme(id3, "Theme 3", false);
-        var tid2 = await svc.AddTheme(id4, "Theme 4", true);
 
-        var list = await svc.GetScopes(themesActuality: true);
+        var id1 = (await svc.Apply(new CreateScope { Name = "New Scope 1" })).Data!.NewEntityId;
+        await svc.Apply(new CreateScope { Name = "New Scope 2" });
+        var id3 = (await svc.Apply(new CreateScope { Name = "New Scope 3" })).Data!.NewEntityId;
+        var id4 = (await svc.Apply(new CreateScope { Name = "New Scope 4" })).Data!.NewEntityId;
 
-        list.Should().NotBeNull();
+        await svc.Apply(new CreateTheme { ScopeId = id1!.Value, Name = "Theme 1", Actual = false });
+        var tid1 = (await svc.Apply(new CreateTheme { ScopeId = id3!.Value, Name = "Theme 2", Actual = true })).Data!.NewEntityId;
+        await svc.Apply(new CreateTheme { ScopeId = id3!.Value, Name = "Theme 3", Actual = false });
+        var tid2 = (await svc.Apply(new CreateTheme { ScopeId = id4!.Value, Name = "Theme 4", Actual = true })).Data!.NewEntityId;
+
+        var result = await svc.GetScopes();
+        var list = result.Data!.Where(s => s.Themes.Any(t => t.Actual)).ToList();
+
         list.Should().HaveCount(2);
         list.Should().SatisfyRespectively(
             s =>
             {
-                s.Id.Should().Be(id3);
-                s.Themes.Should().HaveCount(1);
-                s.Themes.First().Id.Should().Be(tid1);
+                s.Id.Should().Be(id3!.Value);
+                s.Themes.Should().ContainSingle(t => t.Id == tid1);
             },
             s =>
             {
-                s.Id.Should().Be(id4);
-                s.Themes.Should().HaveCount(1);
-                s.Themes.First().Id.Should().Be(tid2);
+                s.Id.Should().Be(id4!.Value);
+                s.Themes.Should().ContainSingle(t => t.Id == tid2);
             });
-    }
-
-    [Test]
-    public async Task GetScopes_OnlyActive_ShouldReturnEmptyList()
-    {
-        var svc = GetScopesService();
-        await svc.AddScope("New Scope 1");
-        await svc.AddScope("New Scope 2");
-        await svc.AddScope("New Scope 3");
-
-        var list = await svc.GetScopes(themesActuality: true);
-
-        list.Should().NotBeNull();
-        list.Should().BeEmpty();
     }
 
     [Test]
     public async Task GetScopes_OnlyActive_ShouldReturnListWith1Scope()
     {
         var svc = GetScopesService();
-        var id1 = await svc.AddScope("New Scope 1");
-        await svc.AddTheme(id1, "Not actual theme", false);
-        await svc.AddScope("New Scope 2");
-        var id2 = await svc.AddScope("New Scope 3");
-        await svc.AddTheme(id2, "Actual theme", true);
 
-        var list = await svc.GetScopes(themesActuality: true);
+        var id1 = (await svc.Apply(new CreateScope { Name = "New Scope 1" })).Data!.NewEntityId;
+        await svc.Apply(new CreateTheme { ScopeId = id1!.Value, Name = "Not actual theme", Actual = false });
 
-        list.Should().NotBeNull();
+        await svc.Apply(new CreateScope { Name = "New Scope 2" });
+
+        var id2 = (await svc.Apply(new CreateScope { Name = "New Scope 3" })).Data!.NewEntityId;
+        await svc.Apply(new CreateTheme { ScopeId = id2!.Value, Name = "Actual theme", Actual = true });
+
+        var result = await svc.GetScopes();
+        var list = result.Data!.Where(s => s.Themes.Any(t => t.Actual)).ToList();
+
         list.Should().HaveCount(1);
-        list.Should().SatisfyRespectively(s =>
-        {
-            s.Id.Should().Be(id2);
-            s.ScopeName.Should().Be("New Scope 3");
-        });
+        list[0].Id.Should().Be(id2!.Value);
+        list[0].ScopeName.Should().Be("New Scope 3");
     }
 
     [Test]
-    public async Task CanDeleteScope_ShouldReturnTrue()
+    public async Task DeleteScope_WithNotExistingId_ShouldNotThrowException()
     {
         var svc = GetScopesService();
-        Guid id = await svc.AddScope("New Scope 1");
+        var result = await svc.DeleteScope(Guid.NewGuid());
 
-        (await svc.CanDeleteScope(id)).Should().BeTrue();
+        result.Succeeded.Should().BeTrue();
     }
 
     [Test]
-    public async Task CanDeleteScope_WithDeletedThemes_ShouldReturnTrue()
-    {
-        var svc = GetScopesService();
-        Guid scopeId = await svc.AddScope("New Scope 1");
-        Guid typeId = await svc.AddTheme(scopeId, "New type", false);
-
-        await svc.DeleteTheme(typeId);
-
-        (await svc.CanDeleteScope(scopeId)).Should().BeTrue();
-    }
-
-    [Test]
-    public async Task CanDeleteScope_ShouldReturnFalse()
-    {
-        var svc = GetScopesService();
-
-        Guid scopeId = await svc.AddScope("New Scope 1");
-        Guid typeId = await svc.AddTheme(scopeId, "New type", false);
-
-        (await svc.CanDeleteScope(scopeId)).Should().BeFalse();
-        typeId.Should().NotBeEmpty();
-    }
-
-    [Test]
-    public Task DeleteScope_WithNotExistingId_ShouldNotThrowException()
-    {
-        var svc = GetScopesService();
-        return svc.DeleteScope(Guid.NewGuid());
-    }
-
-    [Test]
-    public async Task AddTheme_ShouldNotThrowException()
+    public async Task CreateTheme_ShouldNotThrowException()
     {
         var context = CreateContext();
         var svc = GetScopesService(context);
         var scopeId = CreateScope(context, "Test Scope");
 
-        var newRecId = await svc.AddTheme(scopeId, @"!@#$%^''""&*()_+,.<><>?//[]||\\апрорпывоаъъЇЇііі.єєєйй", false);
+        var result = await svc.Apply(new CreateTheme
+        {
+            ScopeId = scopeId,
+            Name = @"!@#$%^''""&*()_+,.<><>?//[]||\\апрорпывоаъъЇЇііі.єєєйй",
+            Actual = false
+        });
 
-        newRecId.Should().NotBeEmpty();
+        result.Succeeded.Should().BeTrue();
+        result.Data!.NewEntityId.Should().NotBeEmpty();
     }
 
     [Test]
     public async Task DeleteTheme_WithNotExistingId_ShouldNotThrowException()
     {
         var svc = GetScopesService();
-        await svc.DeleteTheme(Guid.NewGuid());
+        var result = await svc.DeleteTheme(Guid.NewGuid());
+
+        result.Succeeded.Should().BeTrue();
     }
 
     [Test]
@@ -272,18 +220,16 @@ internal class ScopesServiceTests : TestFixtureBase
         var themes = scopes.SelectMany(s => s.Themes).ToList();
         var svc = GetScopesService(context);
 
-        await svc.UpdateTheme(themes[0].Id, themeActuality: true);
-        await svc.UpdateTheme(themes[1].Id, themeActuality: false);
-        await svc.UpdateTheme(themes[2].Id, themeActuality: true);
+        await svc.Apply(new UpdateTheme { ThemeId = themes[0].Id, Actual = true });
+        await svc.Apply(new UpdateTheme { ThemeId = themes[1].Id, Actual = false });
+        await svc.Apply(new UpdateTheme { ThemeId = themes[2].Id, Actual = true });
 
         context.Themes.Single(t => t.Id == themes[0].Id).Actual.Should().BeTrue();
         context.Themes.Single(t => t.Id == themes[1].Id).Actual.Should().BeFalse();
         context.Themes.Single(t => t.Id == themes[2].Id).Actual.Should().BeTrue();
 
-        await svc.UpdateTheme(themes[2].Id, themeActuality: false);
+        await svc.Apply(new UpdateTheme { ThemeId = themes[2].Id, Actual = false });
 
-        context.Themes.Single(t => t.Id == themes[0].Id).Actual.Should().BeTrue();
-        context.Themes.Single(t => t.Id == themes[1].Id).Actual.Should().BeFalse();
         context.Themes.Single(t => t.Id == themes[2].Id).Actual.Should().BeFalse();
     }
 
@@ -300,11 +246,11 @@ internal class ScopesServiceTests : TestFixtureBase
 
         var t = await context.Themes.FindAsync(theme.Id);
         t.Should().NotBeNull();
-        t.Deleted.Should().BeTrue();
+        t!.Deleted.Should().BeTrue();
 
         var rt = context.RecordThemes.IgnoreQueryFilters().FirstOrDefault(recTheme => recTheme.ThemeId == theme.Id);
         rt.Should().NotBeNull();
-        rt?.Deleted.Should().BeTrue();
+        rt!.Deleted.Should().BeTrue();
     }
 
     [Test]
@@ -331,13 +277,13 @@ internal class ScopesServiceTests : TestFixtureBase
         var context = CreateContext();
         context.SoftDeleting = true;
         var svc = GetScopesService(context);
-        Guid id = await svc.AddScope("New Scope 1");
+        var id = (await svc.Apply(new CreateScope { Name = "New Scope 1" })).Data!.NewEntityId;
 
-        await svc.DeleteScope(id);
+        await svc.DeleteScope(id!.Value);
 
         var scope = await context.Scopes.FindAsync(id);
         scope.Should().NotBeNull();
-        scope.Deleted.Should().BeTrue();
+        scope!.Deleted.Should().BeTrue();
     }
 
     [Test]
@@ -346,9 +292,9 @@ internal class ScopesServiceTests : TestFixtureBase
         var context = CreateContext();
         context.SoftDeleting = false;
         var svc = GetScopesService(context);
-        Guid id = await svc.AddScope("New Scope 1");
+        var id = (await svc.Apply(new CreateScope { Name = "New Scope 1" })).Data!.NewEntityId;
 
-        await svc.DeleteScope(id);
+        await svc.DeleteScope(id!.Value);
 
         var scope = await context.Scopes.FindAsync(id);
         scope.Should().BeNull();

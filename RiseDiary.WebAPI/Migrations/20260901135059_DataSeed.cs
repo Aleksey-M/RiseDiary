@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
-using RiseDiary.WebAPI.Settings.Model;
+using RiseDiary.WebAPI.Application.Settings.Model;
+
 
 #nullable disable
 

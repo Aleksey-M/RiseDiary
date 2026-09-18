@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Common.Records;
-using RiseDiary.Model;
+using RiseDiary.WebAPI.Application.Search.Abstraction;
+using RiseDiary.WebAPI.Application.Settings.Abstraction;
+using RiseDiary.WebAPI.Application.Settings.Model;
 using RiseDiary.WebAPI.Controllers.RecordsArea;
-using RiseDiary.WebAPI.Settings;
-using RiseDiary.WebAPI.Settings.Model;
 
 namespace RiseDiary.WebAPI.Controllers
 {

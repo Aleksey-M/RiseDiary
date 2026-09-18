@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using RiseDiary.Model;
+using RiseDiary.WebAPI.Application.Images.Abstraction;
+
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 

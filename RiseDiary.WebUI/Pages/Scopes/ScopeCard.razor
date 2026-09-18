@@ -1,13 +1,12 @@
-﻿@using RiseDiary.Common.Scopes
+﻿@using RiseDiary.Common.Abstractions.Clients
+@using RiseDiary.Common.Scopes
 @using RiseDiary.WebUI.Pages
 @using RiseDiary.WebUI.Services
-@using RiseDiary.Shared
 
-@inject HttpClient Http
 @inject IJSRuntime JSRuntime
 @inject MarkdownService MdService
-@inject IDtoValidator<ScopeDto> ScopeValidator
 @inject NavigationManager NavManager
+@inject IScopesClient ScopesClient
 
 @inherits UIComponentBase
 
@@ -67,7 +66,7 @@
             <ul class="list-group list-group-flush">
                 @foreach (var th in CurrentScope.Themes)
                 {
-                    <ThemeListItem Scope="CurrentScope" CurrentTheme="th" DeleteThemeFromList="DeleteThemeFronList" @key="th.ThemeId" />
+                    <ThemeListItem Scope="CurrentScope" CurrentTheme="th" DeleteThemeFromList="DeleteThemeFromList" @key="th.ThemeId" />
                 }
             </ul>
         }
@@ -110,7 +109,7 @@
         StateHasChanged();
     }
 
-    public void DeleteThemeFronList(Guid themeId)
+    public void DeleteThemeFromList(Guid themeId)
     {
         var theme = CurrentScope?.Themes?.FirstOrDefault(x => x.ThemeId == themeId);
 
@@ -123,56 +122,33 @@
 
     private async Task UpdateScope()
     {
-        try
+        await StartApiRequest();
+
+        _editedScope.SetHostAndPortPlaceholder(NavManager.BaseUri);
+        var result = await ScopesClient.UpdateScope(_editedScope);
+
+        if (result.Succeeded)
         {
-            var validationResult = ScopeValidator.ValidateForUpdate(_editedScope);
-
-            if (!validationResult.IsValid)
-            {
-                ErrorMessage = validationResult.ToString();
-                return;
-            }
-
-            await StartApiRequest();
-
-            _editedScope.SetHostAndPortPlaceholder(NavManager.BaseUri);
-
-            var response = await Http.PutAsJsonAsync($"api/scopes/{_editedScope.ScopeId.ToString()}", _editedScope);
-            var isSuccess = await CheckSuccessResponse(response);
-
-            if (!isSuccess) return;
-
             CurrentScope.FillFrom(_editedScope);
             _editedScope = new();
             _editMode = false;
+        }
 
-            await FinishApiRequest(null);
-        }
-        catch (Exception exc)
-        {
-            await FinishApiRequest(exc.Message);
-        }
+        await FinishApiRequest(result);
     }
-
 
     private async Task TryRemoveScope()
     {
-        try
+        if (!(await JSRuntime.InvokeAsync<bool>("confirm", $"Удалить '{CurrentScope.ScopeName}'?"))) return;
+
+        await StartApiRequest();
+
+        var response = await ScopesClient.DeleteScope(_editedScope.ScopeId ?? default);
+        if (response.Succeeded)
         {
-            if (!(await JSRuntime.InvokeAsync<bool>("confirm", $"Удалить '{CurrentScope.ScopeName}'?"))) return;
-
-            await StartApiRequest();
-
-            var response = await Http.DeleteAsync($"api/scopes/{_editedScope.ScopeId.ToString()}");
-            var isSuccess = await CheckSuccessResponse(response);
-
-            if (!isSuccess) return;
-
             DeleteScopeFromList(CurrentScope.ScopeId!.Value);
         }
-        catch (Exception exc)
-        {
-            await FinishApiRequest(exc.Message);
-        }
+
+        await FinishApiRequest(response);
     }
 }

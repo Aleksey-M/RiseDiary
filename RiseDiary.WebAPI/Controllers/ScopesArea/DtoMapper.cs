@@ -1,5 +1,5 @@
 ﻿using RiseDiary.Common.Scopes;
-using RiseDiary.WebAPI.Scopes.Model;
+using RiseDiary.WebAPI.Application.Scopes.Model;
 
 namespace RiseDiary.WebAPI.Controllers.ScopesArea;
 

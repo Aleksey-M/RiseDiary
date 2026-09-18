@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
-using RiseDiary.Model;
+using RiseDiary.WebAPI.Application.Images.Abstraction;
+using RiseDiary.WebAPI.Application.Records.Abstraction;
 using System.Net;
 using System.Text.Json;
 

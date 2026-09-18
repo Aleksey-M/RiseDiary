@@ -1,4 +1,4 @@
-﻿using RiseDiary.Model;
+﻿using RiseDiary.WebAPI.Application.Images.Model;
 
 namespace RiseDiary.WebAPI.Extensions;
 

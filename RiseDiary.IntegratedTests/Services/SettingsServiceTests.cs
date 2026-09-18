@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
-using RiseDiary.WebAPI.Settings;
-using RiseDiary.WebAPI.Settings.Model;
-using RiseDiary.WebAPI.Settings.Services;
+using RiseDiary.WebAPI.Application.Settings.Abstraction;
+using RiseDiary.WebAPI.Application.Settings.Model;
+using RiseDiary.WebAPI.Application.Settings.Services;
 using System;
 using System.Threading.Tasks;
 

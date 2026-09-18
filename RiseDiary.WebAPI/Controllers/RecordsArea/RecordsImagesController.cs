@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RiseDiary.Model;
+using RiseDiary.WebAPI.Application.RecordsImages.Abstraction;
 
 namespace RiseDiary.WebAPI.Controllers.RecordsArea;
 

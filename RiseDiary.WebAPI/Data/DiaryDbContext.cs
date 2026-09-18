@@ -1,7 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RiseDiary.Model;
-using RiseDiary.WebAPI.Scopes.Model;
-using RiseDiary.WebAPI.Settings.Model;
+using RiseDiary.WebAPI.Application.Images.Model;
+using RiseDiary.WebAPI.Application.Records.Model;
+using RiseDiary.WebAPI.Application.RecordsThemes.Model;
+using RiseDiary.WebAPI.Application.Scopes.Model;
+using RiseDiary.WebAPI.Application.Settings.Model;
+using RiseDiary.WebAPI.Data;
 
 namespace RiseDiary.Data;
 

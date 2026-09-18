@@ -2,7 +2,8 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Common.Images;
-using RiseDiary.Model;
+using RiseDiary.WebAPI.Application.Images.Abstraction;
+using RiseDiary.WebAPI.Application.RecordsImages.Abstraction;
 
 namespace RiseDiary.WebAPI.Controllers.ImagesArea;
 

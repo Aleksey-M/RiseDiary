@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 using ExifLibrary;
-using RiseDiary.Model;
+using RiseDiary.WebAPI.Application.Images.Model;
 using SkiaSharp;
 
 namespace RiseDiary.IntegratedTests;

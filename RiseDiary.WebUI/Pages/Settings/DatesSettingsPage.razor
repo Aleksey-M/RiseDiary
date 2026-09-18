@@ -65,7 +65,7 @@
         {
             await StartApiRequest();
 
-            var scopesResult = ScopesClient.GetScopes(null, CancellationToken);
+            var scopesResult = ScopesClient.GetScopes(CancellationToken);
             var settingsResult = SettingsApiClient.GetAsync(SettingKey.Dates, CancellationToken);
             await Task.WhenAll([scopesResult, settingsResult]);
 

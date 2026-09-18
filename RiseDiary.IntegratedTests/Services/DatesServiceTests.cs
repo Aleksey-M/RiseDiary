@@ -6,8 +6,9 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using RiseDiary.Data;
-using RiseDiary.Model;
-using RiseDiary.WebAPI.Scopes.Model;
+using RiseDiary.WebAPI.Application.Records.Model;
+using RiseDiary.WebAPI.Application.RecordsThemes.Model;
+using RiseDiary.WebAPI.Application.Scopes.Model;
 
 namespace RiseDiary.IntegratedTests.Services;
 

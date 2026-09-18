@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Common;
 using RiseDiary.Common.Images;
-using RiseDiary.Model;
+using RiseDiary.WebAPI.Application.Images.Abstraction;
+using RiseDiary.WebAPI.Application.RecordsImages.Abstraction;
+using RiseDiary.WebAPI.Application.Settings.Abstraction;
+using RiseDiary.WebAPI.Application.Settings.Model;
 using RiseDiary.WebAPI.Extensions;
-using RiseDiary.WebAPI.Settings;
-using RiseDiary.WebAPI.Settings.Model;
 
 namespace RiseDiary.WebAPI.Controllers.ImagesArea;
 

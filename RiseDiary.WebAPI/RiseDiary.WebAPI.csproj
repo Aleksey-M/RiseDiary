@@ -38,6 +38,8 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <Folder Include="Application\Periods\Abstraction\" />
+    <Folder Include="Application\Periods\Services\" />
     <Folder Include="Properties\PublishProfiles\" />
     <Folder Include="rddata\logs\" />
   </ItemGroup>

@@ -44,9 +44,9 @@ public static class ScopeDtoExtensions
             baseUri);
     }
 
-    public static void SetBaseUri(this List<ScopeDto> dtoList, string baseUri)
+    public static void SetBaseUri(this List<ScopeDto>? dtoList, string baseUri)
     {
-        foreach (var scope in dtoList)
+        foreach (var scope in dtoList ?? [])
         {
             scope.SetBaseUri(baseUri);
             scope.Themes?.ForEach(x => x.SetBaseUri(baseUri));

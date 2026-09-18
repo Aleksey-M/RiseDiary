@@ -52,4 +52,14 @@ public sealed class Result<T> : Result
     {
         return new Result<T>(false, message, default);
     }
+
+    public static Result<T> FormResult<T1>(Result<T1> source, Func<T1, T>? mapper)
+    {
+        if (!source.Succeeded)
+        {
+            return Result<T>.Failure(source.Message!);
+        }
+
+        return Result<T>.Success(mapper!(source.Data!));
+    }
 }

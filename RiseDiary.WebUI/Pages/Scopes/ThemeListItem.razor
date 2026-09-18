@@ -1,11 +1,11 @@
-﻿@using RiseDiary.Common.Scopes
+﻿@using RiseDiary.Common.Abstractions.Clients
+@using RiseDiary.Common.Scopes
 @using RiseDiary.WebUI.Services
 
-@inject HttpClient Http
 @inject IJSRuntime JSRuntime
 @inject MarkdownService MdService
-@inject ThemeDtoValidator Validator
 @inject NavigationManager NavManager
+@inject IScopesClient ScopesClient
 
 @inherits UIComponentBase
 
@@ -87,7 +87,6 @@
     public Action<Guid> DeleteThemeFromList { get; set; } = null!;
 
     private ThemeDto _edited = new();
-
     private bool _editMode;
 
 
@@ -100,92 +99,64 @@
 
     private async Task UpdateTheme()
     {
-        try
-        {
-            if (Scope.Themes!.Any(x => x.ThemeName!.Trim().ToUpper() == _edited.ThemeName!.Trim().ToUpper()
+        if (Scope.Themes!.Any(x => x.ThemeName!.Trim().ToUpper() == _edited.ThemeName?.Trim().ToUpper()
                 && x.ThemeId != _edited.ThemeId))
-            {
-                ErrorMessage = $"Тема '{_edited.ThemeName}' уже существует";
-                return;
-            }
+        {
+            ErrorMessage = $"Тема '{_edited.ThemeName}' уже существует";
+            return;
+        }
 
-            var validationResult = Validator.ValidateForUpdate(_edited);
+        await StartApiRequest();
 
-            if (!validationResult.IsValid)
-            {
-                ErrorMessage = validationResult.ToString();
-                return;
-            }
+        _edited.SetHostAndPortPlaceholder(NavManager.BaseUri);
+        var response = await ScopesClient.UpdateTheme(_edited);
 
-            await StartApiRequest();
-
-            _edited.SetHostAndPortPlaceholder(NavManager.BaseUri);
-
-            var response = await Http.PutAsJsonAsync($"api/scopes/{Scope.ScopeId}/themes/{_edited.ThemeId}", _edited);
-            var isSuccess = await CheckSuccessResponse(response);
-
-            if (!isSuccess) return;
-
+        if (response.Succeeded)
+        {
             _edited.SetBaseUri(NavManager.BaseUri);
             CurrentTheme.FillFrom(_edited);
             _edited = new();
             _editMode = false;
+        }
 
-            await FinishApiRequest(null);
-        }
-        catch (Exception exc)
-        {
-            await FinishApiRequest(exc.Message);
-        }
+        await FinishApiRequest(response);
     }
 
     private async Task DeleteTheme()
     {
-        try
+        if (!(await JSRuntime.InvokeAsync<bool>("confirm", $"Удалить '{CurrentTheme.ThemeName}'?"))) return;
+
+        await StartApiRequest();
+
+        var response = await ScopesClient.DeleteTheme(CurrentTheme.ScopeId ?? default, CurrentTheme.ThemeId ?? default);
+        if (response.Succeeded)
         {
-            if (!(await JSRuntime.InvokeAsync<bool>("confirm", $"Удалить '{CurrentTheme.ThemeName}'?"))) return;
-
-            await StartApiRequest();
-
-            var response = await Http.DeleteAsync($"api/scopes/{Scope.ScopeId}/themes/{CurrentTheme.ThemeId}");
-            var isSuccess = await CheckSuccessResponse(response);
-
-            if (!isSuccess) return;
-
             DeleteThemeFromList(CurrentTheme.ThemeId!.Value);
         }
-        catch (Exception exc)
-        {
-            await FinishApiRequest(exc.Message);
-        }
+
+        await FinishApiRequest(response);
     }
 
     public async Task ToggleActuality()
     {
-        try
+        var actualityDto = new ThemeDto
         {
-            var actualityDto = new ThemeDto
-            {
-                ScopeId = CurrentTheme.ScopeId,
-                ThemeId = CurrentTheme.ThemeId,
-                Actual = !CurrentTheme.Actual
-            };
+            ScopeId = CurrentTheme.ScopeId,
+            ThemeId = CurrentTheme.ThemeId,
+            Actual = !CurrentTheme.Actual,
+            ThemeName = CurrentTheme.ThemeName,
+            ThemeDescription = CurrentTheme.ThemeDescription
+        };
 
-            await StartApiRequest();
+        await StartApiRequest();
 
-            var response = await Http.PutAsJsonAsync($"api/scopes/{Scope.ScopeId}/themes/{actualityDto.ThemeId}/actuality", actualityDto);
-            var isSuccess = await CheckSuccessResponse(response);
-
-            if (!isSuccess) return;
-
+        var response = await ScopesClient.UpdateTheme(actualityDto);
+        if (response.Succeeded)
+        {
             CurrentTheme.Actual = !CurrentTheme.Actual;
             _editMode = false;
+        }
 
-            await FinishApiRequest(null);
-        }
-        catch (Exception exc)
-        {
-            await FinishApiRequest(exc.Message);
-        }
+        await FinishApiRequest(response);
     }
 }

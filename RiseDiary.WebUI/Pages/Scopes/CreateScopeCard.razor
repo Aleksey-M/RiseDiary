@@ -1,8 +1,7 @@
-﻿@using RiseDiary.Common.Scopes
-@using RiseDiary.Shared
+﻿@using RiseDiary.Common.Abstractions.Clients
+@using RiseDiary.Common.Scopes
 
-@inject HttpClient Http
-@inject IDtoValidator<ScopeDto> ScopeValidator
+@inject IScopesClient ScopesClient
 @inject NavigationManager NavManager
 
 @inherits UIComponentBase
@@ -42,45 +41,23 @@
 
     private async Task CreateNewScope()
     {
-        try
+        await StartApiRequest();
+
+        var tmpDto = new ScopeDto(_newScopeDto);
+        tmpDto.SetHostAndPortPlaceholder(NavManager.BaseUri);
+
+        var response = await ScopesClient.CreateScope(tmpDto);
+
+        if (response.Succeeded)
         {
-            var validationResult = ScopeValidator.ValidateForCreate(_newScopeDto);
-
-            if (!validationResult.IsValid)
-            {
-                ErrorMessage = validationResult.ToString();
-                return;
-            }
-
-            await StartApiRequest();
-
-            var tmpDto = new ScopeDto(_newScopeDto);
-            tmpDto.SetHostAndPortPlaceholder(NavManager.BaseUri);
-
-            var response = await Http.PostAsJsonAsync("api/scopes", tmpDto);
-
-            var responseContent = await GetCheckedResponseContent<string?>(response);
-            if (responseContent == null) return;
-
-            if (!Guid.TryParse(responseContent, out var newScopeId))
-            {
-                await FinishApiRequest($"Неверный формат Id: {responseContent}");
-                return;
-            }
-
-            tmpDto.ScopeId = newScopeId;
+            tmpDto.ScopeId = response.Data;
             tmpDto.ScopeDescription = _newScopeDto.ScopeDescription;
             tmpDto.Themes = new();
 
             NewScopeCreated(tmpDto);
-
-            _newScopeDto = new();            
-
-            await FinishApiRequest(null);
+            _newScopeDto = new();
         }
-        catch (Exception exc)
-        {
-            await FinishApiRequest(exc.Message);
-        }
+
+        await FinishApiRequest(response);
     }
 }

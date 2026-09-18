@@ -1,9 +1,10 @@
 ﻿@page "/scopes"
 
+@using RiseDiary.Common.Abstractions.Clients
 @using RiseDiary.Common.Scopes
 @using RiseDiary.WebUI.Pages
 
-@inject HttpClient Http
+@inject IScopesClient ScopesClient
 @inject NavigationManager NavManager
 
 @inherits UIComponentBase
@@ -59,16 +60,12 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        await StartApiRequest();
 
-        try
-        {
-            _scopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", CancellationToken);
-            _scopes?.SetBaseUri(NavManager.BaseUri);
-        }
-        catch (Exception exc)
-        {
-            ErrorMessage = exc.Message;
-            _scopes = new();
-        }
+        var result = await ScopesClient.GetScopes(CancellationToken);
+        _scopes = result?.Data ?? new();
+        _scopes?.SetBaseUri(NavManager.BaseUri);
+
+        await FinishApiRequest(result);
     }
 }

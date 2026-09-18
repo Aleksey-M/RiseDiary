@@ -1,6 +1,6 @@
 ﻿using RiseDiary.Common.Core;
-using RiseDiary.WebAPI.Settings;
-using RiseDiary.WebAPI.Settings.Model;
+using RiseDiary.WebAPI.Application.Settings.Abstraction;
+using RiseDiary.WebAPI.Application.Settings.Model;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

@@ -1,5 +1,5 @@
 ﻿using RiseDiary.Common.Calendar;
-using RiseDiary.Model;
+using RiseDiary.WebAPI.Application.Analysis.Abstraction;
 
 namespace RiseDiary.WebAPI.Controllers.DatesArea;
 

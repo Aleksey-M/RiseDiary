@@ -1,5 +1,5 @@
 ﻿using RiseDiary.Common.Images;
-using RiseDiary.Model;
+using RiseDiary.WebAPI.Application.Images.Model;
 using RiseDiary.WebAPI.Extensions;
 
 namespace RiseDiary.WebAPI.Controllers.ImagesArea;

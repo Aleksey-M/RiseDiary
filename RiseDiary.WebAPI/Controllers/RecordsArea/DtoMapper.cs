@@ -1,6 +1,6 @@
 ﻿using RiseDiary.Common.Records;
 using RiseDiary.Common.Scopes;
-using RiseDiary.Model;
+using RiseDiary.WebAPI.Application.Records.Model;
 using RiseDiary.WebAPI.Controllers.ImagesArea;
 using RiseDiary.WebAPI.Controllers.ScopesArea;
 

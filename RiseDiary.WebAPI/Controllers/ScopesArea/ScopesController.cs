@@ -3,8 +3,9 @@ using RiseDiary.Common.Core;
 using RiseDiary.Common.Scopes;
 using RiseDiary.Common.Validation;
 using RiseDiary.Shared;
+using RiseDiary.WebAPI.Application.Scopes.Abstraction;
+using RiseDiary.WebAPI.Application.Scopes.Services.Commands;
 using RiseDiary.WebAPI.Controllers.ScopesArea;
-using RiseDiary.WebAPI.Scopes.Services;
 
 [ApiController]
 [Route("api/scopes")]
@@ -28,11 +29,14 @@ public sealed class ScopesController : ControllerBase
             return BadRequest(Result<Guid>.Failure(validation.ErrorMessages()));
         }
 
-        var id = await _scopeService.AddScope(
-            newScopeName: dto.ScopeName!,
-            newScopeDescription: dto.ScopeDescription ?? string.Empty);
+        var command = new CreateScope
+        {
+            Name = dto.ScopeName ?? string.Empty,
+            Description = dto.ScopeDescription,
+        };
 
-        return Ok(Result<Guid>.Success(id));
+        var result = await _scopeService.Apply(command);
+        return Ok(Result<Guid>.FormResult(result, d => d.NewEntityId ?? default));
     }
 
     [HttpPost("{sid}/themes")]
@@ -41,31 +45,33 @@ public sealed class ScopesController : ControllerBase
         Guid sid,
         ThemeDto dto)
     {
+        dto.ScopeId = sid;
         var validation = validator.ValidateForCreate(dto, true);
         if (!validation.IsValid)
         {
             return BadRequest(Result<Guid>.Failure(validation.ErrorMessages()));
         }
 
-        if (sid != dto.ScopeId)
-            return BadRequest(Result<Guid>.Failure("Not consistent request"));
+        var command = new CreateTheme
+        {
+            ScopeId = dto.ScopeId.Value,
+            Name = dto.ThemeName ?? string.Empty,
+            Description = dto.ThemeDescription,
+            Actual = dto.Actual ?? false
+        };
 
-        var newThemeId = await _scopeService.AddTheme(
-            scopeId: sid,
-            newThemeName: dto.ThemeName!,
-            newThemeDescription: dto.ThemeDescription ?? string.Empty,
-            actual: dto.Actual!.Value);
-
-        return Ok(Result<Guid>.Success(newThemeId));
+        var result = await _scopeService.Apply(command);
+        return Ok(Result<Guid>.FormResult(result, d => d.NewEntityId ?? default));
     }
 
     [HttpGet]
-    public async Task<ActionResult<Result<ScopeDto[]>>> GetScopes(
-        bool? actual,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<Result<ScopeDto[]>>> GetScopes(CancellationToken cancellationToken)
     {
-        var scopes = await _scopeService.GetScopes(actual, cancellationToken);
-        return Ok(Result<ScopeDto[]>.Success(scopes.Select(s => s.ToDto()).ToArray()));
+        var result = await _scopeService.GetScopes(cancellationToken);
+
+        return Ok(Result<ScopeDto[]>.FormResult(
+            result,
+            data => result.Data!.Select(s => s.ToDto()).ToArray()));
     }
 
     [HttpPut("{id}")]
@@ -74,31 +80,22 @@ public sealed class ScopesController : ControllerBase
         Guid id,
         ScopeDto dto)
     {
+        dto.ScopeId = id;
+
         var validation = validator.ValidateForUpdate(dto, true);
         if (!validation.IsValid)
         {
             return BadRequest(Result.Failure(validation.ErrorMessages()));
         }
 
-        if (id != dto.ScopeId)
-            return BadRequest(Result.Failure("Not consistent request"));
+        var command = new UpdateScope
+        {
+            ScopeId = dto.ScopeId.Value,
+            Description = dto.ScopeDescription,
+            Name = dto.ScopeName
+        };
 
-        await _scopeService.UpdateScope(
-            scopeId: dto.ScopeId.Value,
-            scopeNewName: dto.ScopeName,
-            scopeNewDescription: dto.ScopeDescription);
-
-        return Ok(Result.Success());
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<ActionResult<Result>> DeleteScope(Guid id)
-    {
-        if (!await _scopeService.CanDeleteScope(id))
-            return BadRequest(Result.Failure("Нельзя удалить сферу интересов с темами"));
-
-        await _scopeService.DeleteScope(id);
-        return Ok(Result.Success());
+        return Ok(await _scopeService.Apply(command));
     }
 
     [HttpPut("{scopeId}/themes/{themeId}")]
@@ -108,49 +105,35 @@ public sealed class ScopesController : ControllerBase
         Guid themeId,
         ThemeDto dto)
     {
+        dto.ScopeId = scopeId;
+        dto.ThemeId = themeId;
+
         var validation = validator.ValidateForUpdate(dto, true);
         if (!validation.IsValid)
         {
             return BadRequest(Result.Failure(validation.ErrorMessages()));
         }
 
-        if (scopeId != dto.ScopeId || themeId != dto.ThemeId)
-            return BadRequest(Result.Failure("Not consistent request"));
+        var command = new UpdateTheme
+        {
+            ThemeId = dto.ThemeId.Value,
+            Name = dto.ThemeName,
+            Description = dto.ThemeDescription,
+            Actual = dto.Actual ?? false
+        };
 
-        await _scopeService.UpdateTheme(
-            themeId: dto.ThemeId.Value,
-            themeNewName: dto.ThemeName,
-            themeNewDescription: dto.ThemeDescription,
-            themeActuality: dto.Actual);
-
-        return Ok(Result.Success());
+        return Ok(await _scopeService.Apply(command));
     }
 
-    [HttpPut("{scopeId}/themes/{themeId}/actuality")]
-    public async Task<ActionResult<Result>> UpdateThemeActuality(
-        [FromServices] ThemeDtoValidator validator,
-        Guid scopeId,
-        Guid themeId,
-        ThemeDto dto)
+    [HttpDelete("{id}")]
+    public async Task<ActionResult<Result>> DeleteScope(Guid id)
     {
-        var validation = validator.ValidateForActuality(dto, true);
-        if (!validation.IsValid)
-        {
-            return BadRequest(Result.Failure(validation.ErrorMessages()));
-        }
-
-        if (scopeId != dto.ScopeId || themeId != dto.ThemeId)
-            return BadRequest(Result.Failure("Not consistent request"));
-
-        await _scopeService.UpdateTheme(themeId: dto.ThemeId.Value, themeActuality: dto.Actual);
-
-        return Ok(Result.Success());
+        return Ok(await _scopeService.DeleteScope(id));
     }
 
     [HttpDelete("{scopeId}/themes/{themeId}")]
     public async Task<ActionResult<Result>> DeleteTheme(Guid scopeId, Guid themeId)
     {
-        await _scopeService.DeleteTheme(themeId);
-        return Ok(Result.Success());
+        return Ok(await _scopeService.DeleteTheme(themeId));
     }
 }

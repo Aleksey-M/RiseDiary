@@ -4,15 +4,27 @@ using RiseDiary.Common.Records;
 using RiseDiary.Common.Scopes;
 using RiseDiary.Common.Settings;
 using RiseDiary.Data;
-using RiseDiary.Model;
 using RiseDiary.Model.Services;
 using RiseDiary.WebAPI.Config;
 using RiseDiary.WebAPI.Middleware;
-using RiseDiary.WebAPI.Services;
-using RiseDiary.WebAPI.Settings;
 using Serilog;
 using RiseDiary.Common;
-using RiseDiary.WebAPI.Scopes.Services;
+using RiseDiary.WebAPI.Data;
+using RiseDiary.WebAPI.Application.Scopes.Abstraction;
+using RiseDiary.WebAPI.Application.Scopes.Services;
+using RiseDiary.WebAPI.Application.Images.Abstraction;
+using RiseDiary.WebAPI.Application.Images.Services;
+using RiseDiary.WebAPI.Application.Search.Abstraction;
+using RiseDiary.WebAPI.Application.Search.Services;
+using RiseDiary.WebAPI.Application.RecordsThemes.Abstraction;
+using RiseDiary.WebAPI.Application.RecordsThemes.Services;
+using RiseDiary.WebAPI.Application.RecordsImages.Abstraction;
+using RiseDiary.WebAPI.Application.RecordsImages.Services;
+using RiseDiary.WebAPI.Application.Records.Abstraction;
+using RiseDiary.WebAPI.Application.Records.Services;
+using RiseDiary.WebAPI.Application.Analysis.Abstraction;
+using RiseDiary.WebAPI.Application.Analysis.Services;
+using RiseDiary.WebAPI.Application;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,8 +57,7 @@ builder.Services.AddMemoryCache();
 // app services
 builder.Services.RegisterDtoValidators();
 
-builder.Services.RegisterSettingsServices();
-builder.Services.AddScoped<IScopesService, ScopesService>();
+builder.Services.RegisterApplicationServices();
 
 builder.Services.AddScoped<IRecordsThemesService, RecordsThemesService>();
 builder.Services.AddScoped<IImagesService, ImagesService>();

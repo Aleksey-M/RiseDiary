@@ -1,7 +1,7 @@
-﻿@using RiseDiary.Common.Scopes
+﻿@using RiseDiary.Common.Abstractions.Clients
+@using RiseDiary.Common.Scopes
 
-@inject HttpClient Http
-@inject ThemeDtoValidator Validator
+@inject IScopesClient ScopesClient
 @inject NavigationManager NavManager
 
 @inherits UIComponentBase
@@ -39,54 +39,31 @@
 
     private async Task CreateNewTheme()
     {
-        try
+        if (Scope.Themes!.Any(x => x.ThemeName!.Trim().ToUpper() == _newThemeDto.ThemeName?.Trim().ToUpper()))
         {
-            if (Scope.Themes!.Any(x => x.ThemeName!.Trim().ToUpper() == _newThemeDto.ThemeName!.Trim().ToUpper()))
-            {
-                ErrorMessage = $"Тема '{_newThemeDto.ThemeName}' уже существует";
-                return;
-            }
+            ErrorMessage = $"Тема '{_newThemeDto.ThemeName}' уже существует";
+            return;
+        }
 
-            _newThemeDto.ScopeId = Scope.ScopeId;
-            _newThemeDto.Actual = true;
+        await StartApiRequest();
 
-            var validationResult = Validator.ValidateForCreate(_newThemeDto);
+        _newThemeDto.ScopeId = Scope.ScopeId;
+        _newThemeDto.Actual = true;
+        var tmpDto = new ThemeDto(_newThemeDto);
+        tmpDto.SetHostAndPortPlaceholder(NavManager.BaseUri);
 
-            if (!validationResult.IsValid)
-            {
-                ErrorMessage = validationResult.ToString();
-                return;
-            }
+        var result = await ScopesClient.CreateTheme(tmpDto);
 
-            await StartApiRequest();
-
-            var tmpDto = new ThemeDto(_newThemeDto);
-            tmpDto.SetHostAndPortPlaceholder(NavManager.BaseUri);
-
-            var response = await Http.PostAsJsonAsync($"api/scopes/{tmpDto.ScopeId.ToString()}/themes", tmpDto);
-
-            var responseContent = await GetCheckedResponseContent<string?>(response);
-            if (responseContent == null) return;
-
-            if (!Guid.TryParse(responseContent, out var newId))
-            {
-                await FinishApiRequest($"Неверный формат Id: {responseContent}");
-                return;
-            }
-
-            tmpDto.ThemeId = newId;
+        if (result.Succeeded)
+        {
+            tmpDto.ThemeId = result.Data;
             tmpDto.ThemeDescription = _newThemeDto.ThemeDescription;
 
             NewThemeCreated(tmpDto);
 
             _newThemeDto = new();
-
-            await FinishApiRequest(null);
-
         }
-        catch(Exception exc)
-        {
-            await FinishApiRequest(exc.Message);
-        }
+
+        await FinishApiRequest(result);
     }
 }

@@ -1,12 +1,12 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using RiseDiary.Common.Records;
-using RiseDiary.Model;
+using RiseDiary.WebAPI.Application.Records.Abstraction;
+using RiseDiary.WebAPI.Application.Scopes.Abstraction;
+using RiseDiary.WebAPI.Application.Settings.Abstraction;
+using RiseDiary.WebAPI.Application.Settings.Model;
 using RiseDiary.WebAPI.Controllers.ScopesArea;
 using RiseDiary.WebAPI.Extensions;
-using RiseDiary.WebAPI.Scopes.Services;
-using RiseDiary.WebAPI.Settings;
-using RiseDiary.WebAPI.Settings.Model;
 
 namespace RiseDiary.WebAPI.Controllers.RecordsArea;
 
@@ -51,11 +51,11 @@ public sealed class RecordsController : ControllerBase
         var dto = record.ToDto();
 
         var startRecords = (await _appSettingsService.GetSetting<BookmarksSettings>(cancellationToken)).Data?.Records ?? [];
-        var scopes = await scopeService.GetScopes(null, cancellationToken);
+        var scopesResult = await scopeService.GetScopes(cancellationToken);
 
         var addImagesPageSize = (await _appSettingsService.GetSetting<PagesSizesSettings>(cancellationToken)).Data?.AvailableImagesPageSize;
 
-        return record.ToEditDto(startRecords, scopes.Select(s => s.ToDto()).ToList(), addImagesPageSize ?? 10);
+        return record.ToEditDto(startRecords, scopesResult.Data!.Select(s => s.ToDto()).ToList(), addImagesPageSize ?? 10);
     }
 
     [HttpDelete("{recordId}")]

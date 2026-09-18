@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using NUnit.Framework;
-using RiseDiary.Model;
+using RiseDiary.WebAPI.Application.Records.Model;
+using System;
+using System.Threading.Tasks;
 
 namespace RiseDiary.IntegratedTests.Services;
 
