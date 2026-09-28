@@ -1,40 +1,47 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RiseDiary.Common.Core;
 using RiseDiary.Common.Search;
 using RiseDiary.Data;
 using RiseDiary.WebAPI.Application.Records.Model;
 using RiseDiary.WebAPI.Application.Search.Abstraction;
-using RiseDiary.WebAPI.Application.Settings.Abstraction;
 
 namespace RiseDiary.WebAPI.Application.Search.Services;
 
 public sealed class RecordsSearchService : IRecordsSearchService
 {
     private readonly DiaryDbContext _context;
+    private readonly ILogger<RecordsSearchService> _logger;
 
-    public RecordsSearchService(DiaryDbContext context, ISettingsService appSettingsService)
+    public RecordsSearchService(DiaryDbContext context, ILogger<RecordsSearchService> logger)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _context = context;
+        _logger = logger;
     }
 
-    public async Task<List<RecordEntity>> GetRecordsList(RecordsFilter filter, CancellationToken cancellationToken)
+    public async Task<Result<(RecordEntity[] records, int count)>> GetRecords(RecordsFilter filter, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(filter);
+        try
+        {
+            ArgumentNullException.ThrowIfNull(filter);
 
-        var recordsPage = await FetchRecordsListFilteredQuery(filter)
-            .OrderByDescending(r => r.Date)
-            .ThenByDescending(r => r.CreateDate)
-            .Skip(filter.PageNo * filter.PageSize)
-            .Take(filter.PageSize)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
+            var query = FetchRecordsListFilteredQuery(filter);
+            var count = await query
+                .CountAsync(cancellationToken);
 
-        return recordsPage;
-    }
+            var recordsPage = await query
+                .OrderByDescending(r => r.Date)
+                .ThenByDescending(r => r.CreateDate)
+                .Skip(filter.PageNo * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync(cancellationToken);
 
-    public async Task<int> GetRecordsCount(RecordsFilter filter, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(filter);
-        return await FetchRecordsListFilteredQuery(filter).CountAsync(cancellationToken).ConfigureAwait(false);
+            return Result<(RecordEntity[], int)>.Success(([.. recordsPage], count));
+        }
+        catch (Exception exc) when (exc is not OperationCanceledException)
+        {
+            _logger.LogError(exc, "Возникла критическая ошибка");
+            return Result<(RecordEntity[], int)>.Failure("Возникла критическая ошибка");
+        }
     }
 
     private IQueryable<RecordEntity> FetchRecordsListFilteredQuery(RecordsFilter filter)
@@ -104,28 +111,43 @@ public sealed class RecordsSearchService : IRecordsSearchService
         return result;
     }
 
-    public async Task<List<RecordEntity>> GetThisDayRecords(int month, int day, CancellationToken cancellationToken)
+    public async Task<Result<RecordEntity[]>> GetThisDayRecords(
+        int month,
+        int day,
+        CancellationToken cancellationToken)
     {
-        var records = await _context.Records
-            .AsNoTracking()
-            .AsSplitQuery()
-            .Include(r => r.Cogitations)
-            .Include(r => r.ThemesRefs)
-            .ThenInclude(rt => rt.Theme)
-            .Include(r => r.ImagesRefs.OrderBy(x => x.Order))
-            .ThenInclude(ri => ri.Image)
-            .Where(x => x.Date.Month == month && x.Date.Day == day)
-            .OrderByDescending(r => r.Date)
-            .ThenByDescending(r => r.CreateDate)
-            .ToListAsync(cancellationToken);
+        try
+        {
+            var records = await _context.Records
+                    .AsNoTracking()
+                    .AsSplitQuery()
+                    .Include(r => r.Cogitations)
+                    .Include(r => r.ThemesRefs)
+                    .ThenInclude(rt => rt.Theme)
+                    .Include(r => r.ImagesRefs.OrderBy(x => x.Order))
+                    .ThenInclude(ri => ri.Image)
+                    .Where(x => x.Date.Month == month && x.Date.Day == day)
+                    .OrderByDescending(r => r.Date)
+                    .ThenByDescending(r => r.CreateDate)
+                    .ToListAsync(cancellationToken);
 
-        return records;
+            return Result<RecordEntity[]>.Success([.. records]);
+        }
+        catch (Exception exc) when (exc is not OperationCanceledException)
+        {
+            _logger.LogError(exc, "Возникла критическая ошибка");
+            return Result<RecordEntity[]>.Failure("Возникла критическая ошибка");
+        }
     }
 
-    public async Task<List<RecordEntity>> GetRecordsByIds(
+
+    public async Task<Result<RecordEntity[]>> GetRecordsByIds(
         IEnumerable<Guid> recordsIds,
-        CancellationToken cancellationToken = default) =>
-            await _context.Records
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var records = await _context.Records
                 .AsNoTracking()
                 .AsSplitQuery()
                 .Include(r => r.Cogitations)
@@ -137,4 +159,13 @@ public sealed class RecordsSearchService : IRecordsSearchService
                 .OrderByDescending(r => r.Date)
                 .ThenByDescending(r => r.CreateDate)
                 .ToListAsync(cancellationToken);
+
+            return Result<RecordEntity[]>.Success([.. records]);
+        }
+        catch (Exception exc) when (exc is not OperationCanceledException)
+        {
+            _logger.LogError(exc, "Возникла критическая ошибка");
+            return Result<RecordEntity[]>.Failure("Возникла критическая ошибка");
+        }
+    }
 }

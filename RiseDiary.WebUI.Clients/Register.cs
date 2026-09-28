@@ -9,6 +9,7 @@ public static class Register
     {
         services.AddSingleton<ISettingsClient, SettingsClient>();
         services.AddSingleton<IScopesClient, ScopesClient>();
+        services.AddSingleton<IRecordsSearchClient, RecordsSearchClient>();
 
         return services;
     }

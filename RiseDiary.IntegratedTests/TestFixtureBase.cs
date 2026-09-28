@@ -38,6 +38,7 @@ using System.Data.Common;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 #pragma warning disable CA1822 // Mark members as static
@@ -81,9 +82,7 @@ internal class TestFixtureBase
     private static DbConnection CreateInMemoryDatabase()
     {
         var connection = new SqliteConnection("Filename=:memory:");
-
         connection.Open();
-
         return connection;
     }
 
@@ -218,7 +217,7 @@ internal class TestFixtureBase
         return (recId, cogitation.Id);
     }
 
-    protected static IEnumerable<string> GetNumberList(int count, string? prefix = null) => Enumerable.Range(1, count).Select(i => prefix ?? "" + i.ToString("00", CultureInfo.InvariantCulture));
+    protected static IEnumerable<string> GetNumberList(int count, string? prefix = null) => Enumerable.Range(1, count).Select(i => (prefix ?? "") + i.ToString("00", CultureInfo.InvariantCulture));
     protected static IEnumerable<DateOnly> GetDatesList(int count) => Enumerable.Range(1, count).Select(i => DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-i)));
     protected static IEnumerable<DateOnly> GetDatesListWithTwoSameDatesWeekAgo(int count) => Enumerable.Range(1, count).Select(i => i == 2 ? DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7)) : DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-i)));
 
@@ -762,6 +761,79 @@ internal class TestFixtureBase
         return (recordId, imagesIds, context);
     }
 
+    protected void CreateRecords(
+        DiaryDbContext context,
+        int count,
+        IEnumerable<string>? names = null,
+        IEnumerable<DateOnly>? dates = null)
+    {
+        names ??= Enumerable.Range(1, count)
+            .Select(i => i.ToString("D2"))
+            .ToList();
+
+        dates ??= Enumerable.Range(0, count)
+            .Select(i => DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-i)))
+            .ToList();
+
+        for (int i = 0; i < count; i++)
+        {
+            var rec = new RecordEntity
+            {
+                Id = Guid.NewGuid(),
+                Name = names.ElementAt(i),
+                Date = dates.ElementAt(i),
+                CreateDate = DateTime.UtcNow.AddMinutes(-i),
+                Deleted = false
+            };
+
+            context.Records.Add(rec);
+        }
+
+        context.SaveChanges();
+    }
+
+
+    protected void CreateRecordsWithUnicodeNames(DiaryDbContext context)
+    {
+        var names = new List<string>
+        {
+            "Її* тест запись 01",
+            "ПоискІї*02",
+            "Unicode_Запись_Її*03",
+            "Тест без совпадения",
+            "AnotherRecord"
+        };
+
+        var dates = GetDatesList(names.Count);
+        CreateRecords(context, names.Count, names, [.. dates]);
+    }
+
+    protected DiaryDbContext CreateBrokenContext()
+    {
+        var options = new DbContextOptionsBuilder<DiaryDbContext>()
+            .UseInMemoryDatabase("BrokenDb_" + Guid.NewGuid())
+            .Options;
+
+        return new BrokenDiaryDbContext(options);
+    }
+
+    private sealed class BrokenDiaryDbContext : DiaryDbContext
+    {
+        public BrokenDiaryDbContext(DbContextOptions<DiaryDbContext> options)
+            : base(options)
+        {
+        }
+
+        public new DbSet<RecordEntity> Records
+            => throw new InvalidOperationException("Broken context");
+
+        public override int SaveChanges()
+            => throw new InvalidOperationException("Broken context");
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+            => throw new InvalidOperationException("Broken context");
+    }
+
 
     static public ICalendarService GetCalendarService(DiaryDbContext? context = null) =>
         new CalendarService(
@@ -775,7 +847,7 @@ internal class TestFixtureBase
         new RecordsSearchTextService(context ?? CreateContext(), Mock.Of<ILogger<RecordsSearchTextService>>());
 
     static public IRecordsSearchService GetRecordsSearchService(DiaryDbContext? context = null) =>
-        new RecordsSearchService(context ?? CreateContext(), new AppSettingsServiceStub());
+        new RecordsSearchService(context ?? CreateContext(), Mock.Of<ILogger<RecordsSearchService>>());
 
     static public IRecordsService GetRecordsService(DiaryDbContext? context = null) =>
         new RecordsService(context ?? CreateContext());

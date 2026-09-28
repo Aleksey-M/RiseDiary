@@ -8,7 +8,7 @@ using RiseDiary.WebAPI.Data;
 
 namespace RiseDiary.Data;
 
-public sealed class DiaryDbContext : DbContext
+public class DiaryDbContext : DbContext
 {
     public DiaryDbContext(DbContextOptions<DiaryDbContext> options) : base(options) { }
 

@@ -1,6 +1,8 @@
 ﻿@page "/records"
 
 @using RiseDiary.Common
+@using RiseDiary.Common.Abstractions.Clients
+@using RiseDiary.Common.Core
 @using RiseDiary.Common.Records
 @using RiseDiary.Common.Scopes
 
@@ -29,9 +31,13 @@
     }
 </Spinner>
 
-@code {
+    @code {
+
     [Inject]
-    public HttpClient Http { get; set; } = null!;
+    public IRecordsSearchClient RecordsSearchClient { get; set; } = null!;
+
+    [Inject]
+    public IScopesClient ScopesClient { get; set; } = null!;
 
     [Inject]
     public ILogger<RecordsPage> Logger { get; set; } = null!;
@@ -53,61 +59,90 @@
     {
         _filters = filters ?? _filters;
         _page = page ?? _page;
+        _displayType = _filters.Expanded ? typeof(RecordsTableExpanded) : typeof(RecordsTable);
 
-        try
+        await StartApiRequest();
+
+        Result<object?>? resp = null;
+        List<object>? records = null;
+
+        if (_filters.Expanded)
         {
-            await StartApiRequest();
-
-            var queryParams = new Dictionary<string, object?>
-            {
-                ["from"] = _filters.From,
-                ["to"] = _filters.To,
-                ["combinedThemes"] = _filters.CombinedThemes,
-                ["expanded"] = _filters.Expanded,
-                ["name"] = _filters.Name,
-                ["themes"] = _filters.Themes,
-                ["page"] = _page
-            };
-
-            var uri = NavManager.GetUriWithQueryParameters("api/records", queryParams);
-            _displayType = _filters.Expanded ? typeof(RecordsTableExpanded) : typeof(RecordsTable);
-
-            if (_filters.Expanded)
-            {
-                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordDto>>(uri, CancellationToken);
-                _pages = response?.PagesInfo ?? new();
-
-                var records = response?.Records ?? new List<RecordDto>();
-                records.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
-
-                _displayTypeParameters = new()
-                    {
-                        ["Records"] = records,
-                        ["TotalCount"] = _pages.TotalItems
-                    };
-            }
-            else
-            {
-                var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordListItemDto>>(uri, CancellationToken);
-                _pages = response?.PagesInfo ?? new();
-
-                var records = response?.Records ?? new List<RecordListItemDto>();
-                records.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
-
-                _displayTypeParameters = new()
-                    {
-                        ["Records"] = records,
-                        ["TotalCount"] = _pages.TotalItems
-                    };
-            }
-
-            await FinishApiRequest(null);
+            var response = await RecordsSearchClient.GetRecordsExpanded(_filters, _page, CancellationToken);
+            _pages = response?.Data?.PagesInfo ?? new();
+            records = (response?.Data?.Records ?? []).Select(x => (object)x).ToList();
+            resp = Result<object?>.FormResult(response!, x => null);
         }
-        catch (Exception exc)
+        else
         {
-            Logger.LogError(exc, "Error on page data loading");
-            await FinishApiRequest(exc.Message);
+            var response = await RecordsSearchClient.GetRecords(_filters, _page, CancellationToken);
+            _pages = response?.Data?.PagesInfo ?? new();
+            records = (response?.Data?.Records ?? []).Select(x => (object)x).ToList();
+            resp = Result<object?>.FormResult(response!, x => null);
         }
+
+        _displayTypeParameters = new()
+        {
+            ["Records"] = records,
+            ["TotalCount"] = _pages.TotalItems
+        };
+        
+        await FinishApiRequest(resp);
+
+        // try
+        // {
+        //     await StartApiRequest();
+
+        //     var queryParams = new Dictionary<string, object?>
+        //     {
+        //         ["from"] = _filters.From,
+        //         ["to"] = _filters.To,
+        //         ["combinedThemes"] = _filters.CombinedThemes,
+        //         ["expanded"] = _filters.Expanded,
+        //         ["name"] = _filters.Name,
+        //         ["themes"] = _filters.Themes,
+        //         ["page"] = _page
+        //     };
+
+        //     var uri = NavManager.GetUriWithQueryParameters("api/records", queryParams);
+        //     _displayType = _filters.Expanded ? typeof(RecordsTableExpanded) : typeof(RecordsTable);
+
+        //     if (_filters.Expanded)
+        //     {
+        //         var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordDto>>(uri, CancellationToken);
+        //         _pages = response?.PagesInfo ?? new();
+
+        //         var records = response?.Records ?? new List<RecordDto>();
+        //         records.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
+
+        //         _displayTypeParameters = new()
+        //             {
+        //                 ["Records"] = records,
+        //                 ["TotalCount"] = _pages.TotalItems
+        //             };
+        //     }
+        //     else
+        //     {
+        //         var response = await Http.GetFromJsonAsync<RecordsPageDto<RecordListItemDto>>(uri, CancellationToken);
+        //         _pages = response?.PagesInfo ?? new();
+
+        //         var records = response?.Records ?? new List<RecordListItemDto>();
+        //         records.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
+
+        //         _displayTypeParameters = new()
+        //             {
+        //                 ["Records"] = records,
+        //                 ["TotalCount"] = _pages.TotalItems
+        //             };
+        //     }
+
+        //     await FinishApiRequest(null);
+        // }
+        // catch (Exception exc)
+        // {
+        //     Logger.LogError(exc, "Error on page data loading");
+        //     await FinishApiRequest(exc.Message);
+        // }
     }
 
     private List<ScopeDto> _allScopes = new();
@@ -115,18 +150,9 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        try
-        {
-            Loading = true;
-            _allScopes = await Http.GetFromJsonAsync<List<ScopeDto>>("api/scopes", CancellationToken) ?? new();
-            _allScopes.ForEach(x => x.SetBaseUri(NavManager.BaseUri));
-            await LoadData();
-        }
-        catch (Exception exc)
-        {
-            Logger.LogError(exc, "Error on page initialization");
-            await FinishApiRequest(exc.Message);
-        }
+        Loading = true;
+        _allScopes = (await ScopesClient.GetScopes(CancellationToken))?.Data ?? [];
+        await LoadData();
     }
 
     private Task Search(RecordsSearchFilters filters) => LoadData(filters: filters);

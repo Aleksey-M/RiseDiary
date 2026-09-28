@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using RiseDiary.Common.Search;
+using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiseDiary.IntegratedTests.Services;
@@ -10,310 +12,367 @@ namespace RiseDiary.IntegratedTests.Services;
 [TestFixture]
 internal class RecordsSearchTextServiceTests : TestFixtureBase
 {
+    private static CancellationToken CT => CancellationToken.None;
+
+    // ------------------------------------------------------------
+    // SOFT DELETE TESTS
+    // ------------------------------------------------------------
+
     [Test]
-    public async Task SoftDeleting_GetRecordsListByText_ShouldNotReturnDeletedRecords()
+    public async Task SoftDeleting_GetRecordsList_ShouldNotReturnDeletedRecords()
     {
         var context = CreateContext();
         context.SoftDeleting = true;
-        Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-        // mark one record as deleted
+
+        CreateRecords(context, 20, GetNumberList(20, "SearchText_"), GetDatesList(20));
+
+        var svc = GetRecordsSearchTextService(context);
+
         var delRecord = await context.Records.Skip(3).FirstAsync();
         delRecord.Deleted = true;
         await context.SaveChangesAsync();
 
-        var list = await recSearchByTextSvc.GetRecordsList(new RecordsTextFilter { SearchText = "SearchText" });
+        var result = await svc.GetRecordsList(new RecordsTextFilter { SearchText = "SearchText" }, CT);
 
-        list.Should().NotBeNull();
-        list.Any(r => r.Id == delRecord.Id).Should().BeFalse();
-        list.Should().HaveCount(19);
+        result.Succeeded.Should().BeTrue();
+        var records = result.Data!.records;
+
+        records.Should().NotContain(r => r.Id == delRecord.Id);
+        result.Data!.count.Should().Be(19);
     }
 
     [Test]
-    public async Task SoftDeleting_GetRecordsCount_ShouldNotReturnDeletedRecords()
+    public async Task SoftDeleting_GetRecordsList_ShouldNotReturnDeletedImages()
     {
         var context = CreateContext();
         context.SoftDeleting = true;
-        Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-        // mark one record as deleted
-        var delRecord = await context.Records.Skip(3).FirstAsync();
-        delRecord.Deleted = true;
-        await context.SaveChangesAsync();
 
-        int count = await recSearchByTextSvc.GetRecordsCount("SearchText");
-
-        count.Should().Be(19);
-    }
-
-
-    [Test]
-    public async Task SoftDeleting_GetRecordsListByText_ShouldNotReturnDeletedImages()
-    {
-        var context = CreateContext();
-        context.SoftDeleting = true;
-        Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+        CreateRecords(context, 20, GetNumberList(20, "SearchText_"), GetDatesList(20));
         await Add3ImagesForEachRecord(context);
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-        // mark two images for different records as deleted
+
+        var svc = GetRecordsSearchTextService(context);
+
         var (imgId1, imgId2) = await For2RecordsRemoveImagesAndGetThousIds(context);
 
-        var list = await recSearchByTextSvc.GetRecordsList(new RecordsTextFilter { SearchText = "SearchText" });
+        var result = await svc.GetRecordsList(new RecordsTextFilter { SearchText = "SearchText" }, CT);
 
-        var allRecordsImages = list.SelectMany(r => r.ImagesRefs);
-        allRecordsImages.Should().NotContain(dr => dr.ImageId == imgId1 || dr.ImageId == imgId2, "because images removed from records");
-        allRecordsImages.Should().HaveCount(20 * 3 - 2);
+        var images = result.Data!.records.SelectMany(r => r.ImagesRefs);
+
+        images.Should().NotContain(i => i.ImageId == imgId1 || i.ImageId == imgId2);
+        images.Should().HaveCount(20 * 3 - 2);
     }
 
     [Test]
-    public async Task SoftDeleting_GetRecordsListByText_ShouldNotReturnDeletedCogitations()
+    public async Task SoftDeleting_GetRecordsList_ShouldNotReturnDeletedCogitations()
     {
         var context = CreateContext();
         context.SoftDeleting = true;
-        Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+
+        CreateRecords(context, 20, GetNumberList(20, "SearchText_"), GetDatesList(20));
         await Add3CogitationsForEachRecord(context);
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-        // mark two cogitations for different records as deleted
+
+        var svc = GetRecordsSearchTextService(context);
+
         var (cId1, cId2) = await For2RecordsRemoveCogitationsAndGetThousIds(context);
 
-        var list = await recSearchByTextSvc.GetRecordsList(new RecordsTextFilter { SearchText = "SearchText" });
+        var result = await svc.GetRecordsList(new RecordsTextFilter { SearchText = "SearchText" }, CT);
 
-        var allRecordsThemes = list.SelectMany(r => r.Cogitations);
-        allRecordsThemes.Should().NotContain(dr => dr.Id == cId1 || dr.Id == cId2, "because cogitations removed from records");
-        allRecordsThemes.Should().HaveCount(20 * 3 - 2);
+        var cogitations = result.Data!.records.SelectMany(r => r.Cogitations);
+
+        cogitations.Should().NotContain(c => c.Id == cId1 || c.Id == cId2);
+        cogitations.Should().HaveCount(20 * 3 - 2);
     }
 
     [Test]
-    public async Task SoftDeleting_GetRecordsListByText_ShouldNotReturnDeletedThemes()
+    public async Task SoftDeleting_GetRecordsList_ShouldNotReturnDeletedThemes()
     {
         var context = CreateContext();
         context.SoftDeleting = true;
-        Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+
+        CreateRecords(context, 20, GetNumberList(20, "SearchText_"), GetDatesList(20));
         await Add3ThemesForEachRecord(context);
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-        // mark two themes for different records as deleted
+
+        var svc = GetRecordsSearchTextService(context);
+
         var (thId1, thId2) = await For2RecordsRemoveThemesAndGetThousIds(context);
 
-        var list = await recSearchByTextSvc.GetRecordsList(new RecordsTextFilter { SearchText = "SearchText" });
+        var result = await svc.GetRecordsList(new RecordsTextFilter { SearchText = "SearchText" }, CT);
 
-        var allRecordsThemes = list.SelectMany(r => r.ThemesRefs);
-        allRecordsThemes.Should().NotContain(dr => dr.ThemeId == thId1 || dr.ThemeId == thId2, "because theme removed from records");
-        allRecordsThemes.Should().HaveCount(20 * 3 - 2);
+        var themes = result.Data!.records.SelectMany(r => r.ThemesRefs);
+
+        themes.Should().NotContain(t => t.ThemeId == thId1 || t.ThemeId == thId2);
+        themes.Should().HaveCount(20 * 3 - 2);
     }
 
+    // ------------------------------------------------------------
+    // EMPTY / WHITESPACE SEARCH TEXT
+    // ------------------------------------------------------------
+
     [Test]
-    public async Task GetRecordsListByText_ByEmptyString_ShouldReturnEmptyList()
+    public async Task GetRecordsList_EmptySearchText_ShouldReturnEmpty()
     {
         var context = CreateContext();
-        Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
-        await Add3CogitationsForEachRecord(context, "CogitationText_");
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-        var filter = new RecordsTextFilter { SearchText = "" };
+        CreateRecords(context, 20, GetNumberList(20, "SearchText_"), GetDatesList(20));
 
-        var list = await recSearchByTextSvc.GetRecordsList(filter);
+        var svc = GetRecordsSearchTextService(context);
 
-        list.Should().NotBeNull();
-        list.Should().BeEmpty();
+        var result = await svc.GetRecordsList(new RecordsTextFilter { SearchText = "" }, CT);
+
+        result.Succeeded.Should().BeTrue();
+        result.Data!.records.Should().BeEmpty();
+        result.Data!.count.Should().Be(0);
     }
 
     [Test]
-    public async Task GetRecordsCount_ByEmptyString_ShouldReturn0()
+    public async Task GetRecordsList_WhitespaceSearchText_ShouldReturnEmpty()
     {
         var context = CreateContext();
-        Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
-        await Add3CogitationsForEachRecord(context, "CogitationText_");
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
+        CreateRecords(context, 20, GetNumberList(20, "SearchText_"), GetDatesList(20));
 
-        int count = await recSearchByTextSvc.GetRecordsCount("");
+        var svc = GetRecordsSearchTextService(context);
 
-        count.Should().Be(0);
+        var result = await svc.GetRecordsList(new RecordsTextFilter { SearchText = "   " }, CT);
+
+        result.Succeeded.Should().BeTrue();
+        result.Data!.records.Should().BeEmpty();
+        result.Data!.count.Should().Be(0);
     }
 
+    // ------------------------------------------------------------
+    // NO MATCHES
+    // ------------------------------------------------------------
+
     [Test]
-    public async Task GetRecordsListByText_ByWhitespaces_ShouldReturnEmptyList()
+    public async Task GetRecordsList_NoMatches_ShouldReturnEmpty()
     {
         var context = CreateContext();
-        Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
-        await Add3CogitationsForEachRecord(context, "CogitationText_");
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-        var filter = new RecordsTextFilter { SearchText = "    " };
+        CreateRecords(context, 20, GetNumberList(20, "SearchText_"), GetDatesList(20));
 
-        var list = await recSearchByTextSvc.GetRecordsList(filter);
+        var svc = GetRecordsSearchTextService(context);
 
-        list.Should().NotBeNull();
-        list.Should().BeEmpty();
+        var result = await svc.GetRecordsList(new RecordsTextFilter { SearchText = "UniqueString" }, CT);
+
+        result.Data!.records.Should().BeEmpty();
+        result.Data!.count.Should().Be(0);
     }
 
+    // ------------------------------------------------------------
+    // MATCHES IN NAME
+    // ------------------------------------------------------------
+
     [Test]
-    public async Task GetRecordsCount_ByWhitespaces_ShouldReturn0()
+    public async Task GetRecordsList_MatchesInName_ShouldReturnCorrectRecords()
     {
         var context = CreateContext();
-        Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
-        await Add3CogitationsForEachRecord(context, "CogitationText_");
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
+        CreateRecords(context, 20, GetNamesList(), GetDatesList(20));
 
-        int count = await recSearchByTextSvc.GetRecordsCount(" ");
+        var svc = GetRecordsSearchTextService(context);
 
-        count.Should().Be(0);
+        var result = await svc.GetRecordsList(new RecordsTextFilter { SearchText = SearchSubstring4 }, CT);
+
+        result.Data!.records.Should().HaveCount(4);
+        result.Data!.records.Select(r => r.Name)
+            .Should().BeEquivalentTo(SearchResult4);
     }
 
-    [Test]
-    public async Task GetRecordsListByText_WithoutMatches_ShouldReturnEmptyList()
-    {
-        var context = CreateContext();
-        Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
-        await Add3CogitationsForEachRecord(context, "CogitationText_");
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-        var filter = new RecordsTextFilter { SearchText = "UniqueString" };
-
-        var list = await recSearchByTextSvc.GetRecordsList(filter);
-
-        list.Should().NotBeNull();
-        list.Should().BeEmpty();
-    }
+    // ------------------------------------------------------------
+    // MATCHES IN TEXT
+    // ------------------------------------------------------------
 
     [Test]
-    public async Task GetRecordsCount_WithoutMatches_ShouldReturn0()
-    {
-        var context = CreateContext();
-        Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
-        await Add3CogitationsForEachRecord(context, "CogitationText_");
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-
-        int count = await recSearchByTextSvc.GetRecordsCount("UniqueString");
-
-        count.Should().Be(0);
-    }
-
-    [Test]
-    public async Task GetRecordsListByText_MatchesInName_ShouldReturn4Records()
-    {
-        var context = CreateContext();
-        Create20Records(context, GetNamesList(), GetDatesList(20));
-        await Add3CogitationsForEachRecord(context, "CogitationText_");
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-        var filter = new RecordsTextFilter { SearchText = SearchSubstring4 };
-
-        var list = await recSearchByTextSvc.GetRecordsList(filter);
-
-        list.Should().NotBeNull();
-        list.Should().HaveCount(4);
-        list.Should().SatisfyRespectively(
-            r1 => r1.Name.Should().Be(SearchResult4.ElementAt(0)),
-            r2 => r2.Name.Should().Be(SearchResult4.ElementAt(1)),
-            r3 => r3.Name.Should().Be(SearchResult4.ElementAt(2)),
-            r4 => r4.Name.Should().Be(SearchResult4.ElementAt(3)));
-    }
-
-    [Test]
-    public async Task GetRecordsCount_MatchesInName_ShouldReturn4()
-    {
-        var context = CreateContext();
-        Create20Records(context, GetNamesList(), GetDatesList(20));
-        await Add3CogitationsForEachRecord(context, "CogitationText_");
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-
-        int count = await recSearchByTextSvc.GetRecordsCount(SearchSubstring4);
-
-        count.Should().Be(4);
-    }
-
-    [Test]
-    public async Task GetRecordsListByText_MatchesInText_ShouldReturn4Records()
+    public async Task GetRecordsList_MatchesInText_ShouldReturnCorrectRecords()
     {
         var context = CreateContext();
         Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20), GetNamesList().ToList());
-        await Add3CogitationsForEachRecord(context, "CogitationText_");
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-        var filter = new RecordsTextFilter { SearchText = SearchSubstring4 };
 
-        var list = await recSearchByTextSvc.GetRecordsList(filter);
+        var svc = GetRecordsSearchTextService(context);
 
-        list.Should().NotBeNull();
-        list.Should().HaveCount(4);
-        list.Should().SatisfyRespectively(
-            r1 => r1.Text.Should().Be(SearchResult4.ElementAt(0)),
-            r2 => r2.Text.Should().Be(SearchResult4.ElementAt(1)),
-            r3 => r3.Text.Should().Be(SearchResult4.ElementAt(2)),
-            r4 => r4.Text.Should().Be(SearchResult4.ElementAt(3)));
+        var result = await svc.GetRecordsList(new RecordsTextFilter { SearchText = SearchSubstring4 }, CT);
+
+        result.Data!.records.Should().HaveCount(4);
+        result.Data!.records.Select(r => r.Text)
+            .Should().BeEquivalentTo(SearchResult4);
     }
 
-    [Test]
-    public async Task GetRecordsCount_MatchesInText_ShouldReturn4()
-    {
-        var context = CreateContext();
-        Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20), GetNamesList().ToList());
-        await Add3CogitationsForEachRecord(context, "CogitationText_");
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-
-        int count = await recSearchByTextSvc.GetRecordsCount(SearchSubstring4);
-
-        count.Should().Be(4);
-    }
+    // ------------------------------------------------------------
+    // MATCHES IN COGITATIONS
+    // ------------------------------------------------------------
 
     [Test]
-    public async Task GetRecordsListByText_MatchesInCogitationText_ShouldReturn4Records()
+    public async Task GetRecordsList_MatchesInCogitations_ShouldReturnCorrectRecords()
     {
         var context = CreateContext();
         Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
+
         await Add3CogitationsForEachRecord(context, "CogitationText_", GetNamesList());
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-        var filter = new RecordsTextFilter { SearchText = SearchSubstring4 };
 
-        var list = await recSearchByTextSvc.GetRecordsList(filter);
+        var svc = GetRecordsSearchTextService(context);
 
-        list.Should().NotBeNull();
-        list.Should().HaveCount(4);
-        foreach (var r in list)
+        var result = await svc.GetRecordsList(new RecordsTextFilter { SearchText = SearchSubstring4 }, CT);
+
+        result.Data!.records.Should().HaveCount(4);
+
+        foreach (var r in result.Data!.records)
         {
-            r.Cogitations.Should().NotBeEmpty();
-            r.Cogitations.Any(c => c.Text.ToUpper().Contains(SearchSubstring4.ToUpper())).Should().BeTrue();
+            r.Cogitations.Any(c => c.Text.Contains(SearchSubstring4, StringComparison.OrdinalIgnoreCase))
+                .Should().BeTrue();
         }
     }
 
-    [Test]
-    public async Task GetRecordsCount_MatchesInCogitationText_ShouldReturn4()
-    {
-        var context = CreateContext();
-        Create20Records(context, GetNumberList(20, "SearchText_"), GetDatesList(20));
-        await Add3CogitationsForEachRecord(context, "CogitationText_", GetNamesList());
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-
-        int count = await recSearchByTextSvc.GetRecordsCount(SearchSubstring4);
-
-        count.Should().Be(4);
-    }
+    // ------------------------------------------------------------
+    // MULTIPLE MATCH SOURCES → DISTINCT RECORDS
+    // ------------------------------------------------------------
 
     [Test]
-    public async Task GetRecordsListByText_SeveralMatches_ShouldReturnDistinctRecords()
+    public async Task GetRecordsList_SeveralMatches_ShouldReturnDistinctRecords()
     {
         var context = CreateContext();
         Create20Records(context, GetNamesList(), GetDatesList(20), GetNamesList().ToList());
+
         await Add3CogitationsForEachRecord(context, "CogitationText_");
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
-        var filter = new RecordsTextFilter { SearchText = SearchSubstring4 };
 
-        var list = await recSearchByTextSvc.GetRecordsList(filter);
+        var svc = GetRecordsSearchTextService(context);
 
-        list.Should().NotBeNull();
-        list.Should().HaveCount(4);
-        list.Should().SatisfyRespectively(
-            r1 => r1.Text.Should().Be(SearchResult4.ElementAt(0)),
-            r2 => r2.Text.Should().Be(SearchResult4.ElementAt(1)),
-            r3 => r3.Text.Should().Be(SearchResult4.ElementAt(2)),
-            r4 => r4.Text.Should().Be(SearchResult4.ElementAt(3)));
+        var result = await svc.GetRecordsList(new RecordsTextFilter { SearchText = SearchSubstring4 }, CT);
+
+        result.Data!.records.Should().HaveCount(4);
+        result.Data!.records.Select(r => r.Text)
+            .Should().BeEquivalentTo(SearchResult4);
+    }
+
+    // ------------------------------------------------------------
+    // PAGINATION
+    // ------------------------------------------------------------
+
+    [Test]
+    public async Task GetRecordsList_Pagination_ShouldReturnCorrectPage()
+    {
+        var context = CreateContext();
+        CreateRecords(context, 50, GetNumberList(50, "SearchText_"), GetDatesList(50));
+
+        var svc = GetRecordsSearchTextService(context);
+
+        var filter = new RecordsTextFilter
+        {
+            SearchText = "SearchText",
+            PageNo = 1,
+            PageSize = 10
+        };
+
+        var result = await svc.GetRecordsList(filter, CT);
+
+        result.Data!.records.Should().HaveCount(10);
+        result.Data!.count.Should().Be(50);
+    }
+
+    // ------------------------------------------------------------
+    // SORTING
+    // ------------------------------------------------------------
+
+    [Test]
+    public async Task GetRecordsList_ShouldBeSortedByDateAndCreateDate()
+    {
+        var context = CreateContext();
+        CreateRecords(context, 20, GetNumberList(20, "SearchText_"), GetDatesList(20));
+
+        var svc = GetRecordsSearchTextService(context);
+
+        var result = await svc.GetRecordsList(new RecordsTextFilter { SearchText = "SearchText" }, CT);
+
+        var records = result.Data!.records;
+
+        records.Should().BeInDescendingOrder(r => r.Date);
+    }
+
+    // ------------------------------------------------------------
+    // SEARCH TEXT PARSING (SplitSearchText)
+    // ------------------------------------------------------------
+
+    [Test]
+    public async Task GetRecordsList_SearchTextWithQuotes_ShouldParseCorrectly()
+    {
+        var context = CreateContext();
+        CreateRecords(context, 20, GetNumberList(20, "SearchText_"), GetDatesList(20));
+
+        await Add3CogitationsForEachRecord(context, "CogitationText_");
+
+        var svc = GetRecordsSearchTextService(context);
+
+        var filter = new RecordsTextFilter { SearchText = "\"SearchText_01\"" };
+
+        var result = await svc.GetRecordsList(filter, CT);
+
+        result.Data!.records.Should().HaveCount(1);
+        result.Data!.records.First().Name.Should().Contain("SearchText_01");
     }
 
     [Test]
-    public async Task GetRecordsCount_SeveralMatches_ShouldReturn4()
+    public async Task GetRecordsList_SearchTextWithMultiplePartsAndFields_ShouldReturn()
     {
         var context = CreateContext();
-        Create20Records(context, GetNamesList(), GetDatesList(20), GetNamesList().ToList());
+        CreateRecords(context, 20, GetNumberList(20, "SearchText_"), GetDatesList(20));
+
         await Add3CogitationsForEachRecord(context, "CogitationText_");
-        var recSearchByTextSvc = GetRecordsSearchTextService(context);
 
-        int count = await recSearchByTextSvc.GetRecordsCount(SearchSubstring4);
+        var svc = GetRecordsSearchTextService(context);
 
-        count.Should().Be(4);
+        var filter = new RecordsTextFilter { SearchText = "\"CogitationText_02\" 'SearchText_07'" };
+
+        var result = await svc.GetRecordsList(filter, CT);
+
+        result.Data!.records.Should().HaveCount(1);
+        result.Data!.records.First().Name.Should().Contain("SearchText_07");
+    }
+
+    [Test]
+    public async Task GetRecordsList_SearchTextWithMultipleParts_ShouldReturnUnion()
+    {
+        var context = CreateContext();
+        CreateRecords(context, 20, GetNumberList(20, "SearchText_"), GetDatesList(20));
+
+        var svc = GetRecordsSearchTextService(context);
+
+        var filter = new RecordsTextFilter { SearchText = "'SearchText_01' \"SearchText_02\"" };
+
+        var result = await svc.GetRecordsList(filter, CT);
+
+        result.Data!.records.Should().HaveCount(2);
+    }
+
+    // ------------------------------------------------------------
+    // ERROR HANDLING
+    // ------------------------------------------------------------
+
+    [Test]
+    public async Task GetRecordsList_WhenExceptionThrown_ShouldReturnFailure()
+    {
+        var context = CreateBrokenContext();
+        var svc = GetRecordsSearchTextService(context);
+
+        var result = await svc.GetRecordsList(new RecordsTextFilter { SearchText = "SearchText" }, CT);
+
+        result.Succeeded.Should().BeFalse();
+        result.Message.Should().NotBeNullOrEmpty();
+    }
+
+    // ------------------------------------------------------------
+    // CANCELLATION
+    // ------------------------------------------------------------
+
+    [Test]
+    public void GetRecordsList_WhenCancelled_ShouldThrowOperationCanceled()
+    {
+        var context = CreateContext();
+        CreateRecords(context, 20);
+
+        var svc = GetRecordsSearchTextService(context);
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        Func<Task> act = async () =>
+            await svc.GetRecordsList(new RecordsTextFilter { SearchText = "SearchText" }, cts.Token);
+
+        act.Should().ThrowAsync<OperationCanceledException>();
     }
 }

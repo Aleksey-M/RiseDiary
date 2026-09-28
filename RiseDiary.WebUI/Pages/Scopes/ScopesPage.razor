@@ -5,7 +5,6 @@
 @using RiseDiary.WebUI.Pages
 
 @inject IScopesClient ScopesClient
-@inject NavigationManager NavManager
 
 @inherits UIComponentBase
 
@@ -64,7 +63,6 @@
 
         var result = await ScopesClient.GetScopes(CancellationToken);
         _scopes = result?.Data ?? new();
-        _scopes?.SetBaseUri(NavManager.BaseUri);
 
         await FinishApiRequest(result);
     }

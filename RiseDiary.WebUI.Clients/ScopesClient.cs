@@ -1,4 +1,5 @@
-﻿using RiseDiary.Common.Abstractions.Clients;
+﻿using Microsoft.AspNetCore.Components;
+using RiseDiary.Common.Abstractions.Clients;
 using RiseDiary.Common.Core;
 using RiseDiary.Common.Scopes;
 using RiseDiary.Common.Validation;
@@ -8,19 +9,22 @@ using System.Text.Json;
 
 namespace RiseDiary.WebUI.Clients;
 
-public sealed class ScopesClient : ScopesClientBase, IScopesClient
+public sealed class ScopesClient : ClientBase, IScopesClient
 {
     private readonly HttpClient _http;
+    private readonly NavigationManager _navManager;
     private readonly IDtoValidator<ScopeDto> _scopeValidator;
     private readonly IDtoValidator<ThemeDto> _themeValidator;
 
     public ScopesClient(
         HttpClient http,
         JsonSerializerOptions jsonOptions,
+        NavigationManager navManager,
         IDtoValidator<ScopeDto> scopeValidator,
         IDtoValidator<ThemeDto> themeValidator) : base(jsonOptions)
     {
         _http = http;
+        _navManager = navManager;
         _scopeValidator = scopeValidator;
         _themeValidator = themeValidator;
     }
@@ -52,7 +56,13 @@ public sealed class ScopesClient : ScopesClientBase, IScopesClient
     public async Task<Result<List<ScopeDto>>> GetScopes(CancellationToken ct = default)
     {
         var response = await _http.GetAsync("api/scopes", ct);
-        return await ReadResult<List<ScopeDto>>(response);
+        var result = await ReadResult<List<ScopeDto>>(response);
+        if (result.Succeeded && result.Data != null)
+        {
+            result.Data.ForEach(x => x.SetBaseUri(_navManager.BaseUri));
+        }
+
+        return result;
     }
 
     public async Task<Result> UpdateScope(ScopeDto dto)

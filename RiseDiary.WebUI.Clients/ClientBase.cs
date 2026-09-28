@@ -3,11 +3,11 @@ using System.Text.Json;
 
 namespace RiseDiary.WebUI.Clients;
 
-public class ScopesClientBase
+public class ClientBase
 {
     private readonly JsonSerializerOptions _jsonOptions;
 
-    public ScopesClientBase(JsonSerializerOptions jsonOptions)
+    public ClientBase(JsonSerializerOptions jsonOptions)
     {
         _jsonOptions = jsonOptions;
     }

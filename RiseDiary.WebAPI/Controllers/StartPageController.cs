@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RiseDiary.Common.Core;
 using RiseDiary.Common.Records;
 using RiseDiary.WebAPI.Application.Search.Abstraction;
 using RiseDiary.WebAPI.Application.Settings.Abstraction;
@@ -21,17 +22,17 @@ namespace RiseDiary.WebAPI.Controllers
         }
 
         [HttpGet("api/bookmarks")]
-        public async Task<ActionResult<List<RecordDto>>> GetBookmarksRecord(CancellationToken token)
+        public async Task<ActionResult<Result<RecordDto[]>>> GetBookmarksRecord(CancellationToken token)
         {
             var recordIds = (await _appSettingsService.GetSetting<BookmarksSettings>(token)).Data?.Records ?? [];
 
             if (recordIds.Length > 0)
             {
                 var recs = await _recordService.GetRecordsByIds(recordIds, token);
-                return Ok(recs.Select(x => x.ToDto()).ToList());
+                return Ok(Result<RecordDto[]>.FormResult(recs, d => d.Select(x => x.ToDto()).ToArray()));
             }
 
-            return Ok(new List<RecordDto>());
+            return Ok(Result<RecordDto[]>.Success([]));
         }
     }
 }
